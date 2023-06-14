@@ -39,7 +39,9 @@ const createTransporter = async () => {
   return transporter;
 };
 
-export const emailSender = async (emailOptions: any) => {
+const emailSender = async (emailOptions: any) => {
   let emailTransporter = await createTransporter();
   await emailTransporter.sendMail(emailOptions);
 };
+
+module.exports = emailSender;

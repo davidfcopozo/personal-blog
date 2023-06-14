@@ -30,3 +30,5 @@ const sendVerificationEmail = async ({
 
   await emailSender(emailOptions);
 };
+
+module.exports = sendVerificationEmail;
