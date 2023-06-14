@@ -4,23 +4,16 @@ import { Request, Response, NextFunction } from "express";
 type errorHandlerMiddlewareProps = {
   err: any;
   req: Request;
-  res: Response;
-  next: NextFunction;
+  res?: Response;
+  next?: NextFunction;
 };
 
-const errorHandlerMiddleware = ({
-  err,
-  req,
-  res,
-  next,
-}: errorHandlerMiddlewareProps) => {
-  /*   let customError = {
+const errorHandlerMiddleware = ({ err, res }: errorHandlerMiddlewareProps) => {
+  let customError = {
     //Set default
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong, please try again later",
-  }; */
-
-  let customError = err;
+  };
 
   //Check if the error is about email or password validation which name of the mongoose err object is 'ValidationError
   if (err.name === "ValidationError") {
@@ -50,7 +43,7 @@ const errorHandlerMiddleware = ({
   //return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ err });
 
   /* This will get us our customError object */
-  return res.status(customError.statusCode).json({ msg: customError.msg });
+  return res?.status(customError.statusCode).json({ msg: customError.msg });
 };
 
 module.exports = errorHandlerMiddleware;
