@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please provide an email"],
       unique: true,
     },
-    passwordHash: {
+    password: {
       type: String,
       trim: true,
       required: true,
@@ -27,16 +27,16 @@ const userSchema = new mongoose.Schema(
 
 // Encrypt password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("passwordHash")) {
+  if (!this.isModified("password")) {
     next();
   }
   const salt = await bcrypt.genSalt(10);
-  this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Compare password with passwordHash
 userSchema.methods.comparePassword = async function (password: string) {
-  return await bcrypt.compare(password, this.passwordHash);
+  return await bcrypt.compare(password, this.password);
 };
 
 // return JWT token
@@ -51,4 +51,4 @@ userSchema.methods.getJWT = function () {
   return token;
 };
 
-export default mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema);
