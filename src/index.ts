@@ -9,6 +9,9 @@ import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/connect";
+const authRouter = require("./routes/authRoutes");
+const errorHandlerMiddleware = require("./middleware/error-handler");
+const notFound = require("./middleware/not-found");
 //import path from "path";
 
 dotenv.config();
@@ -38,16 +41,12 @@ const limiter = rateLimit({
 
 app.use(limiter); //limits requests
 
-app.get("/", (_, res) => {
-  res.send("API is running...");
-});
+app.use("/api/v1/auth", authRouter);
 
-app.get("/api/v1", (_, res) => {
-  res.send("API V1...");
-});
+app.use(notFound);
+app.use(errorHandlerMiddleware);
 
 /*
-app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter); 
 */
 
