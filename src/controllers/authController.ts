@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-const User = require("../models/User");
+const User = require("../models/userModel");
 import Crypto from "crypto";
 import { StatusCodes } from "http-status-codes";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
 import { hashString } from "../utils/hashString";
 const { BadRequest, Unauthenticated } = require("../errors/index");
 const sendVerificationEmail = require("../utils/sendVerificationEmail");
+const sendPasswordResetEmail = require("../utils/sendPasswordResetEmail");
 
 let baseUrl = "http://localhost:8000";
 
@@ -16,7 +17,7 @@ export const register = async (
 ) => {
   const { name, email, password } = req.body;
 
-  const userExist = User.findOne({ email });
+  const userExist = await User.findOne({ email });
 
   //Check if email already exists
   if (userExist) {
@@ -55,7 +56,7 @@ export const register = async (
 const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
   const { email, verificationToken } = req.body;
 
-  const user = User.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (!user) {
     return next(new Unauthenticated("Invalid email address"));
@@ -77,7 +78,7 @@ const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
-  const user = User.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (!user) {
     return next(new Unauthenticated("Invalid email address"));
@@ -107,7 +108,7 @@ const forgotPassword = async (
     return next(new BadRequest("Please provide a valid email address"));
   }
 
-  const user = User.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (user) {
     const passwordResetToken = Crypto.randomBytes(70).toString("hex");
@@ -148,7 +149,7 @@ const resetPassword = async (
     );
   }
 
-  const user = User.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (!user) {
     return next(new BadRequest("Invalid email address"));
@@ -171,7 +172,7 @@ const resetPassword = async (
   res.send("Password reset successful");
 };
 
-const logout = async (req: Request, res: Response, next: NextFunction) => {
+const logout = async (res: Response) => {
   res.clearCookie("token");
 
   res
