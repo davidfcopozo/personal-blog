@@ -54,7 +54,8 @@ export const register = async (
 };
 
 const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
-  const { email, verificationToken } = req.body;
+  const { email } = req.body;
+  const { token } = req.query;
 
   const user = await User.findOne({ email });
 
@@ -62,7 +63,7 @@ const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
     return next(new Unauthenticated("Invalid email address"));
   }
 
-  if (user.verificationToken !== verificationToken) {
+  if (user.verificationToken !== token) {
     return next(new Unauthenticated("Invalid verification token"));
   }
 
