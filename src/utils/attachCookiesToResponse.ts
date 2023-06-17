@@ -1,24 +1,20 @@
-require("dotenv").config();
+import { CookieOptions, Response } from "express";
 
-interface Options {
-  expires: number;
-  httpOnly: boolean;
-  secure?: boolean;
-}
+require("dotenv").config();
 
 type AttachCookiesToResponseProps = {
   user: any;
-  res: any;
+  res: Response;
 };
 
-export const attachCookiesToResponse = ({
+const attachCookiesToResponse = ({
   user,
   res,
 }: AttachCookiesToResponseProps) => {
   const token = user.getJWT();
 
-  const options: Options = {
-    expires: 60 * 60 * 1000,
+  const options: CookieOptions = {
+    expires: new Date(Date.now() + 60 * 60 * 1000),
     httpOnly: true,
   };
 
@@ -32,3 +28,5 @@ export const attachCookiesToResponse = ({
     role: user.role,
   });
 };
+
+module.exports = attachCookiesToResponse;
