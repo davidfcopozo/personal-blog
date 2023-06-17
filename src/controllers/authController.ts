@@ -2,19 +2,15 @@ import { Request, Response, NextFunction } from "express";
 const User = require("../models/userModel");
 import Crypto from "crypto";
 import { StatusCodes } from "http-status-codes";
-import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
-import { hashString } from "../utils/hashString";
+const attachCookiesToResponse = require("../utils/attachCookiesToResponse");
+const hashString = require("../utils/hashString");
 const { BadRequest, Unauthenticated } = require("../errors/index");
 const sendVerificationEmail = require("../utils/sendVerificationEmail");
 const sendPasswordResetEmail = require("../utils/sendPasswordResetEmail");
 
 let baseUrl = "http://localhost:8000";
 
-export const register = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const register = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password } = req.body;
 
   const userExist = await User.findOne({ email });
@@ -124,7 +120,7 @@ const forgotPassword = async (
     const thirtyMinutes = 1000 * 60 * 30;
     const passwordExpirationDate = new Date(Date.now() + thirtyMinutes);
 
-    user.passwordToken = hashString(passwordResetToken);
+    user.passwordVerificationToken = hashString(passwordResetToken);
     user.passwordExpirationDate = passwordExpirationDate;
 
     await user.save();
@@ -142,9 +138,10 @@ const resetPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password, token } = req.body;
+  const { email, password: newPassword } = req.body;
+  const { token } = req.query;
 
-  if (!email || !password || !token) {
+  if (!email || !newPassword || !token) {
     return next(
       new BadRequest("Please provide a valid email address, password and token")
     );
@@ -152,28 +149,24 @@ const resetPassword = async (
 
   const user = await User.findOne({ email });
 
-  if (!user) {
-    return next(new BadRequest("Invalid email address"));
-  }
+  if (user) {
+    if (
+      user.passwordVerificationToken !== hashString(token) ||
+      user.passwordExpirationDate > new Date(Date.now())
+    ) {
+      return next(new BadRequest("Invalid token"));
+    }
 
-  if (user.passwordToken !== hashString(token)) {
-    return next(new BadRequest("Invalid token"));
-  }
-
-  if (
-    user.passwordToken === hashString(token) &&
-    user.passwordTokenExpirationDate > new Date(Date.now())
-  ) {
-    user.password = password;
-    user.passwordToken = null;
+    user.password = newPassword;
+    user.passwordVerificationToken = null;
     user.passwordTokenExpirationDate = null;
     await user.save();
-  }
 
-  res.send("Password reset successful");
+    res.send("Password reset successful");
+  }
 };
 
-const logout = async (res: Response) => {
+const logout = async (_req: Request, res: Response) => {
   res.clearCookie("token");
 
   res
