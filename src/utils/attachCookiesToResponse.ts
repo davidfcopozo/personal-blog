@@ -12,7 +12,6 @@ const attachCookiesToResponse = ({
   res,
 }: AttachCookiesToResponseProps) => {
   const token = user.getJWT();
-  console.log(token);
 
   const options: CookieOptions = {
     expires: new Date(Date.now() + 60 * 60 * 1000),
