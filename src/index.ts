@@ -12,6 +12,7 @@ import { connectDB } from "./config/connect";
 const authRouter = require("./routes/authRoutes");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
+//const auth = require("./middleware/auth");
 //import path from "path";
 
 dotenv.config();
@@ -24,7 +25,7 @@ const app = express();
 //Middlewares
 app.use(express.json()); //transforms req.body into json
 app.use(express.urlencoded({ limit: "5mb", extended: true })); //transforms req.body into urlencoded
-app.use(cookieParser()); //parses cookies
+app.use(cookieParser(process.env.JWT_SECRET)); //parses cookies
 app.use(morgan("dev")); //logs requests
 app.use(bodyParser.json({ limit: "5mb" })); //parses json
 app.use(cors()); //allows cross origin requests
