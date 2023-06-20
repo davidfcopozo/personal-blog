@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/auth");
 const {
   register,
   verifyEmail,
@@ -14,6 +15,6 @@ router.route("/verify-email").post(verifyEmail);
 router.route("/login").post(login);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password").post(resetPassword);
-router.route("/logout").get(logout);
+router.route("/logout").get(auth, logout);
 
 export = router;
