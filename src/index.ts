@@ -10,9 +10,10 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/connect";
 const authRouter = require("./routes/authRoutes");
+const postRouter = require("./routes/postRoutes");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
-//const auth = require("./middleware/auth");
+const auth = require("./middleware/auth");
 //import path from "path";
 
 dotenv.config();
@@ -43,6 +44,7 @@ const limiter = rateLimit({
 app.use(limiter); //limits requests
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/posts", auth, postRouter);
 
 app.use(notFound);
 app.use(errorHandlerMiddleware);
