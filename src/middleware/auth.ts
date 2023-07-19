@@ -7,7 +7,6 @@ const { isTokenValid } = require("../utils/jwt");
 
 const auth = (req: Request | any, res: Response, next: NextFunction) => {
   const authCookie = req.signedCookies;
-  console.log(authCookie);
 
   if (!authCookie) {
     res.status(StatusCodes.UNAUTHORIZED).json({
