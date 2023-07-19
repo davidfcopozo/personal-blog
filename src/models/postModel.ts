@@ -17,8 +17,10 @@ const postSchema = new mongoose.Schema(
         postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       },
     ],
+    published: { type: Boolean, default: false },
+    draft: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Post", postSchema);
+module.exports = mongoose.model("Post", postSchema);
