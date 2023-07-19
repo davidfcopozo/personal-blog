@@ -29,24 +29,28 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   //Generate verification token for email verification
   const verificationToken = Crypto.randomBytes(40).toString("hex");
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role,
-    verificationToken,
-  });
+  try {
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+      verificationToken,
+    });
 
-  await sendVerificationEmail({
-    name: user.name,
-    email: user.email,
-    verificationToken: user.verificationToken,
-    baseUrl,
-  });
+    await sendVerificationEmail({
+      name: user.name,
+      email: user.email,
+      verificationToken: user.verificationToken,
+      baseUrl,
+    });
 
-  res.status(StatusCodes.CREATED).json({
-    msg: "Account registration successful! Please check your email to verify account",
-  });
+    res.status(StatusCodes.CREATED).json({
+      msg: "Account registration successful! Please check your email to verify account",
+    });
+  } catch (error) {
+    next(new BadRequest(error));
+  }
 };
 
 const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
