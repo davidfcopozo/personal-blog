@@ -7,15 +7,19 @@ import { NotFound } from "../errors/not-found";
 import Crypto from "crypto";
 */
 
-const createPost = async (req: IRequestWithUserInfo, res: Response) => {
-  /* 
-  const { title, content, image, userId } = req.body; 
-  const { userId } = req.user;   
-  */
+const createPost = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.user;
+  try {
+    await Post.create({ ...req.body, postedBy: userId });
 
-  await Post.create(req.body);
-
-  res.status(StatusCodes.OK).json({ msg: "post sent" });
+    res.status(StatusCodes.OK).json({ msg: "Post created" });
+  } catch (err: any) {
+    next(new NotFound(err));
+  }
 };
 
 const getAllPosts = async (
@@ -24,8 +28,7 @@ const getAllPosts = async (
   next: NextFunction
 ) => {
   const { userId } = req.user;
-  userId;
-  /* "648dce371dca718fb662f5ba" */
+
   const posts = await Post.find({ postedBy: userId }).sort("createdAt");
 
   try {
