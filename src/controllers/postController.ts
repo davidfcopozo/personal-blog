@@ -25,9 +25,8 @@ const getAllPosts = async (
 ) => {
   const { userId } = req.user;
   userId;
-  const posts = await Post.find({ postedBy: "648dce371dca718fb662f5ba" }).sort(
-    "createdAt"
-  );
+  /* "648dce371dca718fb662f5ba" */
+  const posts = await Post.find({ postedBy: userId }).sort("createdAt");
 
   try {
     if (posts.length < 1) {
@@ -48,8 +47,27 @@ const updatePost = (/* req: Request, res: Response, next: NextFunction*/) => {
   console.log("Update  post");
 };
 
-const deletePost = (/* req: Request, res: Response, next: NextFunction*/) => {
-  console.log("Delete post");
+const deletePost = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.user;
+  const { id } = req.params;
+
+  const post = await Post.findOneAndRemove({ _id: id, postedBy: userId });
+
+  try {
+    if (!post) {
+      throw new Error(`No post found with id ${id}`);
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ msg: `Post has been successfully deleted` });
+  } catch (err: any) {
+    next(new NotFound(err));
+  }
 };
 
 module.exports = {
