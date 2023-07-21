@@ -1,11 +1,9 @@
-import { /* Request, */ Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 const Post = require("../models/PostModel");
 import { StatusCodes } from "http-status-codes";
 import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { NotFound } from "../errors/not-found";
-/* 
-import Crypto from "crypto";
-*/
+import { Unauthenticated } from "../errors/unauthenticated";
 
 const createPost = async (
   req: IRequestWithUserInfo,
@@ -18,7 +16,7 @@ const createPost = async (
 
     res.status(StatusCodes.OK).json({ msg: "Post created" });
   } catch (err: any) {
-    next(new NotFound(err));
+    return next(new NotFound(err));
   }
 };
 
@@ -38,16 +36,64 @@ const getAllPosts = async (
 
     res.status(StatusCodes.OK).json({ posts, count: posts.length });
   } catch (err: any) {
-    next(new NotFound(err));
+    return next(new NotFound(err));
   }
 };
 
-const getPost = (/* req: Request, res: Response, next: NextFunction*/) => {
-  console.log("A single post");
+const getPost = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    params: { id: postId },
+  } = req;
+
+  try {
+    const post = await Post.findOne({ _id: postId, postedBy: userId });
+
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    if (post.postedBy !== userId) {
+      throw new Unauthenticated(
+        "You're not authorized, please sign in or create an account"
+      );
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: post });
+  } catch (err: any) {
+    return next(new NotFound(err));
+  }
 };
 
-const updatePost = (/* req: Request, res: Response, next: NextFunction*/) => {
-  console.log("Update  post");
+const updatePost = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    params: { id: postId },
+  } = req;
+
+  try {
+    const post = await Post.findOneAndUpdate(
+      { _id: postId, postedBy: userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, post });
+  } catch (err: any) {
+    return next(err);
+  }
 };
 
 const deletePost = async (
@@ -55,21 +101,23 @@ const deletePost = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { userId } = req.user;
-  const { id } = req.params;
+  const {
+    user: { userId },
+    params: { id: postId },
+  } = req;
 
-  const post = await Post.findOneAndRemove({ _id: id, postedBy: userId });
+  const post = await Post.findOneAndRemove({ _id: postId, postedBy: userId });
 
   try {
     if (!post) {
-      throw new Error(`No post found with id ${id}`);
+      throw new Error(`No post found with id ${postId}`);
     }
 
     res
       .status(StatusCodes.OK)
       .json({ msg: `Post has been successfully deleted` });
   } catch (err: any) {
-    next(new NotFound(err));
+    return next(new NotFound(err));
   }
 };
 
