@@ -11,12 +11,7 @@ const postSchema = new mongoose.Schema(
     },
     image: { type: String, public_id: String },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    comments: [
-      {
-        text: String,
-        postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      },
-    ],
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     published: { type: Boolean, default: false },
     draft: { type: Boolean, default: true },
   },
