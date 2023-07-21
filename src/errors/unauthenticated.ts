@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 const CustomAPIError = require("./custom-error");
 
-class Unauthenticated extends CustomAPIError {
+export class Unauthenticated extends CustomAPIError {
   statusCode: number;
 
   constructor(message: string) {
@@ -9,5 +9,3 @@ class Unauthenticated extends CustomAPIError {
     this.statusCode = StatusCodes.UNAUTHORIZED;
   }
 }
-
-module.exports = Unauthenticated;
