@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
   {
-    postedBy: { type: mongoose.Schema.Types.ObjectId },
+    postedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, "Comment poster is required"],
+    },
     post: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
@@ -12,7 +15,7 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: [true, "Comment cannot be empty"],
     },
-    replies: { type: mongoose.Schema.Types.ObjectId, ref: "Reply" },
+    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reply" }],
   },
   { timestamps: true }
 );
