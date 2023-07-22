@@ -14,20 +14,18 @@ const createPost = async (
   try {
     await Post.create({ ...req.body, postedBy: userId });
 
-    res.status(StatusCodes.OK).json({ msg: "Post created" });
+    res.status(StatusCodes.CREATED).json({ msg: "Post created" });
   } catch (err: any) {
     return next(new NotFound(err));
   }
 };
 
 const getAllPosts = async (
-  req: IRequestWithUserInfo,
+  _: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
-  const { userId } = req.user;
-
-  const posts = await Post.find({ postedBy: userId }).sort("createdAt");
+  const posts = await Post.find().populate("postedBy").sort("createdAt");
 
   try {
     if (posts.length < 1) {
