@@ -1,14 +1,14 @@
-import { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 
 export interface IPost {
   title: String;
   content: String;
-  postedBy: ObjectId;
+  postedBy: mongoose.Types.ObjectId;
   image?: String;
-  likes?: ObjectId[];
+  likes?: mongoose.Types.ObjectId[];
   comments?: {
     text: String;
-    postedBy: ObjectId;
+    postedBy: mongoose.Types.ObjectId;
   };
   published: Boolean;
   draft: Boolean;
