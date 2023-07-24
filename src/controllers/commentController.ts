@@ -5,6 +5,7 @@ import { NextFunction, Response } from "express";
 import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
+import { BadRequest } from "../errors/bad-request";
 
 const createComment = async (
   req: IRequestWithUserInfo,
@@ -65,12 +66,57 @@ const getComments = async (
   }
 };
 
-const getAComment = async () => {
-  console.log("A single comments");
+const getAComment = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { id: postId },
+    body: { commentId },
+  } = req;
+
+  try {
+    const post = await Post.findById(postId);
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      throw new NotFound("No comments found");
+    }
+
+    console.log("Get post model===>", JSON.stringify(post?._id));
+    console.log("Get comment model===>", JSON.stringify(comment?.post));
+
+    if (!post?._id.equals(comment?.post)) {
+      throw new BadRequest("Something went wrong");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: comment });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const deleteComment = async () => {
-  console.log("Delete comment");
+const deleteComment = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { id: commentId },
+  } = req;
+
+  try {
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      throw new NotFound("No comments found");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: comment });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
