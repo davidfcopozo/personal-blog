@@ -84,9 +84,6 @@ const getAComment = async (
       throw new NotFound("No comments found");
     }
 
-    console.log("Get post model===>", JSON.stringify(post?._id));
-    console.log("Get comment model===>", JSON.stringify(comment?.post));
-
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
     }
