@@ -3,7 +3,6 @@ const Post = require("../models/PostModel");
 import { StatusCodes } from "http-status-codes";
 import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { NotFound } from "../errors/not-found";
-import { Unauthenticated } from "../errors/unauthenticated";
 
 const createPost = async (
   req: IRequestWithUserInfo,
@@ -44,21 +43,14 @@ const getPost = async (
   next: NextFunction
 ) => {
   const {
-    user: { userId },
     params: { id: postId },
   } = req;
 
   try {
-    const post = await Post.findOne({ _id: postId, postedBy: userId });
+    const post = await Post.findById(postId);
 
     if (!post) {
       throw new Error("Post not found");
-    }
-
-    if (post.postedBy !== userId) {
-      throw new Unauthenticated(
-        "You're not authorized, please sign in or create an account"
-      );
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
