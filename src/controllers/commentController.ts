@@ -48,6 +48,8 @@ const getComments = async (
   } = req;
 
   try {
+    /*   await Post.deleteMany();
+    await Comment.deleteMany(); */
     const post = await Post.findById(postId);
 
     if (!post) {
@@ -72,20 +74,14 @@ const getAComment = async (
   next: NextFunction
 ) => {
   const {
-    params: { id: postId },
     body: { commentId },
   } = req;
 
   try {
-    const post = await Post.findById(postId);
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
       throw new NotFound("No comments found");
-    }
-
-    if (!post?._id.equals(comment?.post)) {
-      throw new BadRequest("Something went wrong");
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: comment });
@@ -100,17 +96,42 @@ const deleteComment = async (
   next: NextFunction
 ) => {
   const {
-    params: { id: commentId },
+    body: { commentId },
+    params: { id: postId },
+    user: { userId },
   } = req;
 
   try {
-    const comment = await Comment.findById(commentId);
+    const post = await Post.findById(postId);
+    const comment = await Comment.findOne({
+      _id: commentId,
+      postedBy: userId,
+    });
 
     if (!comment) {
       throw new NotFound("No comments found");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: comment });
+    if (!post?._id.equals(comment?.post)) {
+      throw new BadRequest("Something went wrong");
+    }
+
+    // Remove comment from the post's comment's array property
+    const result = await Post.updateOne(
+      { _id: post._id },
+      { $pull: { comments: `${commentId}` } },
+      { new: true }
+    );
+
+    //If the comment id has been removed from the post's comment array, also remove it from the comment document
+    if (result.modifiedCount === 1) {
+      await comment.deleteOne();
+      res
+        .status(StatusCodes.OK)
+        .json({ success: true, msg: "Comment has been successfully deleted." });
+    } else {
+      throw new BadRequest("Something went wrong, please try again!");
+    }
   } catch (error) {
     next(error);
   }
