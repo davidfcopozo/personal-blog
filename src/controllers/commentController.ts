@@ -24,15 +24,23 @@ const createComment = async (
       post: postId,
     });
 
-    await Post.findByIdAndUpdate(
-      postId,
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      throw new NotFound("The post you're trying to comment on does not exist");
+    }
+
+    const result = await Post.updateOne(
+      { _id: postId },
       {
         $addToSet: { comments: comment._id },
       },
       { new: true }
     );
 
-    res.status(StatusCodes.CREATED).json({ success: true, data: comment });
+    if (result?.modifiedCount === 1) {
+      res.status(StatusCodes.CREATED).json({ success: true, data: comment });
+    }
   } catch (error) {
     next(error);
   }
