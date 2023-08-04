@@ -4,6 +4,7 @@ const auth = require("../middleware/auth");
 const {
   createReply,
   getReplies,
+  getAReply,
   /*   getComments,
   getAComment,
   deleteComment, */
@@ -11,7 +12,7 @@ const {
 
 /* router.route("/").get(getComments); */
 router.route("/").get(getReplies);
-router.route("/:id").get(getReplies).post(auth, createReply);
+router.route("/:id").get(getAReply).post(auth, createReply);
 /* router
   .route("/:id")
   .get(getAComment)
