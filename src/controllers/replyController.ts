@@ -1,5 +1,4 @@
 const Comment = require("../models/commentModel");
-const Reply = require("../models/ReplyModel");
 const Post = require("../models/PostModel");
 
 import { NextFunction, Response } from "express";
@@ -7,6 +6,7 @@ import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
+/* import { ObjectId } from "mongoose"; */
 
 const createReply = async (
   req: IRequestWithUserInfo,
@@ -21,34 +21,26 @@ const createReply = async (
 
   try {
     const post = await Post.findById(postId);
-    const comment = await Comment.findOne({
-      _id: commentId,
-      postedBy: userId,
-    });
+    const comment = await Comment.findById(commentId);
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
     }
 
     const comments = post?.comments;
-    const replies = comment?.replies;
 
     if (!comments) {
       throw new NotFound("No comments on this post yet");
-    }
-
-    if (!replies) {
-      throw new NotFound("No replies on this comment yet");
     }
 
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
     }
 
-    const reply = await Reply.create({
+    const reply = await Comment.create({
       ...req.body,
       postedBy: userId,
-      commentId: commentId,
+      post: postId,
     });
 
     if (!reply) {
@@ -106,27 +98,43 @@ const getReplies = async (
   }
 };
 
-// const getAReply = async (
-//   req: IRequestWithUserInfo,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const {
-//     body: { replyId },
-//   } = req;
+const getAReply = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    body: { commentId, replyId },
+    params: { id: postId },
+  } = req;
 
-//   try {
-//     const reply = await Reply.findById(replyId);
+  try {
+    const comment = await Comment.findById(commentId);
+    const post = await Post.findById(postId);
 
-//     if (!reply) {
-//       throw new NotFound("No comments found");
-//     }
+    if (!comment) {
+      throw new NotFound("This comment doesn't exist or has been deleted.");
+    }
 
-//     res.status(StatusCodes.OK).json({ success: true, data: reply });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    const commentReply = comment.replies.filter((reply: any) =>
+      reply.equals(replyId)
+    );
+
+    console.log(commentReply);
+
+    if (!post?._id.equals(comment?.post)) {
+      throw new BadRequest("Something went wrong");
+    }
+
+    if (!commentReply.length) {
+      throw new NotFound("This comment does not exist or has been deleted");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: commentReply });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // const deleteReply = async (
 //   req: IRequestWithUserInfo,
@@ -178,7 +186,8 @@ const getReplies = async (
 module.exports = {
   createReply,
   getReplies,
-  /*  
   getAReply,
-  deleteReply, */
+  /*  
+  deleteReply, 
+  */
 };
