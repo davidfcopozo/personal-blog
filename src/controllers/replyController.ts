@@ -148,58 +148,70 @@ const getAReply = async (
   }
 };
 
-// const deleteReply = async (
-//   req: IRequestWithUserInfo,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const {
-//     body: { commentId, replyId },
-//     params: { id: postId },
-//     user: { userId },
-//   } = req;
+const deleteReply = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    body: { commentId, replyId },
+    params: { id: postId },
+    user: { userId },
+  } = req;
 
-//   try {
-//     const post = await Reply.findById(postId);
-//     const comment = await Comment.findOne({
-//       _id: commentId,
-//       postedBy: userId,
-//     });
+  try {
+    const post: Post = await Post.findById(postId);
+    const comment: Comment = await Comment.findOne({
+      _id: commentId,
+      postedBy: userId,
+    });
 
-//     if (!comment) {
-//       throw new NotFound("No comments found");
-//     }
+    if (!comment) {
+      throw new NotFound("his comment doesn't exist or has been deleted.");
+    }
 
-//     if (!post?._id.equals(comment?.post)) {
-//       throw new BadRequest("Something went wrong");
-//     }
+    //Get the reply by filtering comment's replies
+    const commentReply = comment.replies?.filter((reply) =>
+      reply.equals(replyId)
+    );
 
-//     // Remove comment from the post's comment's array property
-//     const result = await Reply.updateOne(
-//       { _id: comment._id },
-//       { $pull: { replies: `${commentId}` } },
-//       { new: true }
-//     );
+    //Make sure to get the comments and replies of the posts they belong to
+    if (!post?._id.equals(comment?.post)) {
+      throw new BadRequest("Something went wrong");
+    }
 
-//     //If the comment id has been removed from the post's comment array, also remove it from the comment document
-//     if (result.modifiedCount === 1) {
-//       await comment.deleteOne();
-//       res
-//         .status(StatusCodes.OK)
-//         .json({ success: true, msg: "Comment has been successfully deleted." });
-//     } else {
-//       throw new BadRequest("Something went wrong, please try again!");
-//     }
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    //Check if the given reply exist
+    if (!commentReply?.length) {
+      throw new NotFound("This comment does not exist or has been deleted");
+    }
+
+    // Remove comment from the comment's replies array property
+    const result = await Comment.updateOne(
+      { _id: comment._id },
+      { $pull: { replies: `${commentReply}` } },
+      { new: true }
+    );
+
+    //If the comment id has been removed from the comment's replies array, also remove it from the comment collection
+    if (result.modifiedCount === 1) {
+      await Comment.deleteOne({
+        _id: replyId,
+        postedBy: userId,
+      });
+      res
+        .status(StatusCodes.OK)
+        .json({ success: true, msg: "Comment has been successfully deleted." });
+    } else {
+      throw new BadRequest("Something went wrong, please try again!");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   createReply,
   getReplies,
   getAReply,
-  /*  
-  deleteReply, 
-  */
+  deleteReply,
 };
