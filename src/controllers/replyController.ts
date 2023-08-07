@@ -6,6 +6,8 @@ import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
+import { Comment } from "../interfaces/models/comment";
+import { Post } from "../interfaces/models/post";
 /* import { ObjectId } from "mongoose"; */
 
 const createReply = async (
@@ -20,8 +22,8 @@ const createReply = async (
   } = req;
 
   try {
-    const post = await Post.findById(postId);
-    const comment = await Comment.findById(commentId);
+    const post: Post = await Post.findById(postId);
+    const comment: Comment = await Comment.findById(commentId);
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
@@ -75,8 +77,8 @@ const getReplies = async (
   try {
     /*   await Reply.deleteMany();
     await Comment.deleteMany(); */
-    const comment = await Comment.findById(commentId);
-    const post = await Post.findById(postId);
+    const comment: Comment = await Comment.findById(commentId);
+    const post: Post = await Post.findById(postId);
 
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
@@ -109,28 +111,38 @@ const getAReply = async (
   } = req;
 
   try {
-    const comment = await Comment.findById(commentId);
-    const post = await Post.findById(postId);
+    const comment: Comment = await Comment.findById(commentId);
+    const post: Post = await Post.findById(postId);
 
+    //Check if the comment this reply belong to exist
     if (!comment) {
       throw new NotFound("This comment doesn't exist or has been deleted.");
     }
 
-    const commentReply = comment.replies.filter((reply: any) =>
+    //Get the reply by filtering comment's replies
+    const commentReply = comment.replies?.filter((reply) =>
       reply.equals(replyId)
     );
 
-    console.log(commentReply);
-
+    //Make sure to get the comments and replies of the posts they belong to
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
     }
 
-    if (!commentReply.length) {
+    //Check if the given reply exist
+    if (!commentReply?.length) {
       throw new NotFound("This comment does not exist or has been deleted");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: commentReply });
+    //Get the given reply
+    const reply = await Comment.findById(commentReply);
+
+    //Check if the given reply exist within the comments
+    if (!reply) {
+      throw new NotFound("This comment doesn't exist or has been deleted.");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: reply });
   } catch (error) {
     next(error);
   }
