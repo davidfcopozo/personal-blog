@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-export interface IPost {
+export interface Post {
+  _id: mongoose.Types.ObjectId;
   title: String;
   content: String;
   postedBy: mongoose.Types.ObjectId;

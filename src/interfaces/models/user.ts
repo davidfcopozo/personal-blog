@@ -1,6 +1,8 @@
 import { Request } from "express";
+import mongoose from "mongoose";
 
-export interface IUser {
+export interface User {
+  _id: mongoose.Types.ObjectId;
   name: String;
   email: String;
   password: String;
