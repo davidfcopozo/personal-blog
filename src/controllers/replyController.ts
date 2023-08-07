@@ -8,7 +8,6 @@ import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
 import { Comment } from "../interfaces/models/comment";
 import { Post } from "../interfaces/models/post";
-/* import { ObjectId } from "mongoose"; */
 
 const createReply = async (
   req: IRequestWithUserInfo,
