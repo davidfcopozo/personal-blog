@@ -4,15 +4,15 @@ const auth = require("../middleware/auth");
 const {
   createComment,
   getComments,
-  getAComment,
-  deleteComment,
+  getCommentById,
+  deleteCommentById,
 } = require("../controllers/commentController");
 
 router.route("/").get(getComments);
 router
   .route("/:id")
-  .get(getAComment)
+  .get(getCommentById)
   .post(auth, createComment)
-  .delete(auth, deleteComment);
+  .delete(auth, deleteCommentById);
 
 export = router;

@@ -37,7 +37,7 @@ const getAllPosts = async (
   }
 };
 
-const getPost = async (
+const getPostById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -59,7 +59,7 @@ const getPost = async (
   }
 };
 
-const updatePost = async (
+const updatePostById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -86,7 +86,7 @@ const updatePost = async (
   }
 };
 
-const deletePost = async (
+const deletePostById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -114,7 +114,7 @@ const deletePost = async (
 module.exports = {
   createPost,
   getAllPosts,
-  getPost,
-  updatePost,
-  deletePost,
+  getPostById,
+  updatePostById,
+  deletePostById,
 };

@@ -76,7 +76,7 @@ const getComments = async (
   }
 };
 
-const getAComment = async (
+const getCommentById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -98,7 +98,7 @@ const getAComment = async (
   }
 };
 
-const deleteComment = async (
+const deleteCommentById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -148,6 +148,6 @@ const deleteComment = async (
 module.exports = {
   createComment,
   getComments,
-  getAComment,
-  deleteComment,
+  getCommentById,
+  deleteCommentById,
 };

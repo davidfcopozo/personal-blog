@@ -4,15 +4,15 @@ const auth = require("../middleware/auth");
 const {
   createReply,
   getReplies,
-  getAReply,
-  deleteReply,
+  getReplyById,
+  deleteReplyById,
 } = require("../controllers/replyController");
 
 router.route("/").get(getReplies);
 router
   .route("/:id")
-  .get(getAReply)
+  .get(getReplyById)
   .post(auth, createReply)
-  .delete(auth, deleteReply);
+  .delete(auth, deleteReplyById);
 
 export = router;

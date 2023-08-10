@@ -99,7 +99,7 @@ const getReplies = async (
   }
 };
 
-const getAReply = async (
+const getReplyById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -147,7 +147,7 @@ const getAReply = async (
   }
 };
 
-const deleteReply = async (
+const deleteReplyById = async (
   req: IRequestWithUserInfo,
   res: Response,
   next: NextFunction
@@ -211,6 +211,6 @@ const deleteReply = async (
 module.exports = {
   createReply,
   getReplies,
-  getAReply,
-  deleteReply,
+  getReplyById,
+  deleteReplyById,
 };

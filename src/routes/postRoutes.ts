@@ -4,16 +4,16 @@ const auth = require("../middleware/auth");
 const {
   createPost,
   getAllPosts,
-  getPost,
-  updatePost,
-  deletePost,
+  getPostById,
+  updatePostById,
+  deletePostById,
 } = require("../controllers/postController");
 
 router.route("/").get(getAllPosts).post(auth, createPost);
 router
   .route("/:id")
-  .get(getPost)
-  .put(auth, updatePost)
-  .delete(auth, deletePost);
+  .get(getPostById)
+  .put(auth, updatePostById)
+  .delete(auth, deletePostById);
 
 export = router;
