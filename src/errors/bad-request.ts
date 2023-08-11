@@ -1,4 +1,4 @@
-const CustomError = require("./custom-error");
+import { CustomError } from "./custom-error";
 import { StatusCodes } from "http-status-codes";
 
 export class BadRequest extends CustomError {
