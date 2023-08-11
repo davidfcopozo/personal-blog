@@ -5,5 +5,6 @@ export interface Comment {
   postedBy: mongoose.Types.ObjectId;
   post: mongoose.Types.ObjectId;
   content: String;
+  likes?: mongoose.Types.ObjectId[];
   replies?: mongoose.Types.ObjectId[];
 }
