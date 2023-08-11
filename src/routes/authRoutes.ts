@@ -8,10 +8,12 @@ const {
   forgotPassword,
   resetPassword,
   logout,
+  resendVerificationToken,
 } = require("../controllers/authController");
 
 router.route("/register").post(register);
 router.route("/verify-email").post(verifyEmail);
+router.route("/send-verification-token").post(resendVerificationToken);
 router.route("/login").post(login);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password").post(resetPassword);
