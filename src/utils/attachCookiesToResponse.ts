@@ -7,7 +7,7 @@ type AttachCookiesToResponseProps = {
   res: Response;
 };
 
-const attachCookiesToResponse = ({
+export const attachCookiesToResponse = ({
   user,
   res,
 }: AttachCookiesToResponseProps) => {
@@ -29,5 +29,3 @@ const attachCookiesToResponse = ({
     role: user.role,
   });
 };
-
-module.exports = attachCookiesToResponse;

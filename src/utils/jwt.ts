@@ -1,10 +1,9 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
-const generateJWT = ({ payload }: any) => {
-  const token = jwt.sign(payload, process.env.JWT_SECRET);
+export const generateJWT = ({ payload }: any) => {
+  const token = jwt.sign(payload, process.env.JWT_SECRET as string);
   return token;
 };
 
-const isTokenValid = (token: any) => jwt.verify(token, process.env.JWT_SECRET);
-
-module.exports = { generateJWT, isTokenValid };
+export const isTokenValid = (token: any) =>
+  jwt.verify(token, process.env.JWT_SECRET as string);

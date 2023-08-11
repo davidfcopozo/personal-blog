@@ -1,4 +1,4 @@
-const emailSender = require("./emailSender");
+import { emailSender } from "./emailSender";
 
 interface sendVerificationEmailProps {
   name: string;
@@ -7,7 +7,7 @@ interface sendVerificationEmailProps {
   baseUrl: string;
 }
 
-const sendVerificationEmail = async ({
+export const sendVerificationEmail = async ({
   name,
   email,
   verificationToken,
@@ -30,5 +30,3 @@ const sendVerificationEmail = async ({
 
   await emailSender(emailOptions);
 };
-
-module.exports = sendVerificationEmail;

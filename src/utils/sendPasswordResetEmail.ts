@@ -1,4 +1,4 @@
-const sendEmail = require("./emailSender");
+import { emailSender } from "./emailSender";
 
 interface sendPasswordResetEmail {
   name: string;
@@ -7,7 +7,7 @@ interface sendPasswordResetEmail {
   baseUrl: string;
 }
 
-const sendPasswordResetEmail = async ({
+export const sendPasswordResetEmail = async ({
   name,
   email,
   token,
@@ -29,7 +29,5 @@ const sendPasswordResetEmail = async ({
     `,
   };
 
-  await sendEmail(emailOptions);
+  await emailSender(emailOptions);
 };
-
-module.exports = sendPasswordResetEmail;
