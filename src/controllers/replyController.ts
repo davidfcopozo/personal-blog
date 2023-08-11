@@ -4,8 +4,7 @@ const Post = require("../models/PostModel");
 import { NextFunction, Response } from "express";
 import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
-import { NotFound } from "../errors/not-found";
-import { BadRequest } from "../errors/bad-request";
+import { BadRequest, NotFound } from "../errors/index";
 import { Comment } from "../interfaces/models/comment";
 import { Post } from "../interfaces/models/post";
 
