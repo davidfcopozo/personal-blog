@@ -6,6 +6,8 @@ import { IRequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
+import { Comment } from "../interfaces/models/comment";
+import { Post } from "../interfaces/models/post";
 
 const createComment = async (
   req: IRequestWithUserInfo,
@@ -18,7 +20,7 @@ const createComment = async (
   } = req;
 
   try {
-    const comment = await Comment.create({
+    const comment: Comment = await Comment.create({
       ...req.body,
       postedBy: userId,
       post: postId,
@@ -58,7 +60,7 @@ const getComments = async (
   try {
     /*   await Post.deleteMany();
     await Comment.deleteMany(); */
-    const post = await Post.findById(postId);
+    const post: Post = await Post.findById(postId);
 
     if (!post) {
       throw new NotFound("This post doesn't exist");
@@ -86,7 +88,7 @@ const getCommentById = async (
   } = req;
 
   try {
-    const comment = await Comment.findById(commentId);
+    const comment: Comment = await Comment.findById(commentId);
 
     if (!comment) {
       throw new NotFound("No comments found");
@@ -110,8 +112,8 @@ const deleteCommentById = async (
   } = req;
 
   try {
-    const post = await Post.findById(postId);
-    const comment = await Comment.findOne({
+    const post: Post = await Post.findById(postId);
+    const comment: Comment = await Comment.findOne({
       _id: commentId,
       postedBy: userId,
     });
@@ -133,7 +135,10 @@ const deleteCommentById = async (
 
     //If the comment id has been removed from the post's comment array, also remove it from the comment document
     if (result.modifiedCount === 1) {
-      await comment.deleteOne();
+      await Comment.deleteOne({
+        _id: commentId,
+        postedBy: userId,
+      });
       res
         .status(StatusCodes.OK)
         .json({ success: true, msg: "Comment has been successfully deleted." });
@@ -145,9 +150,77 @@ const deleteCommentById = async (
   }
 };
 
+const toggleLike = async (
+  req: IRequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    body: { commentId },
+    params: { id: postId },
+    user: { userId },
+  } = req;
+
+  try {
+    const post: Post = await Post.findById(postId);
+    const comment: Comment = await Comment.findOne({
+      _id: commentId,
+      postedBy: userId,
+    });
+
+    if (!comment) {
+      throw new NotFound("No comments found");
+    }
+
+    if (!post?._id.equals(comment?.post)) {
+      throw new BadRequest("Something went wrong");
+    }
+
+    const isLiked = comment.likes?.filter((like) => like.toString() === userId);
+    console.log("isLiked?===>", isLiked?.length);
+
+    if (isLiked?.length! < 1) {
+      // Add like to the comment's likes array property
+      const result = await Comment.updateOne(
+        { _id: comment._id },
+        { $addToSet: { likes: `${userId}` } },
+        { new: true }
+      );
+
+      //If the comment id has been removed from the post's comment array, also remove it from the comment document
+      if (result.modifiedCount === 1) {
+        res
+          .status(StatusCodes.OK)
+          .json({ success: true, msg: "You've liked this comment." });
+      } else {
+        throw new BadRequest("Something went wrong, please try again!");
+      }
+    } else {
+      // Remove like from the comment's likes array property
+      const result = await Comment.updateOne(
+        { _id: comment._id },
+        { $pull: { likes: `${userId}` } },
+        { new: true }
+      );
+
+      if (result.modifiedCount === 1) {
+        res.status(StatusCodes.OK).json({
+          success: true,
+          msg: "You've disliked this comment.",
+        });
+      } else {
+        throw new BadRequest("Something went wrong, please try again!");
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createComment,
   getComments,
   getCommentById,
   deleteCommentById,
+  toggleLike,
 };
