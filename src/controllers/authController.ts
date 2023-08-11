@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from "express";
 const User = require("../models/userModel");
 import Crypto from "crypto";
 import { StatusCodes } from "http-status-codes";
-const attachCookiesToResponse = require("../utils/attachCookiesToResponse");
-const hashString = require("../utils/hashString");
-const { BadRequest, Unauthenticated } = require("../errors/index");
-const sendVerificationEmail = require("../utils/sendVerificationEmail");
-const sendPasswordResetEmail = require("../utils/sendPasswordResetEmail");
+import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
+import { hashString } from "../utils/hashString";
+import { BadRequest, Unauthenticated } from "../errors/index";
+import { sendVerificationEmail } from "../utils/sendVerificationEmail";
+import { sendPasswordResetEmail } from "../utils/sendPasswordResetEmail";
 
 let baseUrl = "http://localhost:8000";
 
@@ -48,9 +48,45 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     res.status(StatusCodes.CREATED).json({
       msg: "Account registration successful! Please check your email to verify account",
     });
-  } catch (error) {
+  } catch (error: any) {
     next(new BadRequest(error));
   }
+};
+
+const resendVerificationToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new Unauthenticated("Invalid email address"));
+  }
+
+  if (user.verified) {
+    return next(new BadRequest("Account is verified already"));
+  }
+
+  //Generate verification token for email verification
+  const verificationToken = Crypto.randomBytes(40).toString("hex");
+
+  user.verificationToken = verificationToken;
+
+  await user.save();
+
+  await sendVerificationEmail({
+    name: user.name,
+    email: user.email,
+    verificationToken: user.verificationToken,
+    baseUrl,
+  });
+
+  res.status(StatusCodes.OK).json({
+    message: "Email verification had been resent, please check your email.",
+  });
 };
 
 const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
@@ -155,7 +191,7 @@ const resetPassword = async (
 
   if (user) {
     if (
-      user.passwordVerificationToken !== hashString(token) ||
+      user.passwordVerificationToken !== hashString(token as string) ||
       user.passwordExpirationDate > new Date(Date.now())
     ) {
       return next(new BadRequest("Invalid token"));
@@ -185,4 +221,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   logout,
+  resendVerificationToken,
 };
