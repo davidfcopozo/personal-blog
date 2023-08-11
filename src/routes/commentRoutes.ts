@@ -6,6 +6,7 @@ const {
   getComments,
   getCommentById,
   deleteCommentById,
+  toggleLike,
 } = require("../controllers/commentController");
 
 router.route("/").get(getComments);
@@ -13,6 +14,7 @@ router
   .route("/:id")
   .get(getCommentById)
   .post(auth, createComment)
+  .put(auth, toggleLike)
   .delete(auth, deleteCommentById);
 
 export = router;
