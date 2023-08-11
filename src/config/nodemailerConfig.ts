@@ -9,6 +9,6 @@ module.exports = {
     clientId: process.env.OAUTH_CLIENT_ID,
     clientSecret: process.env.OAUTH_CLIENT_SECRET,
     accessToken: process.env.OAUTH_ACCESS_TOKEN,
-    /* refreshToken: process.env.OAUTH_REFRESH_TOKEN, */
+    refreshToken: process.env.OAUTH_REFRESH_TOKEN,
   },
 };
