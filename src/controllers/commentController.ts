@@ -163,7 +163,7 @@ const toggleLike = async (
 
   try {
     const post: Post = await Post.findById(postId);
-    const comment: Comment = await Comment.findOne({
+    const comment: Comment = await Comment.findById({
       _id: commentId,
       postedBy: userId,
     });
@@ -177,7 +177,6 @@ const toggleLike = async (
     }
 
     const isLiked = comment.likes?.filter((like) => like.toString() === userId);
-    console.log("isLiked?===>", isLiked?.length);
 
     if (isLiked?.length! < 1) {
       // Add like to the comment's likes array property
