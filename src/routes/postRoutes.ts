@@ -7,9 +7,10 @@ const {
   getPostById,
   updatePostById,
   deletePostById,
+  toggleLike,
 } = require("../controllers/postController");
 
-router.route("/").get(getAllPosts).post(auth, createPost);
+router.route("/").get(getAllPosts).post(auth, createPost).put(auth, toggleLike);
 router
   .route("/:id")
   .get(getPostById)
