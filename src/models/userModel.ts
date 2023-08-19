@@ -16,11 +16,19 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     role: { type: String, required: true, default: "user" },
+    username: {
+      type: String,
+      required: [true, "Please provide a username"],
+      unique: true,
+    },
     verificationToken: { type: String },
+    title: { type: String },
+    bio: { type: String },
     verified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
     passwordVerificationToken: { type: String, default: "" },
     passwordExpirationDate: { type: Date, default: null },
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
