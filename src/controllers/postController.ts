@@ -2,12 +2,12 @@ const Post = require("../models/postModel");
 
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { IRequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../interfaces/models/user";
 import { NotFound, BadRequest } from "../errors/index";
 import { Post } from "../interfaces/models/post";
 
 const createPost = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -22,7 +22,7 @@ const createPost = async (
 };
 
 const getAllPosts = async (
-  _: IRequestWithUserInfo,
+  _: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -40,7 +40,7 @@ const getAllPosts = async (
 };
 
 const getPostById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -62,7 +62,7 @@ const getPostById = async (
 };
 
 const updatePostById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -89,7 +89,7 @@ const updatePostById = async (
 };
 
 const deletePostById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -114,7 +114,7 @@ const deletePostById = async (
 };
 
 const toggleLike = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {

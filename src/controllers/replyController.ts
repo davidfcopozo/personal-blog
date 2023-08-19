@@ -2,14 +2,14 @@ const Comment = require("../models/commentModel");
 const Post = require("../models/PostModel");
 
 import { NextFunction, Response } from "express";
-import { IRequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
 import { Comment } from "../interfaces/models/comment";
 import { Post } from "../interfaces/models/post";
 
 const createReply = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -64,7 +64,7 @@ const createReply = async (
 };
 
 const getReplies = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -99,7 +99,7 @@ const getReplies = async (
 };
 
 const getReplyById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -147,7 +147,7 @@ const getReplyById = async (
 };
 
 const deleteReplyById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {

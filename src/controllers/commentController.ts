@@ -2,7 +2,7 @@ const Comment = require("../models/commentModel");
 const Post = require("../models/PostModel");
 
 import { NextFunction, Response } from "express";
-import { IRequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../interfaces/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
@@ -10,7 +10,7 @@ import { Comment } from "../interfaces/models/comment";
 import { Post } from "../interfaces/models/post";
 
 const createComment = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -49,7 +49,7 @@ const createComment = async (
 };
 
 const getComments = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -79,7 +79,7 @@ const getComments = async (
 };
 
 const getCommentById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -101,7 +101,7 @@ const getCommentById = async (
 };
 
 const deleteCommentById = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
@@ -151,7 +151,7 @@ const deleteCommentById = async (
 };
 
 const toggleLike = async (
-  req: IRequestWithUserInfo,
+  req: RequestWithUserInfo,
   res: Response,
   next: NextFunction
 ) => {
