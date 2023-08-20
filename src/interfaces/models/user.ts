@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 
 export interface User {
   _id: mongoose.Types.ObjectId;
-  name: String;
+  firstName: String;
+  lastName: String;
   email: String;
   password: String;
   username: String;
