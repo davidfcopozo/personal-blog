@@ -4,7 +4,8 @@ import JWT from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    firstName: { type: String, required: true, minlength: 2, maxlength: 128 },
+    lastName: { type: String, required: true, minlength: 2, maxlength: 128 },
     email: {
       type: String,
       required: [true, "Please provide an email"],
@@ -20,6 +21,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide a username"],
       unique: true,
+      minlength: 3,
+      maxlength: 256,
     },
     verificationToken: { type: String },
     title: { type: String },
