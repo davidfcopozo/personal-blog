@@ -3,11 +3,14 @@ const User = require("../models/userModel");
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../interfaces/models/user";
-import { NotFound /* BadRequest */ } from "../errors/index";
+import { BadRequest, NotFound } from "../errors/index";
 import { User } from "../interfaces/models/user";
+import { isValidUsername } from "../utils/validators";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
+
+type FieldsToUpdate = { [key: string]: string };
 
 const getUsers = async (
   _req: RequestWithUserInfo,
@@ -51,31 +54,65 @@ const getUserById = async (
   }
 };
 
-// const updateUserById = async (
-//   req: RequestWithUserInfo,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const {
-//     user: { userId },
-//     body: { name, image, bio, title },
-//   } = req;
+const updateUserById = async (
+  req: RequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { firstName, lastName, avatar, bio, title, username },
+  } = req;
 
-//   try {
-//     const user: User = await User.findOneAndUpdate({ _id: userId }, req.body, {
-//       new: true,
-//       runValidators: true,
-//     });
+  try {
+    const user = await User.findById(userId);
 
-//     if (!post) {
-//       throw new Error("Post not found");
-//     }
+    if (!user) {
+      throw new NotFound("User not found");
+    }
 
-//     res.status(StatusCodes.OK).json({ success: true, post });
-//   } catch (err: any) {
-//     return next(err);
-//   }
-// };
+    let fields: FieldsToUpdate = {
+      firstName,
+      lastName,
+      avatar,
+      bio,
+      title,
+      username,
+    };
+    let fieldsToUpdate: FieldsToUpdate = {};
+
+    // Add key-value pair tp the fieldsToUpdate object only if they have a value
+    for (const key in fields) {
+      if (fields.hasOwnProperty(key)) {
+        if (fields[key]) {
+          fieldsToUpdate[key] = fields[key];
+        }
+      }
+    }
+
+    if (Object.values(fieldsToUpdate).length < 1) {
+      throw new BadRequest("Please provide the fields to update");
+    }
+
+    if (fieldsToUpdate.username && !isValidUsername(fieldsToUpdate.username)) {
+      throw new BadRequest("Invalid username, please provide a valid one");
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      fieldsToUpdate,
+      { new: true, runValidators: true }
+    ).select(sensitiveDataToExclude);
+
+    if (!updatedUser._id) {
+      throw new Error("Something went wrong, please try again later");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: updatedUser });
+  } catch (err) {
+    return next(err);
+  }
+};
 
 // const deletePostById = async (
 //   req: RequestWithUserInfo,
@@ -161,4 +198,5 @@ const getUserById = async (
 module.exports = {
   getUsers,
   getUserById,
+  updateUserById,
 };
