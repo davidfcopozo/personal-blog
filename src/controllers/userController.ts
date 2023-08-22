@@ -145,62 +145,6 @@ const deleteUserById = async (
   }
 };
 
-// const toggleLike = async (
-//   req: RequestWithUserInfo,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const {
-//     body: { postId },
-//     user: { userId },
-//   } = req;
-
-//   try {
-//     const post: Post = await Post.findById(postId);
-
-//     if (!post) {
-//       throw new NotFound("This post doesn't exist or has been deleted");
-//     }
-
-//     const isLiked = post?.likes?.filter((like) => like.toString() === userId);
-
-//     if (isLiked?.length! < 1) {
-//       // Add like to the post's likes array property
-//       const result = await Post.updateOne(
-//         { _id: post._id },
-//         { $addToSet: { likes: `${userId}` } },
-//         { new: true }
-//       );
-
-//       if (result.modifiedCount === 1) {
-//         res
-//           .status(StatusCodes.OK)
-//           .json({ success: true, msg: "You've liked this post." });
-//       } else {
-//         throw new BadRequest("Something went wrong, please try again!");
-//       }
-//     } else {
-//       // Remove like from the post's likes array property
-//       const result = await Post.updateOne(
-//         { _id: post._id },
-//         { $pull: { likes: `${userId}` } },
-//         { new: true }
-//       );
-
-//       if (result.modifiedCount === 1) {
-//         res.status(StatusCodes.OK).json({
-//           success: true,
-//           msg: "You've disliked this post.",
-//         });
-//       } else {
-//         throw new BadRequest("Something went wrong, please try again!");
-//       }
-//     }
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
 module.exports = {
   getUsers,
   getUserById,
