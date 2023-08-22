@@ -3,7 +3,7 @@ const User = require("../models/userModel");
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../interfaces/models/user";
-import { BadRequest, NotFound } from "../errors/index";
+import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { User } from "../interfaces/models/user";
 import { isValidUsername } from "../utils/validators";
 
@@ -24,7 +24,9 @@ const getUsers = async (
       throw new NotFound("Users not found");
     }
 
-    res.status(StatusCodes.CREATED).json({ success: true, data: users });
+    res
+      .status(StatusCodes.CREATED)
+      .json({ success: true, data: users, amount: users.length });
   } catch (error) {
     return next(error);
   }
@@ -114,30 +116,34 @@ const updateUserById = async (
   }
 };
 
-// const deletePostById = async (
-//   req: RequestWithUserInfo,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const {
-//     user: { userId },
-//     params: { id: postId },
-//   } = req;
+const deleteUserById = async (
+  req: RequestWithUserInfo,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    params: { id },
+  } = req;
 
-//   const post = await Post.findOneAndRemove({ _id: postId, postedBy: userId });
+  if (userId !== id) {
+    throw new Unauthenticated("Your not authorized to perform this action");
+  }
 
-//   try {
-//     if (!post) {
-//       throw new Error(`No post found with id ${postId}`);
-//     }
+  let user = await User.findOneAndRemove({ _id: id });
 
-//     res
-//       .status(StatusCodes.OK)
-//       .json({ msg: `Post has been successfully deleted` });
-//   } catch (err: any) {
-//     return next(new NotFound(err));
-//   }
-// };
+  try {
+    if (!user) {
+      throw new Error(`No user found with id ${id}`);
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ msg: `User has been successfully deleted` });
+  } catch (err: any) {
+    return next(new NotFound(err));
+  }
+};
 
 // const toggleLike = async (
 //   req: RequestWithUserInfo,
@@ -199,4 +205,5 @@ module.exports = {
   getUsers,
   getUserById,
   updateUserById,
+  deleteUserById,
 };
