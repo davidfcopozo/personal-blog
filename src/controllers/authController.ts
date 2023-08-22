@@ -7,11 +7,12 @@ import { hashString } from "../utils/hashString";
 import { BadRequest, Unauthenticated } from "../errors/index";
 import { sendVerificationEmail } from "../utils/sendVerificationEmail";
 import { sendPasswordResetEmail } from "../utils/sendPasswordResetEmail";
+import { isValidEmail, isValidUsername } from "../utils/validators";
 
 let baseUrl = "http://localhost:8000";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, email, password } = req.body;
+  const { firstName, lastName, username, email, password } = req.body;
 
   const userExist = await User.findOne({ email });
 
@@ -30,8 +31,20 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   const verificationToken = Crypto.randomBytes(40).toString("hex");
 
   try {
+    const lowercasedUsername = username.toLowerCase();
+
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address, please provide a valid one");
+    }
+
+    if (!isValidUsername(username)) {
+      throw new BadRequest("Invalid username, please provide a valid one");
+    }
+
     const user = await User.create({
-      name,
+      firstName,
+      lastName,
+      username: lowercasedUsername,
       email,
       password,
       role,
@@ -119,10 +132,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
   if (!user) {
     return next(new Unauthenticated("Invalid email address"));
-  }
-
-  if (!user.verified) {
-    return next(new Unauthenticated("Please verify your email address"));
   }
 
   const isCorrectPassword = await user.comparePassword(password);
