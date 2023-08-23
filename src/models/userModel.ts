@@ -62,4 +62,6 @@ userSchema.methods.getJWT = function () {
   return token;
 };
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export default User;
