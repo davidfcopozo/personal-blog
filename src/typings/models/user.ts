@@ -2,8 +2,8 @@ import { Request } from "express";
 import mongoose, { Document } from "mongoose";
 
 interface ModelMethods {
-  comparePassword: Function;
-  getJWT: Function;
+  comparePassword: (password: String) => Promise<boolean>;
+  getJWT: () => String;
 }
 
 export interface UserInterface extends Document, ModelMethods {
