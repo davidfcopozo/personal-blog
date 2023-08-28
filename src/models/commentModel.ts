@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { CommentInterface } from "../typings/models/comment";
 
-const commentSchema = new mongoose.Schema(
+const commentSchema = new mongoose.Schema<CommentInterface>(
   {
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,

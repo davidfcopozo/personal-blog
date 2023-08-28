@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { PostInterface } from "../typings/models/post";
 
-const postSchema = new mongoose.Schema(
+const postSchema = new mongoose.Schema<PostInterface>(
   {
     title: { type: String, required: [true, "Title is required"] },
     content: { type: String, required: [true, "Content is required"] },
@@ -19,6 +20,6 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Post = mongoose.models.Post || mongoose.model("Post", postSchema);
+const Post = mongoose.model("Post", postSchema);
 
 export default Post;

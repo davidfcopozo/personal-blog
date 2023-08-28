@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
+import { UserInterface } from "../typings/models/user";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<UserInterface>(
   {
     firstName: { type: String, required: true, minlength: 2, maxlength: 128 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 128 },
@@ -30,19 +31,19 @@ const userSchema = new mongoose.Schema(
     verified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
     passwordVerificationToken: { type: String, default: "" },
-    passwordExpirationDate: { type: Date, default: null },
+    passwordTokenExpirationDate: { type: Date, default: null },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
 // Encrypt password before saving
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (this: UserInterface, next) {
   if (!this.isModified("password")) {
     next();
   }
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(`${this.password}`, salt);
 });
 
 // Compare password with passwordHash
