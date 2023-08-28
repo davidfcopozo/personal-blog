@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-const User = require("../models/userModel");
+import User from "../models/userModel";
 import Crypto from "crypto";
 import { StatusCodes } from "http-status-codes";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
@@ -8,13 +8,15 @@ import { BadRequest, Unauthenticated } from "../errors/index";
 import { sendVerificationEmail } from "../utils/sendVerificationEmail";
 import { sendPasswordResetEmail } from "../utils/sendPasswordResetEmail";
 import { isValidEmail, isValidUsername } from "../utils/validators";
+import { UserInterface } from "../typings/models/user";
 
 let baseUrl = "http://localhost:8000";
+type UserType = UserInterface | null;
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   const { firstName, lastName, username, email, password } = req.body;
 
-  const userExist = await User.findOne({ email });
+  const userExist: UserType = await User.findOne({ email });
 
   //Check if email already exists
   if (userExist) {
@@ -41,7 +43,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       throw new BadRequest("Invalid username, please provide a valid one");
     }
 
-    const user = await User.create({
+    const user: UserType = await User.create({
       firstName,
       lastName,
       username: lowercasedUsername,
@@ -52,9 +54,9 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     await sendVerificationEmail({
-      name: user.name,
-      email: user.email,
-      verificationToken: user.verificationToken,
+      firstName: user.firstName,
+      email: user.email!,
+      verificationToken: user.verificationToken!,
       baseUrl,
     });
 
@@ -73,7 +75,7 @@ const resendVerificationToken = async (
 ) => {
   const { email } = req.body;
 
-  const user = await User.findOne({ email });
+  const user: UserType = await User.findOne({ email });
 
   if (!user) {
     return next(new Unauthenticated("Invalid email address"));
@@ -91,7 +93,7 @@ const resendVerificationToken = async (
   await user.save();
 
   await sendVerificationEmail({
-    name: user.name,
+    firstName: user.firstName,
     email: user.email,
     verificationToken: user.verificationToken,
     baseUrl,
@@ -117,7 +119,7 @@ const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   (user.verificationToken = ""),
-    (user.verifiedAt = Date.now()),
+    (user.verifiedAt = new Date(Date.now())),
     (user.verified = true);
 
   await user.save();
@@ -128,7 +130,7 @@ const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user: UserType = await User.findOne({ email });
 
   if (!user) {
     return next(new Unauthenticated("Invalid email address"));
@@ -154,23 +156,23 @@ const forgotPassword = async (
     return next(new BadRequest("Please provide a valid email address"));
   }
 
-  const user = await User.findOne({ email });
+  const user: UserType = await User.findOne({ email });
 
   if (user) {
     const passwordResetToken = Crypto.randomBytes(70).toString("hex");
 
     await sendPasswordResetEmail({
-      name: user.name,
+      firstName: user.firstName,
       email: user.email,
       token: passwordResetToken,
       baseUrl,
     });
 
     const thirtyMinutes = 1000 * 60 * 30;
-    const passwordExpirationDate = new Date(Date.now() + thirtyMinutes);
+    const passwordTokenExpirationDate = new Date(Date.now() + thirtyMinutes);
 
     user.passwordVerificationToken = hashString(passwordResetToken);
-    user.passwordExpirationDate = passwordExpirationDate;
+    user.passwordTokenExpirationDate = passwordTokenExpirationDate;
 
     await user.save();
   }
@@ -196,12 +198,13 @@ const resetPassword = async (
     );
   }
 
-  const user = await User.findOne({ email });
+  const user: UserType = await User.findOne({ email });
 
   if (user) {
     if (
       user.passwordVerificationToken !== hashString(token as string) ||
-      user.passwordExpirationDate > new Date(Date.now())
+      (user.passwordTokenExpirationDate &&
+        user.passwordTokenExpirationDate > new Date(Date.now()))
     ) {
       return next(new BadRequest("Invalid token"));
     }
