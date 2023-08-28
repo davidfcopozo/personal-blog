@@ -1,13 +1,12 @@
-const Comment = require("../models/commentModel");
-const Post = require("../models/PostModel");
+import Comment from "../models/commentModel";
+import Post from "../models/postModel";
 
 import { NextFunction, Response } from "express";
-import { RequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../typings/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
-import { Comment } from "../interfaces/models/comment";
-import { Post } from "../interfaces/models/post";
+import { CommentType, PostType } from "../typings/types";
 
 const createComment = async (
   req: RequestWithUserInfo,
@@ -20,13 +19,13 @@ const createComment = async (
   } = req;
 
   try {
-    const comment: Comment = await Comment.create({
+    const comment = await Comment.create({
       ...req.body,
       postedBy: userId,
       post: postId,
     });
 
-    const post = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId);
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
@@ -60,7 +59,7 @@ const getComments = async (
   try {
     /*   await Post.deleteMany();
     await Comment.deleteMany(); */
-    const post: Post = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId);
 
     if (!post) {
       throw new NotFound("This post doesn't exist");
@@ -88,7 +87,7 @@ const getCommentById = async (
   } = req;
 
   try {
-    const comment: Comment = await Comment.findById(commentId);
+    const comment: CommentType = await Comment.findById(commentId);
 
     if (!comment) {
       throw new NotFound("No comments found");
@@ -112,8 +111,8 @@ const deleteCommentById = async (
   } = req;
 
   try {
-    const post: Post = await Post.findById(postId);
-    const comment: Comment = await Comment.findOne({
+    const post: PostType = await Post.findById(postId);
+    const comment: CommentType = await Comment.findOne({
       _id: commentId,
       postedBy: userId,
     });
@@ -162,8 +161,8 @@ const toggleLike = async (
   } = req;
 
   try {
-    const post: Post = await Post.findById(postId);
-    const comment: Comment = await Comment.findById({
+    const post: PostType = await Post.findById(postId);
+    const comment: CommentType = await Comment.findById({
       _id: commentId,
       postedBy: userId,
     });

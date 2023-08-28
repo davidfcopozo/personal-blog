@@ -1,16 +1,14 @@
-const User = require("../models/userModel");
+import User from "../models/userModel";
 
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
-import { User } from "../interfaces/models/user";
 import { isValidUsername } from "../utils/validators";
+import { UserType, FieldsToUpdateType } from "../typings/types";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
-
-type FieldsToUpdate = { [key: string]: string };
 
 const getUsers = async (
   _req: RequestWithUserInfo,
@@ -18,7 +16,7 @@ const getUsers = async (
   next: NextFunction
 ) => {
   try {
-    const users: User[] = await User.find().select(sensitiveDataToExclude);
+    const users: UserType[] = await User.find().select(sensitiveDataToExclude);
 
     if (!users) {
       throw new NotFound("Users not found");
@@ -42,7 +40,7 @@ const getUserById = async (
   } = req;
 
   try {
-    const user: User = await User.findById(commentId).select(
+    const user: UserType = await User.findById(commentId).select(
       sensitiveDataToExclude
     );
 
@@ -67,13 +65,13 @@ const updateUserById = async (
   } = req;
 
   try {
-    const user = await User.findById(userId);
+    const user: UserType = await User.findById(userId);
 
     if (!user) {
       throw new NotFound("User not found");
     }
 
-    let fields: FieldsToUpdate = {
+    let fields: FieldsToUpdateType = {
       firstName,
       lastName,
       avatar,
@@ -81,7 +79,7 @@ const updateUserById = async (
       title,
       username,
     };
-    let fieldsToUpdate: FieldsToUpdate = {};
+    let fieldsToUpdate: FieldsToUpdateType = {};
 
     // Add key-value pair tp the fieldsToUpdate object only if they have a value
     for (const key in fields) {
@@ -100,13 +98,13 @@ const updateUserById = async (
       throw new BadRequest("Invalid username, please provide a valid one");
     }
 
-    const updatedUser = await User.findOneAndUpdate(
+    const updatedUser: UserType = await User.findOneAndUpdate(
       { _id: userId },
       fieldsToUpdate,
       { new: true, runValidators: true }
     ).select(sensitiveDataToExclude);
 
-    if (!updatedUser._id) {
+    if (!updatedUser?._id) {
       throw new Error("Something went wrong, please try again later");
     }
 
@@ -130,7 +128,7 @@ const deleteUserById = async (
     throw new Unauthenticated("Your not authorized to perform this action");
   }
 
-  let user = await User.findOneAndRemove({ _id: id });
+  let user: UserType = await User.findOneAndRemove({ _id: id });
 
   try {
     if (!user) {

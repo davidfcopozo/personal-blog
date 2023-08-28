@@ -1,10 +1,10 @@
-const Post = require("../models/postModel");
+import Post from "../models/postModel";
 
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../typings/models/user";
 import { NotFound, BadRequest } from "../errors/index";
-import { Post } from "../interfaces/models/post";
+import { PostType } from "../typings/types";
 
 const createPost = async (
   req: RequestWithUserInfo,
@@ -26,7 +26,9 @@ const getAllPosts = async (
   res: Response,
   next: NextFunction
 ) => {
-  const posts = await Post.find().populate("postedBy").sort("createdAt");
+  const posts: PostType[] = await Post.find()
+    .populate("postedBy")
+    .sort("createdAt");
 
   try {
     if (posts.length < 1) {
@@ -49,7 +51,7 @@ const getPostById = async (
   } = req;
 
   try {
-    const post = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId);
 
     if (!post) {
       throw new Error("Post not found");
@@ -72,7 +74,7 @@ const updatePostById = async (
   } = req;
 
   try {
-    const post = await Post.findOneAndUpdate(
+    const post: PostType = await Post.findOneAndUpdate(
       { _id: postId, postedBy: userId },
       req.body,
       { new: true, runValidators: true }
@@ -98,7 +100,10 @@ const deletePostById = async (
     params: { id: postId },
   } = req;
 
-  const post = await Post.findOneAndRemove({ _id: postId, postedBy: userId });
+  const post: PostType = await Post.findOneAndRemove({
+    _id: postId,
+    postedBy: userId,
+  });
 
   try {
     if (!post) {
@@ -124,7 +129,7 @@ const toggleLike = async (
   } = req;
 
   try {
-    const post: Post = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId);
 
     if (!post) {
       throw new NotFound("This post doesn't exist or has been deleted");

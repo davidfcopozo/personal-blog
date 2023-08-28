@@ -1,12 +1,11 @@
-const Comment = require("../models/commentModel");
-const Post = require("../models/PostModel");
+import Comment from "../models/commentModel";
+import Post from "../models/postModel";
 
 import { NextFunction, Response } from "express";
-import { RequestWithUserInfo } from "../interfaces/models/user";
+import { RequestWithUserInfo } from "../typings/models/user";
 import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
-import { Comment } from "../interfaces/models/comment";
-import { Post } from "../interfaces/models/post";
+import { PostType, CommentType } from "../typings/types";
 
 const createReply = async (
   req: RequestWithUserInfo,
@@ -20,8 +19,8 @@ const createReply = async (
   } = req;
 
   try {
-    const post: Post = await Post.findById(postId);
-    const comment: Comment = await Comment.findById(commentId);
+    const post: PostType = await Post.findById(postId);
+    const comment: CommentType = await Comment.findById(commentId);
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
@@ -33,7 +32,7 @@ const createReply = async (
       throw new NotFound("No comments on this post yet");
     }
 
-    if (!post?._id.equals(comment?.post)) {
+    if (!post?._id.equals(`${comment?.post}`)) {
       throw new BadRequest("Something went wrong");
     }
 
@@ -48,7 +47,7 @@ const createReply = async (
     }
 
     const result = await Comment.updateOne(
-      { _id: comment._id },
+      { _id: comment?._id },
       {
         $addToSet: { replies: reply._id },
       },
@@ -75,10 +74,10 @@ const getReplies = async (
   try {
     /*   await Reply.deleteMany();
     await Comment.deleteMany(); */
-    const comment: Comment = await Comment.findById(commentId);
-    const post: Post = await Post.findById(postId);
+    const comment: CommentType = await Comment.findById(commentId);
+    const post: PostType = await Post.findById(postId);
 
-    if (!post?._id.equals(comment?.post)) {
+    if (!post?._id.equals(`${comment?.post}`)) {
       throw new BadRequest("Something went wrong");
     }
 
@@ -109,8 +108,8 @@ const getReplyById = async (
   } = req;
 
   try {
-    const comment: Comment = await Comment.findById(commentId);
-    const post: Post = await Post.findById(postId);
+    const comment: CommentType = await Comment.findById(commentId);
+    const post: PostType = await Post.findById(postId);
 
     //Check if the comment this reply belong to exist
     if (!comment) {
@@ -158,8 +157,8 @@ const deleteReplyById = async (
   } = req;
 
   try {
-    const post: Post = await Post.findById(postId);
-    const comment: Comment = await Comment.findOne({
+    const post: PostType = await Post.findById(postId);
+    const comment: CommentType = await Comment.findOne({
       _id: commentId,
       postedBy: userId,
     });
