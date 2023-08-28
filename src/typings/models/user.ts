@@ -1,7 +1,12 @@
 import { Request } from "express";
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-export interface User {
+interface ModelMethods {
+  comparePassword: Function;
+  getJWT: Function;
+}
+
+export interface UserInterface extends Document, ModelMethods {
   _id: mongoose.Types.ObjectId;
   firstName: String;
   lastName: String;
@@ -14,8 +19,8 @@ export interface User {
   verificationToken?: String;
   verified?: Boolean;
   verifiedAt?: Date;
-  passwordVerificationToken: String;
-  passwordExpirationDate: Date;
+  passwordVerificationToken: String | null;
+  passwordTokenExpirationDate: Date | null;
   favorites: mongoose.Types.ObjectId;
   avatar?: String;
 }
