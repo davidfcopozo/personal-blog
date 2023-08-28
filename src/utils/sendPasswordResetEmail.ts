@@ -1,18 +1,12 @@
+import { SendPasswordResetEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
 
-interface sendPasswordResetEmail {
-  name: string;
-  email: string;
-  token: string;
-  baseUrl: string;
-}
-
 export const sendPasswordResetEmail = async ({
-  name,
+  firstName,
   email,
   token,
   baseUrl,
-}: sendPasswordResetEmail) => {
+}: SendPasswordResetEmailProps) => {
   const verificationUrl = `${baseUrl}/api/auth/reset-password?token=${token}`;
 
   const emailOptions = {
@@ -20,7 +14,7 @@ export const sendPasswordResetEmail = async ({
     to: email,
     subject: "Password Reset",
     html: `
-    <h4>Hello ${name}</h4>
+    <h4>Hello ${firstName}</h4>
     <p>You recently requested to reset the password for your Indid Coding account. You can reset your password by clicking the link below:</p>
     <p>Click <a href="${verificationUrl}">here</a> to reset your password.</p>
     <p>No changes have been made to your account yet.</p>

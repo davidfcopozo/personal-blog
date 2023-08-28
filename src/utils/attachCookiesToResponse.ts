@@ -1,11 +1,7 @@
-import { CookieOptions, Response } from "express";
+import { CookieOptions } from "express";
+import { AttachCookiesToResponseProps } from "../typings/utils";
 
 require("dotenv").config();
-
-type AttachCookiesToResponseProps = {
-  user: any;
-  res: Response;
-};
 
 export const attachCookiesToResponse = ({
   user,

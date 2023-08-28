@@ -1,18 +1,12 @@
+import { SendVerificationEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
 
-interface sendVerificationEmailProps {
-  name: string;
-  email: string;
-  verificationToken: string;
-  baseUrl: string;
-}
-
 export const sendVerificationEmail = async ({
-  name,
+  firstName,
   email,
   verificationToken,
   baseUrl,
-}: sendVerificationEmailProps) => {
+}: SendVerificationEmailProps) => {
   const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
   const emailOptions = {
@@ -20,7 +14,7 @@ export const sendVerificationEmail = async ({
     to: email,
     subject: "Email Verification",
     html: `
-    <h4>Hello ${name}</h4>
+    <h4>Hello ${firstName}</h4>
     <br>
     <p>Please verify that you own this email address <strong>(${email})</strong> by clicking this link:</p>
     <br>
