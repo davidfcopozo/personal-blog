@@ -1,5 +1,3 @@
-const createUserPayload = (user: any) => {
+export const createUserPayload = (user: any) => {
   return { name: user.name, userId: user._id, role: user.role };
 };
-
-module.exports = createUserPayload;

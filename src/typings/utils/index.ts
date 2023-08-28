@@ -18,3 +18,9 @@ export interface AttachCookiesToResponseProps {
   user: any;
   res: Response;
 }
+export interface EmailOptionsProps {
+  from: String | undefined;
+  to: String;
+  subject: String;
+  html: String;
+}
