@@ -1,13 +1,13 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const auth = require("../middleware/auth");
-const {
+import { auth } from "../middleware/auth";
+import {
   createComment,
   getComments,
   getCommentById,
   deleteCommentById,
   toggleLike,
-} = require("../controllers/commentController");
+} from "../controllers/commentController";
 
 router.route("/").get(getComments);
 router
@@ -17,4 +17,4 @@ router
   .put(auth, toggleLike)
   .delete(auth, deleteCommentById);
 
-export = router;
+export default router;

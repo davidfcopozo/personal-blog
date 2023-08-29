@@ -1,12 +1,12 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const auth = require("../middleware/auth");
-const {
+import { auth } from "../middleware/auth";
+import {
   getUsers,
   getUserById,
   updateUserById,
   deleteUserById,
-} = require("../controllers/userController");
+} from "../controllers/userController";
 
 router.route("/").get(getUsers);
 router

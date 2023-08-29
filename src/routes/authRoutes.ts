@@ -1,15 +1,15 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const auth = require("../middleware/auth");
-const {
+import { auth } from "../middleware/auth";
+import {
   register,
+  resendVerificationToken,
   verifyEmail,
   login,
   forgotPassword,
   resetPassword,
   logout,
-  resendVerificationToken,
-} = require("../controllers/authController");
+} from "../controllers/authController";
 
 router.route("/register").post(register);
 router.route("/verify-email").post(verifyEmail);
@@ -19,4 +19,4 @@ router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password").post(resetPassword);
 router.route("/logout").get(auth, logout);
 
-export = router;
+export default router;

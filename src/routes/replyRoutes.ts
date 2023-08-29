@@ -1,12 +1,12 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const auth = require("../middleware/auth");
-const {
+import { auth } from "../middleware/auth";
+import {
   createReply,
   getReplies,
   getReplyById,
   deleteReplyById,
-} = require("../controllers/replyController");
+} from "../controllers/replyController";
 
 router.route("/").get(getReplies);
 router
@@ -15,4 +15,4 @@ router
   .post(auth, createReply)
   .delete(auth, deleteReplyById);
 
-export = router;
+export default router;

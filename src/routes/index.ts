@@ -1,8 +1,8 @@
-const { Router } = require("express");
-const authRouter = require("./authRoutes");
-const postRouter = require("./postRoutes");
-const commentRoutes = require("./commentRoutes");
-const replyRoutes = require("./replyRoutes");
+import { Router } from "express";
+import authRouter from "./authRoutes";
+import postRouter from "./postRoutes";
+import commentRoutes from "./commentRoutes";
+import replyRoutes from "./replyRoutes";
 import userRoutes from "./userRoutes";
 
 const router = Router();
