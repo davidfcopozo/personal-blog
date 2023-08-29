@@ -13,4 +13,4 @@ router.use("/api/v1/comments", commentRoutes);
 router.use("/api/v1/replies", replyRoutes);
 router.use("/api/v1/posts", postRouter);
 
-module.exports = router;
+export default router;

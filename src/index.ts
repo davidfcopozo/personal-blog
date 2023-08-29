@@ -9,9 +9,9 @@ import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/connect";
-const routes = require("./routes/index");
-const errorHandlerMiddleware = require("./middleware/error-handler");
-const notFound = require("./middleware/not-found");
+import routes from "./routes/index";
+import { errorHandlerMiddleware } from "./middleware/error-handler";
+import { notFound } from "./middleware/not-found";
 //import path from "path";
 
 dotenv.config();

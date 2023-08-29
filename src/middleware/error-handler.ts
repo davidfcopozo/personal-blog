@@ -1,7 +1,7 @@
-const { StatusCodes } = require("http-status-codes");
+import { StatusCodes } from "http-status-codes";
 import { Response } from "express";
 
-const errorHandlerMiddleware = (res: Response, err: any) => {
+export const errorHandlerMiddleware = (res: Response, err: any) => {
   let customError = {
     //Set default
     statusCode: err?.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
@@ -39,5 +39,3 @@ const errorHandlerMiddleware = (res: Response, err: any) => {
   /* This will get us our customError object */
   return res?.status(customError.statusCode).json({ msg: customError.msg });
 };
-
-module.exports = errorHandlerMiddleware;

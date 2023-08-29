@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
 import { isTokenValid } from "../utils/jwt";
 import { JwtPayload } from "jsonwebtoken";
 

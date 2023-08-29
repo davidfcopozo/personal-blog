@@ -1,4 +1,6 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+
+dotenv.config();
 import nodemailer, { SendMailOptions } from "nodemailer";
 // const OAuth2 = google.auth.OAuth2;
 
