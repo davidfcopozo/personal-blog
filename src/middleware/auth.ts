@@ -1,11 +1,10 @@
-import { NextFunction, Request, Response } from "express";
-const { StatusCodes } = require("http-status-codes");
-//import jwt from "jsonwebtoken";
-//const User = require("../models/userModel");
+import { NextFunction, Response } from "express";
+import { StatusCodes } from "http-status-codes";
 require("dotenv").config();
 import { isTokenValid } from "../utils/jwt";
+import { JwtPayload } from "jsonwebtoken";
 
-const auth = (req: Request | any, res: Response, next: NextFunction) => {
+export const auth = (req: Request | any, res: Response, next: NextFunction) => {
   const authCookie = req.signedCookies;
 
   if (!authCookie) {
@@ -21,7 +20,7 @@ const auth = (req: Request | any, res: Response, next: NextFunction) => {
     });
   }
 
-  const validToken = isTokenValid(token);
+  const validToken: JwtPayload | string = isTokenValid(token);
 
   if (!validToken) {
     res.status(StatusCodes.UNAUTHORIZED).json({
@@ -38,5 +37,3 @@ const auth = (req: Request | any, res: Response, next: NextFunction) => {
     });
   }
 };
-
-module.exports = auth;
