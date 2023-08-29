@@ -1,3 +1,4 @@
+import { SendMailOptions } from "nodemailer";
 import { SendVerificationEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
 
@@ -9,9 +10,9 @@ export const sendVerificationEmail = async ({
 }: SendVerificationEmailProps) => {
   const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
-  const emailOptions = {
+  const emailOptions: SendMailOptions = {
     from: process.env.MAIL_USERNAME,
-    to: email,
+    to: email as string,
     subject: "Email Verification",
     html: `
     <h4>Hello ${firstName}</h4>

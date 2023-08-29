@@ -1,3 +1,4 @@
+import { SendMailOptions } from "nodemailer";
 import { SendPasswordResetEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
 
@@ -9,9 +10,9 @@ export const sendPasswordResetEmail = async ({
 }: SendPasswordResetEmailProps) => {
   const verificationUrl = `${baseUrl}/api/auth/reset-password?token=${token}`;
 
-  const emailOptions = {
+  const emailOptions: SendMailOptions = {
     from: process.env.MAIL_USERNAME,
-    to: email,
+    to: email as string,
     subject: "Password Reset",
     html: `
     <h4>Hello ${firstName}</h4>

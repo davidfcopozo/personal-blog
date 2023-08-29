@@ -1,8 +1,5 @@
-import { EmailOptionsProps } from "../typings/utils";
-
-// import { google } from "googleapis";
 require("dotenv").config();
-import nodemailer from "nodemailer";
+import nodemailer, { SendMailOptions } from "nodemailer";
 // const OAuth2 = google.auth.OAuth2;
 
 const createTransporter = async () => {
@@ -19,7 +16,7 @@ const createTransporter = async () => {
   return transporter;
 };
 
-export const emailSender = async (emailOptions: any) => {
+export const emailSender = async (emailOptions: SendMailOptions) => {
   let emailTransporter = await createTransporter();
   emailTransporter.sendMail(emailOptions);
 };

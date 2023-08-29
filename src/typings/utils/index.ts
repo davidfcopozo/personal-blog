@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { UserType } from "../types";
 
 export interface SendPasswordResetEmailProps {
   firstName: String;
@@ -15,9 +16,10 @@ export interface SendVerificationEmailProps {
 }
 
 export interface AttachCookiesToResponseProps {
-  user: any;
+  user: UserType;
   res: Response;
 }
+
 export interface EmailOptionsProps {
   from: String | undefined;
   to: String;

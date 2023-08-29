@@ -7,7 +7,7 @@ export const attachCookiesToResponse = ({
   user,
   res,
 }: AttachCookiesToResponseProps) => {
-  const token = user.getJWT();
+  const token = user?.getJWT();
 
   const options: CookieOptions = {
     expires: new Date(Date.now() + 60 * 60 * 1000),
@@ -21,7 +21,7 @@ export const attachCookiesToResponse = ({
 
   res.cookie("token", token, options).json({
     success: true,
-    id: user._id,
-    role: user.role,
+    id: user?._id,
+    role: user?.role,
   });
 };
