@@ -8,8 +8,8 @@ import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
 import { CommentType, PostType } from "../typings/types";
 
-const createComment = async (
-  req: RequestWithUserInfo,
+export const createComment = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -47,8 +47,8 @@ const createComment = async (
   }
 };
 
-const getComments = async (
-  req: RequestWithUserInfo,
+export const getComments = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -77,8 +77,8 @@ const getComments = async (
   }
 };
 
-const getCommentById = async (
-  req: RequestWithUserInfo,
+export const getCommentById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -99,8 +99,8 @@ const getCommentById = async (
   }
 };
 
-const deleteCommentById = async (
-  req: RequestWithUserInfo,
+export const deleteCommentById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -149,8 +149,8 @@ const deleteCommentById = async (
   }
 };
 
-const toggleLike = async (
-  req: RequestWithUserInfo,
+export const toggleLike = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -213,12 +213,4 @@ const toggleLike = async (
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  createComment,
-  getComments,
-  getCommentById,
-  deleteCommentById,
-  toggleLike,
 };

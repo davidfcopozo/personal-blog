@@ -6,8 +6,8 @@ import { RequestWithUserInfo } from "../typings/models/user";
 import { NotFound, BadRequest } from "../errors/index";
 import { PostType } from "../typings/types";
 
-const createPost = async (
-  req: RequestWithUserInfo,
+export const createPost = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -21,8 +21,8 @@ const createPost = async (
   }
 };
 
-const getAllPosts = async (
-  _: RequestWithUserInfo,
+export const getAllPosts = async (
+  _: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -41,8 +41,8 @@ const getAllPosts = async (
   }
 };
 
-const getPostById = async (
-  req: RequestWithUserInfo,
+export const getPostById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -63,8 +63,8 @@ const getPostById = async (
   }
 };
 
-const updatePostById = async (
-  req: RequestWithUserInfo,
+export const updatePostById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -90,8 +90,8 @@ const updatePostById = async (
   }
 };
 
-const deletePostById = async (
-  req: RequestWithUserInfo,
+export const deletePostById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -118,8 +118,8 @@ const deletePostById = async (
   }
 };
 
-const toggleLike = async (
-  req: RequestWithUserInfo,
+export const toggleLike = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -172,13 +172,4 @@ const toggleLike = async (
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  createPost,
-  getAllPosts,
-  getPostById,
-  updatePostById,
-  deletePostById,
-  toggleLike,
 };

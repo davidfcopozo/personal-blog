@@ -7,8 +7,8 @@ import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
 import { PostType, CommentType } from "../typings/types";
 
-const createReply = async (
-  req: RequestWithUserInfo,
+export const createReply = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -62,8 +62,8 @@ const createReply = async (
   }
 };
 
-const getReplies = async (
-  req: RequestWithUserInfo,
+export const getReplies = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -97,8 +97,8 @@ const getReplies = async (
   }
 };
 
-const getReplyById = async (
-  req: RequestWithUserInfo,
+export const getReplyById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -145,8 +145,8 @@ const getReplyById = async (
   }
 };
 
-const deleteReplyById = async (
-  req: RequestWithUserInfo,
+export const deleteReplyById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -204,11 +204,4 @@ const deleteReplyById = async (
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  createReply,
-  getReplies,
-  getReplyById,
-  deleteReplyById,
 };

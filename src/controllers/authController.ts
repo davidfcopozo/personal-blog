@@ -8,12 +8,15 @@ import { BadRequest, Unauthenticated } from "../errors/index";
 import { sendVerificationEmail } from "../utils/sendVerificationEmail";
 import { sendPasswordResetEmail } from "../utils/sendPasswordResetEmail";
 import { isValidEmail, isValidUsername } from "../utils/validators";
-import { UserInterface } from "../typings/models/user";
+import { UserType } from "../typings/types";
 
 let baseUrl = "http://localhost:8000";
-type UserType = UserInterface | null;
 
-const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { firstName, lastName, username, email, password } = req.body;
 
   const userExist: UserType = await User.findOne({ email });
@@ -68,7 +71,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const resendVerificationToken = async (
+export const resendVerificationToken = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -104,7 +107,11 @@ const resendVerificationToken = async (
   });
 };
 
-const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { email } = req.body;
   const { token } = req.query;
 
@@ -127,7 +134,11 @@ const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
   res.status(StatusCodes.OK).json({ message: "Email verified successfully" });
 };
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { email, password } = req.body;
 
   const user: UserType = await User.findOne({ email });
@@ -145,7 +156,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   attachCookiesToResponse({ user, res });
 };
 
-const forgotPassword = async (
+export const forgotPassword = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -184,7 +195,7 @@ const forgotPassword = async (
   });
 };
 
-const resetPassword = async (
+export const resetPassword = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -218,20 +229,10 @@ const resetPassword = async (
   }
 };
 
-const logout = async (_req: Request, res: Response) => {
+export const logout = async (_req: Request, res: Response) => {
   res.clearCookie("token");
 
   res
     .status(StatusCodes.OK)
     .json({ message: "Logout successful", success: true });
-};
-
-module.exports = {
-  register,
-  verifyEmail,
-  login,
-  forgotPassword,
-  resetPassword,
-  logout,
-  resendVerificationToken,
 };

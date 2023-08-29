@@ -10,8 +10,8 @@ import { UserType, FieldsToUpdateType } from "../typings/types";
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
 
-const getUsers = async (
-  _req: RequestWithUserInfo,
+export const getUsers = async (
+  _req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -30,8 +30,8 @@ const getUsers = async (
   }
 };
 
-const getUserById = async (
-  req: RequestWithUserInfo,
+export const getUserById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -54,8 +54,8 @@ const getUserById = async (
   }
 };
 
-const updateUserById = async (
-  req: RequestWithUserInfo,
+export const updateUserById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -114,8 +114,8 @@ const updateUserById = async (
   }
 };
 
-const deleteUserById = async (
-  req: RequestWithUserInfo,
+export const deleteUserById = async (
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
@@ -141,11 +141,4 @@ const deleteUserById = async (
   } catch (err: any) {
     return next(new NotFound(err));
   }
-};
-
-module.exports = {
-  getUsers,
-  getUserById,
-  updateUserById,
-  deleteUserById,
 };
