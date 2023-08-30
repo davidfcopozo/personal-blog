@@ -8,6 +8,7 @@ export interface PostInterface {
   image?: String;
   likes?: mongoose.Types.ObjectId[];
   tags?: String[];
+  views?: Number;
   comments?: {
     text: String;
     postedBy: mongoose.Types.ObjectId;
