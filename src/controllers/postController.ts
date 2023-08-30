@@ -173,3 +173,30 @@ export const toggleLike = async (
     next(error);
   }
 };
+
+export const increaseViewCount = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+
+  try {
+    const post: PostType = await Post.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!post) {
+      throw new NotFound("Post not found");
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      views: post.views,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
