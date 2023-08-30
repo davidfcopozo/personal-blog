@@ -8,9 +8,11 @@ import {
   updatePostById,
   deletePostById,
   toggleLike,
+  increaseViewCount,
 } from "../controllers/postController";
 
 router.route("/").get(getAllPosts).post(auth, createPost).put(auth, toggleLike);
+router.route("/:id/view").put(increaseViewCount);
 router
   .route("/:id")
   .get(getPostById)
