@@ -1,9 +1,19 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 
-export const generateJWT = ({ payload }: JwtPayload) => {
-  const token = jwt.sign(payload, process.env.JWT_SECRET as string);
+const SECRET = process.env.JWT_SECRET as Secret | string;
+
+export const generateJWT = (payload: JwtPayload) => {
+  const token = jwt.sign(payload, SECRET);
   return token;
 };
 
-export const isTokenValid = (token: string) =>
-  jwt.verify(token, process.env.JWT_SECRET as string);
+export const isTokenValid = (token: string) => {
+  const isValid = jwt.verify(token, SECRET, (err, decoded) => {
+    if (err) {
+      return false;
+    } else {
+      return decoded;
+    }
+  });
+  return isValid;
+};
