@@ -7,13 +7,11 @@ export const generateJWT = (payload: JwtPayload) => {
   return token;
 };
 
-export const isTokenValid = (token: string) => {
-  const isValid = jwt.verify(token, SECRET, (err, decoded) => {
-    if (err) {
-      return false;
-    } else {
-      return decoded;
-    }
-  });
-  return isValid;
+export const isTokenValid = (token: string): JwtPayload | boolean | string => {
+  try {
+    const decoded = jwt.verify(token, SECRET);
+    return decoded;
+  } catch (err) {
+    return false;
+  }
 };
