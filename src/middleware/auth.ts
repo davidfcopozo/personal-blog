@@ -21,7 +21,7 @@ export const auth = (req: Request | any, res: Response, next: NextFunction) => {
     });
   }
 
-  const validToken: JwtPayload | string = isTokenValid(token);
+  const validToken: JwtPayload | string | boolean = isTokenValid(token);
 
   if (!validToken) {
     res.status(StatusCodes.UNAUTHORIZED).json({
