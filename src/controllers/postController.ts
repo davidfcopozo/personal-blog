@@ -16,8 +16,8 @@ export const createPost = async (
     await Post.create({ ...req.body, postedBy: userId });
 
     res.status(StatusCodes.CREATED).json({ msg: "Post created" });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -32,12 +32,12 @@ export const getAllPosts = async (
 
   try {
     if (posts.length < 1) {
-      throw new Error("Posts not found");
+      throw new NotFound("Posts not found");
     }
 
     res.status(StatusCodes.OK).json({ posts, count: posts.length });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -54,12 +54,12 @@ export const getPostById = async (
     const post: PostType = await Post.findById(postId);
 
     if (!post) {
-      throw new Error("Post not found");
+      throw new NotFound("Post not found");
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -81,11 +81,11 @@ export const updatePostById = async (
     );
 
     if (!post) {
-      throw new Error("Post not found");
+      throw new NotFound("Post not found");
     }
 
     res.status(StatusCodes.OK).json({ success: true, post });
-  } catch (err: any) {
+  } catch (err) {
     return next(err);
   }
 };
@@ -107,14 +107,14 @@ export const deletePostById = async (
 
   try {
     if (!post) {
-      throw new Error(`No post found with id ${postId}`);
+      throw new NotFound(`No post found with id ${postId}`);
     }
 
     res
       .status(StatusCodes.OK)
       .json({ msg: `Post has been successfully deleted` });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
