@@ -45,12 +45,12 @@ export const getUserById = async (
     );
 
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFound("User not found");
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -132,13 +132,13 @@ export const deleteUserById = async (
 
   try {
     if (!user) {
-      throw new Error(`No user found with id ${id}`);
+      throw new NotFound(`No user found with id ${id}`);
     }
 
     res
       .status(StatusCodes.OK)
       .json({ msg: `User has been successfully deleted` });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
