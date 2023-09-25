@@ -1,13 +1,18 @@
 import { StatusCodes } from "http-status-codes";
-import { Response } from "express";
+import { Response, Request, NextFunction } from "express";
 
-export const errorHandlerMiddleware = (res: Response, err: any) => {
+//Make sure to pass all 4 parameters to the middleware function (err, req, res, next) otherwise it won't fire
+export const errorHandlerMiddleware = (
+  err: any,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
   let customError = {
     //Set default
     statusCode: err?.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err?.message || "Something went wrong, please try again later",
   };
-  console.log("Error name==>", err?.name);
 
   if (err?.name === "ValidationError") {
     //Check if the error is about email or password validation which name of the mongoose err object is 'ValidationError
@@ -33,9 +38,8 @@ export const errorHandlerMiddleware = (res: Response, err: any) => {
     customError.statusCode = StatusCodes.NOT_FOUND;
   }
 
-  /* This will get us the mongoose err object */
-  //return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ err });
-
   /* This will get us our customError object */
-  return res?.status(customError.statusCode).json({ msg: customError.msg });
+  res
+    .status(customError.statusCode)
+    .json({ success: false, msg: customError.msg });
 };
