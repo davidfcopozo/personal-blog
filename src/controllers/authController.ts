@@ -17,25 +17,32 @@ export const register = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { firstName, lastName, username, email, password } = req.body;
-
-  const userExist: UserType = await User.findOne({ email });
-
-  //Check if email already exists
-  if (userExist) {
-    return next(new BadRequest("An account with this email already exists"));
-  }
-
-  //Check if this is the first account created
-  const isFirstAccount = (await User.countDocuments({})) === 0;
-
-  //If this is the first account, set role to admin, else set role to user
-  const role = isFirstAccount ? "admin" : "user";
-
-  //Generate verification token for email verification
-  const verificationToken = Crypto.randomBytes(40).toString("hex");
-
   try {
+    const { firstName, lastName, username, email, password } = req.body;
+
+    const userExist: UserType = await User.findOne({ email });
+    const usernameExist: UserType = await User.findOne({
+      username: username.toLowerCase(),
+    });
+
+    //Check if email already exists
+    if (userExist) {
+      throw new BadRequest("An account with this email already exists");
+    }
+
+    //Check if username already exists
+    if (usernameExist) {
+      throw new BadRequest("An account with this username already exists");
+    }
+
+    //Check if this is the first account created
+    const isFirstAccount = (await User.countDocuments({})) === 0;
+
+    //If this is the first account, set role to admin, else set role to user
+    const role = isFirstAccount ? "admin" : "user";
+
+    //Generate verification token for email verification
+    const verificationToken = Crypto.randomBytes(40).toString("hex");
     const lowercasedUsername = username.toLowerCase();
 
     if (!isValidEmail(email)) {
@@ -66,8 +73,8 @@ export const register = async (
     res.status(StatusCodes.CREATED).json({
       msg: "Account registration successful! Please check your email to verify account",
     });
-  } catch (error: any) {
-    next(new BadRequest(error));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -103,7 +110,7 @@ export const resendVerificationToken = async (
   });
 
   res.status(StatusCodes.OK).json({
-    message: "Email verification had been resent, please check your email.",
+    msg: "Email verification had been resent, please check your email.",
   });
 };
 
