@@ -15,7 +15,7 @@ let user: UserType;
 
 describe("Auth routes", () => {
   describe("POST /auth/register", () => {
-    it("should be able to register a new user", async () => {
+    it("should register a new user", async () => {
       const res = await agent.post(`${BASE_URL}/auth/register`).send({
         firstName: "Test",
         lastName: "Test 2",
@@ -30,7 +30,7 @@ describe("Auth routes", () => {
       );
     });
 
-    it("should be able to throw an error if a user already exists", async () => {
+    it("should throw an error if a user with given email already exists", async () => {
       const res = await agent.post(`${BASE_URL}/auth/register`).send({
         firstName: "Test",
         lastName: "Test 2",
@@ -41,21 +41,47 @@ describe("Auth routes", () => {
 
       expect(res.status).toBe(StatusCodes.BAD_REQUEST);
       expect(res.body.msg).toBe("An account with this email already exists");
-    }, 50000);
-  });
+    });
 
-  describe("POST /auth/login", () => {
-    it("should be able to login a user", async () => {
-      user = await User.findOne({ email: TEST_USER.email });
-
-      const res = await agent.post(`${BASE_URL}/auth/login`).send({
-        email: TEST_USER.email,
+    it("should throw an error if a user with given username already exists", async () => {
+      const res = await agent.post(`${BASE_URL}/auth/register`).send({
+        firstName: "Test",
+        lastName: "Test 2",
+        username: "testing",
+        email: TEST_USER.email + "o",
         password: TEST_USER.password,
       });
 
-      expect(res.status).toBe(200);
-      expect(res.body.id).toBe(user?._id.toString());
-      expect(res.body.success).toBe(true);
+      expect(res.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(res.body.msg).toBe("An account with this username already exists");
+    });
+
+    it("should throw an error if an invalid email is provided", async () => {
+      const res = await agent.post(`${BASE_URL}/auth/register`).send({
+        firstName: "Test",
+        lastName: "Test 2",
+        username: "testingdas",
+        email: "example.gmail",
+        password: TEST_USER.password,
+      });
+
+      expect(res.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(res.body.msg).toBe(
+        "Invalid email address, please provide a valid one"
+      );
+    });
+
+    it("should throw an error if an invalid username is provided", async () => {
+      const res = await agent.post(`${BASE_URL}/auth/register`).send({
+        firstName: "Test",
+        lastName: "Test 2",
+        username: ".example",
+        email: TEST_USER.email + "oo",
+        password: TEST_USER.password,
+      });
+
+      expect(res.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(res.body.msg).toBe("Invalid username, please provide a valid one");
     });
   });
 
@@ -71,6 +97,21 @@ describe("Auth routes", () => {
       expect(res.body.msg).toBe(
         "Email verification had been resent, please check your email."
       );
+    });
+  });
+
+  describe("POST /auth/login", () => {
+    it("should be able to login a user", async () => {
+      user = await User.findOne({ email: TEST_USER.email });
+
+      const res = await agent.post(`${BASE_URL}/auth/login`).send({
+        email: TEST_USER.email,
+        password: TEST_USER.password,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(user?._id.toString());
+      expect(res.body.success).toBe(true);
     });
   });
 
