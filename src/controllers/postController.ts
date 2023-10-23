@@ -13,9 +13,13 @@ export const createPost = async (
 ) => {
   const { userId } = req.user;
   try {
-    await Post.create({ ...req.body, postedBy: userId });
+    if (!req.body.title && !req.body.content) {
+      throw new BadRequest("Title and content are required");
+    }
 
-    res.status(StatusCodes.CREATED).json({ msg: "Post created" });
+    const post: PostType = await Post.create({ ...req.body, postedBy: userId });
+
+    res.status(StatusCodes.CREATED).json({ success: true, post });
   } catch (err) {
     return next(err);
   }
