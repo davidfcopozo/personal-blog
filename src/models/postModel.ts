@@ -17,7 +17,7 @@ const postSchema = new mongoose.Schema<PostInterface>(
     published: { type: Boolean, default: false },
     draft: { type: Boolean, default: true },
     views: { type: Number, default: 0 },
-    categories: { type: Number, default: 0 },
+    categories: [{ type: String }],
   },
   { timestamps: true }
 );
