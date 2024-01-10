@@ -3,7 +3,7 @@ import Post from "../models/postModel";
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
-import { NotFound, BadRequest } from "../errors/index";
+import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
 import { PostType } from "../typings/types";
 
 export const createPost = async (
@@ -19,7 +19,7 @@ export const createPost = async (
 
     const post: PostType = await Post.create({ ...req.body, postedBy: userId });
 
-    res.status(StatusCodes.CREATED).json({ success: true, post });
+    res.status(StatusCodes.CREATED).json({ success: true, data: post });
   } catch (err) {
     return next(err);
   }
@@ -78,6 +78,13 @@ export const updatePostById = async (
   } = req;
 
   try {
+
+    const oldPost: PostType =  await Post.findById(postId);
+
+    if(oldPost && oldPost?.postedBy?.toString() !== userId) {
+      throw new Unauthenticated("You are not authorized to update this post");
+    }
+
     const post: PostType = await Post.findOneAndUpdate(
       { _id: postId, postedBy: userId },
       req.body,
@@ -88,7 +95,7 @@ export const updatePostById = async (
       throw new NotFound("Post not found");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, post });
+    res.status(StatusCodes.OK).json({ success: true, data: post });
   } catch (err) {
     return next(err);
   }
