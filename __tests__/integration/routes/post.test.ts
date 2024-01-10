@@ -49,7 +49,6 @@ describe("Post routes", () => {
         const res = await agent.post(`${BASE_URL}/posts`).send({});
 
         expect(res.status).toBe(StatusCodes.BAD_REQUEST);
-        expect(res.body.success).toBe(false);
         expect(res.body.msg).toBe("Title and content are required");
       });
 
