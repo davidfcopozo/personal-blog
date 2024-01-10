@@ -39,7 +39,7 @@ export const getAllPosts = async (
       throw new NotFound("Posts not found");
     }
 
-    res.status(StatusCodes.OK).json({ posts, count: posts.length });
+    res.status(StatusCodes.OK).json({ success: true, data: posts, count: posts.length });
   } catch (err) {
     return next(err);
   }
