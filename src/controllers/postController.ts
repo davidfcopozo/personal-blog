@@ -81,8 +81,16 @@ export const updatePostById = async (
 
     const oldPost: PostType =  await Post.findById(postId);
 
+    if (!oldPost) {
+      throw new NotFound("Post not found");
+    }
+
     if(oldPost && oldPost?.postedBy?.toString() !== userId) {
       throw new Unauthenticated("You are not authorized to update this post");
+    }
+
+    if(!req.body || Object.keys(req.body).length === 0) {
+      throw new BadRequest("Nothing to update. Please provide the data to be updated");
     }
 
     const post: PostType = await Post.findOneAndUpdate(
@@ -91,9 +99,6 @@ export const updatePostById = async (
       { new: true, runValidators: true }
     );
 
-    if (!post) {
-      throw new NotFound("Post not found");
-    }
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
   } catch (err) {
