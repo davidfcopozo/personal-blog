@@ -118,19 +118,25 @@ export const deletePostById = async (
     params: { id: postId },
   } = req;
 
-  const post: PostType = await Post.findOneAndRemove({
-    _id: postId,
-    postedBy: userId,
-  });
-
   try {
+    const post: PostType = await Post.findById(postId);
+
     if (!post) {
       throw new NotFound(`No post found with id ${postId}`);
     }
 
+    if (post && post?.postedBy?.toString() !== userId) {
+      throw new Unauthenticated("Unauthorized: No token provided");
+    }
+
+    await Post.findOneAndRemove({
+      _id: postId,
+      postedBy: userId,
+    });
+
     res
       .status(StatusCodes.OK)
-      .json({ msg: `Post has been successfully deleted` });
+      .json({ success: true, msg: `Post has been successfully deleted` });
   } catch (err) {
     return next(err);
   }
