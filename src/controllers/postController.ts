@@ -39,7 +39,9 @@ export const getAllPosts = async (
       throw new NotFound("Posts not found");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: posts, count: posts.length });
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: posts, count: posts.length });
   } catch (err) {
     return next(err);
   }
@@ -78,19 +80,20 @@ export const updatePostById = async (
   } = req;
 
   try {
-
-    const oldPost: PostType =  await Post.findById(postId);
+    const oldPost: PostType = await Post.findById(postId);
 
     if (!oldPost) {
       throw new NotFound("Post not found");
     }
 
-    if(oldPost && oldPost?.postedBy?.toString() !== userId) {
+    if (oldPost && oldPost?.postedBy?.toString() !== userId) {
       throw new Unauthenticated("You are not authorized to update this post");
     }
 
-    if(!req.body || Object.keys(req.body).length === 0) {
-      throw new BadRequest("Nothing to update. Please provide the data to be updated");
+    if (!req.body || Object.keys(req.body).length === 0) {
+      throw new BadRequest(
+        "Nothing to update. Please provide the data to be updated"
+      );
     }
 
     const post: PostType = await Post.findOneAndUpdate(
@@ -98,7 +101,6 @@ export const updatePostById = async (
       req.body,
       { new: true, runValidators: true }
     );
-
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
   } catch (err) {
@@ -187,32 +189,5 @@ export const toggleLike = async (
     }
   } catch (error) {
     next(error);
-  }
-};
-
-export const increaseViewCount = async (
-  req: RequestWithUserInfo | any,
-  res: Response,
-  next: NextFunction
-) => {
-  const { id } = req.params;
-
-  try {
-    const post: PostType = await Post.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!post) {
-      throw new NotFound("Post not found");
-    }
-
-    res.status(StatusCodes.OK).json({
-      success: true,
-      views: post.views,
-    });
-  } catch (err) {
-    next(err);
   }
 };
