@@ -4,6 +4,7 @@ const SECRET = process.env.JWT_SECRET as Secret | string;
 
 export const generateJWT = (payload: JwtPayload) => {
   const token = jwt.sign(payload, SECRET);
+
   return token;
 };
 
