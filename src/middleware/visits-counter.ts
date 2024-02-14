@@ -13,11 +13,11 @@ export const visitsCounter = async (
   const { id } = req.params;
 
   try {
-    const post: PostType = await Post.findByIdAndUpdate(
-      id,
-      { $inc: { visits: 1 } },
-      { new: true }
-    );
+    const post: PostType = await Post.findById(id);
+
+    if (post && post?.postedBy?.toString() !== req.user?.userId) {
+      await Post.findByIdAndUpdate(id, { $inc: { visits: 1 } }, { new: true });
+    }
 
     if (!post) {
       throw new NotFound("Post not found");
