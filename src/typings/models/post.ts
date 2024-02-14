@@ -10,10 +10,12 @@ export interface PostInterface {
   tags?: String[];
   categories?: String[];
   visits?: Number;
-  comments?: {
-    text: String;
-    postedBy: mongoose.Types.ObjectId;
-  };
+  comments?: [
+    {
+      text: String;
+      postedBy: mongoose.Types.ObjectId;
+    }
+  ];
   published: Boolean;
   draft: Boolean;
 }
