@@ -19,17 +19,17 @@ export const createComment = async (
   } = req;
 
   try {
-    const comment = await Comment.create({
-      ...req.body,
-      postedBy: userId,
-      post: postId,
-    });
-
     const post: PostType = await Post.findById(postId);
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
     }
+
+    const comment = await Comment.create({
+      ...req.body,
+      postedBy: userId,
+      post: postId,
+    });
 
     const result = await Post.updateOne(
       { _id: postId },
@@ -65,7 +65,7 @@ export const getComments = async (
       throw new NotFound("This post doesn't exist");
     }
 
-    const comments = post?.comments;
+    const comments = post?.comments?.length;
 
     if (!comments) {
       throw new NotFound("No comments on this post");
@@ -83,7 +83,7 @@ export const getCommentById = async (
   next: NextFunction
 ) => {
   const {
-    body: { commentId },
+    params: { id: commentId },
   } = req;
 
   try {
@@ -172,7 +172,7 @@ export const toggleLike = async (
     }
 
     if (!post?._id.equals(comment?.post)) {
-      throw new BadRequest("Something went wrong");
+      throw new BadRequest("This comment does not belong to this post");
     }
 
     const isLiked = comment.likes?.filter((like) => like.toString() === userId);
