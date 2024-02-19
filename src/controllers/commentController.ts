@@ -171,6 +171,7 @@ export const toggleLike = async (
       throw new NotFound("No comments found");
     }
 
+    //If post's id is not equal to the post id the comment bolongs to, throw an error
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("This comment does not belong to this post");
     }
