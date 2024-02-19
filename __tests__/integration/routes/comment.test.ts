@@ -1,8 +1,6 @@
 import request from "supertest";
 import app from "../../../src";
 import { StatusCodes } from "http-status-codes";
-/* import { UserType } from "../../../src/typings/types";
-import User from "../../../src/models/userModel"; */
 
 const agent = request.agent(app);
 
@@ -14,21 +12,8 @@ let EXISTING_TEST_USER = {
   password: "123456",
 };
 
-/* let TEST_USER = {
-  email: "kixeqygy@lyft.live",
-  password: "123456",
-};
-
-let INVALID_TEST_USER = {
-  email: "@gmail.com",
-  username: ".example",
-  password: "12",
-};
-
-let user: UserType;
-let passwordResetToken: string; */
-
 describe("Comment routes", () => {
+  let newCommentId: string;
   beforeAll(async () => {
     await agent.post(`${BASE_URL}/auth/logout`).send({
       email: EXISTING_TEST_USER.email_verified,
@@ -69,11 +54,8 @@ describe("Comment routes", () => {
         expect(res.status).toBe(StatusCodes.CREATED);
         expect(res.body.success).toBe(true);
         expect(res.body.data.content).toBe("Test comment");
-        console.log(res.body);
 
-        await agent
-          .delete(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
-          .send({ commentId: res.body.data._id });
+        newCommentId = res.body.data._id;
       });
     });
   });
@@ -113,14 +95,11 @@ describe("Comment routes", () => {
       });
 
       it("#2 it should get a comment by ID", async () => {
-        const res = await agent.get(
-          `${BASE_URL}/comments/64d52233e973681ba9af5a69`
-        );
+        const res = await agent.get(`${BASE_URL}/comments/${newCommentId}`);
 
         expect(res.status).toBe(StatusCodes.OK);
         expect(res.body.success).toBe(true);
-        expect(res.body.data._id).toBe("64d52233e973681ba9af5a69");
-        console.log(res.body);
+        expect(res.body.data._id).toBe(`${newCommentId}`);
       });
     });
   });
@@ -143,7 +122,7 @@ describe("Comment routes", () => {
 
       it("#2 should throw an error if a comment does not exist", async () => {
         await agent.post(`${BASE_URL}/auth/login`).send({
-          email: EXISTING_TEST_USER.email_verified_two,
+          email: EXISTING_TEST_USER.email_verified,
           password: EXISTING_TEST_USER.password,
         });
         const res = await agent
@@ -155,11 +134,6 @@ describe("Comment routes", () => {
       });
 
       it("#3 should throw an error if the post id is not equal to the comment's post property", async () => {
-        await agent.post(`${BASE_URL}/auth/login`).send({
-          email: EXISTING_TEST_USER.email_verified,
-          password: EXISTING_TEST_USER.password,
-        });
-
         const res = await agent
           .put(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fdb`)
           .send({ commentId: "64d52233e973681ba9af5a69" });
@@ -170,22 +144,20 @@ describe("Comment routes", () => {
 
       it("#4 should add or remove a like to a comment if it exists", async () => {
         const comments = await agent.get(
-          `${BASE_URL}/comments/64d52225e973681ba9af5a63`
+          `${BASE_URL}/comments/${newCommentId}`
         );
 
         const likes = comments.body.data?.likes;
 
-        console.log("likes===>", likes);
-
         const res = await agent
           .put(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
-          .send({ commentId: "64d52225e973681ba9af5a63" });
+          .send({ commentId: `${newCommentId}` });
 
         const isLiked = likes?.filter(
           (like: any) => like.toString() === "64d54305628f33c4eec82b49"
         );
         const updatedComment = await agent.get(
-          `${BASE_URL}/comments/64d52225e973681ba9af5a63`
+          `${BASE_URL}/comments/${newCommentId}`
         );
 
         const updatedLikes = await updatedComment.body.data?.likes;
@@ -202,6 +174,55 @@ describe("Comment routes", () => {
           expect(updatedLikes?.length).toBe(likes?.length - 1);
         }
       });
+    });
+  });
+
+  describe("Delete routes - DELETE /comments", () => {
+    it("#1 it should throw an error if a user is not logged in", async () => {
+      await agent.get(`${BASE_URL}/auth/logout`).send({
+        email: EXISTING_TEST_USER.email_verified,
+        password: EXISTING_TEST_USER.password,
+      });
+      const res = await agent
+        .delete(`${BASE_URL}/comments/${newCommentId}`)
+        .send({ commentId: newCommentId });
+
+      expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
+      expect(res.body.success).toBe(false);
+      expect(res.body.msg).toBe("Unauthorized: No token provided");
+    });
+
+    it("#2 it should throw an error if a comment does not exist", async () => {
+      await agent.post(`${BASE_URL}/auth/login`).send({
+        email: EXISTING_TEST_USER.email_verified,
+        password: EXISTING_TEST_USER.password,
+      });
+      const res = await agent
+        .delete(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fdb`)
+        .send({ commentId: "64c7e2ca37fcaa5384a28fcc" });
+
+      expect(res.status).toBe(StatusCodes.NOT_FOUND);
+      expect(res.body.success).toBe(false);
+      expect(res.body.msg).toBe("No comments found");
+    });
+
+    it("#3 it should throw an error if the post id is not equal to the post's id the comment belongs", async () => {
+      const res = await agent
+        .delete(`${BASE_URL}/comments/659ee2ac62452741e01eda12`)
+        .send({ commentId: newCommentId });
+
+      expect(res.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(res.body.msg).toBe("Something went wrong");
+    });
+
+    it("#4 it should delete a comment", async () => {
+      const res = await agent
+        .delete(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
+        .send({ commentId: newCommentId });
+
+      expect(res.status).toBe(StatusCodes.OK);
+      expect(res.body.success).toBe(true);
+      expect(res.body.msg).toBe("Comment has been successfully deleted.");
     });
   });
 });
