@@ -81,6 +81,16 @@ describe("Comment routes", () => {
         expect(res.body.success).toBe(false);
         expect(res.body.msg).toBe("No comments on this post");
       });
+
+      it("#3 it should get all comments", async () => {
+        const res = await agent.get(`${BASE_URL}/comments`).send({
+          postId: "64c7e2ca37fcaa5384a28fda",
+        });
+
+        expect(res.status).toBe(StatusCodes.OK);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data).toBeGreaterThan(0);
+      });
     });
 
     describe("Get a comment by ID - GET /comments", () => {
