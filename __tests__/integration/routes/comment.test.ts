@@ -35,7 +35,7 @@ describe("Comment routes", () => {
       password: EXISTING_TEST_USER.password,
     });
   });
-  /*   describe("Post routes", () => {
+  describe("Post routes", () => {
     describe("Create a post - POST /comments/:id", () => {
       it("#1 it should throw an error if user is not authenticated", async () => {
         const res = await agent.post(`${BASE_URL}/comments/123456`);
@@ -76,9 +76,9 @@ describe("Comment routes", () => {
           .send({ commentId: res.body.data._id });
       });
     });
-  }); */
+  });
 
-  /*   describe("Get routes - GET /comments", () => {
+  describe("Get routes - GET /comments", () => {
     describe("Get all comments - GET /comments", () => {
       it("#1 it should throw an error if the post does not exist", async () => {
         const res = await agent.get(`${BASE_URL}/comments`).send({
@@ -123,7 +123,7 @@ describe("Comment routes", () => {
         console.log(res.body);
       });
     });
-  }); */
+  });
 
   describe("Put routes - PUT /comments", () => {
     describe("Comments like toggle", () => {
@@ -168,38 +168,40 @@ describe("Comment routes", () => {
         expect(res.body.msg).toBe("This comment does not belong to this post");
       });
 
-      /*       it("#4 should add or remove a like to a comment if it exists", async () => {
-        const comment = await agent
-          .get(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
-          .send({ commentId: "64d52233e973681ba9af5a69" });
+      it("#4 should add or remove a like to a comment if it exists", async () => {
+        const comments = await agent.get(
+          `${BASE_URL}/comments/64d52225e973681ba9af5a63`
+        );
 
-        const likes = comment.body?.likes;
+        const likes = comments.body.data?.likes;
+
+        console.log("likes===>", likes);
 
         const res = await agent
-          .put(`${BASE_URL}/comments`)
-          .send({ postId: "64c7e2ca37fcaa5384a28fda" });
+          .put(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
+          .send({ commentId: "64d52225e973681ba9af5a63" });
 
         const isLiked = likes?.filter(
-          (like: any) => like.toString() === "648dce371dca718fb662f5bb"
+          (like: any) => like.toString() === "64d54305628f33c4eec82b49"
         );
-        const updatedPost = await agent.get(
-          `${BASE_URL}/posts/64c7e2ca37fcaa5384a28fda`
+        const updatedComment = await agent.get(
+          `${BASE_URL}/comments/64d52225e973681ba9af5a63`
         );
 
-        const updatedLikes = await updatedPost.body.data?.likes;
+        const updatedLikes = await updatedComment.body.data?.likes;
 
         if (isLiked?.length < 1) {
           expect(res.status).toBe(StatusCodes.OK);
           expect(res.body.success).toBe(true);
-          expect(res.body.msg).toBe("You've liked this post.");
+          expect(res.body.msg).toBe("You've liked this comment.");
           expect(updatedLikes?.length).toBe(likes?.length + 1);
         } else {
           expect(res.status).toBe(StatusCodes.OK);
           expect(res.body.success).toBe(true);
-          expect(res.body.msg).toBe("You've disliked this post.");
+          expect(res.body.msg).toBe("You've disliked this comment.");
           expect(updatedLikes?.length).toBe(likes?.length - 1);
         }
-      }); */
+      });
     });
   });
 });
