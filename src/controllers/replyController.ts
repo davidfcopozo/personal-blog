@@ -20,11 +20,12 @@ export const createReply = async (
 
   try {
     const post: PostType = await Post.findById(postId);
-    const comment: CommentType = await Comment.findById(commentId);
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
     }
+
+    const comment: CommentType = await Comment.findById(commentId);
 
     const comments = post?.comments;
 
@@ -77,17 +78,21 @@ export const getReplies = async (
     const comment: CommentType = await Comment.findById(commentId);
     const post: PostType = await Post.findById(postId);
 
+    if (!postId || !commentId) {
+      throw new BadRequest("Please provide a post and comment id");
+    }
+
+    if (!comment) {
+      throw new NotFound("This comment doesn't exist or has been deleted");
+    }
+
     if (!post?._id.equals(`${comment?.post}`)) {
       throw new BadRequest("Something went wrong");
     }
 
-    if (!comment) {
-      throw new NotFound("This comment doesn't exist or has been deleted.");
-    }
-
     const replies = comment?.replies;
 
-    if (!replies) {
+    if (!replies?.length) {
       throw new NotFound("No replies on this comment yet");
     }
 
@@ -111,24 +116,28 @@ export const getReplyById = async (
     const comment: CommentType = await Comment.findById(commentId);
     const post: PostType = await Post.findById(postId);
 
+    if (!commentId || !replyId) {
+      throw new BadRequest("Please provide a comment and reply id");
+    }
+
+    //Get the reply by filtering comment's replies
+    const commentReply = comment?.replies?.filter((reply) =>
+      reply.equals(replyId)
+    );
+
+    //Check if the given reply exist
+    if (!commentReply?.length) {
+      throw new NotFound("This comment does not exist or has been deleted");
+    }
+
     //Check if the comment this reply belong to exist
     if (!comment) {
       throw new NotFound("This comment doesn't exist or has been deleted.");
     }
 
-    //Get the reply by filtering comment's replies
-    const commentReply = comment.replies?.filter((reply) =>
-      reply.equals(replyId)
-    );
-
     //Make sure to get the comments and replies of the posts they belong to
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
-    }
-
-    //Check if the given reply exist
-    if (!commentReply?.length) {
-      throw new NotFound("This comment does not exist or has been deleted");
     }
 
     //Get the given reply
@@ -163,8 +172,12 @@ export const deleteReplyById = async (
       postedBy: userId,
     });
 
+    if (!commentId || !replyId) {
+      throw new BadRequest("Please provide a comment and reply id");
+    }
+
     if (!comment) {
-      throw new NotFound("his comment doesn't exist or has been deleted.");
+      throw new NotFound("This comment doesn't exist or has been deleted");
     }
 
     //Get the reply by filtering comment's replies
