@@ -21,8 +21,8 @@ describe("Comment routes", () => {
     });
   });
   describe("Post routes", () => {
-    describe("Create a post - POST /comments/:id", () => {
-      it("#1 it should throw an error if user is not authenticated", async () => {
+    describe("Create a comment - POST /comments/:id", () => {
+      it("#1 should throw an error if user is not authenticated", async () => {
         const res = await agent.post(`${BASE_URL}/comments/123456`);
 
         expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
@@ -30,7 +30,7 @@ describe("Comment routes", () => {
         expect(res.body.msg).toBe("Unauthorized: No token provided");
       });
 
-      it("#2 it should throw an error if the post does not exist", async () => {
+      it("#2 should throw an error if the post does not exist", async () => {
         await agent.post(`${BASE_URL}/auth/login`).send({
           email: EXISTING_TEST_USER.email_verified,
           password: EXISTING_TEST_USER.password,
@@ -46,7 +46,7 @@ describe("Comment routes", () => {
         );
       });
 
-      it("#3 it should create a comment", async () => {
+      it("#3 should create a comment", async () => {
         const res = await agent
           .post(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
           .send({ content: "Test comment" });
@@ -62,7 +62,7 @@ describe("Comment routes", () => {
 
   describe("Get routes - GET /comments", () => {
     describe("Get all comments - GET /comments", () => {
-      it("#1 it should throw an error if the post does not exist", async () => {
+      it("#1 should throw an error if the post does not exist", async () => {
         const res = await agent.get(`${BASE_URL}/comments`).send({
           postId: "64c7e2ca37fcaa5384a28fdb",
         });
@@ -72,7 +72,7 @@ describe("Comment routes", () => {
         expect(res.body.msg).toBe("This post doesn't exist");
       });
 
-      it("#2 it should throw an error if there are no comments", async () => {
+      it("#2 should throw an error if there are no comments", async () => {
         const res = await agent.get(`${BASE_URL}/comments`).send({
           postId: "659ee2ac62452741e01eda12",
         });
@@ -82,7 +82,7 @@ describe("Comment routes", () => {
         expect(res.body.msg).toBe("No comments on this post");
       });
 
-      it("#3 it should get all comments", async () => {
+      it("#3 should get all comments", async () => {
         const res = await agent.get(`${BASE_URL}/comments`).send({
           postId: "64c7e2ca37fcaa5384a28fda",
         });
@@ -94,7 +94,7 @@ describe("Comment routes", () => {
     });
 
     describe("Get a comment by ID - GET /comments", () => {
-      it("#1 it should throw an error if the comment does not exist", async () => {
+      it("#1 should throw an error if the comment does not exist", async () => {
         const res = await agent.get(
           `${BASE_URL}/comments/64d52233e973681ba9af5a68`
         );
@@ -104,7 +104,7 @@ describe("Comment routes", () => {
         expect(res.body.msg).toBe("No comments found");
       });
 
-      it("#2 it should get a comment by ID", async () => {
+      it("#2 should get a comment by ID", async () => {
         const res = await agent.get(`${BASE_URL}/comments/${newCommentId}`);
 
         expect(res.status).toBe(StatusCodes.OK);
@@ -188,7 +188,7 @@ describe("Comment routes", () => {
   });
 
   describe("Delete routes - DELETE /comments", () => {
-    it("#1 it should throw an error if a user is not logged in", async () => {
+    it("#1 should throw an error if a user is not logged in", async () => {
       await agent.get(`${BASE_URL}/auth/logout`).send({
         email: EXISTING_TEST_USER.email_verified,
         password: EXISTING_TEST_USER.password,
@@ -202,7 +202,7 @@ describe("Comment routes", () => {
       expect(res.body.msg).toBe("Unauthorized: No token provided");
     });
 
-    it("#2 it should throw an error if a comment does not exist", async () => {
+    it("#2 should throw an error if a comment does not exist", async () => {
       await agent.post(`${BASE_URL}/auth/login`).send({
         email: EXISTING_TEST_USER.email_verified,
         password: EXISTING_TEST_USER.password,
@@ -216,7 +216,7 @@ describe("Comment routes", () => {
       expect(res.body.msg).toBe("No comments found");
     });
 
-    it("#3 it should throw an error if the post id is not equal to the post's id the comment belongs", async () => {
+    it("#3 should throw an error if the post id is not equal to the post's id the comment belongs", async () => {
       const res = await agent
         .delete(`${BASE_URL}/comments/659ee2ac62452741e01eda12`)
         .send({ commentId: newCommentId });
@@ -225,7 +225,7 @@ describe("Comment routes", () => {
       expect(res.body.msg).toBe("Something went wrong");
     });
 
-    it("#4 it should delete a comment", async () => {
+    it("#4 should delete a comment", async () => {
       const res = await agent
         .delete(`${BASE_URL}/comments/64c7e2ca37fcaa5384a28fda`)
         .send({ commentId: newCommentId });
