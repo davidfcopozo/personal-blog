@@ -103,7 +103,7 @@ export const updateUserById = async (
     }
 
     const updatedUser: UserType = await User.findOneAndUpdate(
-      { _id: userId },
+      { _id: user.role === "admin" ? userIdParam : userId },
       fieldsToUpdate,
       { new: true, runValidators: true }
     ).select(sensitiveDataToExclude);
