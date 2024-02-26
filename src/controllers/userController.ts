@@ -71,6 +71,10 @@ export const updateUserById = async (
       throw new NotFound("User not found");
     }
 
+    if (user.role !== "admin" && userId !== userIdParam) {
+      throw new Unauthenticated("Your not authorized to perform this action");
+    }
+
     let fields: FieldsToUpdateType = {
       firstName,
       lastName,
