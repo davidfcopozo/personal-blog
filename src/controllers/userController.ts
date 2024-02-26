@@ -36,11 +36,11 @@ export const getUserById = async (
   next: NextFunction
 ) => {
   const {
-    params: { id: commentId },
+    params: { id: userId },
   } = req;
 
   try {
-    const user: UserType = await User.findById(commentId).select(
+    const user: UserType = await User.findById(userId).select(
       sensitiveDataToExclude
     );
 
@@ -86,7 +86,7 @@ export const updateUserById = async (
     };
     let fieldsToUpdate: FieldsToUpdateType = {};
 
-    // Add key-value pair tp the fieldsToUpdate object only if they have a value
+    // Add key-value pair to the fieldsToUpdate object only if they have a value
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
         if (fields[key]) {
