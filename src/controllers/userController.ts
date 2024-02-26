@@ -61,6 +61,7 @@ export const updateUserById = async (
 ) => {
   const {
     user: { userId },
+    params: { id: userIdParam },
     body: { firstName, lastName, avatar, bio, title, username },
   } = req;
 
