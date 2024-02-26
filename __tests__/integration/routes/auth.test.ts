@@ -257,7 +257,7 @@ describe("Auth routes", () => {
       });
 
       user = await User.findOne({ email: TEST_USER.email });
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(res.body.id).toBe(user?._id.toString());
       expect(res.body.success).toBe(true);
     });
@@ -375,7 +375,7 @@ describe("Auth routes", () => {
       const res = await agent.delete(`${BASE_URL}/users/${user?._id}`);
 
       expect(res.body.msg).toBe("User has been successfully deleted");
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
     });
   });
 
@@ -387,7 +387,7 @@ describe("Auth routes", () => {
       });
 
       user = await User.findOne({ email: EXISTING_TEST_USER.email_verified });
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(StatusCodes.OK);
       expect(res.body.id).toBe(user?._id.toString());
       expect(res.body.success).toBe(true);
     });
