@@ -23,7 +23,7 @@ export const getUsers = async (
     }
 
     res
-      .status(StatusCodes.CREATED)
+      .status(StatusCodes.OK)
       .json({ success: true, data: users, amount: users.length });
   } catch (error) {
     return next(error);
