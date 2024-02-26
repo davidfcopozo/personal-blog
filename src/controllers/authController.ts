@@ -4,11 +4,13 @@ import Crypto from "crypto";
 import { StatusCodes } from "http-status-codes";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
 import { hashString } from "../utils/hashString";
-import { BadRequest, Unauthenticated } from "../errors/index";
+import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { sendVerificationEmail } from "../utils/sendVerificationEmail";
 import { sendPasswordResetEmail } from "../utils/sendPasswordResetEmail";
 import { isValidEmail, isValidUsername } from "../utils/validators";
 import { UserType } from "../typings/types";
+import dotenv from "dotenv";
+dotenv.config();
 
 let baseUrl = "http://localhost:8000";
 
@@ -17,25 +19,32 @@ export const register = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { firstName, lastName, username, email, password } = req.body;
-
-  const userExist: UserType = await User.findOne({ email });
-
-  //Check if email already exists
-  if (userExist) {
-    return next(new BadRequest("An account with this email already exists"));
-  }
-
-  //Check if this is the first account created
-  const isFirstAccount = (await User.countDocuments({})) === 0;
-
-  //If this is the first account, set role to admin, else set role to user
-  const role = isFirstAccount ? "admin" : "user";
-
-  //Generate verification token for email verification
-  const verificationToken = Crypto.randomBytes(40).toString("hex");
-
   try {
+    const { firstName, lastName, username, email, password } = req.body;
+
+    const userExist: UserType = await User.findOne({ email });
+    const usernameExist: UserType = await User.findOne({
+      username: username.toLowerCase(),
+    });
+
+    //Check if email already exists
+    if (userExist) {
+      throw new BadRequest("An account with this email already exists");
+    }
+
+    //Check if username already exists
+    if (usernameExist) {
+      throw new BadRequest("An account with this username already exists");
+    }
+
+    //Check if this is the first account created
+    const isFirstAccount = (await User.countDocuments({})) === 0;
+
+    //If this is the first account, set role to admin, else set role to user
+    const role = isFirstAccount ? "admin" : "user";
+
+    //Generate verification token for email verification
+    const verificationToken = Crypto.randomBytes(40).toString("hex");
     const lowercasedUsername = username.toLowerCase();
 
     if (!isValidEmail(email)) {
@@ -64,10 +73,11 @@ export const register = async (
     });
 
     res.status(StatusCodes.CREATED).json({
+      success: true,
       msg: "Account registration successful! Please check your email to verify account",
     });
-  } catch (error: any) {
-    next(new BadRequest(error));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -76,35 +86,44 @@ export const resendVerificationToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  const user: UserType = await User.findOne({ email });
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address, please provide a valid one");
+    }
 
-  if (!user) {
-    return next(new Unauthenticated("Invalid email address"));
+    const user: UserType = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFound("No user found with this email address");
+    }
+
+    if (user.verified) {
+      throw new BadRequest("Account is verified already");
+    }
+
+    //Generate verification token for email verification
+    const verificationToken = Crypto.randomBytes(40).toString("hex");
+
+    user.verificationToken = verificationToken;
+
+    await user.save();
+
+    await sendVerificationEmail({
+      firstName: user.firstName,
+      email: user.email,
+      verificationToken: user.verificationToken,
+      baseUrl,
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: "Email verification has been resent, please check your email.",
+    });
+  } catch (err) {
+    next(err);
   }
-
-  if (user.verified) {
-    return next(new BadRequest("Account is verified already"));
-  }
-
-  //Generate verification token for email verification
-  const verificationToken = Crypto.randomBytes(40).toString("hex");
-
-  user.verificationToken = verificationToken;
-
-  await user.save();
-
-  await sendVerificationEmail({
-    firstName: user.firstName,
-    email: user.email,
-    verificationToken: user.verificationToken,
-    baseUrl,
-  });
-
-  res.status(StatusCodes.OK).json({
-    message: "Email verification had been resent, please check your email.",
-  });
 };
 
 export const verifyEmail = async (
@@ -112,26 +131,40 @@ export const verifyEmail = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email } = req.body;
-  const { token } = req.query;
+  try {
+    const { email } = req.body;
+    const { token } = req.query;
 
-  const user = await User.findOne({ email });
+    if (!token) {
+      throw new BadRequest("Not token provided");
+    }
 
-  if (!user) {
-    return next(new Unauthenticated("Invalid email address"));
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address, please provide a valid one");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFound("No user found with this email address");
+    }
+
+    if (user.verificationToken !== token) {
+      throw new Unauthenticated("Invalid verification token");
+    }
+
+    (user.verificationToken = ""),
+      (user.verifiedAt = new Date(Date.now())),
+      (user.verified = true);
+
+    await user.save();
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, msg: "Email verified successfully" });
+  } catch (err) {
+    next(err);
   }
-
-  if (user.verificationToken !== token) {
-    return next(new Unauthenticated("Invalid verification token"));
-  }
-
-  (user.verificationToken = ""),
-    (user.verifiedAt = new Date(Date.now())),
-    (user.verified = true);
-
-  await user.save();
-
-  res.status(StatusCodes.OK).json({ message: "Email verified successfully" });
 };
 
 export const login = async (
@@ -139,21 +172,33 @@ export const login = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user: UserType = await User.findOne({ email });
+    if (!email) {
+      throw new BadRequest("Please provide a valid email address");
+    }
 
-  if (!user) {
-    return next(new Unauthenticated("Invalid email address"));
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address, please provide a valid one");
+    }
+
+    const user: UserType = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFound("No user found with this email address");
+    }
+
+    const isCorrectPassword = await user.comparePassword(password);
+
+    if (!isCorrectPassword) {
+      throw new Unauthenticated("Invalid password");
+    }
+
+    attachCookiesToResponse({ user, res });
+  } catch (err) {
+    next(err);
   }
-
-  const isCorrectPassword = await user.comparePassword(password);
-
-  if (!isCorrectPassword) {
-    return next(new Unauthenticated("Invalid password"));
-  }
-
-  attachCookiesToResponse({ user, res });
 };
 
 export const forgotPassword = async (
@@ -161,15 +206,23 @@ export const forgotPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  if (!email) {
-    return next(new BadRequest("Please provide a valid email address"));
-  }
+    if (!email) {
+      throw new BadRequest("Please provide a valid email address");
+    }
 
-  const user: UserType = await User.findOne({ email });
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address, please provide a valid one");
+    }
 
-  if (user) {
+    const user: UserType = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFound("No user found with this email address");
+    }
+
     const passwordResetToken = Crypto.randomBytes(70).toString("hex");
 
     await sendPasswordResetEmail({
@@ -180,19 +233,30 @@ export const forgotPassword = async (
     });
 
     const thirtyMinutes = 1000 * 60 * 30;
-    const passwordTokenExpirationDate = new Date(Date.now() + thirtyMinutes);
+    const passwordTokenExpirationDate = new Date(
+      new Date(Date.now() + thirtyMinutes)
+    );
 
     user.passwordVerificationToken = hashString(passwordResetToken);
     user.passwordTokenExpirationDate = passwordTokenExpirationDate;
 
     await user.save();
-  }
 
-  res.status(StatusCodes.OK).json({
-    message:
-      "If an account with this email exists, a password reset link has been sent to your email",
-    success: true,
-  });
+    //Send unhashed token in response for testing
+    if (process.env.NODE_ENV === "test") {
+      res.status(StatusCodes.OK).json({
+        success: true,
+        token: passwordResetToken,
+        msg: "A password reset link has been sent to your email",
+      });
+    }
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: "A password reset link has been sent to your email",
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const resetPassword = async (
@@ -200,39 +264,47 @@ export const resetPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password: newPassword } = req.body;
-  const { token } = req.query;
+  try {
+    const { email, password: newPassword } = req.body;
+    const { token } = req.query;
 
-  if (!email || !newPassword || !token) {
-    return next(
-      new BadRequest("Please provide a valid email address, password and token")
-    );
-  }
-
-  const user: UserType = await User.findOne({ email });
-
-  if (user) {
-    if (
-      user.passwordVerificationToken !== hashString(token as string) ||
-      (user.passwordTokenExpirationDate &&
-        user.passwordTokenExpirationDate > new Date(Date.now()))
-    ) {
-      return next(new BadRequest("Invalid token"));
+    if (!email || !newPassword || !token) {
+      throw new BadRequest(
+        "Please provide a valid email address, password and token"
+      );
     }
 
-    user.password = newPassword;
-    user.passwordVerificationToken = null;
-    user.passwordTokenExpirationDate = null;
-    await user.save();
+    const user: UserType = await User.findOne({ email });
 
-    res.send("Password reset successful");
+    if (user) {
+      if (user.passwordVerificationToken !== hashString(token as string)) {
+        throw new Unauthenticated("Invalid token");
+      }
+
+      if (
+        user.passwordTokenExpirationDate &&
+        user.passwordTokenExpirationDate <= new Date(Date.now())
+      ) {
+        throw new Unauthenticated("Expired token");
+      }
+
+      user.password = newPassword;
+      user.passwordVerificationToken = null;
+      user.passwordTokenExpirationDate = null;
+      await user.save();
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        msg: "Password reset successful",
+      });
+    }
+  } catch (err) {
+    return next(err);
   }
 };
 
 export const logout = async (_req: Request, res: Response) => {
   res.clearCookie("token");
 
-  res
-    .status(StatusCodes.OK)
-    .json({ message: "Logout successful", success: true });
+  res.status(StatusCodes.OK).json({ success: true, msg: "Logout successful" });
 };

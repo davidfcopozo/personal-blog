@@ -3,7 +3,7 @@ import Post from "../models/postModel";
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
-import { NotFound, BadRequest } from "../errors/index";
+import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
 import { PostType } from "../typings/types";
 
 export const createPost = async (
@@ -13,11 +13,15 @@ export const createPost = async (
 ) => {
   const { userId } = req.user;
   try {
-    await Post.create({ ...req.body, postedBy: userId });
+    if (!req.body.title && !req.body.content) {
+      throw new BadRequest("Title and content are required");
+    }
 
-    res.status(StatusCodes.CREATED).json({ msg: "Post created" });
-  } catch (err: any) {
-    return next(new NotFound(err));
+    const post: PostType = await Post.create({ ...req.body, postedBy: userId });
+
+    res.status(StatusCodes.CREATED).json({ success: true, data: post });
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -32,12 +36,14 @@ export const getAllPosts = async (
 
   try {
     if (posts.length < 1) {
-      throw new Error("Posts not found");
+      throw new NotFound("Posts not found");
     }
 
-    res.status(StatusCodes.OK).json({ posts, count: posts.length });
-  } catch (err: any) {
-    return next(new NotFound(err));
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: posts, count: posts.length });
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -54,12 +60,12 @@ export const getPostById = async (
     const post: PostType = await Post.findById(postId);
 
     if (!post) {
-      throw new Error("Post not found");
+      throw new NotFound("Post not found");
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -74,18 +80,30 @@ export const updatePostById = async (
   } = req;
 
   try {
+    const oldPost: PostType = await Post.findById(postId);
+
+    if (!oldPost) {
+      throw new NotFound("Post not found");
+    }
+
+    if (oldPost && oldPost?.postedBy?.toString() !== userId) {
+      throw new Unauthenticated("You are not authorized to update this post");
+    }
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+      throw new BadRequest(
+        "Nothing to update. Please provide the data to be updated"
+      );
+    }
+
     const post: PostType = await Post.findOneAndUpdate(
       { _id: postId, postedBy: userId },
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!post) {
-      throw new Error("Post not found");
-    }
-
-    res.status(StatusCodes.OK).json({ success: true, post });
-  } catch (err: any) {
+    res.status(StatusCodes.OK).json({ success: true, data: post });
+  } catch (err) {
     return next(err);
   }
 };
@@ -100,21 +118,27 @@ export const deletePostById = async (
     params: { id: postId },
   } = req;
 
-  const post: PostType = await Post.findOneAndRemove({
-    _id: postId,
-    postedBy: userId,
-  });
-
   try {
+    const post: PostType = await Post.findById(postId);
+
     if (!post) {
-      throw new Error(`No post found with id ${postId}`);
+      throw new NotFound(`No post found with id ${postId}`);
     }
+
+    if (post && post?.postedBy?.toString() !== userId) {
+      throw new Unauthenticated("Unauthorized: No token provided");
+    }
+
+    await Post.findOneAndRemove({
+      _id: postId,
+      postedBy: userId,
+    });
 
     res
       .status(StatusCodes.OK)
-      .json({ msg: `Post has been successfully deleted` });
-  } catch (err: any) {
-    return next(new NotFound(err));
+      .json({ success: true, msg: `Post has been successfully deleted` });
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -171,32 +195,5 @@ export const toggleLike = async (
     }
   } catch (error) {
     next(error);
-  }
-};
-
-export const increaseViewCount = async (
-  req: RequestWithUserInfo | any,
-  res: Response,
-  next: NextFunction
-) => {
-  const { id } = req.params;
-
-  try {
-    const post: PostType = await Post.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!post) {
-      throw new NotFound("Post not found");
-    }
-
-    res.status(StatusCodes.OK).json({
-      success: true,
-      views: post.views,
-    });
-  } catch (err) {
-    next(err);
   }
 };

@@ -9,11 +9,13 @@ export interface PostInterface {
   likes?: mongoose.Types.ObjectId[];
   tags?: String[];
   categories?: String[];
-  views?: Number;
-  comments?: {
-    text: String;
-    postedBy: mongoose.Types.ObjectId;
-  };
+  visits?: Number;
+  comments?: [
+    {
+      text: String;
+      postedBy: mongoose.Types.ObjectId;
+    }
+  ];
   published: Boolean;
   draft: Boolean;
 }

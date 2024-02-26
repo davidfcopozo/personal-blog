@@ -23,7 +23,7 @@ export const getUsers = async (
     }
 
     res
-      .status(StatusCodes.CREATED)
+      .status(StatusCodes.OK)
       .json({ success: true, data: users, amount: users.length });
   } catch (error) {
     return next(error);
@@ -36,21 +36,21 @@ export const getUserById = async (
   next: NextFunction
 ) => {
   const {
-    params: { id: commentId },
+    params: { id: userId },
   } = req;
 
   try {
-    const user: UserType = await User.findById(commentId).select(
+    const user: UserType = await User.findById(userId).select(
       sensitiveDataToExclude
     );
 
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFound("User not found");
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -61,6 +61,7 @@ export const updateUserById = async (
 ) => {
   const {
     user: { userId },
+    params: { id: userIdParam },
     body: { firstName, lastName, avatar, bio, title, username },
   } = req;
 
@@ -69,6 +70,10 @@ export const updateUserById = async (
 
     if (!user) {
       throw new NotFound("User not found");
+    }
+
+    if (user.role !== "admin" && userId !== userIdParam) {
+      throw new Unauthenticated("Your not authorized to perform this action");
     }
 
     let fields: FieldsToUpdateType = {
@@ -81,7 +86,7 @@ export const updateUserById = async (
     };
     let fieldsToUpdate: FieldsToUpdateType = {};
 
-    // Add key-value pair tp the fieldsToUpdate object only if they have a value
+    // Add key-value pair to the fieldsToUpdate object only if they have a value
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
         if (fields[key]) {
@@ -99,7 +104,7 @@ export const updateUserById = async (
     }
 
     const updatedUser: UserType = await User.findOneAndUpdate(
-      { _id: userId },
+      { _id: user.role === "admin" ? userIdParam : userId },
       fieldsToUpdate,
       { new: true, runValidators: true }
     ).select(sensitiveDataToExclude);
@@ -132,13 +137,13 @@ export const deleteUserById = async (
 
   try {
     if (!user) {
-      throw new Error(`No user found with id ${id}`);
+      throw new NotFound(`No user found with id ${id}`);
     }
 
     res
       .status(StatusCodes.OK)
       .json({ msg: `User has been successfully deleted` });
-  } catch (err: any) {
-    return next(new NotFound(err));
+  } catch (err) {
+    return next(err);
   }
 };
