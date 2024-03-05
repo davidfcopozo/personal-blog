@@ -5,6 +5,7 @@ const postSchema = new mongoose.Schema<PostInterface>(
   {
     title: { type: String, required: [true, "Title is required"] },
     content: { type: String, required: [true, "Content is required"] },
+    slug: { type: String, required: [true, "Slug is required"] },
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
