@@ -28,6 +28,11 @@ export const createPost = async (
       );
     }
 
+    const post: PostType = await Post.create({
+      ...req.body,
+      postedBy: userId,
+      slug: slug,
+    });
 
     res.status(StatusCodes.CREATED).json({ success: true, data: post });
   } catch (err) {
