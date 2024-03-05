@@ -21,6 +21,13 @@ export const createPost = async (
       ? req.body.slug.toLowerCase().split(" ").join("-")
       : req.body.title.toLowerCase().split(" ").join("-");
 
+    // Check if the slug contains only letters, numbers, or hyphens
+    if (!/^[a-z](-?[a-z])*$/.test(slug)) {
+      throw new BadRequest(
+        "Slug should contain only letters, numbers, or hyphens and should not start or end with a hyphen"
+      );
+    }
+
 
     res.status(StatusCodes.CREATED).json({ success: true, data: post });
   } catch (err) {
