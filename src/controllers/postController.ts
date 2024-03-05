@@ -17,7 +17,10 @@ export const createPost = async (
       throw new BadRequest("Title and content are required");
     }
 
-    const post: PostType = await Post.create({ ...req.body, postedBy: userId });
+    let slug = req.body.slug
+      ? req.body.slug.toLowerCase().split(" ").join("-")
+      : req.body.title.toLowerCase().split(" ").join("-");
+
 
     res.status(StatusCodes.CREATED).json({ success: true, data: post });
   } catch (err) {
