@@ -12,7 +12,6 @@ import { connectDB } from "./config/connect";
 import routes from "./routes/index";
 import { errorHandlerMiddleware } from "./middleware/error-handler";
 import { notFound } from "./middleware/not-found";
-//import path from "path";
 
 dotenv.config();
 
