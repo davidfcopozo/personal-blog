@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto as FontSans } from "next/font/google"
 import { cn } from "@/lib/utils"
 import "@/styles/globals.css";
+import { Header } from "@/components/header";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({
       <body className={cn(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable
-        )}>{children}</body>
+      )}>{children}
+      <Header />
+      </body>
     </html>
   );
 }
