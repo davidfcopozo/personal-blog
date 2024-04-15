@@ -6,7 +6,7 @@ import { Header } from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider"
 
 const fontSans = FontSans({
-  subsets: ["latin"], 
+  subsets: ["latin"],
   variable: "--font-sans", style: "normal", weight: "400", display: "swap"
 })
 
@@ -33,7 +33,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-      <Header />
+          <Header />
         </ThemeProvider>
       </body>
     </html>
