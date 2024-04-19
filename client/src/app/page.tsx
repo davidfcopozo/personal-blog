@@ -1,9 +1,17 @@
-import Image from "next/image";
+
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-     
-    </main>
+    <div className="container p-2 mx-auto">
+      <div className="flex flex-row flex-wrap p-2 sm:p-4">
+        <main role="main" className="w-full mt-12 sm:w-2/3 md:w-3/4 pt-1 px-2">
+        </main>
+        <aside className="w-full hidden  pt-12 sm:flex sm:w-1/3 md:w-1/4 px-2 border-l-2 border-secondary">
+          <div className="sticky top-16 p-4 bg-background rounded-xl w-full h-[84vh]">
+
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }
