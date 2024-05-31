@@ -6,7 +6,7 @@ export default function Home() {
       <div className="flex flex-row flex-wrap p-2 sm:p-4">
         <main
           role="main"
-          className="w-full flex flex-wrap gap-4 mt-12 sm:w-2/3 md:w-3/4 pt-1 px-2"
+          className="w-full flex justify-center flex-wrap gap-4 mt-12 sm:w-2/3 md:w-3/4 pt-1 px-2"
         >
           <BlogCard />
           <BlogCard />
