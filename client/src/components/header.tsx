@@ -39,7 +39,7 @@ export function Header() {
         <LogoIcon width="80 " height="80" color={isDarkTheme} />
         <span className="sr-only">TechyComm logo</span>
       </Link>
-      <form className="ml-auto flex-1 md:flex-initial md:hidden">
+      <form className="ml-auto flex-initial flex-1 sm:hidden">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
