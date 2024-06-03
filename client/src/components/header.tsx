@@ -93,16 +93,6 @@ export function Header() {
         >
           Sign In
         </Link>
-        {/*           <form className="ml-auto flex-1 flex-initial md:hidden">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search posts..."
-                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-              />
-            </div>
-          </form> */}
         <DropdownMenu>
           {true ? (
             <Button variant="default" size="sm" className="rounded-3xl">
