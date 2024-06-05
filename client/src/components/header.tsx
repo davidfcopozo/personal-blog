@@ -20,15 +20,13 @@ export function Header() {
   const { theme, systemTheme } = useTheme();
 
   let isDarkTheme =
-    theme === "system" && systemTheme === "dark"
+    theme === "dark"
       ? "#ffffff"
-      : theme === "system" && systemTheme === "light"
-      ? "#000000"
       : theme === "light"
       ? "#000000"
-      : theme === "light"
-      ? "#000000"
-      : "#ffffff";
+      : systemTheme === "dark"
+      ? "#ffffff"
+      : "#000000";
 
   return (
     <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -51,13 +49,6 @@ export function Header() {
       </form>
       <nav className="ml-auto flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-end md:gap-5 md:text-sm lg:gap-6">
         <div className="flex text-sm gap-2 items-center md:gap-4 lg:gap-5">
-          {/*       <Link
-            href="#"
-            className="text-foreground transition-colors hover:text-foreground"
-          >
-            Write
-          </Link> */}
-
           <ModeToggle />
         </div>
         <div
