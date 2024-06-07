@@ -18,7 +18,6 @@ import { useTheme } from "next-themes";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
-
   let isDarkTheme =
     theme === "dark"
       ? "#ffffff"
@@ -31,7 +30,7 @@ export function Header() {
   return (
     <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <Link
-        href="#"
+        href="/"
         className="flex items-center gap-2 text-lg font-semibold md:text-base"
       >
         <LogoIcon width="80 " height="80" color={isDarkTheme} />
@@ -79,17 +78,20 @@ export function Header() {
 
       <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
         <Link
-          href="#"
+          href="/login"
           className="text-muted-foreground transition-colors hover:text-foreground"
         >
           Sign In
         </Link>
         <DropdownMenu>
           {true ? (
-            <Button variant="default" size="sm" className="rounded-3xl">
-              <p className="text-xs md:text-sm font-bold">Sign Up</p>
+            <Link
+              href="/register"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-3xl"
+            >
+              <p className="text-xs md:text-sm font-bo  ">Sign Up</p>
               <span className="sr-only">Sign up button</span>
-            </Button>
+            </Link>
           ) : (
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
