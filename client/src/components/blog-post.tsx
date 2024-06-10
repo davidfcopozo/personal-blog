@@ -27,7 +27,7 @@ const BlogPost = () => {
           className="xl:w-[80%] w-[96%] mx-auto lg:h-[560px] md:h-[480px] rounded-lg aspect-square"
           width={350}
           height={200}
-          objectFit="cover"
+          style={{ objectFit: "contain" }}
         />
 
         {/*  <!-- Blog Info --> */}
