@@ -15,17 +15,24 @@ import { Input } from "@/components/ui/input";
 import { LogoIcon } from "./ui/icons";
 import { ModeToggle } from "./ui/mode-toggle";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
-  let isDarkTheme =
-    theme === "dark"
-      ? "#ffffff"
-      : theme === "light"
-      ? "#000000"
-      : systemTheme === "dark"
-      ? "#ffffff"
-      : "#000000";
+
+  const [darkTheme, setDarkTheme] = useState("#000000");
+
+  useEffect(() => {
+    setDarkTheme(
+      theme === "dark"
+        ? "#ffffff"
+        : theme === "light"
+        ? "#000000"
+        : systemTheme === "dark"
+        ? "#ffffff"
+        : "#000000"
+    );
+  }, [theme, systemTheme]);
 
   return (
     <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -33,7 +40,7 @@ export function Header() {
         href="/"
         className="flex items-center gap-2 text-lg font-semibold md:text-base"
       >
-        <LogoIcon width="80 " height="80" color={isDarkTheme} />
+        <LogoIcon width="80 " height="80" color={darkTheme} />
         <span className="sr-only">TechyComm logo</span>
       </Link>
       <form className="ml-auto flex-initial flex-1 sm:hidden">
