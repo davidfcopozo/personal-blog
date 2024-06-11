@@ -54,7 +54,6 @@ export function Dashboard() {
                   href="#"
                   className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                 >
-                  {/*   <Home className="h-5 w-5" /> */}
                   <LayoutDashboard strokeWidth={2.2} className="h-5 w-5" />
                   <span className="sr-only">Dashboard</span>
                 </Link>
@@ -124,7 +123,7 @@ export function Dashboard() {
                 <Button size="sm" className="h-8 gap-1">
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
+                    Add New Post
                   </span>
                 </Button>
               </div>
@@ -132,9 +131,10 @@ export function Dashboard() {
             <TabsContent value="all">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
-                  <CardTitle>Products</CardTitle>
+                  <CardTitle>Posts</CardTitle>
                   <CardDescription>
-                    Manage your products and view their sales performance.
+                    Manage your blog posts and view their interaction
+                    performance.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -376,8 +376,7 @@ export function Dashboard() {
 
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                    products
+                    Showing <strong>1-10</strong> of <strong>32</strong> posts
                   </div>
                 </CardFooter>
               </Card>
