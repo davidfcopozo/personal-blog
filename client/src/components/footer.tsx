@@ -1,10 +1,41 @@
 import { Coffee } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 
 const Footer = () => {
   return (
-    <section className="bg-background">
+    <footer className="flex flex-col bg-background justify-center">
+      <div className="grid justify-items-center max-w-full grid-cols-1 gap-y-16 gap-x-2 md:gap-y-4">
+        <div className="max-w-xl lg:max-w-lg">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground text-center sm:text-4xl">
+            Subscribe to our newsletter.
+          </h2>
+          <p className="mt-4 text-lg text-center text-muted-foreground">
+            Stay up-to-date with the latest tech trends, exclusive insights and
+            news delivered straight to your inbox.
+          </p>
+          <div className="mt-6 flex flex-col max-w-sm gap-4 mx-auto px-4 md:max-w-md md:px-6 md:flex-row ">
+            <Label className="sr-only">Email address</Label>
+            <Input
+              id="email-address"
+              name="email"
+              type="email"
+              required
+              className="min-w-0 flex-auto rounded-md border-0 bg-white/5 px-3.5 py-2 shadow-sm text-white ring-white/10 ring-1 ring-inset focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+              placeholder="Enter your email"
+            />
+            <Button
+              type="submit"
+              className="flex-none rounded-md bg-foreground px-3.5 py-2.5 text-sm font-semibold text-background shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
+              Subscribe
+            </Button>
+          </div>
+        </div>
+      </div>
       <div className="max-w-screen-xl px-4 py-12 mx-auto space-y-8 overflow-hidden sm:px-6 lg:px-8">
         <nav className="flex flex-wrap justify-center -mx-5 -my-2">
           <div className="px-5 py-2">
@@ -56,7 +87,7 @@ const Footer = () => {
             </a>
           </div>
         </nav>
-        <div className="flex justify-center mt-8 space-x-6">
+        <div className="flex justify-center mt-8 space-x-2 md:space-x-4 lg:space-x-6">
           <a
             href="#"
             className="text-muted-foreground transition-all duration-300 hover:text-foreground"
@@ -146,11 +177,11 @@ const Footer = () => {
         </div>
         <Link href="https://github.com/davidfcopozo">
           <span className="flex gap-2 justify-center items-start mt-8 text-base leading-6 transition-all duration-300 text-center text-muted-foreground">
-            Built by David Francisco with {<Coffee size={20} strokeWidth={1} />}
+            Built with {<Coffee size={20} strokeWidth={1} />}
           </span>
         </Link>
       </div>
-    </section>
+    </footer>
   );
 };
 
