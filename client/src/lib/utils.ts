@@ -39,7 +39,6 @@ export function getRelativeTime(
   }
 
   const diffRounded = Math.floor(diff);
-  console.log(`Language: ${language}, Unit: ${unit}`);
   switch (language) {
     case "en":
       if (unit === "seconds") return "just now";
@@ -55,7 +54,6 @@ export function getRelativeTime(
         return `${diffRounded} year${diffRounded > 1 ? "s" : ""} ago`;
       break;
     case "es":
-      console.log(`Language: ${language}, Unit: ${unit}`);
       if (unit === "seconds") return "justo ahora";
       if (unit === "minutes")
         return `hace ${diffRounded} minuto${diffRounded > 1 ? "s" : ""}`;
