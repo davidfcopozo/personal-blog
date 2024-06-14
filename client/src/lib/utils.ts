@@ -69,3 +69,26 @@ export function getRelativeTime(
   }
   return "";
 }
+export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
+  const wordsPerMinute = 200;
+
+  const wordCount = text.trim().split(/\s+/).length;
+
+  const readingTimeMinutes = Math.ceil(wordCount / wordsPerMinute);
+
+  if (locale.toLowerCase() === "es") {
+    if (readingTimeMinutes === 1) {
+      return `1 minuto de lectura`;
+    } else {
+      return `${readingTimeMinutes} minutos de lectura`;
+    }
+  } else {
+    // English output (default)
+    if (readingTimeMinutes === 1) {
+      return `1 minute read`;
+    } else {
+      return `${readingTimeMinutes} minute read`;
+    }
+  }
+}
+
