@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 
 const Footer = () => {
   return (
-    <footer className="flex flex-col bg-background justify-center">
+    <footer className="flex flex-col bg-background justify-center px-4 sm:px-6">
       <div className="grid justify-items-center max-w-full grid-cols-1 gap-y-16 gap-x-2 md:gap-y-4">
         <div className="max-w-xl lg:max-w-lg">
           <h2 className="text-3xl font-bold tracking-tight text-foreground text-center sm:text-4xl">

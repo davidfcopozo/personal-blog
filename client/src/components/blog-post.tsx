@@ -21,14 +21,16 @@ const BlogPost = () => {
         </h1>
 
         {/* Blog cover */}
-        <Image
-          src="/new-img.png"
-          alt="Blog Cover"
-          className="xl:w-[80%] w-[96%] mx-auto lg:h-[560px] md:h-[480px] rounded-lg aspect-square"
-          width={350}
-          height={200}
-          style={{ objectFit: "contain" }}
-        />
+        <div className="flex items-center justify-center xl:w-[80%] w-[96%] mx-auto lg:h-[560px] md:h-[480px]">
+          <Image
+            src="/new-img.png"
+            alt="Blog Cover"
+            className="rounded-lg overflow-hidden aspect-square"
+            width={500}
+            height={250}
+            style={{ objectFit: "contain" }}
+          />
+        </div>
 
         {/*  <!-- Blog Info --> */}
         <div className="w-[90%] mx-auto flex md:gap-4 gap-2 justify-center items-center pt-4">
