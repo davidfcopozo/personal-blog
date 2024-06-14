@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { UserType } from "../../../api/src/typings/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,6 +70,7 @@ export function getRelativeTime(
   }
   return "";
 }
+
 export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
   const wordsPerMinute = 200;
 
@@ -139,3 +141,21 @@ export function getNameInitials(user: any): string {
 }
 
 export function getFullName(user: any) {
+  if (!user) {
+    return "";
+  }
+
+  const capitalize = (str: string) => {
+    if (typeof str !== "string" || str.length === 0) return "";
+    // Capitalize the first letter and concatenate the rest in lowercase
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  const firstName = user.firstName ? capitalize(user.firstName) : "";
+  const lastName = user.lastName ? capitalize(user.lastName) : "";
+
+  // Concatenate the names, ensuring there's a space between if both exist
+  return firstName && lastName
+    ? `${firstName} ${lastName}`
+    : firstName + lastName;
+}
