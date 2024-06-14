@@ -92,3 +92,21 @@ export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
   }
 }
 
+type TruncateText = (text: string, maxLength: number) => string;
+
+export const truncateText: TruncateText = (text, maxLength) => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  let truncated = text.substr(0, maxLength);
+
+  const lastSpace = truncated.lastIndexOf(" ");
+
+  if (lastSpace > 0) {
+    truncated = truncated.substr(0, lastSpace);
+  }
+
+  return truncated + "...";
+};
+
