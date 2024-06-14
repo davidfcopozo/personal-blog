@@ -2,6 +2,7 @@ import { BlogCard } from "@/components/blog-card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
+import { posts, users } from "@/lib/testDatabase.json";
 
 export default function Home() {
   return (
@@ -11,9 +12,9 @@ export default function Home() {
           role="main"
           className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2"
         >
-          <BlogCard />
-          <BlogCard />
-          <BlogCard />
+          {posts.map((post, index) => (
+            <BlogCard key={post._id} post={post} user={users[index]} />
+          ))}
         </main>
         <aside className="w-full hidden pt-12 sm:flex sm:flex-column sm:w-1/3 md:w-1/4 px-2 border-l-2 border-secondary">
           <div className="sticky top-16 p-4 bg-background rounded-xl w-full h-[84vh]">
