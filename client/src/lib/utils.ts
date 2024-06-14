@@ -110,3 +110,32 @@ export const truncateText: TruncateText = (text, maxLength) => {
   return truncated + "...";
 };
 
+export function showMonthDay(
+  isoDate: string,
+  locale: "en" | "es" = "en"
+): string {
+  const date = new Date(isoDate);
+
+  const options: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
+
+  try {
+    return date.toLocaleDateString(locale, options);
+  } catch (e) {
+    // If the locale is not supported, fall back to English
+    return date.toLocaleDateString("en", options);
+  }
+}
+
+export function getNameInitials(user: any): string {
+  if (!user || !user.firstName || !user.lastName) {
+    return "TC";
+  }
+
+  const firstInitial = user.firstName.charAt(0).toUpperCase();
+
+  const lastInitial = user.lastName.charAt(0).toUpperCase();
+
+  return `${firstInitial}${lastInitial}`;
+}
+
+export function getFullName(user: any) {
