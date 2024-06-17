@@ -61,7 +61,7 @@
         "pixel_perfect"
       ],
       "categories": ["Photography", "Nature"],
-      "published": true,
+      "published": false,
       "draft": false,
       "visits": 2547,
       "createdAt": "2023-06-18T11:30:45.777Z",
@@ -145,7 +145,7 @@
         "pixel_perfect"
       ],
       "categories": ["Photography", "Nature"],
-      "published": true,
+      "published": false,
       "draft": false,
       "visits": 2547,
       "createdAt": "2023-06-18T11:30:45.777Z",
@@ -229,7 +229,7 @@
         "pixel_perfect"
       ],
       "categories": ["Photography", "Nature"],
-      "published": true,
+      "published": false,
       "draft": false,
       "visits": 2547,
       "createdAt": "2023-06-18T11:30:45.777Z",
