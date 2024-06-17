@@ -126,6 +126,25 @@ export function showMonthDay(
     return date.toLocaleDateString("en", options);
   }
 }
+export function showMonthDayYear(
+  isoDate: string,
+  locale: "en" | "es" = "en"
+): string {
+  const date = new Date(isoDate);
+
+  const options: Intl.DateTimeFormatOptions = {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  };
+
+  try {
+    return date.toLocaleDateString(locale, options);
+  } catch (e) {
+    // If the locale is not supported, fall back to English
+    return date.toLocaleDateString("en", options);
+  }
+}
 
 export function getNameInitials(user: any): string {
   if (!user || !user.firstName || !user.lastName) {
