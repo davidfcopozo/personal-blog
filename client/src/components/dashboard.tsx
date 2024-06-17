@@ -1,8 +1,8 @@
+"use client";
 import Link from "next/link";
 import {
   CircleUser,
   LayoutDashboard,
-  ListFilter,
   MoreHorizontal,
   PlusCircle,
   Settings,
@@ -19,11 +19,9 @@ import {
 } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -41,8 +39,22 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { posts } from "@/lib/testDatabase.json";
+import { showMonthDayYear } from "@/lib/utils";
+import { useState } from "react";
+import { DashboardSkeleton } from "./dashboard-skeleton";
 
 export function Dashboard() {
+  const [postStatus, setPostStatus] = useState("all");
+
+  const filteredPosts = posts.filter((post) => {
+    return postStatus === "all"
+      ? true
+      : postStatus === "published"
+      ? post.published === true
+      : post.published === false;
+  });
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
       <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -97,29 +109,23 @@ export function Dashboard() {
           <Tabs defaultValue="all">
             <div className="flex justify-center">
               <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="draft">Draft</TabsTrigger>
+                <TabsTrigger value="all" onClick={() => setPostStatus("all")}>
+                  All
+                </TabsTrigger>
+                <TabsTrigger
+                  value="published"
+                  onClick={() => setPostStatus("published")}
+                >
+                  Published
+                </TabsTrigger>
+                <TabsTrigger
+                  value="draft"
+                  onClick={() => setPostStatus("draft")}
+                >
+                  Draft
+                </TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 gap-1">
-                      <ListFilter className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Filter
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked>
-                      Active
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
                 <Button size="sm" className="h-8 gap-1">
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -128,7 +134,7 @@ export function Dashboard() {
                 </Button>
               </div>
             </div>
-            <TabsContent value="all">
+            <TabsContent value={postStatus}>
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
                   <CardTitle>Posts</CardTitle>
@@ -156,7 +162,7 @@ export function Dashboard() {
                           Vistis
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Created at
+                          Date
                         </TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
@@ -165,218 +171,85 @@ export function Dashboard() {
                     </TableHeader>
 
                     <TableBody>
-                      <TableRow>
-                        <TableCell id="title" className="font-medium">
-                          Laser Lemonade Machine
+                      {/* Skeleton to render when fetch status is pending */}
+                      {/* <TableRow>
+                        <DashboardSkeleton />
+                      </TableRow> */}
+                      {filteredPosts.length > 0 ? (
+                        filteredPosts.map((post, key) => (
+                          <TableRow key={key}>
+                            <TableCell id="title" className="font-medium">
+                              {post.title}
+                            </TableCell>
+                            <TableCell id="status">
+                              <Badge variant="outline">
+                                {post.published ? "Published" : "Draft"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell
+                              id="likes"
+                              className="hidden md:table-cell"
+                            >
+                              {post.likes?.length}
+                            </TableCell>
+                            <TableCell
+                              id="comments"
+                              className="hidden md:table-cell"
+                            >
+                              {post.comments?.length}
+                            </TableCell>
+                            <TableCell
+                              id="categories"
+                              className="hidden md:table-cell"
+                            >
+                              {post.categories?.join(", ").toLocaleLowerCase()}
+                            </TableCell>
+                            <TableCell
+                              id="visits"
+                              className="hidden md:table-cell"
+                            >
+                              {post.visits}
+                            </TableCell>
+                            <TableCell
+                              id="date"
+                              className="hidden md:table-cell"
+                            >
+                              {showMonthDayYear(post.createdAt)}
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    aria-haspopup="true"
+                                    size="icon"
+                                    variant="ghost"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                                  <DropdownMenuItem>Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableCell className="pt-4 lg:text-md">
+                          No posts found
                         </TableCell>
-                        <TableCell id="status">
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell id="likes" className="hidden md:table-cell">
-                          499
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell
-                          id="categories"
-                          className="hidden md:table-cell"
-                        >
-                          Javascript, React, Tailwind CSS
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-
-                      <TableRow>
-                        <TableCell id="title" className="font-medium">
-                          Laser Lemonade Machine
-                        </TableCell>
-                        <TableCell id="status">
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell id="likes" className="hidden md:table-cell">
-                          499
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell
-                          id="categories"
-                          className="hidden md:table-cell"
-                        >
-                          Javascript, React, Tailwind CSS
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell id="title" className="font-medium">
-                          Laser Lemonade Machine
-                        </TableCell>
-                        <TableCell id="status">
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell id="likes" className="hidden md:table-cell">
-                          499
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell
-                          id="categories"
-                          className="hidden md:table-cell"
-                        >
-                          Javascript, React, Tailwind CSS
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell id="title" className="font-medium">
-                          Laser Lemonade Machine
-                        </TableCell>
-                        <TableCell id="status">
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell id="likes" className="hidden md:table-cell">
-                          499
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell
-                          id="categories"
-                          className="hidden md:table-cell"
-                        >
-                          Javascript, React, Tailwind CSS
-                        </TableCell>
-                        <TableCell
-                          id="comments"
-                          className="hidden md:table-cell"
-                        >
-                          299
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
 
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of <strong>32</strong> posts
+                    Showing <strong>1-10</strong> of{" "}
+                    <strong>{posts?.length}</strong> posts
                   </div>
                 </CardFooter>
               </Card>
