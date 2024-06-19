@@ -239,7 +239,7 @@
   "users": [
     {
       "_id": "64d54305628f33c4eec82b49",
-      "email": "sadd.ds a@gmail.com",
+      "email": "sadd.dsa@gmail.com",
       "password": "$2a$10$TLkEUYtRWR4sda",
       "role": "user",
       "verificationToken": "",
@@ -252,7 +252,7 @@
       "favorites": [],
       "avatar": "https://firebasestorage.googleapis.com/example_avatar_1.jpg",
       "username": "dsa",
-      "bio": "",
+      "bio": "Test bio",
       "title": "",
       "lastName": "Frandsacisco",
       "firstName": "David",
