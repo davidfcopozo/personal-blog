@@ -2,6 +2,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { users, posts } from "@/lib/testDatabase.json";
 import { getFullName, getNameInitials } from "@/lib/utils";
 import ProfileBlogCard from "@/components/profile-blog-card";
+import Link from "next/link";
 
 export default function Profile() {
   return (
@@ -18,6 +19,9 @@ export default function Profile() {
           </div>
           <div className="gap-2 text-center">
             <p className="text-gray-500">{users[0]?.bio}</p>
+            <Link href="#" className="text-gray-500">
+              example.com
+            </Link>
             <p className="text-gray-500">{users[0]?.email}</p>
             <p className="text-gray-500">@{users[0]?.username}</p>
           </div>
