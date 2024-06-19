@@ -27,7 +27,9 @@ export default function Profile() {
           </div>
         </div>
         <div>
-          <h3 className="mb-6 text-2xl font-bold">Published Articles</h3>
+          <h3 className="mb-6 text-2xl font-bold text-center md:text-start md:ml-6">
+            Published Articles
+          </h3>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post, index) => (
               <ProfileBlogCard key={post._id} post={post} />
