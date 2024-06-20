@@ -230,6 +230,8 @@ export const forgotPassword = async (
       email: user.email,
       token: passwordResetToken,
       baseUrl,
+    }).catch((err) => {
+      throw new Error(err);
     });
 
     const thirtyMinutes = 1000 * 60 * 30;
