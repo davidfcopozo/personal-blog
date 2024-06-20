@@ -6,9 +6,14 @@ dotenv.config();
 const createTransporter = async () => {
   if (process.env.NODE_ENV === "test") {
     const transporter = nodemailerMock.createTransport({
-      host: "smtp-relay.brevo.com",
+      /* host: "smtp-relay.brevo.com",
       port: 587,
       secure: false, // upgrade later with STARTTLS
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      }, */
+      service: "gmail",
       auth: {
         user: process.env.MAIL_USERNAME,
         pass: process.env.MAIL_PASSWORD,
@@ -18,9 +23,14 @@ const createTransporter = async () => {
   }
 
   const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
+    /* host: "smtp-relay.brevo.com",
     port: 587,
     secure: false, // upgrade later with STARTTLS
+    auth: {
+      user: process.env.MAIL_USERNAME,
+      pass: process.env.MAIL_PASSWORD,
+    }, */
+    service: "gmail",
     auth: {
       user: process.env.MAIL_USERNAME,
       pass: process.env.MAIL_PASSWORD,
@@ -32,5 +42,5 @@ const createTransporter = async () => {
 
 export const emailSender = async (emailOptions: SendMailOptions) => {
   let emailTransporter = await createTransporter();
-  emailTransporter.sendMail(emailOptions);
+  await emailTransporter.sendMail(emailOptions);
 };
