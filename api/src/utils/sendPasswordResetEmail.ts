@@ -11,7 +11,7 @@ export const sendPasswordResetEmail = async ({
   const verificationUrl = `${baseUrl}/api/auth/reset-password?token=${token}`;
 
   const emailOptions: SendMailOptions = {
-    from: process.env.MAIL_USERNAME,
+    from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
     subject: "Password Reset",
     html: `
