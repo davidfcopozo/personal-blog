@@ -22,8 +22,8 @@ export interface UserInterface extends Document, ModelMethods {
   verifiedAt?: Date;
   passwordVerificationToken: String | null;
   passwordTokenExpirationDate: Date | null;
-  bookmarks?: mongoose.Types.ObjectId;
-  likes?: mongoose.Types.ObjectId;
+  bookmarks?: mongoose.Types.ObjectId[];
+  likes?: mongoose.Types.ObjectId[];
   avatar?: String;
 }
 export interface RequestWithUserInfo extends Request {
