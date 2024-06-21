@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema<UserInterface>(
       maxlength: 256,
     },
     verificationToken: { type: String },
+    website: { type: String },
     title: { type: String },
     bio: { type: String },
     verified: { type: Boolean, default: false },
