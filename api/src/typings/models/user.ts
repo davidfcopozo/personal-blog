@@ -13,6 +13,7 @@ export interface UserInterface extends Document, ModelMethods {
   email: String;
   password: String;
   username: String;
+  website: String;
   bio?: String;
   title?: String;
   role: String;
