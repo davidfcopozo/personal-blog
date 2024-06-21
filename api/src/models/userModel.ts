@@ -33,7 +33,8 @@ const userSchema = new mongoose.Schema<UserInterface>(
     verifiedAt: { type: Date },
     passwordVerificationToken: { type: String, default: "" },
     passwordTokenExpirationDate: { type: Date, default: null },
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
