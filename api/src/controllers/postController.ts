@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
 import { PostType } from "../typings/types";
+import { slugValidator } from "../utils/validators";
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -21,8 +22,7 @@ export const createPost = async (
       ? req.body.slug.toLowerCase().split(" ").join("-")
       : req.body.title.toLowerCase().split(" ").join("-");
 
-    // Check if the slug contains only letters, numbers, or hyphens
-    if (!/^[a-z](-?[a-z])*$/.test(slug)) {
+    if (!slugValidator(slug)) {
       throw new BadRequest(
         "Slug should contain only letters, numbers, or hyphens and should not start or end with a hyphen"
       );
