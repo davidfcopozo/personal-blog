@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import { UserType } from "../types";
 
 export interface SendPasswordResetEmailProps {
@@ -17,6 +17,18 @@ export interface SendVerificationEmailProps {
 
 export interface AttachCookiesToResponseProps {
   user: UserType;
+  res: Response;
+}
+
+export interface NextRequestProps {
+  res: Response;
+  req: Request;
+}
+export interface NextReq {
+  req: Request;
+}
+
+export interface NextRes {
   res: Response;
 }
 
