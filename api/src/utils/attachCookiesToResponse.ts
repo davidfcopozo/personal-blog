@@ -23,5 +23,6 @@ export const attachCookiesToResponse = ({
     success: true,
     id: user?._id,
     role: user?.role,
+    accessToken: token,
   });
 };
