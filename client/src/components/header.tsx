@@ -15,13 +15,26 @@ import { Input } from "@/components/ui/input";
 import { LogoIcon } from "./ui/icons";
 import { ModeToggle } from "./ui/mode-toggle";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { signOut, useSession } from "next-auth/react";
+import axios from "axios";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
-
+  const { data: session } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
 
+  const handleSignout = async (e: FormEvent): Promise<any> => {
+    console.log("SIGNOUT");
+
+    e.preventDefault();
+    await signOut();
+    await axios.get("http://localhost:8000/api/V1/auth/logout");
+    console.log("SIGNOUT AFTER");
+  };
+
+  /*  console.log((session?.user as { accessToken?: string })?.accessToken);
+  console.log("SESSION===>", session?.user); */
   useEffect(() => {
     setDarkTheme(
       theme === "dark"
@@ -32,7 +45,7 @@ export function Header() {
         ? "#ffffff"
         : "#000000"
     );
-  }, [theme, systemTheme]);
+  }, [theme, systemTheme, session]);
 
   return (
     <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -53,45 +66,52 @@ export function Header() {
           />
         </div>
       </form>
-      <nav className="ml-auto flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-end md:gap-5 md:text-sm lg:gap-6">
+      <nav className="ml-auto flex-col items-center gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <div className="flex text-sm gap-2 items-center md:gap-4 lg:gap-5">
           <ModeToggle />
         </div>
-        <div
-          className={`${
-            true ? "md:hidden" : "md:hidden"
+        {/*    {(session?.user as { accessToken?: string })?.accessToken !==
+          undefined && (
+          <div
+            className={`
           } hidden md:flex md:gap-5 lg:gap-6`}
-        >
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Products
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Customers
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Analytics
-          </Link>
-        </div>
+            <Link
+              href="#"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Products
+            </Link>
+            <Link
+              href="#"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Customers
+            </Link>
+            <Link
+              href="#"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Analytics
+            </Link>
+          </div>
+        )} */}
       </nav>
 
       <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
-        <Link
-          href="/login"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Sign In
-        </Link>
+        {(session?.user as { accessToken?: string })?.accessToken ===
+          undefined && (
+          <Link
+            href="/login"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            onClick={(e) => handleSignout(e)}
+          >
+            Sign In
+          </Link>
+        )}
         <DropdownMenu>
-          {true ? (
+          {(session?.user as { accessToken?: string })?.accessToken ===
+          undefined ? (
             <Link
               href="/register"
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-3xl"
@@ -111,10 +131,16 @@ export function Header() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings">Settings</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => handleSignout(e)}>
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
