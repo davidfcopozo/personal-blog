@@ -20,12 +20,15 @@ export interface UserInterface extends Document, ModelMethods {
   verificationToken?: String;
   verified?: Boolean;
   verifiedAt?: Date;
+  accessToken: String | null;
   passwordVerificationToken: String | null;
   passwordTokenExpirationDate: Date | null;
   bookmarks?: mongoose.Types.ObjectId[];
   likes?: mongoose.Types.ObjectId[];
   avatar?: String;
+  provider: String;
 }
+
 export interface RequestWithUserInfo extends Request {
   user: {
     userId: String;
