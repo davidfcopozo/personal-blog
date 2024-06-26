@@ -35,10 +35,10 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
             password: credentials.password,
           });
-          /* console.log("***RESPONSE*** FROM LIB/AUTH===>", res); */
+          /* console.log("***RESPONSE*** FROM AUTHORIZE LIB/AUTH===>", res); */
 
           const user = res.data;
-          console.log("***USER*** FROM LIB/AUTH===>", user);
+          /* console.log("***USER*** FROM AUTHORIZE LIB/AUTH===>", user); */
 
           if (res.status === 200 && user) {
             // Return the user object with the token
@@ -66,20 +66,20 @@ export const authOptions: NextAuthOptions = {
     newUser: "/profile",
   },
   callbacks: {
-    async signIn({
+    /* async signIn({
       user,
       account,
       profile,
       credentials,
     }): Promise<string | boolean> {
-      /*  console.log(
+      console.log(
         "************FROM CALLBACKS SIGN IN************",
         user,
         account,
         profile,
         user.email,
         credentials
-      ); */
+      );
       let res;
 
       if (account && account.provider !== "credentials") {
@@ -101,7 +101,7 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
       return false;
-    },
+    }, */
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken;
