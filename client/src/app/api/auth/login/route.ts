@@ -1,13 +1,14 @@
 import axios from "axios";
 import { NextRequest } from "next/server";
 
-const baseUrl = "http://localhost:8000/api/v1";
-
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
   try {
-    const res = await axios.post(`${baseUrl}/auth/login`, body);
+    const res = await axios.post(
+      `${process.env.BACKEND_API_ENDPOINT}/auth/login`,
+      body
+    );
 
     return new Response(JSON.stringify(res.data), {
       status: res.status,
