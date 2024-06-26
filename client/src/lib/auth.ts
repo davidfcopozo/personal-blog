@@ -10,7 +10,7 @@ import axios from "axios";
 const baseUrl = "http://localhost:3000/api";
 
 export const authOptions: NextAuthOptions = {
-  adapter: MongoDBAdapter(clientPromise) as Adapter,
+  /*   adapter: MongoDBAdapter(clientPromise) as Adapter, */
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
