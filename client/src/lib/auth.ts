@@ -1,16 +1,12 @@
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import clientPromise from "../lib/mongodb";
-import { Adapter } from "next-auth/adapters";
 import type { NextAuthOptions } from "next-auth";
 import { BadRequest } from "../../../api/src/errors/bad-request";
 import axios from "axios";
 const baseUrl = "http://localhost:3000/api";
 
 export const authOptions: NextAuthOptions = {
-  /*   adapter: MongoDBAdapter(clientPromise) as Adapter, */
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
@@ -35,10 +31,8 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
             password: credentials.password,
           });
-          /* console.log("***RESPONSE*** FROM AUTHORIZE LIB/AUTH===>", res); */
 
           const user = res.data;
-          /* console.log("***USER*** FROM AUTHORIZE LIB/AUTH===>", user); */
 
           if (res.status === 200 && user) {
             // Return the user object with the token
@@ -60,48 +54,37 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/login",
-    signOut: "/auth/signout",
-    error: "/auth/error",
+    signOut: "/login",
+    error: "/login",
     verifyRequest: "/auth/verify-request",
     newUser: "/profile",
   },
   callbacks: {
-    /* async signIn({
-      user,
-      account,
-      profile,
-      credentials,
-    }): Promise<string | boolean> {
-      console.log(
-        "************FROM CALLBACKS SIGN IN************",
-        user,
-        account,
-        profile,
-        user.email,
-        credentials
-      );
-      let res;
+    async signIn({ user, account, profile, credentials }) {
+      console.log(user, account, profile);
 
-      if (account && account.provider !== "credentials") {
-        console.log(
-          "************FROM CALLBACKS GITHUB & GOOGLE SIGN IN************"
-        );
-        res = await axios.post(`${baseUrl}/auth/oauth`, {
-          provider: account.provider,
-          email: user.email,
-          name: user.name,
-          avatar: user.image,
-        });
-      }
-      console.log("************FROM CALLBACKS SIGN IN************", res?.data);
-      if (res?.status === 200) {
-        user.id = res?.data.id;
-        user.role = res?.data.role;
-        user.accessToken = res?.data.accessToken;
+      try {
+        if (account && account.provider !== "credentials") {
+          const res = await axios.post(`${baseUrl}/auth/oauth`, {
+            provider: account.provider,
+            email: user.email,
+            name: user.name,
+            avatar: user.image,
+          });
+
+          if (res.status === 200) {
+            user.id = res.data.id;
+            user.role = res.data.role;
+            user.accessToken = res.data.accessToken;
+            return true;
+          }
+          throw new Error("OAuth sign-in failed");
+        }
         return true;
+      } catch (error: Error | any) {
+        throw new Error(error.response?.data?.msg || "Sign-in failed");
       }
-      return false;
-    }, */
+    },
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken;
@@ -118,15 +101,6 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
-    /*     async redirect({ url, baseUrl }) {
-      const redirectUrl = url.startsWith("/")
-        ? new URL(url, baseUrl).toString()
-        : url;
-      console.log(
-        `Redirecting to "${redirectUrl}" (resolved from url "${url}" and baseUrl "${baseUrl}")`
-      );
-      return redirectUrl;
-    }, */
   },
   session: {
     strategy: "jwt",
