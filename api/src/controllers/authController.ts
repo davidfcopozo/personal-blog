@@ -10,6 +10,7 @@ import { sendPasswordResetEmail } from "../utils/sendPasswordResetEmail";
 import { isValidEmail, isValidUsername } from "../utils/validators";
 import { UserType } from "../typings/types";
 import dotenv from "dotenv";
+import { generateUniqueUsername } from "../utils/generateUniqueUsername";
 dotenv.config();
 
 let baseUrl = "http://localhost:8000";
@@ -198,6 +199,57 @@ export const login = async (
     attachCookiesToResponse({ user, res });
   } catch (err) {
     next(err);
+  }
+};
+
+export const oAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { provider, email, name, avatar } = req.body;
+
+    if (!email) {
+      throw new BadRequest(
+        `Please make sure that your ${provider} account has a public email.`
+      );
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create a new user
+      const [firstName, lastName] = (name || "").split(" ");
+      user = await User.create({
+        email,
+        firstName,
+        lastName,
+        username: await generateUniqueUsername(email.split("@")[0]),
+        password: Math.random().toString(36).slice(-8),
+        provider,
+        verified: true, // OAuth users are considered verified
+        verifiedAt: new Date(),
+        avatar,
+      });
+    } else if (user.provider !== provider) {
+      // If user exists but with a different provider, update the provider
+      user.provider = provider;
+      await user.save();
+    }
+
+    const token = user.getJWT();
+
+    res.status(200).json({
+      success: true,
+      id: user._id,
+      role: user.role,
+      accessToken: token,
+    });
+  } catch (error) {
+    /* console.log("ERROR FROM API", error); */
+
+    next(error);
   }
 };
 
