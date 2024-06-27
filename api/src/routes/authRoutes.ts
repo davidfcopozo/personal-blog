@@ -9,12 +9,14 @@ import {
   forgotPassword,
   resetPassword,
   logout,
+  oAuth,
 } from "../controllers/authController";
 
 router.route("/register").post(register);
 router.route("/verify-email").post(verifyEmail);
 router.route("/send-verification-token").post(resendVerificationToken);
 router.route("/login").post(login);
+router.route("/oauth").post(oAuth);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password").post(resetPassword);
 router.route("/logout").get(auth, logout);
