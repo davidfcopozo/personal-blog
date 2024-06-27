@@ -21,25 +21,57 @@ export function LoginForm() {
   const route = useRouter();
   const { toast } = useToast();
 
+  const handleClientLogin = async (provider: string) => {
+    try {
+      await signIn(provider, {
+        redirect: false,
+      })
+        .then((res: any) => {
+          console.log("result from login-form", res);
+          if (res?.status !== 200 || res?.status !== 301 || res?.error) {
+            console.log("Error from login-form", res?.error);
+            throw new Error(res?.error);
+          } else if (res?.ok) {
+            route.push("/dashboard");
+          }
+        })
+        .catch((error) => {
+          console.log("Error from login-form", error);
+          throw new Error(error);
+        });
+    } catch (error: Error | any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.current || "Please try again.",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    }).then((res) => {
-      e.preventDefault();
-      if (!res?.ok && res?.status !== 200) {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: res?.error || `Login failed. Please try again.`,
-        });
-        return;
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      if (!result?.ok) {
+        throw new Error(result?.error || "Login failed. Please try again.");
       }
       route.push("/dashboard");
-    });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description:
+          error.message === "CredentialsSignin"
+            ? "Invalid email or password"
+            : error.message,
+      });
+    }
   };
+
   return (
     <Card className="mx-auto max-w-sm mt-8 mb-4 sm:mb-4 ">
       <form onSubmit={handleSubmit}>
@@ -83,11 +115,19 @@ export function LoginForm() {
             </Button>
             <div className="flex flex-col text-center gap-2">
               <p>Or</p>
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={(e) => handleClientLogin("github")}
+              >
                 Login with GitHub
                 <span className="sr-only">Sign up with Google GitHub</span>
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={(e) => handleClientLogin("google")}
+              >
                 Login with Google
                 <span className="sr-only">Sign up with Google button</span>
               </Button>
