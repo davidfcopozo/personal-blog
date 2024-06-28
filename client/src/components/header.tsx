@@ -33,8 +33,6 @@ export function Header() {
     console.log("SIGNOUT AFTER");
   };
 
-  /*  console.log((session?.user as { accessToken?: string })?.accessToken);
-  console.log("SESSION===>", session?.user); */
   useEffect(() => {
     setDarkTheme(
       theme === "dark"
