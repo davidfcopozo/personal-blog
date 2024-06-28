@@ -21,7 +21,7 @@ import axios from "axios";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
 
   const handleSignout = async (e: FormEvent): Promise<any> => {
@@ -94,8 +94,7 @@ export function Header() {
       </nav>
 
       <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
-        {(session?.user as { accessToken?: string })?.accessToken ===
-          undefined && (
+        {status === "unauthenticated" && (
           <Link
             href="/login"
             className="text-muted-foreground transition-colors hover:text-foreground"
@@ -105,8 +104,7 @@ export function Header() {
           </Link>
         )}
         <DropdownMenu>
-          {(session?.user as { accessToken?: string })?.accessToken ===
-          undefined ? (
+          {status === "unauthenticated" ? (
             <Link
               href="/register"
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-3xl"
