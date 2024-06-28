@@ -9,7 +9,6 @@ export async function middleware(request: NextRequest) {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  console.log("FROM MIDDLEWARE", token);
 
   if (protectedRoutes.includes(request.nextUrl.pathname) && !token) {
     const absoluteUrl = new URL("/login ", request.nextUrl.origin);
