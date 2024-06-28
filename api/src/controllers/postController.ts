@@ -4,7 +4,10 @@ import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
-import { PostType } from "../typings/types";
+import { PostType, UserType } from "../typings/types";
+import { slugValidator } from "../utils/validators";
+import User from "../models/userModel";
+import mongoose from "mongoose";
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -21,8 +24,7 @@ export const createPost = async (
       ? req.body.slug.toLowerCase().split(" ").join("-")
       : req.body.title.toLowerCase().split(" ").join("-");
 
-    // Check if the slug contains only letters, numbers, or hyphens
-    if (!/^[a-z](-?[a-z])*$/.test(slug)) {
+    if (!slugValidator(slug)) {
       throw new BadRequest(
         "Slug should contain only letters, numbers, or hyphens and should not start or end with a hyphen"
       );
@@ -72,7 +74,7 @@ export const getPostById = async (
   } = req;
 
   try {
-    const post: PostType = await Post.findById(postId);
+    const post: PostType | null = (await Post.findById(postId)) as PostType;
 
     if (!post) {
       throw new NotFound("Post not found");
@@ -167,44 +169,153 @@ export const toggleLike = async (
     user: { userId },
   } = req;
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const post: PostType = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId).session(session);
+    const user: UserType = await User.findById(userId).session(session);
 
     if (!post) {
       throw new NotFound("This post doesn't exist or has been deleted");
     }
 
-    const isLiked = post?.likes?.filter((like) => like.toString() === userId);
+    if (!user) {
+      throw new Unauthenticated("Unauthenticated: No token provided");
+    }
+
+    const isLiked = user?.likes?.filter((like) => like.toString() === postId);
 
     if (isLiked?.length! < 1) {
       // Add like to the post's likes array property
-      const result = await Post.updateOne(
+      const postResult = await Post.updateOne(
         { _id: post._id },
         { $addToSet: { likes: `${userId}` } },
-        { new: true }
+        { session }
+      );
+      const userResult = await User.updateOne(
+        { _id: user._id },
+        { $addToSet: { likes: `${postId}` } },
+        { session }
       );
 
-      if (result.modifiedCount === 1) {
+      await session.commitTransaction();
+
+      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
         res
           .status(StatusCodes.OK)
           .json({ success: true, msg: "You've liked this post." });
       } else {
+        await session.abortTransaction();
         throw new BadRequest("Something went wrong, please try again!");
       }
     } else {
       // Remove like from the post's likes array property
-      const result = await Post.updateOne(
+      const postResult = await Post.updateOne(
         { _id: post._id },
         { $pull: { likes: `${userId}` } },
         { new: true }
       );
 
-      if (result.modifiedCount === 1) {
+      const userResult = await User.updateOne(
+        { _id: user._id },
+        { $pull: { likes: `${postId}` } },
+        { new: true }
+      );
+
+      await session.commitTransaction();
+
+      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
         res.status(StatusCodes.OK).json({
           success: true,
           msg: "You've disliked this post.",
         });
       } else {
+        await session.abortTransaction();
+        throw new BadRequest("Something went wrong, please try again!");
+      }
+    }
+  } catch (error) {
+    next(error);
+  } finally {
+    session.endSession();
+  }
+};
+
+export const toggleBookmark = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    body: { postId },
+    user: { userId },
+  } = req;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const post: PostType = await Post.findById(postId).session(session);
+    const user: UserType = await User.findById(userId).session(session);
+
+    if (!post) {
+      throw new NotFound("This post doesn't exist or has been deleted");
+    }
+
+    if (!user) {
+      throw new Unauthenticated("Unauthenticated: No token provided");
+    }
+
+    const isBookmarked = user?.bookmarks?.filter(
+      (bookmark) => bookmark.toString() === postId
+    );
+
+    if (isBookmarked?.length! < 1) {
+      // Add bookmark to the post's likes array property
+      const postResult = await Post.updateOne(
+        { _id: post._id },
+        { $addToSet: { bookmarks: `${userId}` } },
+        { session }
+      );
+      const userResult = await User.updateOne(
+        { _id: user._id },
+        { $addToSet: { bookmarks: `${postId}` } },
+        { session }
+      );
+
+      await session.commitTransaction();
+
+      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
+        res
+          .status(StatusCodes.OK)
+          .json({ success: true, msg: "You've bookmarked this post." });
+      } else {
+        throw new BadRequest("Something went wrong, please try again!");
+      }
+    } else {
+      // Remove bookmark from the post's likes array property
+      const postResult = await Post.updateOne(
+        { _id: post._id },
+        { $pull: { bookmarks: `${userId}` } },
+        { new: true }
+      );
+
+      const userResult = await User.updateOne(
+        { _id: user._id },
+        { $pull: { bookmarks: `${postId}` } },
+        { new: true }
+      );
+
+      await session.commitTransaction();
+
+      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
+        res.status(StatusCodes.OK).json({
+          success: true,
+          msg: "You've unbookmarked this post.",
+        });
+      } else {
+        await session.abortTransaction();
         throw new BadRequest("Something went wrong, please try again!");
       }
     }

@@ -26,13 +26,15 @@ const userSchema = new mongoose.Schema<UserInterface>(
       maxlength: 256,
     },
     verificationToken: { type: String },
+    website: { type: String },
     title: { type: String },
     bio: { type: String },
     verified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
     passwordVerificationToken: { type: String, default: "" },
     passwordTokenExpirationDate: { type: Date, default: null },
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

@@ -4,7 +4,7 @@ import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
-import { isValidUsername } from "../utils/validators";
+import { isValidUsername, websiteValidator } from "../utils/validators";
 import { UserType, FieldsToUpdateType } from "../typings/types";
 
 const sensitiveDataToExclude =
@@ -62,7 +62,7 @@ export const updateUserById = async (
   const {
     user: { userId },
     params: { id: userIdParam },
-    body: { firstName, lastName, avatar, bio, title, username },
+    body: { firstName, lastName, avatar, bio, title, username, website },
   } = req;
 
   try {
@@ -83,6 +83,7 @@ export const updateUserById = async (
       bio,
       title,
       username,
+      website,
     };
     let fieldsToUpdate: FieldsToUpdateType = {};
 
@@ -101,6 +102,10 @@ export const updateUserById = async (
 
     if (fieldsToUpdate.username && !isValidUsername(fieldsToUpdate.username)) {
       throw new BadRequest("Invalid username, please provide a valid one");
+    }
+
+    if (fieldsToUpdate.website && !websiteValidator(fieldsToUpdate.website)) {
+      throw new BadRequest("Invalid URL, please provide a valid one");
     }
 
     const updatedUser: UserType = await User.findOneAndUpdate(

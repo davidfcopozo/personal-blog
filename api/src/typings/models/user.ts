@@ -13,17 +13,22 @@ export interface UserInterface extends Document, ModelMethods {
   email: String;
   password: String;
   username: String;
+  website?: String;
   bio?: String;
   title?: String;
   role: String;
   verificationToken?: String;
   verified?: Boolean;
   verifiedAt?: Date;
+  accessToken: String | null;
   passwordVerificationToken: String | null;
   passwordTokenExpirationDate: Date | null;
-  favorites: mongoose.Types.ObjectId;
+  bookmarks?: mongoose.Types.ObjectId[];
+  likes?: mongoose.Types.ObjectId[];
   avatar?: String;
+  provider: String;
 }
+
 export interface RequestWithUserInfo extends Request {
   user: {
     userId: String;

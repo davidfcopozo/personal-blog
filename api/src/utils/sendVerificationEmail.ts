@@ -11,7 +11,7 @@ export const sendVerificationEmail = async ({
   const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
   const emailOptions: SendMailOptions = {
-    from: process.env.MAIL_USERNAME,
+    from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
     subject: "Email Verification",
     html: `

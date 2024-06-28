@@ -6,8 +6,9 @@ export interface PostInterface {
   content: String;
   slug: String;
   postedBy: mongoose.Types.ObjectId;
-  image?: String;
+  featureImg?: String;
   likes?: mongoose.Types.ObjectId[];
+  bookmarks?: mongoose.Types.ObjectId[];
   tags?: String[];
   categories?: String[];
   visits?: Number;
@@ -18,5 +19,4 @@ export interface PostInterface {
     }
   ];
   published: Boolean;
-  draft: Boolean;
 }
