@@ -11,43 +11,46 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "./ui/use-toast";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const route = useRouter();
+  const param = useSearchParams();
+  const errorParam = param.get("error");
   const { toast } = useToast();
 
-  const handleClientLogin = async (provider: string) => {
-    try {
-      await signIn(provider, {
-        redirect: false,
-      })
-        .then((res: any) => {
-          console.log("result from login-form", res);
-          if (res?.status !== 200 || res?.status !== 301 || res?.error) {
-            console.log("Error from login-form", res?.error);
-            throw new Error(res?.error);
-          } else if (res?.ok) {
-            route.push("/dashboard");
-          }
-        })
-        .catch((error) => {
-          console.log("Error from login-form", error);
-          throw new Error(error);
-        });
-    } catch (error: Error | any) {
+  useEffect(() => {
+    if (errorParam) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.current || "Please try again.",
+        description: decodeURIComponent(errorParam as string),
+      });
+    }
+  }, [errorParam, toast]);
+
+  const handleClientLogin = async (provider: string) => {
+    try {
+      const res = await signIn(provider, { redirect: false });
+
+      if (res?.error) {
+        throw new Error(res.error);
+      } else if (res?.ok) {
+        route.push("/dashboard");
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Please try again.",
       });
     }
   };
-
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
