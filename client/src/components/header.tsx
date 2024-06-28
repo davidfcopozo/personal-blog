@@ -25,12 +25,9 @@ export function Header() {
   const [darkTheme, setDarkTheme] = useState("#000000");
 
   const handleSignout = async (e: FormEvent): Promise<any> => {
-    console.log("SIGNOUT");
-
     e.preventDefault();
     await signOut();
     await axios.get("http://localhost:8000/api/V1/auth/logout");
-    console.log("SIGNOUT AFTER");
   };
 
   useEffect(() => {
