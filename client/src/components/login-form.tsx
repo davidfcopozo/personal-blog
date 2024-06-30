@@ -50,7 +50,7 @@ export function LoginForm() {
       });
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -59,7 +59,9 @@ export function LoginForm() {
         password,
         redirect: false,
       });
-      if (!result?.ok) {
+
+      if (!result?.ok && result?.error) {
+        console.log("RESULT===>", result);
         throw new Error(result?.error || "Login failed. Please try again.");
       }
       route.push("/dashboard");
