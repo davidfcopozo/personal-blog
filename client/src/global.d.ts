@@ -24,9 +24,3 @@ declare module "next-auth/jwt" {
     token: string;
   }
 }
-
-declare global {
-  namespace globalThis {
-    var _mongoClientPromise: Promise<MongoClient>;
-  }
-}
