@@ -357,8 +357,9 @@ export const resetPassword = async (
   }
 };
 
-export const logout = async (_req: Request, res: Response) => {
-  res.clearCookie("token");
-
+export const logout = async (req: Request, res: Response) => {
+  if (req.signedCookies.token) {
+    res.clearCookie("token");
+  }
   res.status(StatusCodes.OK).json({ success: true, msg: "Logout successful" });
 };
