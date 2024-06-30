@@ -18,16 +18,26 @@ import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import axios from "axios";
+import { useToast } from "./ui/use-toast";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
   const { data: session, status } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
+  const { toast } = useToast();
 
   const handleSignout = async (e: FormEvent): Promise<any> => {
     e.preventDefault();
-    await signOut();
-    await axios.get("http://localhost:8000/api/V1/auth/logout");
+    try {
+      await signOut();
+      await axios.get("/api/auth/logout");
+    } catch (error: Error | any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Please try again.",
+      });
+    }
   };
 
   useEffect(() => {
