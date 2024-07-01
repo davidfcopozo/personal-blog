@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import AuthProvider from "@/components/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
+import QueryProvider from "@/components/QueryProvider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -27,25 +28,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}
-      >
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Header />
-            {children}
-          </ThemeProvider>
-        </AuthProvider>
-        <Toaster />
-      </body>
+      <QueryProvider>
+        <body
+          className={cn(
+            "min-h-screen bg-background font-sans antialiased",
+            fontSans.variable
+          )}
+        >
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Header />
+              {children}
+            </ThemeProvider>
+          </AuthProvider>
+          <Toaster />
+        </body>
+      </QueryProvider>
     </html>
   );
 }
