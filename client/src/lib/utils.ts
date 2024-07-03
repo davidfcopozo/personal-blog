@@ -147,13 +147,13 @@ export function showMonthDayYear(
 }
 
 export function getNameInitials(user: any): string {
-  if (!user || !user.firstName || !user.lastName) {
+  if (!user || !user.data?.firstName || !user.data?.lastName) {
     return "TC";
   }
 
-  const firstInitial = user.firstName.charAt(0).toUpperCase();
+  const firstInitial = user.data?.firstName.charAt(0).toUpperCase();
 
-  const lastInitial = user.lastName.charAt(0).toUpperCase();
+  const lastInitial = user.data?.lastName.charAt(0).toUpperCase();
 
   return `${firstInitial}${lastInitial}`;
 }
@@ -165,14 +165,14 @@ export function getFullName(user: any) {
 
   const capitalize = (str: string) => {
     if (typeof str !== "string" || str.length === 0) return "";
-    // Capitalize the first letter and concatenate the rest in lowercase
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-  const firstName = user.firstName ? capitalize(user.firstName) : "";
-  const lastName = user.lastName ? capitalize(user.lastName) : "";
+  const firstName = user.data?.firstName
+    ? capitalize(user.data?.firstName)
+    : "";
+  const lastName = user.data?.lastName ? capitalize(user.data?.lastName) : "";
 
-  // Concatenate the names, ensuring there's a space between if both exist
   return firstName && lastName
     ? `${firstName} ${lastName}`
     : firstName + lastName;
