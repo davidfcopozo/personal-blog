@@ -17,7 +17,6 @@ import { ModeToggle } from "./ui/mode-toggle";
 import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import axios from "axios";
 import { useToast } from "./ui/use-toast";
 
 export function Header() {
@@ -30,7 +29,6 @@ export function Header() {
     e.preventDefault();
     try {
       await signOut();
-      await axios.get("/api/auth/logout");
     } catch (error: Error | any) {
       toast({
         variant: "destructive",
@@ -108,7 +106,6 @@ export function Header() {
           <Link
             href="/login"
             className="text-muted-foreground transition-colors hover:text-foreground"
-            onClick={(e) => handleSignout(e)}
           >
             Sign In
           </Link>
