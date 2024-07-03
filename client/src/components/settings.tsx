@@ -1,13 +1,16 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getFullName, getNameInitials } from "@/lib/utils";
-import { users } from "@/lib/testDatabase.json";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export const Settings = () => {
+  const { currentUser } = useAuth();
+
   return (
     <div className="flex flex-col mt-16 md:mt-12 min-h-[100dvh]">
       <div className="container mx-auto px-6 sm:py-8">
@@ -18,7 +21,7 @@ export const Settings = () => {
                 <Avatar className="h-24 w-24 mb-4">
                   <AvatarImage src="/placeholder-user.jpg" />
                   <AvatarFallback className="text-lg font-bold">
-                    {getNameInitials(users[0])}
+                    {getNameInitials(currentUser)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col space-y-2 ">
@@ -30,13 +33,15 @@ export const Settings = () => {
               </div>
               <div className="text-center">
                 <h2 className="text-xl font-bold mb-2">
-                  {getFullName(users[0])}
+                  {getFullName(currentUser)}
                 </h2>
-                <p className="text-gray-500 mb-2">@{users[0]?.username}</p>
-                <p className="text-gray-500 mb-2">{users[0]?.email}</p>
+                <p className="text-gray-500 mb-2">
+                  @{currentUser?.data?.username}
+                </p>
+                <p className="text-gray-500 mb-2">{currentUser?.data?.email}</p>
                 {/* Add website to the user model and types */}
                 <Link href="" className="text-gray-500 mb-2">
-                  https://example.com
+                  {currentUser?.data?.website}
                 </Link>
               </div>
             </div>
@@ -50,7 +55,7 @@ export const Settings = () => {
                     <Input
                       id="firstName"
                       type="text"
-                      defaultValue={users[0]?.firstName}
+                      defaultValue={currentUser?.data?.firstName}
                     />
                   </div>
                   <div>
@@ -58,7 +63,7 @@ export const Settings = () => {
                     <Input
                       id="lastName"
                       type="text"
-                      defaultValue={users[0]?.lastName}
+                      defaultValue={currentUser?.data?.lastName}
                     />
                   </div>
                   <div>
@@ -66,7 +71,7 @@ export const Settings = () => {
                     <Input
                       id="email"
                       type="email"
-                      defaultValue={users[0]?.email}
+                      defaultValue={currentUser?.data?.email}
                     />
                   </div>
                   <div>
@@ -74,20 +79,24 @@ export const Settings = () => {
                     <Input
                       id="username"
                       type="text"
-                      defaultValue={users[0]?.username}
+                      defaultValue={currentUser?.data?.username}
                     />
                   </div>
                 </div>
                 <div className="mt-6">
                   <Label htmlFor="bio">Bio</Label>
-                  <Textarea id="bio" rows={4} defaultValue={users[0]?.bio} />
+                  <Textarea
+                    id="bio"
+                    rows={4}
+                    defaultValue={currentUser?.data?.bio}
+                  />
                 </div>
                 <div className="mt-6">
                   <Label htmlFor="website">Website</Label>
                   <Input
                     id="website"
                     type="text"
-                    defaultValue="https://example.com"
+                    defaultValue={currentUser?.data?.website}
                   />
                 </div>
                 <div className="flex pt-4 justify-start">
