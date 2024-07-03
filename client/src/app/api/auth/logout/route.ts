@@ -1,5 +1,3 @@
-// auth/logout/route.ts
-
 import axios from "axios";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
@@ -27,17 +25,11 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    console.log("RESPONSE FROM AUTH/LOGOUT", JSON.stringify(res.data));
-
     return new Response(JSON.stringify(res.data), {
       status: res.status,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    console.error(
-      "ERROR FROM AUTH/LOGOUT",
-      error.response?.data?.msg || error.message
-    );
     return new Response(
       JSON.stringify({
         message: error.response?.data?.msg || "Internal server error",
