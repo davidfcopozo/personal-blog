@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,37 +9,48 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "./ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const route = useRouter();
   const param = useSearchParams();
-  const errorParam = param.get("error");
+  const route = useRouter();
+  const { login, socialLogin } = useAuth();
   const { toast } = useToast();
+  const [errorParameter, setErrorParameter] = useState<string | null>(null);
 
   useEffect(() => {
-    if (errorParam) {
+    const errorFromParam = param.get("error");
+    if (errorFromParam) {
+      setErrorParameter(decodeURIComponent(errorFromParam));
+    }
+  }, [param]);
+
+  useEffect(() => {
+    if (errorParameter && toast) {
+      console.log("errorParam===>", errorParameter);
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: decodeURIComponent(errorParam as string),
+        description: decodeURIComponent(errorParameter as string),
       });
     }
-  }, [errorParam, toast]);
+  }, [errorParameter, toast]);
 
   const handleClientLogin = async (provider: string) => {
     try {
-      const res = await signIn(provider, { redirect: false });
+      const res = socialLogin(provider as "google" | "github").then((res) => {
+        console.log("RES FROM LOGIN-FORM===>", res);
+      });
 
-      if (res?.error) {
-        throw new Error(res.error);
-      } else if (res?.ok) {
+      if (res !== undefined) {
         route.push("/dashboard");
+      } else {
+        throw new Error("Login failed");
       }
     } catch (error: any) {
       toast({
@@ -54,16 +64,7 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (!result?.ok && result?.error) {
-        console.log("RESULT===>", result);
-        throw new Error(result?.error || "Login failed. Please try again.");
-      }
+      await login({ email, password });
       route.push("/dashboard");
     } catch (error: any) {
       toast({
