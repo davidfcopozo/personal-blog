@@ -116,7 +116,7 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-foreground">
               Login
             </Button>
             <div className="flex flex-col text-center gap-2">
