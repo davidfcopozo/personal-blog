@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { Header } from "@/components/header";
 import { ThemeProvider } from "@/context/theme-provider";
-import AuthProvider from "@/components/AuthProvider";
+import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/context/QueryProvider";
 import { AuthContextProvider } from "../context/AuthContext";
