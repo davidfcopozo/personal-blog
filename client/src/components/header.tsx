@@ -18,17 +18,19 @@ import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useToast } from "./ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
   const { data: session, status } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
   const { toast } = useToast();
+  const { logout } = useAuth();
 
   const handleSignout = async (e: FormEvent): Promise<any> => {
     e.preventDefault();
     try {
-      await signOut();
+      await logout();
     } catch (error: Error | any) {
       toast({
         variant: "destructive",
