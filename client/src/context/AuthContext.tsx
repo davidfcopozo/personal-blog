@@ -47,7 +47,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const result = await signIn("credentials", {
         ...credentials,
-        callbackUrl: "/dashboard",
+        callbackUrl: "/",
       });
 
       if (result?.error) {
