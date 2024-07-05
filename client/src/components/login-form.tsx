@@ -43,9 +43,7 @@ export function LoginForm() {
 
   const handleClientLogin = async (provider: string) => {
     try {
-      const res = socialLogin(provider as "google" | "github").then((res) => {
-        console.log("RES FROM LOGIN-FORM===>", res);
-      });
+      const res = socialLogin(provider as "google" | "github");
 
       if (res !== undefined) {
         route.push("/dashboard");
@@ -65,7 +63,6 @@ export function LoginForm() {
     e.preventDefault();
     try {
       await login({ email, password });
-      route.push("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
