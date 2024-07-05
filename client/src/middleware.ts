@@ -13,10 +13,10 @@ export async function middleware(request: NextRequest) {
   if (protectedRoutes.includes(request.nextUrl.pathname) && !token) {
     const absoluteUrl = new URL("/login ", request.nextUrl.origin);
     return NextResponse.redirect(absoluteUrl.toString());
-  } else if (request.nextUrl.pathname === "/login" && token) {
+  } /* else if (request.nextUrl.pathname === "/login" && token) {
     const absoluteUrl = new URL("/dashboard", request.nextUrl.origin);
     return NextResponse.redirect(absoluteUrl.toString());
-  }
+  } */
 
   return NextResponse.next();
 }
