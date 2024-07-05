@@ -30,7 +30,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       return null;
     },
-    enabled: false, // We'll manually trigger this query
+    enabled: false,
   });
 
   useEffect(() => {
