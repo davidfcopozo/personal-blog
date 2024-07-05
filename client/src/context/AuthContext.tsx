@@ -47,7 +47,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const result = await signIn("credentials", {
         ...credentials,
-        redirect: false,
+        callbackUrl: "/dashboard",
       });
 
       if (result?.error) {
@@ -77,7 +77,8 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     setIsLoading(true);
     try {
-      await signOut({ redirect: false });
+      await axios.get("/api/auth/logout");
+      await signOut({ callbackUrl: "/" });
       queryClient.setQueryData(["currentUser"], null);
     } finally {
       setIsLoading(false);
