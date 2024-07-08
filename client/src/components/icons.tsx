@@ -9,7 +9,7 @@ export const BouncingCircles = () => {
       height="100"
       className="mb-18 stroke-foreground fill-foreground"
     >
-      <circle stroke-width="15" r="15" cx="40" cy="65">
+      <circle strokeWidth="15" r="15" cx="40" cy="65">
         <animate
           attributeName="cy"
           calcMode="spline"
@@ -20,7 +20,7 @@ export const BouncingCircles = () => {
           begin="-.4"
         ></animate>
       </circle>
-      <circle stroke-width="15" r="15" cx="100" cy="65">
+      <circle strokeWidth="15" r="15" cx="100" cy="65">
         <animate
           attributeName="cy"
           calcMode="spline"
@@ -31,7 +31,7 @@ export const BouncingCircles = () => {
           begin="-.2"
         ></animate>
       </circle>
-      <circle stroke-width="15" r="15" cx="160" cy="65">
+      <circle strokeWidth="15" r="15" cx="160" cy="65">
         <animate
           attributeName="cy"
           calcMode="spline"
