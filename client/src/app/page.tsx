@@ -1,10 +1,28 @@
+"use client";
 import { BlogCard } from "@/components/blog-card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
-import { posts, users } from "@/lib/testDatabase.json";
+import useFetchRequest from "@/hooks/useFetchRequest";
+import { useEffect } from "react";
+import { PostSkeletonCard } from "@/components/post-skeleton";
+import { useToast } from "@/components/ui/use-toast";
+import { PostInterface } from "../../../api/src/typings/models/post";
 
 export default function Home() {
+  const { toast } = useToast();
+  const { data, error, isFetching } = useFetchRequest("posts", `/api/posts`);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "An error occurred",
+      });
+    }
+  }, [error, toast]);
+
   return (
     <div className="container p-2 mx-auto">
       <div className="flex flex-row flex-wrap p-2 sm:p-4">
@@ -12,9 +30,22 @@ export default function Home() {
           role="main"
           className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2"
         >
-          {posts.map((post, index) => (
-            <BlogCard key={post._id} post={post} user={users[index]} />
-          ))}
+          {isFetching ? (
+            <div className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2">
+              <PostSkeletonCard />
+              <PostSkeletonCard />
+              <PostSkeletonCard />
+            </div>
+          ) : (
+            data?.data.map(
+              (post: PostInterface, index: { toString: () => any }) => (
+                <BlogCard
+                  key={post?._id.toString() + index.toString()}
+                  post={post}
+                />
+              )
+            )
+          )}
         </main>
         <aside className="w-full hidden pt-12 sm:flex sm:flex-column sm:w-1/3 md:w-1/4 px-2 border-l-2 border-secondary">
           <div className="sticky top-16 p-4 bg-background rounded-xl w-full h-[84vh]">

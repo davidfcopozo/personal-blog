@@ -1,18 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useEffect } from "react";
+
+let baseULR = "http://localhost:3000";
 
 function useFetchRequest(key: string, url: string) {
-  const fetchCurrentUser = async () => {
-    const { data } = await axios.get(url);
-    return data;
-  };
+  try {
+    const fetchData = async () => {
+      const { data } = await axios.get(`${baseULR}${url}`);
 
-  const { data, error, isLoading, isFetching, refetch } = useQuery({
-    queryKey: [key],
-    queryFn: fetchCurrentUser,
-    refetchOnWindowFocus: false,
-  });
-  return { data, error, isLoading, isFetching, refetch };
+      return data;
+    };
+
+    const { data, error, isLoading, isFetching, refetch } = useQuery({
+      queryKey: [key],
+      queryFn: fetchData,
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      gcTime: 0,
+      staleTime: 0,
+    });
+
+    useEffect(() => {
+      fetchData();
+    }, []);
+
+    return { data, error, isLoading, isFetching, refetch };
+  } catch (error: Error | any) {
+    throw new Error(error);
+  }
 }
 
 export default useFetchRequest;
