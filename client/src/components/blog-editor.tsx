@@ -21,3 +21,15 @@ import { BlogEditorProps } from "@/typings/interfaces";
     return images.map((img) => img.src);
   };
 
+  const deleteImageFromFirebase = async (imageUrl: string) => {
+    try {
+      const imagePath = imageUrl.split("images%2F")[1].split("?")[0];
+      const imageRef = ref(storage, `images/${imagePath}`);
+      await deleteObject(imageRef);
+      console.log("Image deleted successfully");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
+
+  const handleEditorChange: IAllProps["onEditorChange"] = (
