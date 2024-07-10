@@ -50,3 +50,12 @@ import { BlogEditorProps } from "@/typings/interfaces";
     }
   };
 
+  const handleSave = () => {
+    if (editorRef.current) {
+      onSave({
+        title,
+        content: (editorRef.current as TinyMCEEditor).getContent(),
+      });
+    }
+  };
+
