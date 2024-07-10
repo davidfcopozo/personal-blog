@@ -9,6 +9,13 @@ import {
 } from "firebase/storage";
 import { Editor as TinyMCEEditor } from "tinymce";
 import { BlogEditorProps } from "@/typings/interfaces";
+
+export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
+  const [content, setContent] = useState(initialValue || "");
+  const [title, setTitle] = useState("");
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const editorRef = useRef<any>(null);
+
   useEffect(() => {
     const initialImages = extractImagesFromContent(initialValue || "");
     setCurrentImages(initialImages);
@@ -107,3 +114,60 @@ import { BlogEditorProps } from "@/typings/interfaces";
     input.click();
   };
 
+  return (
+    <div className="blog-editor">
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Enter blog title"
+        className="blog-title-input"
+      />
+      <Editor
+        onInit={(evt, editor) => (editorRef.current = editor)}
+        initialValue={initialValue}
+        apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+        toolbar={true}
+        init={{
+          height: 500,
+          menubar: true,
+          plugins: [
+            "advlist",
+            "autolink",
+            "lists",
+            "link",
+            "image",
+            "charmap",
+            "preview",
+            "anchor",
+            "searchreplace",
+            "visualblocks",
+            "code",
+            "fullscreen",
+            "insertdatetime",
+            "media",
+            "table",
+            "code",
+            "help",
+            "wordcount",
+          ],
+          toolbar:
+            "undo redo | blocks | " +
+            "bold italic forecolor | alignleft aligncenter " +
+            "alignright alignjustify | bullist numlist outdent indent | " +
+            "removeformat | image | help",
+          content_style:
+            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+          images_upload_handler: handleImageUpload,
+          file_picker_types: "image",
+          automatic_uploads: true,
+          file_picker_callback: handleFilePicker,
+        }}
+        onEditorChange={handleEditorChange}
+      />
+      <button onClick={handleSave} className="save-button">
+        Save Blog Post
+      </button>
+    </div>
+  );
+}
