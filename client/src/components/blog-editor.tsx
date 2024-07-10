@@ -59,3 +59,20 @@ import { BlogEditorProps } from "@/typings/interfaces";
     }
   };
 
+  const handleImageUpload = async (
+    blobInfo: any,
+    progress: (percent: number) => void
+  ) => {
+    try {
+      const file = blobInfo.blob();
+      const fileName = blobInfo.name();
+      const storageRef = ref(storage, `images/${fileName}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      setCurrentImages((prev) => [...prev, downloadURL]);
+      return downloadURL;
+    } catch (error: Error | any) {
+      throw new Error("Image upload failed: " + error.message);
+    }
+  };
+
