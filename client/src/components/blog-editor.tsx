@@ -76,3 +76,34 @@ import { BlogEditorProps } from "@/typings/interfaces";
     }
   };
 
+  const handleFilePicker = (
+    cb: (arg0: any, arg1: { title: string }) => void,
+    value: any,
+    meta: any
+  ) => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+
+    input.addEventListener("change", (e) => {
+      const file = (e.target as HTMLInputElement)?.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        const id = `${file.name.split(".")[0]}-${Date.now()}`;
+        const blobCache = editorRef.current.editorUpload.blobCache;
+        // Get base64 string
+        const base64 = (reader.result as string)?.split(",")[1];
+        const blobInfo = blobCache.create(id, file, base64);
+        blobCache.add(blobInfo);
+        // Call callback with blob URI
+        cb(blobInfo.blobUri(), { title: file.name });
+      });
+      reader.readAsDataURL(file);
+    });
+
+    // Trigger input click event to open file picker
+    input.click();
+  };
+
