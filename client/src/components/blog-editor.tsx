@@ -33,3 +33,20 @@ import { BlogEditorProps } from "@/typings/interfaces";
   };
 
   const handleEditorChange: IAllProps["onEditorChange"] = (
+    newContent,
+    editor
+  ) => {
+    setContent(newContent);
+    // Get all image URLs in the current content
+    const contentImages = extractImagesFromContent(newContent);
+
+    const removedImages = currentImages.filter(
+      (img) => !contentImages.includes(img)
+    );
+
+    if (removedImages.length > 0) {
+      removedImages.forEach(deleteImageFromFirebase);
+      setCurrentImages(contentImages);
+    }
+  };
+
