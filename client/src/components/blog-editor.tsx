@@ -44,11 +44,18 @@ export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
     editor
   ) => {
     setContent(newContent);
-    // Get all image URLs in the current content
     const contentImages = extractImagesFromContent(newContent);
 
+    // Filter out blob URIs from contentImages
+    const firebaseImages = contentImages.filter((url) =>
+      url.includes("firebasestorage.googleapis.com")
+    );
+
+    // Only consider Firebase URLs for removal
     const removedImages = currentImages.filter(
-      (img) => !contentImages.includes(img)
+      (img) =>
+        !firebaseImages.includes(img) &&
+        img.includes("firebasestorage.googleapis.com")
     );
 
     if (removedImages.length > 0) {
