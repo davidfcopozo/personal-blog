@@ -40,7 +40,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { posts } from "@/lib/testDatabase.json";
-import { showMonthDayYear } from "@/lib/utils";
+import { showMonthDayYear } from "@/utils/formats";
 import { useState } from "react";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 

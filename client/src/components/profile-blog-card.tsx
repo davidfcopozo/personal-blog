@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
 import Image from "next/image";
-import { truncateText } from "@/lib/utils";
+import { truncateText } from "@/utils/formats";
 
 interface BlogPostProps {
   post: any;

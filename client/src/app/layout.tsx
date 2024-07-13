@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto as FontSans } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/formats";
 import "@/styles/globals.css";
 import { Header } from "@/components/header";
 import { ThemeProvider } from "@/context/theme-provider";

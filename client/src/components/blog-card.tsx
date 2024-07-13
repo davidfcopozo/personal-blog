@@ -4,7 +4,7 @@ import {
   getNameInitials,
   showMonthDay,
   truncateText,
-} from "@/lib/utils";
+} from "@/utils/formats";
 import { Bookmark, Clock, MessageCircle, ThumbsUp } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
