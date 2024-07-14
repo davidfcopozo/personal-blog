@@ -50,6 +50,9 @@ importers:
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
+      dompurify:
+        specifier: ^3.1.6
+        version: 3.1.6
       firebase:
         specifier: ^10.12.3
         version: 10.12.3
@@ -87,6 +90,9 @@ importers:
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
+      '@types/dompurify':
+        specifier: ^3.0.5
+        version: 3.0.5
       '@types/node':
         specifier: ^20
         version: 20.12.12
@@ -1041,6 +1047,9 @@ packages:
   '@types/bcrypt@5.0.2':
     resolution: {integrity: sha512-6atioO8Y75fNcbmj0G7UjI9lXN2pQ/IGJ2FWT4a/btd0Lk9lQalHLKhkgKVZ3r+spnmWUKfbMi1GEe9wyHQfNQ==}
 
+  '@types/dompurify@3.0.5':
+    resolution: {integrity: sha512-1Wg0g3BtQF7sSb27fJQAKck1HECM6zV1EB66j8JH9i3LCjYabJa0FSdiSgsD5K/RbrsR0SiraKacLB+T8ZVYAg==}
+
   '@types/jquery@3.5.30':
     resolution: {integrity: sha512-nbWKkkyb919DOUxjmRVk8vwtDb0/k8FKncmUKFi+NY+QXqWltooxTrswvz4LspQwxvLdvzBN1TImr6cw3aQx2A==}
 
@@ -1064,6 +1073,9 @@ packages:
 
   '@types/tinymce@4.6.9':
     resolution: {integrity: sha512-pDxBUlV4v1jgJ97SlnVOSyf3KUy3OQ3s5Ddpfh1L9M5lXlBmX7TJ2OLSozx1WBxp91acHvYPWDwz2U/kMM1oxQ==}
+
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
   '@typescript-eslint/parser@6.21.0':
     resolution: {integrity: sha512-tbsV1jPne5CkFQCgPBcDOt30ItF7aJoZL997JSF7MhGQqOeT3svWRYxiqlfA5RUdlHN6Fi+EI9bxqbdyAUZjYQ==}
@@ -1449,6 +1461,9 @@ packages:
   doctrine@3.0.0:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
     engines: {node: '>=6.0.0'}
+
+  dompurify@3.1.6:
+    resolution: {integrity: sha512-cTOAhc36AalkjtBpfG6O8JimdTMWNXjiePT2xQH/ppBGi/4uIpmj8eKyIkMJErXWARyINV/sB38yf8JCLF5pbQ==}
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
@@ -3827,6 +3842,10 @@ snapshots:
     dependencies:
       '@types/node': 20.12.12
 
+  '@types/dompurify@3.0.5':
+    dependencies:
+      '@types/trusted-types': 2.0.7
+
   '@types/jquery@3.5.30':
     dependencies:
       '@types/sizzle': 2.3.8
@@ -3853,6 +3872,8 @@ snapshots:
   '@types/tinymce@4.6.9':
     dependencies:
       '@types/jquery': 3.5.30
+
+  '@types/trusted-types@2.0.7': {}
 
   '@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
@@ -4279,6 +4300,8 @@ snapshots:
   doctrine@3.0.0:
     dependencies:
       esutils: 2.0.3
+
+  dompurify@3.1.6: {}
 
   eastasianwidth@0.2.0: {}
 
