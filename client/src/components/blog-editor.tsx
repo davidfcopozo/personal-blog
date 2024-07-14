@@ -1,43 +1,125 @@
 import { useState, useRef, useEffect } from "react";
 import { Editor, IAllProps } from "@tinymce/tinymce-react";
 import { storage } from "../../firebaseConfig";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Editor as TinyMCEEditor } from "tinymce";
 import { BlogEditorProps } from "@/typings/interfaces";
+import {
+  deleteImageFromFirebase,
+  extractImagesFromContent,
+} from "@/utils/blog-editor";
+import { useToast } from "./ui/use-toast";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import "@/styles/tinyCME-styles.css";
+import { useTheme } from "next-themes";
 
-export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
-  const [content, setContent] = useState(initialValue || "");
+export default function BlogEditor({ onSave }: BlogEditorProps) {
+  const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [currentImages, setCurrentImages] = useState<string[]>([]);
+
+  const colors = {
+    dark: {
+      "--editor-bg-color": "#030712 ",
+      "--editor-toolbar-bg-color": "#030712",
+      "--editor-content-bg-color": "#030712",
+      "--editor-text-color": "#cccccc",
+      "--editor-icon-color": "#ffffff",
+      "--editor-btn-hover-color": "#3e3e3e",
+      "--editor-border-color": "#555555",
+      "--editor-header-bg-color": "#030712",
+    },
+    light: {
+      "--editor-bg-color": "#ffffff",
+      "--editor-header-color": "#000000",
+      "--editor-toolbar-bg-color": "#f0f0f0",
+      "--editor-content-bg-color": "#fafafa",
+      "--editor-text-color": "#333333",
+      "--editor-icon-color": "#000000",
+      "--editor-btn-hover-color": "#e0e0e0",
+      "--editor-border-color": "#cccccc",
+      "--editor-header-bg-color": "#f5f5f5",
+    },
+  };
+  const [darkTheme, setDarkTheme] = useState(colors.dark);
   const editorRef = useRef<any>(null);
+  const { toast } = useToast();
+  const { theme, systemTheme } = useTheme();
+
+  const updateEditorTheme = (
+    editor: TinyMCEEditor & { dom: any },
+    theme: any
+  ) => {
+    if (!editor) return;
+
+    const dom = editor.dom;
+    const body = editor.getBody();
+
+    // Update content area
+    (dom as any).setStyle(
+      body as unknown as string,
+      "background-color",
+      theme["--editor-content-bg-color"]
+    );
+    (dom as any).setStyle(
+      body as unknown as string,
+      "color",
+      theme["--editor-content-text-color"]
+    );
+
+    // Update iframe background
+    const iframe = (editor as any).iframeElement;
+    if (iframe) {
+      dom.setStyle(
+        iframe,
+        "background-color",
+        theme["--editor-content-bg-color"]
+      );
+    }
+
+    // Add custom styles
+    const styleId = "tiny-custom-styles";
+    let styleElm = dom.get(styleId);
+    if (!styleElm) {
+      styleElm = dom.create("style", { id: styleId });
+      dom.getRoot().parentNode?.appendChild(styleElm);
+    }
+
+    const css = `
+      body {
+        background-color: ${theme["--editor-content-bg-color"]} !important;
+        color: ${theme["--editor-content-text-color"]} !important;
+      }
+    `;
+
+    if (styleElm.firstChild) {
+      styleElm.firstChild.textContent = css;
+    } else {
+      styleElm.appendChild(dom.create("textnode", {}, css));
+    }
+
+    // Force refresh
+    editor.fire("ResizeEditor");
+  };
+  useEffect(() => {
+    const newTheme =
+      theme === "dark" || (theme !== "light" && systemTheme === "dark")
+        ? colors.dark
+        : colors.light;
+    setDarkTheme(newTheme);
+  }, [theme, systemTheme]);
 
   useEffect(() => {
-    const initialImages = extractImagesFromContent(initialValue || "");
-    setCurrentImages(initialImages);
-  }, [initialValue]);
-
-  const extractImagesFromContent = (content: string): string[] => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, "text/html");
-    const images = Array.from(doc.querySelectorAll("img"));
-    return images.map((img) => img.src);
-  };
-
-  const deleteImageFromFirebase = async (imageUrl: string) => {
-    try {
-      const imagePath = imageUrl.split("images%2F")[1].split("?")[0];
-      const imageRef = ref(storage, `images/${imagePath}`);
-      await deleteObject(imageRef);
-      console.log("Image deleted successfully");
-    } catch (error) {
-      console.error("Error deleting image:", error);
+    if (editorRef.current) {
+      updateEditorTheme(editorRef.current, darkTheme);
     }
-  };
+  }, [darkTheme]);
+
+  useEffect(() => {
+    const initialImages = extractImagesFromContent(content);
+    setCurrentImages(initialImages);
+  }, [content]);
 
   const handleEditorChange: IAllProps["onEditorChange"] = (
     newContent,
@@ -64,9 +146,26 @@ export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title) {
+      return toast({
+        variant: "destructive",
+        title: "Blog Post Failed",
+        description: "Please enter a title for the blog post.",
+      });
+    }
+
+    if (!content) {
+      return toast({
+        variant: "destructive",
+        title: "Blog Post Failed",
+        description: "Please enter content for the blog post.",
+      });
+    }
     if (editorRef.current) {
-      onSave({
+      onSave(e, {
         title,
         content: (editorRef.current as TinyMCEEditor).getContent(),
       });
@@ -117,27 +216,48 @@ export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
       reader.readAsDataURL(file);
     });
 
-    // Trigger input click event to open file picker
     input.click();
   };
 
   return (
-    <div className="blog-editor">
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter blog title"
-        className="blog-title-input"
-      />
+    <div
+      className="blog-editor px-4 bg-background"
+      style={darkTheme as unknown as React.CSSProperties}
+    >
+      <div className="flex gap-4 px-2 mx-auto pb-4">
+        <Input
+          type="text"
+          placeholder="Enter blog  title"
+          className="text-2xl font-bold"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="bg-background"
+            onClick={(e) => handleSave(e)}
+          >
+            Save Draft
+          </Button>
+          <Button className="bg-foreground" onClick={(e) => handleSave(e)}>
+            Publish
+          </Button>
+        </div>
+      </div>
+      {/* 
+      </div> */}
       <Editor
-        onInit={(evt, editor) => (editorRef.current = editor)}
-        initialValue={initialValue}
+        onInit={(evt, editor) => {
+          editorRef.current = editor;
+        }}
+        value={content}
         apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
         toolbar={true}
         init={{
           height: 500,
           menubar: true,
+          /* content_css: "tinymce-5-dark", */
           plugins: [
             "advlist",
             "autolink",
@@ -152,7 +272,6 @@ export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
             "code",
             "fullscreen",
             "insertdatetime",
-            "media",
             "table",
             "code",
             "help",
@@ -163,8 +282,20 @@ export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
             "bold italic forecolor | alignleft aligncenter " +
             "alignright alignjustify | bullist numlist outdent indent | " +
             "removeformat | image | help",
-          content_style:
-            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+          setup: (editor) => {
+            editorRef.current = editor;
+            editor.on("init", () =>
+              updateEditorTheme(editor as any, darkTheme)
+            );
+          },
+          content_style: `
+              body {
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 14px;
+              }
+            `,
+          body_class: "mce-content-body",
+          content_css: false, // Disable default content CSS
           images_upload_handler: handleImageUpload,
           file_picker_types: "image",
           automatic_uploads: true,
@@ -172,9 +303,9 @@ export default function BlogEditor({ initialValue, onSave }: BlogEditorProps) {
         }}
         onEditorChange={handleEditorChange}
       />
-      <button onClick={handleSave} className="save-button">
+      {/*   <button onClick={(e) => handleSave(e)} className="save-button">
         Save Blog Post
-      </button>
+      </button> */}
     </div>
   );
 }
