@@ -3,25 +3,27 @@ import BlogEditor from "@/components/blog-editor";
 import React, { useMemo, useState } from "react";
 
 const NewPostPage = () => {
-  const [content, setContent] = useState("");
-
-  const handleContentChange = (data: { title: string; content: string }) => {
+  const handleSubmit = (
+    e: React.FormEvent,
+    data: { title: any; content: any }
+  ) => {
     try {
-      setContent(data.content);
-    } catch (error) {
-      console.error("Failed to auto-save:", error);
+      const { title, content } = data;
+      e.preventDefault();
+      /*       if (!title) {
+        return;
+      } */
+
+      console.log("Submitting blog post with content:", content);
+    } catch (error: Error | any) {
+      console.log("error===>", error.message);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Submitting blog post with content:", content);
-  };
-
   return (
-    <div className="mt-24">
-      <form onSubmit={handleSubmit}>
-        <BlogEditor initialValue={content} onSave={handleContentChange} />
+    <div className="pt-24 bg-background">
+      <form className="bg-background">
+        <BlogEditor onSave={handleSubmit} />
       </form>
     </div>
   );
