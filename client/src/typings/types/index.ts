@@ -11,3 +11,13 @@ export type UseRefType = Record<
 export type BlogPostProps = {
   post: PostInterface & { createdAt?: Date };
 };
+
+export type usePostRequestType = {
+  url: string;
+  onSuccess: (data: any) => void;
+  onError: (error: any) => void;
+  onMutate: (data: any) => void;
+};
+
+export type ExtractImagesFromContentType = (content: string) => string[];
+export type DeleteImageFromFirebaseType= (imageUrl: string) => Promise<void>;
