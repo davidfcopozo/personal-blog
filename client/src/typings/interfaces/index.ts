@@ -1,4 +1,6 @@
 export interface BlogEditorProps {
-  initialValue: string;
-  onSave: (data: { title: string; content: string }) => void;
+  onSave: (
+    e: React.FormEvent,
+    data: { title: string; content: string }
+  ) => void;
 }
