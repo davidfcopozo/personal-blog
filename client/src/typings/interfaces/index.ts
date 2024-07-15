@@ -10,4 +10,12 @@ export interface BlogEditorProps {
 export interface ExtendedEditor extends Editor {
   dom: any;
   iframeElement: HTMLIFrameElement; // Assuming iframeElement is of type HTMLIFrameElement
+  editorUpload: {
+    blobCache: {
+      create: (id: string, file: File, base64: string) => any;
+      add: (blobInfo: any) => void;
+    };
+  };
+}
+
 }
