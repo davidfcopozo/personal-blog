@@ -21,7 +21,7 @@ const NewPostPage = () => {
   };
 
   return (
-    <div className="pt-24 bg-background">
+    <div className="pt-24 bg-background min-h-screen">
       <form className="bg-background">
         <BlogEditor onSave={handleSubmit} />
       </form>
