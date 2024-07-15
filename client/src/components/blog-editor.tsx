@@ -55,11 +55,7 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
 
     // Update content area
     dom.setStyle(body, "background-color", theme["--editor-content-bg-color"]);
-    (dom as any).setStyle(
-      body as unknown as string,
-      "color",
-      theme["--editor-content-text-color"]
-    );
+    dom.setStyle(body, "color", theme["--editor-content-text-color"]);
 
     // Update iframe background
     const iframe = editor.iframeElement;
@@ -95,6 +91,7 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
     // Force refresh
     editor.fire("ResizeEditor");
   };
+
   useEffect(() => {
     const newTheme =
       theme === "dark" || (theme !== "light" && systemTheme === "dark")
@@ -215,7 +212,7 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
   return (
     <div
       className="blog-editor px-4 bg-background"
-      style={darkTheme as unknown as React.CSSProperties}
+      style={darkTheme as React.CSSProperties}
     >
       <div className="flex gap-4 px-2 mx-auto pb-4">
         <Input
