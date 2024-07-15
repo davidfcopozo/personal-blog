@@ -1,22 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { Editor, IAllProps } from "@tinymce/tinymce-react";
-import { storage } from "../../firebaseConfig";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Editor as TinyMCEEditor } from "tinymce";
+import { Editor } from "@tinymce/tinymce-react";
 import { BlogEditorProps } from "@/typings/interfaces";
-import {
-  deleteImageFromFirebase,
-  editorColors,
-  extractImagesFromContent,
-  updateEditorTheme,
-} from "@/utils/blog-editor";
-import { useToast } from "./ui/use-toast";
+import { editorColors } from "@/utils/blog-editor";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import "@/styles/tinyCME-styles.css";
 import { useTheme } from "next-themes";
 import EditorWrapper from "./editor-wrapper";
 import BouncingCirclesLoader from "./bouncing-squares-loader";
+import { useBlogEditor } from "@/hooks/useBlogEditor";
 
 export default function BlogEditor({ onSave }: BlogEditorProps) {
   const [content, setContent] = useState("");
@@ -26,7 +18,6 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [isThemeReady, setIsThemeReady] = useState(false);
   const editorRef = useRef<any>(null);
-  const { toast } = useToast();
   const { theme, systemTheme } = useTheme();
 
   useEffect(() => {
@@ -49,103 +40,22 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
     setCurrentImages(initialImages);
   }, [content]);
 
-  const handleEditorChange: IAllProps["onEditorChange"] = (
-    newContent,
-    editor
-  ) => {
-    setContent(newContent);
-    const contentImages = extractImagesFromContent(newContent);
-
-    // Filter out blob URIs from contentImages
-    const firebaseImages = contentImages.filter((url) =>
-      url.includes("firebasestorage.googleapis.com")
-    );
-
-    // Only consider Firebase URLs for removal
-    const removedImages = currentImages.filter(
-      (img) =>
-        !firebaseImages.includes(img) &&
-        img.includes("firebasestorage.googleapis.com")
-    );
-
-    if (removedImages.length > 0) {
-      removedImages.forEach(deleteImageFromFirebase);
-      setCurrentImages(contentImages);
-    }
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!title) {
-      return toast({
-        variant: "destructive",
-        title: "Blog Post Failed",
-        description: "Please enter a title for the blog post.",
-      });
-    }
-
-    if (!content) {
-      return toast({
-        variant: "destructive",
-        title: "Blog Post Failed",
-        description: "Please enter content for the blog post.",
-      });
-    }
-    if (editorRef.current) {
-      onSave(e, {
-        title,
-        content: (editorRef.current as TinyMCEEditor).getContent(),
-      });
-    }
-  };
-
-  const handleImageUpload = async (
-    blobInfo: any,
-    progress: (percent: number) => void
-  ) => {
-    try {
-      const file = blobInfo.blob();
-      const fileName = blobInfo.name();
-      const storageRef = ref(storage, `images/${fileName}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      setCurrentImages((prev) => [...prev, downloadURL]);
-      return downloadURL;
-    } catch (error: Error | any) {
-      throw new Error("Image upload failed: " + error.message);
-    }
-  };
-
-  const handleFilePicker = (
-    cb: (arg0: any, arg1: { title: string }) => void,
-    value: any,
-    meta: any
-  ) => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-
-    input.addEventListener("change", (e) => {
-      const file = (e.target as HTMLInputElement)?.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const id = `${file.name.split(".")[0]}-${Date.now()}`;
-        const blobCache = editorRef.current.editorUpload.blobCache;
-        // Get base64 string
-        const base64 = (reader.result as string)?.split(",")[1];
-        const blobInfo = blobCache.create(id, file, base64);
-        blobCache.add(blobInfo);
-        // Call callback with blob URI
-        cb(blobInfo.blobUri(), { title: file.name });
-      });
-      reader.readAsDataURL(file);
-    });
-
-    input.click();
-  };
+  const {
+    extractImagesFromContent,
+    updateEditorTheme,
+    handleEditorChange,
+    handleSave,
+    handleImageUpload,
+    handleFilePicker,
+  } = useBlogEditor({
+    title,
+    content,
+    setContent,
+    currentImages,
+    setCurrentImages,
+    editorRef,
+    onSave: onSave,
+  });
 
   return (
     <div
