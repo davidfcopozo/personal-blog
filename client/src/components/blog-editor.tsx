@@ -3,7 +3,7 @@ import { Editor, IAllProps } from "@tinymce/tinymce-react";
 import { storage } from "../../firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Editor as TinyMCEEditor } from "tinymce";
-import { BlogEditorProps } from "@/typings/interfaces";
+import { BlogEditorProps, ExtendedEditor } from "@/typings/interfaces";
 import {
   deleteImageFromFirebase,
   extractImagesFromContent,
@@ -47,21 +47,14 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
   const { toast } = useToast();
   const { theme, systemTheme } = useTheme();
 
-  const updateEditorTheme = (
-    editor: TinyMCEEditor & { dom: any },
-    theme: any
-  ) => {
+  const updateEditorTheme = (editor: ExtendedEditor, theme: any) => {
     if (!editor) return;
 
     const dom = editor.dom;
     const body = editor.getBody();
 
     // Update content area
-    (dom as any).setStyle(
-      body as unknown as string,
-      "background-color",
-      theme["--editor-content-bg-color"]
-    );
+    dom.setStyle(body, "background-color", theme["--editor-content-bg-color"]);
     (dom as any).setStyle(
       body as unknown as string,
       "color",
@@ -69,7 +62,7 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
     );
 
     // Update iframe background
-    const iframe = (editor as any).iframeElement;
+    const iframe = editor.iframeElement;
     if (iframe) {
       dom.setStyle(
         iframe,
