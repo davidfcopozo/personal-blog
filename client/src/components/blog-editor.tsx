@@ -247,7 +247,6 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
         init={{
           height: 500,
           menubar: true,
-          /* content_css: "tinymce-5-dark", */
           plugins: [
             "advlist",
             "autolink",
@@ -293,9 +292,6 @@ export default function BlogEditor({ onSave }: BlogEditorProps) {
         }}
         onEditorChange={handleEditorChange}
       />
-      {/*   <button onClick={(e) => handleSave(e)} className="save-button">
-        Save Blog Post
-      </button> */}
     </div>
   );
 }
