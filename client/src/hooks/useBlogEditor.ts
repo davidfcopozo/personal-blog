@@ -34,9 +34,8 @@ export const useBlogEditor = ({
       const imagePath = imageUrl.split("images%2F")[1]?.split("?")[0];
       const imageRef = ref(storage, `images/${imagePath}`);
       await deleteObject(imageRef);
-      console.log("Image deleted successfully");
-    } catch (error) {
-      console.error("Error deleting image:", error);
+    } catch (error: Error | any) {
+      throw new Error("Image deletion failed: " + error?.message);
     }
   };
 
@@ -136,7 +135,7 @@ export const useBlogEditor = ({
   ) => {
     try {
       const file = blobInfo.blob();
-      const fileName = blobInfo.name();
+      const fileName = encodeURIComponent(blobInfo.name());
       const storageRef = ref(storage, `images/${fileName}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL: string = await getDownloadURL(snapshot.ref);
@@ -164,9 +163,10 @@ export const useBlogEditor = ({
       const reader = new FileReader();
       reader.addEventListener("load", () => {
         const id = `${file.name.split(".")[0]}-${Date.now()}`;
+        let idWithoutSpaces = id.replace(/\s+/g, "-");
         const blobCache = editorRef.current?.editorUpload.blobCache;
         const base64 = (reader.result as string)?.split(",")[1];
-        const blobInfo = blobCache?.create(id, file, base64);
+        const blobInfo = blobCache?.create(idWithoutSpaces, file, base64);
         blobCache?.add(blobInfo);
         cb(blobInfo.blobUri(), { title: file.name });
       });
