@@ -1,4 +1,5 @@
-import { IAllProps } from "@tinymce/tinymce-react";
+import { useState, useRef, useCallback, ChangeEvent, FormEvent } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { storage } from "../../firebaseConfig";
 import {
   ref,
@@ -6,104 +7,83 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { Editor as TinyMCEEditor } from "tinymce";
-import { ExtendedEditor, UseBlogEditorProps } from "@/typings/interfaces";
-import "@/styles/tinyCME-styles.css";
-import { useToast } from "@/components/ui/use-toast";
+import ReactQuill from "react-quill";
 
-export const useBlogEditor = ({
-  title,
-  content,
-  setContent,
-  currentImages,
-  setCurrentImages,
-  editorRef,
-  onSave,
-}: UseBlogEditorProps) => {
+export const useBlogEditor = () => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const [featureImage, setFeatureImage] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [category, setCategory] = useState("");
+  const editorRef = useRef<ReactQuill | null>(null);
   const { toast } = useToast();
+
+  const deleteImageFromFirebase = useCallback(async (imageUrl: string) => {
+    try {
+      const imagePath = imageUrl.split("images%2F")[1]?.split("?")[0];
+      if (imagePath) {
+        const imageRef = ref(storage, `images/${imagePath}`);
+        await deleteObject(imageRef);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
 
   const extractImagesFromContent = (content: string) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, "text/html");
     const images = Array.from(doc.querySelectorAll("img"));
+
     return images.map((img) => img.src);
   };
 
-  const deleteImageFromFirebase = async (imageUrl: string) => {
-    try {
-      const imagePath = imageUrl.split("images%2F")[1]?.split("?")[0];
-      const imageRef = ref(storage, `images/${imagePath}`);
-      await deleteObject(imageRef);
-    } catch (error: Error | any) {
-      throw new Error("Image deletion failed: " + error?.message);
-    }
-  };
+  const handleContentChange = useCallback(
+    (value: string) => {
+      setContent(value);
+      const contentImages = extractImagesFromContent(value);
 
-  const updateEditorTheme = (editor: ExtendedEditor, theme: any) => {
-    if (!editor) return;
-
-    const dom = editor.dom;
-    const body = editor.getBody();
-
-    dom.setStyle(body, "background-color", theme["--editor-content-bg-color"]);
-    dom.setStyle(body, "color", theme["--editor-text-color"]);
-
-    const iframe = editor.iframeElement;
-    if (iframe) {
-      dom.setStyle(
-        iframe,
-        "background-color",
-        theme["--editor-content-bg-color"]
+      const firebaseImages = contentImages.filter((url) =>
+        url.includes("firebasestorage.googleapis.com")
       );
-    }
 
-    const styleId = "tiny-custom-styles";
-    let styleElm = dom.get(styleId);
-    if (!styleElm) {
-      styleElm = dom.create("style", { id: styleId });
-      dom.getRoot().parentNode?.appendChild(styleElm);
-    }
+      const removedImages = currentImages.filter(
+        (img) =>
+          !firebaseImages.includes(img) &&
+          img.includes("firebasestorage.googleapis.com")
+      );
 
-    const css = `
-      body {
-        background-color: ${theme["--editor-content-bg-color"]} !important;
-        color: ${theme["--editor-text-color"]} !important;
+      if (removedImages.length > 0) {
+        removedImages.forEach(deleteImageFromFirebase);
+        setCurrentImages(contentImages);
       }
-    `;
+    },
+    [currentImages, setCurrentImages]
+  );
 
-    if (styleElm.firstChild) {
-      styleElm.firstChild.textContent = css;
-    } else {
-      styleElm.appendChild(dom.create("textnode", {}, css));
+  const handleImageUpload = useCallback(async (file: File) => {
+    try {
+      const id = `${file.name.split(".")[0]}-${Date.now()}`;
+      let idWithoutSpaces = id.replace(/\s+/g, "-");
+      const fileName = encodeURIComponent(idWithoutSpaces);
+      const storageRef = ref(storage, `images/${fileName}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      const newImages = [...currentImages, downloadURL];
+      setCurrentImages(newImages);
+      return downloadURL;
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      throw error;
     }
+  }, []);
 
-    editor.fire("ResizeEditor");
-  };
-
-  const handleEditorChange: IAllProps["onEditorChange"] = (
-    newContent,
-    editor
-  ) => {
-    setContent(newContent);
-    const contentImages = extractImagesFromContent(newContent);
-
-    const firebaseImages = contentImages.filter((url) =>
-      url.includes("firebasestorage.googleapis.com")
-    );
-
-    const removedImages = currentImages.filter(
-      (img) =>
-        !firebaseImages.includes(img) &&
-        img.includes("firebasestorage.googleapis.com")
-    );
-
-    if (removedImages.length > 0) {
-      removedImages.forEach(deleteImageFromFirebase);
-      setCurrentImages(contentImages);
-    }
-  };
-
-  const handleSave = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     if (!title) {
@@ -114,75 +94,28 @@ export const useBlogEditor = ({
       });
     }
 
-    if (!content) {
+    if (!content || content === "<p><br></p>") {
       return toast({
         variant: "destructive",
         title: "Blog Post Failed",
         description: "Please enter content for the blog post.",
       });
     }
-    if (editorRef.current) {
-      onSave(e, {
-        title,
-        content: (editorRef.current as TinyMCEEditor).getContent(),
-      });
-    }
-  };
-
-  const handleImageUpload = async (
-    blobInfo: any,
-    progress: (percent: number) => void
-  ) => {
-    try {
-      const file = blobInfo.blob();
-      const fileName = encodeURIComponent(blobInfo.name());
-      const storageRef = ref(storage, `images/${fileName}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL: string = await getDownloadURL(snapshot.ref);
-      const newImages = [...currentImages, downloadURL];
-      setCurrentImages(newImages);
-      return downloadURL;
-    } catch (error: Error | any) {
-      throw new Error("Image upload failed: " + error.message);
-    }
-  };
-
-  const handleFilePicker = (
-    cb: (arg0: any, arg1: { title: string }) => void,
-    value: any,
-    meta: any
-  ) => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-
-    input.addEventListener("change", (e) => {
-      const file = (e.target as HTMLInputElement)?.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const id = `${file.name.split(".")[0]}-${Date.now()}`;
-        let idWithoutSpaces = id.replace(/\s+/g, "-");
-        const blobCache = editorRef.current?.editorUpload.blobCache;
-        const base64 = (reader.result as string)?.split(",")[1];
-        const blobInfo = blobCache?.create(idWithoutSpaces, file, base64);
-        blobCache?.add(blobInfo);
-        cb(blobInfo.blobUri(), { title: file.name });
-      });
-      reader.readAsDataURL(file);
-    });
-
-    input.click();
   };
 
   return {
-    extractImagesFromContent,
-    deleteImageFromFirebase,
-    updateEditorTheme,
-    handleEditorChange,
-    handleSave,
+    title,
+    content,
+    featureImage,
+    tags,
+    category,
+    editorRef,
+    handleTitleChange,
+    handleContentChange,
+    handleSubmit,
     handleImageUpload,
-    handleFilePicker,
+    setFeatureImage,
+    setTags,
+    setCategory,
   };
 };
