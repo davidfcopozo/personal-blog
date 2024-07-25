@@ -1,4 +1,4 @@
-import { FormEvent } from "react";
+import { FormEvent, HTMLAttributes, ReactNode, RefObject } from "react";
 import { Editor } from "tinymce";
 
 export interface BlogEditorProps {
@@ -21,11 +21,11 @@ export interface UseBlogEditorProps {
   content: string;
   currentImages: string[];
   setCurrentImages: (images: string[]) => void;
-  editorRef: React.RefObject<ExtendedEditor>;
+  editorRef: RefObject<ExtendedEditor>;
   onSave: (data: { title: string; content: string }) => void;
 }
 
-export interface CustomBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
   key: string | number;
   onRemove?: () => void;
@@ -38,8 +38,8 @@ export interface EditorProps {
 }
 
 export interface NewPostLayoutProps {
-  children: React.ReactNode;
-  onSave: (e: React.FormEvent) => void;
+  children: ReactNode;
+  onSave: (e: FormEvent) => void;
 }
 
 export interface NewPostHeaderProps {
