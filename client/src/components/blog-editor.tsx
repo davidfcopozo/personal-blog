@@ -5,7 +5,8 @@ import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
 import Layout from "@/app/new-post/layout";
-import Editor from "./editor";
+import dynamic from "next/dynamic";
+const Editor = dynamic(() => import("./editor"), { ssr: false });
 
 const BlogEditor = () => {
   const handleSave = (e: FormEvent) => {
