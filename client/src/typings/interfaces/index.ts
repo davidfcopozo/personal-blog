@@ -1,15 +1,13 @@
+import { FormEvent } from "react";
 import { Editor } from "tinymce";
 
 export interface BlogEditorProps {
-  onSave: (
-    e: React.FormEvent,
-    data: { title: string; content: string }
-  ) => void;
+  onSave: (data: { title: string; content: string }) => void;
 }
 
 export interface ExtendedEditor extends Editor {
   dom: any;
-  iframeElement: HTMLIFrameElement; // Assuming iframeElement is of type HTMLIFrameElement
+  iframeElement: HTMLIFrameElement;
   editorUpload: {
     blobCache: {
       create: (id: string, file: File, base64: string) => any;
@@ -21,12 +19,29 @@ export interface ExtendedEditor extends Editor {
 export interface UseBlogEditorProps {
   title: string;
   content: string;
-  setContent: (content: string) => void;
   currentImages: string[];
   setCurrentImages: (images: string[]) => void;
   editorRef: React.RefObject<ExtendedEditor>;
-  onSave: (
-    e: React.FormEvent,
-    data: { title: string; content: string }
-  ) => void;
+  onSave: (data: { title: string; content: string }) => void;
+}
+
+export interface CustomBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: string;
+  key: string | number;
+  onRemove?: () => void;
+}
+
+export interface EditorProps {
+  value: string;
+  onChange: (content: string) => void;
+  handleImageUpload: (file: File) => Promise<string>;
+}
+
+export interface NewPostLayoutProps {
+  children: React.ReactNode;
+  onSave: (e: React.FormEvent) => void;
+}
+
+export interface NewPostHeaderProps {
+  onSave: (e: FormEvent) => void;
 }
