@@ -6,6 +6,8 @@ import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
 import Layout from "@/app/new-post/layout";
 import dynamic from "next/dynamic";
+import Categories from "./categories";
+import Tags from "./tags";
 const Editor = dynamic(() => import("./editor"), { ssr: false });
 
 const BlogEditor = () => {
@@ -48,8 +50,10 @@ const BlogEditor = () => {
             </div>
           </form>
         </div>
-        <div className="mt-16 md:w-1/4 p-4">
+        <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
           <FeatureImage /* image={featureImage} onUpload={setFeatureImage} */ />
+          <Categories />
+          <Tags />
         </div>
       </div>
     </Layout>
