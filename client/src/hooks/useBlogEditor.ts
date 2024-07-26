@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, ChangeEvent, FormEvent } from "react";
+import { useState, useCallback, ChangeEvent, FormEvent } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { storage } from "../../firebaseConfig";
 import {
@@ -7,7 +7,6 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import ReactQuill from "react-quill";
 
 export const useBlogEditor = () => {
   const [title, setTitle] = useState("");
@@ -16,7 +15,6 @@ export const useBlogEditor = () => {
   const [featureImage, setFeatureImage] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [category, setCategory] = useState("");
-  const editorRef = useRef<ReactQuill | null>(null);
   const { toast } = useToast();
 
   const deleteImageFromFirebase = useCallback(async (imageUrl: string) => {
@@ -109,7 +107,6 @@ export const useBlogEditor = () => {
     featureImage,
     tags,
     category,
-    editorRef,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
