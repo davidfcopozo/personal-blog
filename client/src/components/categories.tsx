@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -17,7 +17,7 @@ const Categories = () => {
   const [showMore, setShowMore] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const handleAddCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddCategory = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (newCategory.trim() !== "") {
       setCategories([
@@ -28,7 +28,7 @@ const Categories = () => {
     }
   };
   const handleCategoryClick = (
-    e: React.MouseEvent<HTMLButtonElement>,
+    e: MouseEvent<HTMLButtonElement>,
     category: { id: number; name: string }
   ) => {
     e.preventDefault();
@@ -74,7 +74,7 @@ const Categories = () => {
           )}
         </div>
         <div className="mt-4 grid gap-2">
-          <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+          <div className="grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
             <Input
               placeholder="Add new category"
               value={newCategory}
