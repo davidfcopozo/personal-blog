@@ -1,29 +1,41 @@
+import Image from "next/image";
 import { UploadIcon, XIcon } from "./icons";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 const FeatureImage = () => {
   return (
-    <Card>
+    <Card className="text-center">
       <CardHeader>
         <CardTitle>Feature Image</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-2 ">
-          <Button variant="outline" size="sm" className="w-[80%]">
-            <UploadIcon className="mr-2 h-4 w-4" />
+      <CardContent className="p-0 px-2">
+        <div className="grid gap-2 w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-[80%] mx-auto text-center"
+          >
+            <UploadIcon className="mr-1 h-4 w-4" />
             Upload Image
           </Button>
-          <div className="grid gap-2">
-            <img
-              src="/placeholder.svg"
-              alt="Feature Image"
-              width={300}
-              height={200}
-              className="rounded-lg object-cover"
-            />
-            <Button variant="ghost" size="icon" className="justify-end">
-              <XIcon className="h-2 w-2" />
+          <div className="gap-2 mx-auto">
+            {true && (
+              <Image
+                src="/new-img.png"
+                alt="Feature Image"
+                width={300}
+                height={200}
+                className="rounded-lg object-cover 100%"
+              />
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-[50%] my-2 mx-auto text-center"
+            >
+              <XIcon className="h-3 w-3 mr-1" />
+              Remove
               <span className="sr-only">Remove Image</span>
             </Button>
           </div>

@@ -27,8 +27,8 @@ const BlogEditor = () => {
 
   return (
     <Layout onSave={handleSave}>
-      <div className="flex">
-        <div className="w-3/4 p-4">
+      <div className="flex-column md:flex">
+        <div className="mb-4 md:w-3/4 p-4">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <Input
@@ -48,7 +48,7 @@ const BlogEditor = () => {
             </div>
           </form>
         </div>
-        <div className="w-1/4 p-4">
+        <div className="mt-16 md:w-1/4 p-4">
           <FeatureImage /* image={featureImage} onUpload={setFeatureImage} */ />
         </div>
       </div>
