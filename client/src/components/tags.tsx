@@ -38,10 +38,10 @@ export default function Tags() {
     <Card>
       <CardHeader>
         <CardTitle>Tags</CardTitle>
-        <CardDescription>Add tags to your product</CardDescription>
+        <CardDescription>Add tags to your post</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center space-x-2">
+        <div className="grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
           <Input
             type="text"
             placeholder="Add a tag"
