@@ -2,7 +2,7 @@ import { usePostRequestType } from "@/typings/types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-const baseULR = process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT;
+const baseULR = `http://${window.location.hostname}:3000`
 
 function usePostRequest({
   url,
