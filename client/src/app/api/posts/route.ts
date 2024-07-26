@@ -2,7 +2,9 @@ import axios from "axios";
 
 export async function GET() {
   try {
-    const res = await fetch(`${process.env.BACKEND_API_ENDPOINT}/posts`);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts`
+    );
 
     if (!res.ok) {
       throw new Error("Failed to fetch posts");
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const res: Response = await axios.post(
-      `${process.env.BACKEND_API_ENDPOINT}/posts`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts`,
       body
     );
 

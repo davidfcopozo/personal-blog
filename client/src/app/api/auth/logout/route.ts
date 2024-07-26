@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 export async function GET(req: NextRequest) {
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!token) {
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await axios.get(
-      `${process.env.BACKEND_API_ENDPOINT}/auth/logout`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/auth/logout`,
       {
         headers: {
           Authorization: `Bearer ${token.accessToken}`,
