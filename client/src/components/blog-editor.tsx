@@ -24,7 +24,6 @@ const BlogEditor = () => {
     handleSubmit,
     handleImageUpload,
     setFeatureImage,
-    editorRef,
   } = useBlogEditor();
 
   return (
@@ -42,7 +41,6 @@ const BlogEditor = () => {
             </div>
             <div className="mb-4">
               <Editor
-                ref={editorRef}
                 value={content}
                 onChange={handleContentChange}
                 handleImageUpload={handleImageUpload}
