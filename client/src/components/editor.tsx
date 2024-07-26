@@ -1,10 +1,10 @@
-import React, { forwardRef, RefObject, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import ReactQuill from "react-quill";
 import { formats } from "@/utils/blog-editor";
 import { EditorProps } from "@/typings/interfaces";
 
-const Editor = forwardRef<ReactQuill | null, EditorProps>((props, ref) => {
-  const { value, onChange, handleImageUpload } = props;
+const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
+  const editorRef = useRef<ReactQuill | null>(null);
 
   const imageHandler = useCallback(() => {
     const input = document.createElement("input");
@@ -17,22 +17,20 @@ const Editor = forwardRef<ReactQuill | null, EditorProps>((props, ref) => {
         const file = input.files[0];
         try {
           const url = await handleImageUpload(file);
-          const quillRef = ref as RefObject<ReactQuill>;
-
-          if (quillRef.current) {
-            const quill = quillRef.current.getEditor();
-            const range = quill.getSelection(true);
-            quill.insertEmbed(range.index, "image", url);
-            quill.setSelection(range.index + 1, 0);
-          } else {
-            console.error("Quill instance not found");
+          if (editorRef && "current" in editorRef && editorRef.current) {
+            const quill = editorRef.current.getEditor();
+            if (quill) {
+              const range = quill.getSelection(true);
+              quill.insertEmbed(range.index, "image", url);
+              quill.setSelection(range.index + 1, 1);
+            }
           }
         } catch (error) {
           console.error("Error uploading image:", error);
         }
       }
     };
-  }, [handleImageUpload, ref]);
+  }, [handleImageUpload, editorRef]);
 
   const modules = useMemo(
     () => ({
@@ -64,7 +62,7 @@ const Editor = forwardRef<ReactQuill | null, EditorProps>((props, ref) => {
   return (
     <ReactQuill
       key="quil-editor"
-      ref={ref}
+      ref={editorRef}
       className="h-screen w-full"
       formats={formats}
       value={value}
@@ -72,7 +70,7 @@ const Editor = forwardRef<ReactQuill | null, EditorProps>((props, ref) => {
       modules={modules}
     />
   );
-});
+};
 
 Editor.displayName = "Editor";
 
