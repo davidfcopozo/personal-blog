@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect } from "react";
 
-let baseULR = "http://localhost:3000";
+const baseULR = process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT;
 
 function useFetchRequest(key: string, url: string) {
   try {
