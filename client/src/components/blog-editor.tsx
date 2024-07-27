@@ -29,7 +29,7 @@ const BlogEditor = () => {
   return (
     <Layout onSave={handleSave}>
       <div className="flex-column md:flex">
-        <div className="mb-4 md:w-3/4 p-4">
+        <div className="mb-20 xs:mb-4 md:w-3/4 p-4">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <Input
