@@ -1,10 +1,18 @@
 import React, { useCallback, useMemo, useRef } from "react";
-import ReactQuill from "react-quill";
+import ReactQuill, { Quill } from "react-quill";
 import { formats } from "@/utils/blog-editor";
 import { EditorProps } from "@/typings/interfaces";
 
 const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
-  const editorRef = useRef<ReactQuill | null>(null);
+  const editorRef = useRef<ReactQuill>(null);
+
+  let icons = Quill.import("ui/icons");
+  icons[
+    "undo"
+  ] = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-up-left ql-stroke"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
+  icons[
+    "redo"
+  ] = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-up-right ql-stroke"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>`;
 
   const imageHandler = useCallback(() => {
     const input = document.createElement("input");
@@ -34,8 +42,10 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
 
   const modules = useMemo(
     () => ({
+      history: { delay: 200, maxStack: 500, userOnly: true },
       toolbar: {
         container: [
+          ["undo", "redo"],
           [{ header: [1, 2, 3, 4, 5, 6, false] }],
           ["bold", "italic", "underline", "strike", "blockquote"],
           [
@@ -49,10 +59,25 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
           [{ script: "sub" }, { script: "super" }],
           [{ color: [] }, { background: [] }],
           ["link", "image", "video"],
+
           ["clean"],
         ],
         handlers: {
           image: imageHandler,
+          undo: () => {
+            if (editorRef && "current" in editorRef && editorRef.current) {
+              const quillEditor = editorRef.current.getEditor();
+              const history = quillEditor.getModule("history");
+              return history.undo();
+            }
+          },
+          redo: () => {
+            if (editorRef && "current" in editorRef && editorRef.current) {
+              const quillEditor = editorRef.current.getEditor();
+              const history = quillEditor.getModule("history");
+              return history.redo();
+            }
+          },
         },
       },
     }),
