@@ -46,7 +46,11 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
       toolbar: {
         container: [
           ["undo", "redo"],
-          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          [
+            { header: "1" },
+            { header: "2" },
+            { header: [1, 2, 3, 4, 5, 6, false] },
+          ],
           ["bold", "italic", "underline", "strike", "blockquote"],
           [
             { list: "ordered" },
