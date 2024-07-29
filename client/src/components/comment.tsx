@@ -3,7 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp } from "lucide-react";
 import Reply from "./reply";
-import { getRelativeTime } from "@/lib/utils";
+import { getRelativeTime } from "@/utils/formats";
 
 interface CommentProps {
   key: React.Key;

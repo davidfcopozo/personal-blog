@@ -1,7 +1,7 @@
 "use client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { posts } from "@/lib/testDatabase.json";
-import { getFullName, getNameInitials } from "@/lib/utils";
+import { getFullName, getNameInitials } from "@/utils/formats";
 import ProfileBlogCard from "@/components/profile-blog-card";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";

@@ -4,7 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getFullName, getNameInitials } from "@/lib/utils";
+import { getFullName, getNameInitials } from "@/utils/formats";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 

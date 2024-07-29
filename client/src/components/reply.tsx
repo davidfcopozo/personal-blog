@@ -2,7 +2,7 @@ import React from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp } from "lucide-react";
-import { getRelativeTime } from "@/lib/utils";
+import { getRelativeTime } from "@/utils/formats";
 
 interface ReplyProps {
   reply: {

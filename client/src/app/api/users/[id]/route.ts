@@ -21,7 +21,7 @@ export async function GET(
 
   try {
     const res = await axios.get(
-      `${process.env.BACKEND_API_ENDPOINT}/users/${id}`
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/users/${id}`
     );
 
     return new Response(JSON.stringify(res.data), {

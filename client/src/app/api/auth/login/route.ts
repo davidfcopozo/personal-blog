@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const res = await axios.post(
-      `${process.env.BACKEND_API_ENDPOINT}/auth/login`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/auth/login`,
       body
     );
 
