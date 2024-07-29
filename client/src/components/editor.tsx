@@ -1,20 +1,14 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import ReactQuill, { Quill } from "react-quill";
-import { formats } from "@/utils/blog-editor";
+import { formats, modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
 import { EditorProps } from "@/typings/interfaces";
-import ImageResize from "quill-image-resize-module-react";
-Quill.register("modules/imageResize", ImageResize);
 
 const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
 
   let icons = Quill.import("ui/icons");
-  icons[
-    "undo"
-  ] = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-up-left ql-stroke"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
-  icons[
-    "redo"
-  ] = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-up-right ql-stroke"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>`;
+  icons["undo"] = UNDO_ICON;
+  icons["redo"] = REDO_ICON;
 
   const imageHandler = useCallback(() => {
     const input = document.createElement("input");
@@ -42,60 +36,30 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
     };
   }, [handleImageUpload, editorRef]);
 
-  const modules = useMemo(
-    () => ({
-      history: { delay: 200, maxStack: 500, userOnly: true },
-      clipboard: {
-        matchVisual: false,
-      },
-      imageResize: {
-        parchment: Quill.import("parchment"),
-        modules: ["Resize", "DisplaySize", "Toolbar"],
-      },
-      toolbar: {
-        container: [
-          ["undo", "redo"],
-          [
-            { header: "1" },
-            { header: "2" },
-            { header: [1, 2, 3, 4, 5, 6, false] },
-          ],
-          ["bold", "italic", "underline", "strike", "blockquote"],
-          [
-            { list: "ordered" },
-            { list: "bullet" },
-            { indent: "-1" },
-            { indent: "+1" },
-            { align: [] },
-          ],
-          [{ font: [] }],
-          [{ script: "sub" }, { script: "super" }],
-          [{ color: [] }, { background: [] }],
-          ["link", "image", "video"],
+  const undoHandler = useCallback(() => {
+    if (editorRef && "current" in editorRef && editorRef.current) {
+      const quillEditor = editorRef.current.getEditor();
+      const history = quillEditor.getModule("history");
+      return history.undo();
+    }
+  }, []);
 
-          ["clean"],
-        ],
-        handlers: {
-          image: imageHandler,
-          undo: () => {
-            if (editorRef && "current" in editorRef && editorRef.current) {
-              const quillEditor = editorRef.current.getEditor();
-              const history = quillEditor.getModule("history");
-              return history.undo();
-            }
-          },
-          redo: () => {
-            if (editorRef && "current" in editorRef && editorRef.current) {
-              const quillEditor = editorRef.current.getEditor();
-              const history = quillEditor.getModule("history");
-              return history.redo();
-            }
-          },
-        },
-      },
-    }),
-    [imageHandler]
-  );
+  const redoHandler = useCallback(() => {
+    if (editorRef && "current" in editorRef && editorRef.current) {
+      const quillEditor = editorRef.current.getEditor();
+      const history = quillEditor.getModule("history");
+      return history.redo();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const toolbar = editorRef.current.getEditor().getModule("toolbar");
+      toolbar.addHandler("image", imageHandler);
+      toolbar.addHandler("undo", undoHandler);
+      toolbar.addHandler("redu", redoHandler);
+    }
+  }, [imageHandler, undoHandler, redoHandler]);
 
   return (
     <ReactQuill
@@ -105,7 +69,17 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
       formats={formats}
       value={value}
       onChange={onChange}
-      modules={modules}
+      modules={{
+        ...modules,
+        toolbar: {
+          ...modules.toolbar,
+          handlers: {
+            image: imageHandler,
+            undo: undoHandler,
+            redo: redoHandler,
+          },
+        },
+      }}
     />
   );
 };
