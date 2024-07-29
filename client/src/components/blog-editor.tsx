@@ -1,5 +1,5 @@
 "use client";
-import React, { ComponentType, FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import "react-quill/dist/quill.snow.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
@@ -8,11 +8,14 @@ import Layout from "@/app/new-post/layout";
 import Categories from "./categories";
 import Tags from "./tags";
 import { BouncingCircles } from "./icons";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(() => import("./editor"), {
+  ssr: false,
+});
 
 const BlogEditor = () => {
   const [isEditorLoaded, setIsEditorLoaded] = useState(false);
-  const [EditorComponent, setEditorComponent] =
-    useState<ComponentType<any> | null>(null);
 
   const handleSave = (e: FormEvent) => {
     handleSubmit(e);
@@ -30,12 +33,7 @@ const BlogEditor = () => {
   } = useBlogEditor();
 
   useEffect(() => {
-    const loadEditor = async () => {
-      const EditorModule = await import("./editor");
-      setEditorComponent(() => EditorModule.default);
-      setIsEditorLoaded(true);
-    };
-    loadEditor();
+    if (Editor) setIsEditorLoaded(true);
   }, []);
 
   return (
@@ -57,13 +55,11 @@ const BlogEditor = () => {
                 />
               </div>
               <div className="mb-4">
-                {EditorComponent && (
-                  <EditorComponent
-                    value={content}
-                    onChange={handleContentChange}
-                    handleImageUpload={handleImageUpload}
-                  />
-                )}
+                <Editor
+                  value={content}
+                  onChange={handleContentChange}
+                  handleImageUpload={handleImageUpload}
+                />
               </div>
             </form>
           </div>
