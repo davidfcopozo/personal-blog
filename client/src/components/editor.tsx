@@ -2,9 +2,11 @@ import React, { useCallback, useMemo, useRef } from "react";
 import ReactQuill, { Quill } from "react-quill";
 import { formats } from "@/utils/blog-editor";
 import { EditorProps } from "@/typings/interfaces";
+import ImageResize from "quill-image-resize-module-react";
 
 const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
+  Quill.register("modules/imageResize", ImageResize);
 
   let icons = Quill.import("ui/icons");
   icons[
@@ -43,6 +45,14 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
   const modules = useMemo(
     () => ({
       history: { delay: 200, maxStack: 500, userOnly: true },
+      clipboard: {
+        // toggle to add extra line breaks when pasting HTML:
+        matchVisual: false,
+      },
+      imageResize: {
+        parchment: Quill.import("parchment"),
+        modules: ["Resize", "DisplaySize", "Toolbar"],
+      },
       toolbar: {
         container: [
           ["undo", "redo"],
