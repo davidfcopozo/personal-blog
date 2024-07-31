@@ -12,7 +12,7 @@ export type BlogPostProps = {
   post: PostInterface & { createdAt?: Date };
 };
 
-export type usePostRequestType = {
+export type UsePostRequestType = {
   url: string;
   onSuccess: (data: any) => void;
   onError: (error: any) => void;
@@ -20,4 +20,4 @@ export type usePostRequestType = {
 };
 
 export type ExtractImagesFromContentType = (content: string) => string[];
-export type DeleteImageFromFirebaseType= (imageUrl: string) => Promise<void>;
+export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
