@@ -10,7 +10,6 @@ import {
 import { InitialPost } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/context/AuthContext";
 
 export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [title, setTitle] = useState(initialPost?.title || "");
@@ -24,7 +23,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [tags, setTags] = useState<string[]>(initialPost?.tags || []);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
-  const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const { mutate, data, status, error } = usePostRequest({
@@ -106,7 +104,8 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
 
   const handleImageUpload = useCallback(async (file: File) => {
     const currentUser: any = await queryClient.getQueryData(["currentUser"]);
-    let currentUserId: string = await currentUser?.data._id;
+
+    let currentUserId = await currentUser?.data._id;
     try {
       const id = `${file.name.split(".")[0]}-${Date.now()}`;
       let idWithoutSpaces = id.replace(/\s+/g, "-");
