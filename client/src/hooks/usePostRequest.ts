@@ -1,22 +1,19 @@
-import { usePostRequestType } from "@/typings/types";
+import { InitialPost } from "@/typings/interfaces";
+import { UsePostRequestType } from "@/typings/types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-
-const baseULR = `http://${window.location.hostname}:3000`
 
 function usePostRequest({
   url,
   onSuccess,
   onError,
   onMutate,
-}: usePostRequestType) {
-  const mutateFunction = async (body: any) => {
-    const response = await axios.post(`${baseULR}/${url}`, body);
-    return response.data;
-  };
-
+}: UsePostRequestType) {
   const { mutate, data, status, error } = useMutation({
-    mutationFn: mutateFunction,
+    mutationFn: async (body: InitialPost) => {
+      const res = await axios.post(url, body);
+      return res.data;
+    },
     onSuccess: onSuccess,
     onError: onError,
     onMutate: onMutate,
@@ -24,5 +21,4 @@ function usePostRequest({
 
   return { mutate, data, status, error };
 }
-
 export default usePostRequest;
