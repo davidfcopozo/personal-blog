@@ -46,7 +46,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       queryClient.setQueryData(["posts"], (oldData: InitialPost[]) => [
         {
           ...oldData,
-          id: `${post.createdBy}`,
           title: post.title,
           content: post.content,
           featureImage: post.featureImage,
@@ -161,7 +160,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         });
 
         mutate({
-          id: `${currentUser.data._id}`,
           title,
           content,
           featureImage,
