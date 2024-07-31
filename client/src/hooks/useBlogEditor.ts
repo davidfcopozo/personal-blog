@@ -25,7 +25,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
   const { currentUser } = useAuth();
-
   const queryClient = useQueryClient();
 
   const { mutate, data, status, error } = usePostRequest({
@@ -57,10 +56,12 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   });
 
   const deleteImageFromFirebase = useCallback(async (imageUrl: string) => {
+    const currentUser: any = await queryClient.getQueryData(["currentUser"]);
+    let currentUserId: string = await currentUser?.data._id;
     try {
-      const imagePath = imageUrl.split("images%2F")[1]?.split("?")[0];
+      const imagePath = imageUrl.split(`${currentUserId}%2F`)[1]?.split("?")[0];
       if (imagePath) {
-        const imageRef = ref(storage, `images/${imagePath}`);
+        const imageRef = ref(storage, `images/${currentUserId}/${imagePath}`);
         await deleteObject(imageRef);
       }
     } catch (error) {
@@ -104,11 +105,13 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   );
 
   const handleImageUpload = useCallback(async (file: File) => {
+    const currentUser: any = await queryClient.getQueryData(["currentUser"]);
+    let currentUserId: string = await currentUser?.data._id;
     try {
       const id = `${file.name.split(".")[0]}-${Date.now()}`;
       let idWithoutSpaces = id.replace(/\s+/g, "-");
       const fileName = encodeURIComponent(idWithoutSpaces);
-      const storageRef = ref(storage, `images/${fileName}`);
+      const storageRef = ref(storage, `images/${currentUserId}/${fileName}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       const newImages = [...currentImages, downloadURL];
@@ -141,7 +144,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       if (initialPost) {
         // Update existing post
         console.log("Updating post:", {
-          id: currentUser.data._id.toString(),
           title,
           content,
           featureImage,
@@ -151,7 +153,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       } else {
         // Create new post
         console.log("Creating new post:", {
-          id: `${currentUser.data._id}`,
           title,
           content,
           featureImage,
@@ -174,7 +175,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
           setCategories([]);
           setTags([]);
         }
-        console.log("Error:", error);
       }
     },
     [title, content, featureImage, categories, tags, initialPost]
