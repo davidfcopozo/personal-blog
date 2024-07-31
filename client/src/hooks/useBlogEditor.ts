@@ -166,8 +166,14 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
           categories,
           tags,
         });
-        console.log("Data:", data);
-        console.log("Status:", status);
+
+        if (!error) {
+          setTitle("");
+          setContent("");
+          setFeatureImage(null);
+          setCategories([]);
+          setTags([]);
+        }
         console.log("Error:", error);
       }
     },
