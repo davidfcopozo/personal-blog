@@ -45,3 +45,20 @@ export interface NewPostLayoutProps {
 export interface NewPostHeaderProps {
   onSave: (e: FormEvent) => void;
 }
+export interface BlogEditorProps {
+  initialPost?: {
+    title: string;
+    content: string;
+    featureImage: string | null;
+    categories?: string[];
+    tags?: string[];
+  } | null;
+}
+
+export interface InitialPost {
+  title: string;
+  content: string;
+  featureImage: string | null;
+  categories?: string[];
+  tags?: string[];
+}
