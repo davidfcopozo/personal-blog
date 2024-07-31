@@ -7,15 +7,55 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import { InitialPost } from "@/typings/interfaces";
+import usePostRequest from "./usePostRequest";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthContext";
 
-export const useBlogEditor = () => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+export const useBlogEditor = (initialPost: InitialPost | null = null) => {
+  const [title, setTitle] = useState(initialPost?.title || "");
+  const [content, setContent] = useState(initialPost?.content || "");
+  const [featureImage, setFeatureImage] = useState<string | null>(
+    initialPost?.featureImage || null
+  );
+  const [categories, setCategories] = useState<string[]>(
+    initialPost?.categories || []
+  );
+  const [tags, setTags] = useState<string[]>(initialPost?.tags || []);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const [featureImage, setFeatureImage] = useState<string | null>(null);
-  const [tags, setTags] = useState<string[]>([]);
-  const [category, setCategory] = useState("");
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+
+  const queryClient = useQueryClient();
+
+  const { mutate, data, status, error } = usePostRequest({
+    url: "/api/posts",
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+    },
+    onError: () => {
+      const previousPosts = queryClient.getQueryData(["posts"]);
+      queryClient.setQueryData(["posts"], previousPosts);
+    },
+    onMutate: async (post: InitialPost) => {
+      await queryClient.cancelQueries({
+        queryKey: ["posts"],
+        exact: true,
+      });
+
+      queryClient.setQueryData(["posts"], (oldData: InitialPost[]) => [
+        {
+          ...oldData,
+          id: `${post.createdBy}`,
+          title: post.title,
+          content: post.content,
+          featureImage: post.featureImage,
+          categories: [post.categories],
+          tags: [post.tags],
+        },
+      ]);
+    },
+  });
 
   const deleteImageFromFirebase = useCallback(async (imageUrl: string) => {
     try {
@@ -81,38 +121,72 @@ export const useBlogEditor = () => {
     }
   }, []);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      if (!title) {
+        return toast({
+          variant: "destructive",
+          title: "Blog Post Failed",
+          description: "Please enter a title for the blog post.",
+        });
+      }
 
-    if (!title) {
-      return toast({
-        variant: "destructive",
-        title: "Blog Post Failed",
-        description: "Please enter a title for the blog post.",
-      });
-    }
+      if (!content || content === "<p><br></p>") {
+        return toast({
+          variant: "destructive",
+          title: "Blog Post Failed",
+          description: "Please enter content for the blog post.",
+        });
+      }
+      if (initialPost) {
+        // Update existing post
+        console.log("Updating post:", {
+          id: currentUser.data._id.toString(),
+          title,
+          content,
+          featureImage,
+          categories,
+          tags,
+        });
+      } else {
+        // Create new post
+        console.log("Creating new post:", {
+          id: `${currentUser.data._id}`,
+          title,
+          content,
+          featureImage,
+          categories,
+          tags,
+        });
 
-    if (!content || content === "<p><br></p>") {
-      return toast({
-        variant: "destructive",
-        title: "Blog Post Failed",
-        description: "Please enter content for the blog post.",
-      });
-    }
-  };
-
+        mutate({
+          id: `${currentUser.data._id}`,
+          title,
+          content,
+          featureImage,
+          categories,
+          tags,
+        });
+        console.log("Data:", data);
+        console.log("Status:", status);
+        console.log("Error:", error);
+      }
+    },
+    [title, content, featureImage, categories, tags, initialPost]
+  );
   return {
     title,
     content,
     featureImage,
     tags,
-    category,
+    categories,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
     handleImageUpload,
     setFeatureImage,
     setTags,
-    setCategory,
+    setCategories,
   };
 };
