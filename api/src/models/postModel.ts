@@ -15,7 +15,7 @@ const postSchema = new mongoose.Schema<PostInterface>(
       type: String,
       public_id: String,
       default:
-        "https://firebasestorage.googleapis.com/v0/b/personal-blog-e0f8c.appspot.com/o/images%2Ffeature-img.webp?alt=media&token=26e06d3a-7f22-46f4-b339-656c31d37977",
+        "https://firebasestorage.googleapis.com/v0/b/personal-blog-e0f8c.appspot.com/o/images%2Ffallback-featured-image.webp?alt=media&token=44970380-079b-4d03-80e8-9b322a365e1c",
     },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
