@@ -29,6 +29,12 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     url: "/api/posts",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+      setTitle("");
+      setContent("");
+      setFeatureImage(null);
+      setCategories([]);
+      setTags([]);
+      setTemporaryFeatureImage(null);
     },
     onError: () => {
       const previousPosts = queryClient.getQueryData(["posts"]);
