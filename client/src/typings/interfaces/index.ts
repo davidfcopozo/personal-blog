@@ -62,3 +62,9 @@ export interface InitialPost {
   categories?: string[];
   tags?: string[];
 }
+
+export interface FeatureImageProps {
+  imageUrl: string | null;
+  temporaryFeatureImage: File | null;
+  onUpload: (file: File | null) => void;
+}
