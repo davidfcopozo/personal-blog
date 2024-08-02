@@ -31,40 +31,51 @@ const FeatureImage = ({
       <CardHeader>
         <CardTitle>Feature Image</CardTitle>
       </CardHeader>
-      <CardContent className="p-0 px-2">
+      <CardContent className="px-0 py-4 px-2">
         <div className="grid gap-2 w-full">
           <Button
             variant="outline"
             size="sm"
             className="w-[80%] mx-auto text-center"
+            onClick={handleUploadClick}
           >
             <UploadIcon className="mr-1 h-4 w-4" />
             Upload Image
           </Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            style={{ display: "none" }}
+          />
           <div className="gap-2 mx-auto">
-            {true && (
+            {displayImage && (
               <Image
-                src="/new-img.png"
-                alt="Feature Image"
+                src={displayImage}
+                alt="Temporary Feature Image"
                 width={300}
                 height={200}
-                className="rounded-lg object-cover 100%"
+                className="rounded-lg w-full h-auto"
+                style={{ objectFit: "cover" }}
               />
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-[50%] my-2 mx-auto text-center"
-            >
-              <XIcon className="h-3 w-3 mr-1" />
-              Remove
-              <span className="sr-only">Remove Image</span>
-            </Button>
+            {displayImage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-[50%] my-2 mx-auto text-center"
+                onClick={() => onUpload(null)}
+              >
+                <XIcon className="h-3 w-3 mr-1" />
+                Remove
+                <span className="sr-only">Remove Image</span>
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
   );
 };
-
 export default FeatureImage;
