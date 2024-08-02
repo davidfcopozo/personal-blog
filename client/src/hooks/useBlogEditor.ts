@@ -1,4 +1,10 @@
-import { useState, useCallback, ChangeEvent, FormEvent } from "react";
+import {
+  useState,
+  useCallback,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+} from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { storage } from "../../firebaseConfig";
 import {
@@ -17,6 +23,8 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [featureImage, setFeatureImage] = useState<string | null>(
     initialPost?.featureImage || null
   );
+  const [temporaryFeatureImage, setTemporaryFeatureImage] =
+    useState<File | null>(null);
   const [categories, setCategories] = useState<string[]>(
     initialPost?.categories || []
   );
@@ -199,44 +207,42 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         });
       } else {
         // Create new post
-        console.log("Creating new post:", {
-          title,
-          content,
-          featureImage,
-          categories,
-          tags,
-        });
-
         mutate({
           title,
           content,
-          featureImage,
+          featureImage: currentFeatureImage,
           categories,
           tags,
         });
-
-        if (!error) {
-          setTitle("");
-          setContent("");
-          setFeatureImage(null);
-          setCategories([]);
-          setTags([]);
-        }
       }
     },
-    [title, content, featureImage, categories, tags, initialPost]
+    [
+      title,
+      content,
+      featureImage,
+      categories,
+      tags,
+      initialPost,
+      temporaryFeatureImage,
+      mutate,
+      handleImageUpload,
+      toast,
+      data,
+      error,
+    ]
   );
   return {
     title,
     content,
     featureImage,
+    temporaryFeatureImage,
     tags,
     categories,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
     handleImageUpload,
-    setFeatureImage,
+    handleFeatureImagePick,
     setTags,
     setCategories,
   };
