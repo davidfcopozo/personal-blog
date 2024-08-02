@@ -26,11 +26,12 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
     title,
     content,
     featureImage,
+    temporaryFeatureImage,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
     handleImageUpload,
-    setFeatureImage,
+    handleFeatureImagePick,
   } = useBlogEditor(initialPost);
 
   useEffect(() => {
@@ -65,7 +66,10 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
             </form>
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
-            <FeatureImage /* image={featureImage} onUpload={setFeatureImage} */
+            <FeatureImage
+              imageUrl={featureImage}
+              temporaryFeatureImage={temporaryFeatureImage}
+              onUpload={handleFeatureImagePick}
             />
             <Categories />
             <Tags />
