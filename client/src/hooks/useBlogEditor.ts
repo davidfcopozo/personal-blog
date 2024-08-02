@@ -70,9 +70,9 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     }
   }, []);
 
-  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleTitleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
-  };
+  }, []);
 
   const extractImagesFromContent = (content: string) => {
     const parser = new DOMParser();
