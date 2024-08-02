@@ -6,7 +6,7 @@ export interface PostInterface {
   content: String;
   slug: String;
   postedBy: mongoose.Types.ObjectId;
-  featureImg?: String;
+  featureImage?: String;
   likes?: mongoose.Types.ObjectId[];
   bookmarks?: mongoose.Types.ObjectId[];
   tags?: String[];
