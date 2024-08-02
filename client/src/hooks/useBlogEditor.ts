@@ -149,6 +149,20 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     }
   }, [temporaryFeatureImage, handleFeatureImageUpload]);
 
+  useEffect(() => {
+    if (status === "success") {
+      toast({
+        title: "Success",
+        description: "Blog post created successfully",
+      });
+    } else if (status === "error") {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create blog post",
+      });
+    }
+  }, [status, toast]);
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
