@@ -2,8 +2,30 @@ import Image from "next/image";
 import { UploadIcon, XIcon } from "./icons";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { FeatureImageProps } from "@/typings/interfaces";
+import { ChangeEvent, useRef } from "react";
 
-const FeatureImage = () => {
+const FeatureImage = ({
+  imageUrl,
+  onUpload,
+  temporaryFeatureImage,
+}: FeatureImageProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      onUpload(file);
+    }
+  };
+
+  const displayImage = temporaryFeatureImage
+    ? URL.createObjectURL(temporaryFeatureImage)
+    : imageUrl;
   return (
     <Card className="text-center">
       <CardHeader>
