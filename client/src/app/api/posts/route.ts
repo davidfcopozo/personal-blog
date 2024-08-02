@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const res: Response = await axios.post(
+    const res = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts`,
       body,
       {
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    return new Response(JSON.stringify(res.formData), {
+    return new Response(JSON.stringify(res.data), {
       status: res.status,
       headers: { "Content-Type": "application/json" },
     });
