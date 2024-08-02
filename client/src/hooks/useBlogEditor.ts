@@ -135,6 +135,21 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     }
   }, []);
 
+  const handleFeatureImageUpload = useCallback(async () => {
+    if (temporaryFeatureImage) {
+      const uploadedUrl = await handleImageUpload(temporaryFeatureImage);
+      setFeatureImage(uploadedUrl);
+      setTemporaryFeatureImage(null);
+    }
+  }, [temporaryFeatureImage, handleImageUpload]);
+
+  useEffect(() => {
+    if (temporaryFeatureImage) {
+      handleFeatureImageUpload();
+    }
+  }, [temporaryFeatureImage, handleFeatureImageUpload]);
+
+
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
