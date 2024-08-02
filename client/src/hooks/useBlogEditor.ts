@@ -105,6 +105,16 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     [currentImages, setCurrentImages]
   );
 
+  const handleFeatureImagePick = useCallback((file: File | null) => {
+    if (file) {
+      setTemporaryFeatureImage(file);
+      setFeatureImage(null);
+    } else {
+      setTemporaryFeatureImage(null);
+      setFeatureImage(null);
+    }
+  }, []);
+
   const handleImageUpload = useCallback(async (file: File) => {
     const currentUser: any = await queryClient.getQueryData(["currentUser"]);
 
