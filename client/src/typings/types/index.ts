@@ -1,6 +1,7 @@
 import { BuiltInProviderType } from "next-auth/providers/index";
 import { ClientSafeProvider, LiteralUnion } from "next-auth/react";
 import { PostInterface } from "../../../../api/src/typings/models/post";
+import { UserInterface } from "../../../../api/src/typings/models/user";
 import { Date } from "mongoose";
 
 export type UseRefType = Record<
@@ -21,3 +22,5 @@ export type UsePostRequestType = {
 
 export type ExtractImagesFromContentType = (content: string) => string[];
 export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
+
+export type UserType = UserInterface;
