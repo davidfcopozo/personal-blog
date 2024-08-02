@@ -12,7 +12,7 @@ function usePostRequest({
   const { mutate, data, status, error } = useMutation({
     mutationFn: async (body: InitialPost) => {
       const res = await axios.post(url, body);
-      return res.data;
+      return res.data.data;
     },
     onSuccess: onSuccess,
     onError: onError,
