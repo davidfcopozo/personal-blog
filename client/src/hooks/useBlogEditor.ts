@@ -182,6 +182,12 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
           description: "Please enter content for the blog post.",
         });
       }
+
+      let currentFeatureImage = featureImage;
+      if (temporaryFeatureImage) {
+        currentFeatureImage = await handleImageUpload(temporaryFeatureImage);
+      }
+
       if (initialPost) {
         // Update existing post
         console.log("Updating post:", {
