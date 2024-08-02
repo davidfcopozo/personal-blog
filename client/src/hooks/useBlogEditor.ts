@@ -41,21 +41,18 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       queryClient.setQueryData(["posts"], previousPosts);
     },
     onMutate: async (post: InitialPost) => {
-      await queryClient.cancelQueries({
-        queryKey: ["posts"],
-        exact: true,
-      });
-
-      queryClient.setQueryData(["posts"], (oldData: InitialPost[]) => [
-        {
-          ...oldData,
-          title: post.title,
-          content: post.content,
-          featureImage: post.featureImage,
-          categories: [post.categories],
-          tags: [post.tags],
-        },
-      ]);
+      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
+      const previousPosts = queryClient.getQueryData(["posts"]);
+      queryClient.setQueryData(
+        ["posts"],
+        (oldData: InitialPost[] | undefined) => [
+          ...(oldData || []),
+          {
+            ...post,
+          },
+        ]
+      );
+      return { previousPosts };
     },
   });
 
