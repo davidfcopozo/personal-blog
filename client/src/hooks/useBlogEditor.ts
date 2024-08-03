@@ -16,6 +16,7 @@ import {
 import { InitialPost } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
+import DOMPurify from "dompurify";
 
 export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [title, setTitle] = useState(initialPost?.title || "");
@@ -116,7 +117,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const handleFeatureImagePick = useCallback((file: File | null) => {
     if (file) {
       setTemporaryFeatureImage(file);
-      /* setFeatureImage(null); */
     } else {
       setTemporaryFeatureImage(null);
       setFeatureImage(null);
@@ -211,9 +211,15 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         });
       } else {
         // Create new post
+        const cleanTitle = DOMPurify.sanitize(title, {
+          USE_PROFILES: { html: true },
+        });
+        const cleanContent = DOMPurify.sanitize(content, {
+          USE_PROFILES: { html: true },
+        });
         mutate({
-          title,
-          content,
+          title: cleanTitle,
+          content: cleanContent,
           featureImage: currentFeatureImage,
           categories,
           tags,
