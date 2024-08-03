@@ -116,7 +116,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const handleFeatureImagePick = useCallback((file: File | null) => {
     if (file) {
       setTemporaryFeatureImage(file);
-      setFeatureImage(null);
+      /* setFeatureImage(null); */
     } else {
       setTemporaryFeatureImage(null);
       setFeatureImage(null);
@@ -137,8 +137,12 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       const newImages = [...currentImages, downloadURL];
       setCurrentImages(newImages);
       return downloadURL;
-    } catch (error) {
-      console.error("Image upload failed:", error);
+    } catch (error: Error | any) {
+      toast({
+        variant: "destructive",
+        title: "Error uploading image",
+        description: `Failed to upload image: ${error?.message}`,
+      });
       throw error;
     }
   }, []);
@@ -227,8 +231,6 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       mutate,
       handleImageUpload,
       toast,
-      data,
-      error,
     ]
   );
   return {
