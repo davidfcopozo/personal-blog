@@ -72,6 +72,30 @@ export const getAllPosts = async (
   }
 };
 
+export const getPostBySlug = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { slug },
+  } = req;
+
+  try {
+    const post: PostType | null = await Post.findOne({ slug }).populate(
+      "postedBy"
+    );
+
+    if (!post) {
+      throw new NotFound("Post not found");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: post });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 export const getPostById = async (
   req: RequestWithUserInfo | any,
   res: Response,
