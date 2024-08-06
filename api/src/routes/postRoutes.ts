@@ -9,6 +9,7 @@ import {
   deletePostById,
   toggleLike,
   toggleBookmark,
+  getPostBySlug,
 } from "../controllers/postController";
 import { visitsCounter } from "../middleware/visits-counter";
 
@@ -20,5 +21,7 @@ router
   .get(visitsCounter, getPostById)
   .put(auth, updatePostById)
   .delete(auth, deletePostById);
+
+router.route("/:slug").get(visitsCounter, getPostBySlug);
 
 export default router;
