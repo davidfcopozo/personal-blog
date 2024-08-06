@@ -30,6 +30,14 @@ export const createPost = async (
       );
     }
 
+    const existingSlug = await Post.findOne({
+      slug,
+    });
+
+    if (existingSlug) {
+      slug = `${slug}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    }
+
     const post: PostType = await Post.create({
       ...req.body,
       postedBy: userId,
