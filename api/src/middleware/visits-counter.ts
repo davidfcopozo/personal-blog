@@ -4,19 +4,32 @@ import { Response, NextFunction } from "express";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { NotFound } from "../errors/index";
 import { PostType } from "../typings/types";
+import mongoose from "mongoose";
 
 export const visitsCounter = async (
   req: RequestWithUserInfo | any,
   _res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
+  const { slugOrId } = req.params;
 
   try {
-    const post: PostType = await Post.findById(id);
+    let post: PostType | null;
+
+    if (mongoose.Types.ObjectId.isValid(slugOrId)) {
+      console.log("Searching by ID");
+      post = await Post.findById(slugOrId).populate("postedBy");
+    } else {
+      console.log("Searching by slug:", slugOrId);
+      post = await Post.findOne({ slug: slugOrId }).populate("postedBy");
+    }
 
     if (post && post?.postedBy?.toString() !== req.user?.userId) {
-      await Post.findByIdAndUpdate(id, { $inc: { visits: 1 } }, { new: true });
+      await Post.findByIdAndUpdate(
+        post._id,
+        { $inc: { visits: 1 } },
+        { new: true }
+      );
     }
 
     if (!post) {
