@@ -72,19 +72,22 @@ export const getAllPosts = async (
   }
 };
 
-export const getPostBySlug = async (
+export const getPostBySlugOrId = async (
   req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
-  const {
-    params: { slug },
-  } = req;
-
+  const { slugOrId } = req.params;
   try {
-    const post: PostType | null = await Post.findOne({ slug }).populate(
-      "postedBy"
-    );
+    let post: PostType | null;
+
+    if (mongoose.Types.ObjectId.isValid(slugOrId)) {
+      console.log("Searching by ID");
+      post = await Post.findById(slugOrId).populate("postedBy");
+    } else {
+      console.log("Searching by slug:", slugOrId);
+      post = await Post.findOne({ slug: slugOrId }).populate("postedBy");
+    }
 
     if (!post) {
       throw new NotFound("Post not found");
