@@ -7,11 +7,6 @@ export async function GET(
 ) {
   const { slugOrId } = params;
 
-  console.log(
-    "Requesting URL:",
-    `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts/${slugOrId}`
-  );
-
   if (!slugOrId) {
     return new Response(JSON.stringify({ message: "No slug found" }), {
       status: 400,
@@ -20,13 +15,9 @@ export async function GET(
   }
 
   try {
-    console.log("from api/posts/[slugOrId]/route.ts");
-
     const res = await axios.get(
       `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts/${slugOrId}`
     );
-
-    console.log("res===>", res);
 
     return new Response(JSON.stringify(res.data), {
       status: res.status,
