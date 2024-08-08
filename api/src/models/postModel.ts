@@ -11,7 +11,7 @@ const postSchema = new mongoose.Schema<PostInterface>(
       ref: "User",
       required: true,
     },
-    featureImage: {
+    featuredImage: {
       type: String,
       public_id: String,
       default:
