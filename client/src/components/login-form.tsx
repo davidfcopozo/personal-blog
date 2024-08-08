@@ -32,7 +32,6 @@ export function LoginForm() {
 
   useEffect(() => {
     if (errorParameter && toast) {
-      console.log("errorParam===>", errorParameter);
       toast({
         variant: "destructive",
         title: "Login Failed",
