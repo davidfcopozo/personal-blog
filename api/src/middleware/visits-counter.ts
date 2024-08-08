@@ -17,10 +17,8 @@ export const visitsCounter = async (
     let post: PostType | null;
 
     if (mongoose.Types.ObjectId.isValid(slugOrId)) {
-      console.log("Searching by ID");
       post = await Post.findById(slugOrId).populate("postedBy");
     } else {
-      console.log("Searching by slug:", slugOrId);
       post = await Post.findOne({ slug: slugOrId }).populate("postedBy");
     }
 
