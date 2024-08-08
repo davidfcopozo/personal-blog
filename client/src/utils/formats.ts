@@ -168,3 +168,13 @@ export function getFullName(user: any) {
     ? `${firstName} ${lastName}`
     : firstName + lastName;
 }
+
+export const extractFirstParagraphText = (
+  htmlContent: string
+): string | null => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, "text/html");
+  const firstParagraph = doc.querySelector("p");
+
+  return firstParagraph ? firstParagraph.textContent || "" : null;
+};
