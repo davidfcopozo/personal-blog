@@ -42,6 +42,7 @@ export default function Home() {
                 <BlogCard
                   key={post?._id.toString() + index.toString()}
                   post={post}
+                  slug={post?.slug as string}
                 />
               )
             )
