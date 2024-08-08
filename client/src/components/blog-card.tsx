@@ -1,5 +1,6 @@
 import {
   calculateReadingTime,
+  extractFirstParagraphText,
   getFullName,
   getNameInitials,
   showMonthDay,
@@ -10,10 +11,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import { BlogPostProps } from "@/typings/types";
 import { useUser } from "@/hooks/useUser";
-import { useEffect } from "react";
+import { FC, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
-export const BlogCard: React.FC<BlogPostProps> = ({ post }) => {
+export const BlogCard: FC<BlogPostProps> = ({ post, slug }) => {
   const {
     title,
     content,
@@ -21,7 +22,7 @@ export const BlogCard: React.FC<BlogPostProps> = ({ post }) => {
     bookmarks,
     likes,
     comments,
-    featureImg,
+    featuredImage,
     postedBy,
   } = post;
 
@@ -42,12 +43,14 @@ export const BlogCard: React.FC<BlogPostProps> = ({ post }) => {
     }
   }, [error, toast]);
 
+  let description = extractFirstParagraphText(content as string);
+
   return (
     <div className="max-w-sm w-full rounded-b-lg border-b rounded-b-lg transition-all duration-300 lg:max-w-full lg:flex lg:border-x-0 lg:border-secondary lg:rounded-b-none hover:scale-[1.02] lg:hover:rounded-b hover:shadow-[0px_1px_0px_0px] hover:shadow-muted-foreground">
       <Link
-        href="#"
+        href={`/blog/${slug}`}
         className="flex h-48 lg:h-auto lg:w-80 bg-center rounded-t lg:rounded-tr-none lg:rounded-l text-center overflow-hidden"
-        style={{ backgroundImage: `url(${featureImg})` }}
+        style={{ backgroundImage: `url(${featuredImage})` }}
         title={title as string}
       ></Link>
       <div className="flex flex-col justify-between leading-normal  px-4 py-4 bg-transparent lg:pt-0">
@@ -62,7 +65,7 @@ export const BlogCard: React.FC<BlogPostProps> = ({ post }) => {
                 {title}
               </h2>
               <p className="text-foreground text-base">
-                {truncateText(content as string, 150)}
+                {truncateText(description as string, 150)}
               </p>
             </a>
           </Link>
