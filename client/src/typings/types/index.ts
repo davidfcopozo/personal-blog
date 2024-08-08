@@ -11,6 +11,7 @@ export type UseRefType = Record<
 
 export type BlogPostProps = {
   post: PostInterface & { createdAt?: Date };
+  slug: string;
 };
 
 export type UsePostRequestType = {
