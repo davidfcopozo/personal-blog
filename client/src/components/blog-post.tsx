@@ -1,12 +1,12 @@
 "use client";
-import useFetchPost from "@/hooks/useFetchPost";
+import usePostFetch from "@/hooks/usePostFetch";
 import { getFullName, showMonthDayYear } from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 const BlogPost = ({ slug }: { slug: string }) => {
-  const { data } = useFetchPost(slug);
+  const { data } = usePostFetch(slug);
 
   const post = data?.data;
   return (
