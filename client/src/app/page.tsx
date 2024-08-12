@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import useFetchRequest from "@/hooks/useFetchRequest";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { PostInterface } from "../../../api/src/typings/models/post";
@@ -23,6 +23,18 @@ export default function Home() {
     }
   }, [error, toast]);
 
+  const blogCards = useMemo(() => {
+    return data?.data.map(
+      (post: PostInterface, index: { toString: () => any }) => (
+        <BlogCard
+          key={post?._id.toString() + index.toString()}
+          post={post}
+          slug={post?.slug as string}
+        />
+      )
+    );
+  }, [data]);
+
   return (
     <div className="container p-2 mx-auto">
       <div className="flex flex-row flex-wrap p-2 sm:p-4">
@@ -37,15 +49,7 @@ export default function Home() {
               <PostSkeletonCard />
             </div>
           ) : (
-            data?.data.map(
-              (post: PostInterface, index: { toString: () => any }) => (
-                <BlogCard
-                  key={post?._id.toString() + index.toString()}
-                  post={post}
-                  slug={post?.slug as string}
-                />
-              )
-            )
+            blogCards
           )}
         </main>
         <aside className="w-full hidden pt-12 sm:flex sm:flex-column sm:w-1/3 md:w-1/4 px-2 border-l-2 border-secondary">
