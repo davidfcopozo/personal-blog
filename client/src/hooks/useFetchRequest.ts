@@ -2,9 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect } from "react";
 
-const baseULR = `http://${window.location.hostname}:3000`;
+const getBaseURL = () => {
+  if (typeof window !== "undefined") {
+    return `http://${window.location.hostname}:3000`;
+  }
+  return "http://localhost:3000";
+};
 
 function useFetchRequest(key: string, url: string) {
+  const baseULR = getBaseURL();
   try {
     const fetchData = async () => {
       const { data } = await axios.get(`${baseULR}${url}`);
