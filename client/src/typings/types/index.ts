@@ -3,6 +3,7 @@ import { ClientSafeProvider, LiteralUnion } from "next-auth/react";
 import { PostInterface } from "../../../../api/src/typings/models/post";
 import { UserInterface } from "../../../../api/src/typings/models/user";
 import { Date } from "mongoose";
+import { CommentInterface } from "../interfaces";
 
 export type UseRefType = Record<
   LiteralUnion<BuiltInProviderType, string>,
@@ -25,3 +26,17 @@ export type ExtractImagesFromContentType = (content: string) => string[];
 export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
 
 export type UserType = UserInterface;
+
+export type CommentSectionPropsType = {
+  comments: CommentInterface[];
+};
+
+export type CommentProps = {
+  key: string | number;
+  comment: CommentInterface;
+};
+
+export type ReplyProps = {
+  key: string | number;
+  reply: CommentInterface["replies"][0];
+};
