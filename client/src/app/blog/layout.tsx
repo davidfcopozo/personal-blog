@@ -1,12 +1,12 @@
 import Footer from "@/components/footer";
 import { Header } from "@/components/header";
-import React from "react";
+import React, { FC, ReactNode } from "react";
 
 type LayoutProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: FC<LayoutProps> = ({ children }) => {
   return (
     <div className="outer-container">
       <Header />
