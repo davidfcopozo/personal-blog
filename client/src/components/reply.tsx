@@ -3,19 +3,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp } from "lucide-react";
 import { getRelativeTime } from "@/utils/formats";
-
-interface ReplyProps {
-  reply: {
-    _id: string;
-    content: string;
-    createdAt: Date;
-  };
-}
+import { ReplyProps } from "@/typings/types";
 
 const Reply: React.FC<ReplyProps> = ({ reply }) => {
   const { _id, content, createdAt } = reply;
   return (
-    <div className="flex items-start gap-4 pl-14">
+    <div key={`${_id}`} className="flex items-start gap-4 pl-14">
       <Avatar className="w-10 h-10 border">
         <AvatarImage src="/placeholder-user.jpg" />
         <AvatarFallback>JD</AvatarFallback>
@@ -24,7 +17,7 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
         <div className="flex items-center gap-2">
           <div className="font-medium">John Doe</div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            {getRelativeTime(createdAt, "es")}
+            {getRelativeTime(createdAt)}
           </div>
         </div>
         <p>{content}</p>
