@@ -4,26 +4,16 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp } from "lucide-react";
 import Reply from "./reply";
 import { getRelativeTime } from "@/utils/formats";
-
-interface CommentProps {
-  key: React.Key;
-  comment: {
-    _id: string;
-    content: string;
-    createdAt: Date;
-    replies: {
-      _id: string;
-      content: string;
-      createdAt: Date;
-    }[];
-  };
-}
+import { CommentProps } from "@/typings/types";
 
 const Comment: React.FC<CommentProps> = ({ comment }) => {
   const { content, _id, replies, createdAt } = comment;
+
+  console.log(content);
+
   return (
     <>
-      <div id={_id.toString()} className="flex items-start gap-4">
+      <div id={`${_id}`} className="flex items-start gap-4">
         <Avatar className="w-10 h-10 border">
           <AvatarImage src="/placeholder-user.jpg" />
           <AvatarFallback>AC</AvatarFallback>
@@ -32,7 +22,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
           <div className="flex items-center gap-2">
             <div className="font-medium">Acme Inc</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              {getRelativeTime(createdAt, "es")}
+              {getRelativeTime(createdAt)}
             </div>
           </div>
           <p>{content}</p>
@@ -54,9 +44,8 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
         </div>
       </div>
 
-      {replies.map((reply) => (
-        <Reply key={reply._id} reply={reply} />
-      ))}
+      {replies &&
+        replies.map((reply) => <Reply key={`${reply._id}`} reply={reply} />)}
     </>
   );
 };
