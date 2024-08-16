@@ -54,16 +54,7 @@ export interface CommentInterface {
   postedBy: ObjectId;
   post: ObjectId;
   content: string;
-  replies: Array<{
-    _id: ObjectId;
-    postedBy: ObjectId;
-    post: ObjectId;
-    content: string;
-    replies: any[];
-    likes: ObjectId[];
-    createdAt: Date;
-    updatedAt: Date;
-  }>;
+  replies: string[];
   likes: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
