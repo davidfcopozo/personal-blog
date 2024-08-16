@@ -24,7 +24,7 @@ export default function Home() {
   }, [error, toast]);
 
   const blogCards = useMemo(() => {
-    return data?.data.map(
+    return data?.data?.map(
       (post: PostInterface, index: { toString: () => any }) => (
         <BlogCard
           key={post?._id.toString() + index.toString()}
