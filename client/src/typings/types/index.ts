@@ -28,7 +28,7 @@ export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
 export type UserType = UserInterface;
 
 export type CommentSectionPropsType = {
-  comments: CommentInterface[];
+  comments: string[];
 };
 
 export type CommentProps = {
@@ -38,5 +38,10 @@ export type CommentProps = {
 
 export type ReplyProps = {
   key: string | number;
-  reply: CommentInterface["replies"][0];
+  reply: CommentInterface;
+};
+
+export type CommentFetchType = {
+  data: CommentInterface;
+  success: boolean;
 };
