@@ -6,9 +6,8 @@ import { getRelativeTime } from "@/utils/formats";
 import { ReplyProps } from "@/typings/types";
 
 const Reply: React.FC<ReplyProps> = ({ reply }) => {
-  const { _id, content, createdAt } = reply;
   return (
-    <div key={`${_id}`} className="flex items-start gap-4 pl-14">
+    <div key={`${reply?._id}`} className="flex items-start gap-4 pl-14">
       <Avatar className="w-10 h-10 border">
         <AvatarImage src="/placeholder-user.jpg" />
         <AvatarFallback>JD</AvatarFallback>
@@ -17,10 +16,10 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
         <div className="flex items-center gap-2">
           <div className="font-medium">John Doe</div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            {getRelativeTime(createdAt)}
+            {getRelativeTime(reply?.createdAt!)}
           </div>
         </div>
-        <p>{content}</p>
+        <p>{reply?.content}</p>
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon">
             <MessageCircle className="w-4 h-4" />
@@ -32,7 +31,9 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
             className="flex align-center text-center gap-1"
           >
             <ThumbsUp className="w-4 h-4" />
-            <span className="text-xs text-muted-foreground">155</span>
+            <span className="text-xs text-muted-foreground">
+              {reply?.likes.length}
+            </span>
             <span className="sr-only">Like</span>
           </Button>
         </div>
