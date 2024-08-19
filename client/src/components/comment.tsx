@@ -3,10 +3,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp } from "lucide-react";
 import Reply from "./reply";
-import { getRelativeTime } from "@/utils/formats";
+import { getFullName, getNameInitials, getRelativeTime } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
 import useCommentFetch from "@/hooks/useCommentFetch";
 import CommentSkeleton from "./comment-skeleton";
+import useFetchRequest from "@/hooks/useFetchRequest";
 
 const Comment: React.FC<CommentProps> = ({ comment }) => {
   const {
@@ -14,6 +15,11 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
     isLoading,
     isFetching,
   } = useCommentFetch(comment.replies);
+
+  const { data: postedBy } = useFetchRequest(
+    "commentPostedBy",
+    `/api/users/${comment.postedBy}`
+  );
 
   return (
     <>
@@ -24,11 +30,11 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
           <div id={`${comment?._id}`} className="flex items-start gap-4">
             <Avatar className="w-10 h-10 border">
               <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback>AC</AvatarFallback>
+              <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
             </Avatar>
             <div className="grid gap-2 flex-1">
               <div className="flex items-center gap-2">
-                <div className="font-medium">Acme Inc</div>
+                <div className="font-medium">{getFullName(postedBy?.data)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {getRelativeTime(comment?.createdAt!)}
                 </div>
