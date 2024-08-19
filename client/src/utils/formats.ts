@@ -140,10 +140,10 @@ export function showMonthDayYear(
 }
 
 export function getNameInitials(user: any): string {
-  if (!user || !user?.firstName || !user?.lastName) {
+  if (!user || typeof user !== "object" || !user.firstName || !user.lastName) {
+    console.log("getNameInitials - Fallback to 'TC'");
     return "TC";
   }
-
   const firstInitial = user?.firstName.charAt(0).toUpperCase();
 
   const lastInitial = user?.lastName.charAt(0).toUpperCase();
