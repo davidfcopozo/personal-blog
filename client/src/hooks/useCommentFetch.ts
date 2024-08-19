@@ -26,7 +26,7 @@ const useCommentFetch = (ids: string[]) => {
     return comments;
   };
 
-  const { data, error, isLoading } = useQuery<CommentInterface[]>({
+  const { data, error, isLoading, isFetching } = useQuery<CommentInterface[]>({
     queryKey: ["comments", ...ids],
     queryFn: fetchComments,
     refetchOnWindowFocus: false,
@@ -35,7 +35,7 @@ const useCommentFetch = (ids: string[]) => {
     staleTime: 0,
   });
 
-  return { data, error, isLoading };
+  return { data, error, isLoading, isFetching };
 };
 
 export default useCommentFetch;
