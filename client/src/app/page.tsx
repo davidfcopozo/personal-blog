@@ -4,14 +4,20 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import useFetchRequest from "@/hooks/useFetchRequest";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { PostInterface } from "../../../api/src/typings/models/post";
 
 export default function Home() {
   const { toast } = useToast();
-  const { data, error, isFetching } = useFetchRequest("posts", `/api/posts`);
+  const {
+    data: posts,
+    error,
+    isFetching,
+  } = useFetchRequest("posts", `/api/posts`);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (error) {
@@ -32,8 +38,8 @@ export default function Home() {
   }, [posts, searchQuery]);
 
   const blogCards = useMemo(() => {
-    if (Array.isArray(data?.data))
-      return data?.data?.map(
+    if (Array.isArray(posts?.data))
+      return posts?.data?.map(
         (post: PostInterface, index: { toString: () => any }) => (
           <BlogCard
             key={post?._id.toString() + index.toString()}
@@ -42,7 +48,7 @@ export default function Home() {
           />
         )
       );
-  }, [data]);
+  }, [posts]);
 
   return (
     <div className="container p-2 mx-auto">
@@ -72,7 +78,25 @@ export default function Home() {
                       type="search"
                       placeholder="Search posts..."
                       className="rounded-full pl-10 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
                     />
+                    {filteredPosts?.length > 0 && isFocused && searchQuery && (
+                      <div className="mt-4 bg-background rounded-md shadow-sm">
+                        {filteredPosts?.map((post: PostInterface) => (
+                          <Link
+                            key={`${post._id}`}
+                            href="#"
+                            className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
+                            prefetch={false}
+                          >
+                            {post.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </form>
                 <div className="flex ml-2 flex-col">
