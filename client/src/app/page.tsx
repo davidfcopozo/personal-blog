@@ -23,6 +23,14 @@ export default function Home() {
     }
   }, [error, toast]);
 
+  const filteredPosts = useMemo(() => {
+    return posts?.data
+      ?.filter((post: PostInterface) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 2);
+  }, [posts, searchQuery]);
+
   const blogCards = useMemo(() => {
     if (Array.isArray(data?.data))
       return data?.data?.map(
