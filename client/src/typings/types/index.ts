@@ -26,6 +26,7 @@ export type ExtractImagesFromContentType = (content: string) => string[];
 export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
 
 export type UserType = UserInterface;
+export type PostType = PostInterface;
 
 export type CommentSectionPropsType = {
   comments: string[];
