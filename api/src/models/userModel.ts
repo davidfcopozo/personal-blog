@@ -2,8 +2,9 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
 import { UserInterface } from "../typings/models/user";
+const { Schema } = mongoose;
 
-const userSchema = new mongoose.Schema<UserInterface>(
+const userSchema = new Schema<UserInterface>(
   {
     firstName: { type: String, required: true, minlength: 2, maxlength: 128 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 128 },
