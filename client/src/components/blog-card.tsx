@@ -59,7 +59,7 @@ export const BlogCard: FC<BlogPostProps> = ({ post, slug }) => {
           alt=""
           width={250}
           height={100}
-          objectFit="cover"
+          style={{ objectFit: "cover" }}
         />
       </div>
       <div className="flex flex-col justify-between leading-normal  px-4 py-4 bg-transparent lg:pt-0">
