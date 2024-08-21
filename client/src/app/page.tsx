@@ -4,14 +4,22 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import useFetchRequest from "@/hooks/useFetchRequest";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { PostInterface } from "../../../api/src/typings/models/post";
+import { PostType } from "@/typings/types";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { toast } = useToast();
-  const { data, error, isFetching } = useFetchRequest("posts", `/api/posts`);
+  const {
+    data: posts,
+    error,
+    isFetching,
+  } = useFetchRequest("posts", `/api/posts`);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (error) {
@@ -22,6 +30,30 @@ export default function Home() {
       });
     }
   }, [error, toast]);
+
+  const filteredPosts = useMemo(() => {
+    if (!posts?.data || !Array.isArray(posts.data)) {
+      return [];
+    }
+    return posts?.data
+      ?.filter((post: PostType) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 2);
+  }, [posts, searchQuery]);
+
+  const blogCards = useMemo(() => {
+    if (Array.isArray(posts?.data))
+      return posts?.data?.map(
+        (post: PostType, index: { toString: () => any }) => (
+          <BlogCard
+            key={post?._id.toString() + index.toString()}
+            post={post}
+            slug={post?.slug as string}
+          />
+        )
+      );
+  }, [posts]);
 
   return (
     <div className="container p-2 mx-auto">
@@ -37,14 +69,7 @@ export default function Home() {
               <PostSkeletonCard />
             </div>
           ) : (
-            data?.data.map(
-              (post: PostInterface, index: { toString: () => any }) => (
-                <BlogCard
-                  key={post?._id.toString() + index.toString()}
-                  post={post}
-                />
-              )
-            )
+            blogCards
           )}
         </main>
         <aside className="w-full hidden pt-12 sm:flex sm:flex-column sm:w-1/3 md:w-1/4 px-2 border-l-2 border-secondary">
@@ -58,7 +83,27 @@ export default function Home() {
                       type="search"
                       placeholder="Search posts..."
                       className="rounded-full pl-10 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
                     />
+                    {filteredPosts?.length > 0 && isFocused && searchQuery && (
+                      <div className="absolute mt-4 bg-background rounded-md shadow-sm w-full">
+                        {filteredPosts?.map((post: PostType) => (
+                          <Link
+                            key={`${post._id}`}
+                            href={`/blog/${post.slug}`}
+                            className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
+                            prefetch={false}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onMouseUp={() => router.push(`/blog/${post.slug}`)}
+                          >
+                            {post.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </form>
                 <div className="flex ml-2 flex-col">

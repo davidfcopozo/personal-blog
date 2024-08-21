@@ -30,6 +30,14 @@ export const createPost = async (
       );
     }
 
+    const existingSlug = await Post.findOne({
+      slug,
+    });
+
+    if (existingSlug) {
+      slug = `${slug}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    }
+
     const post: PostType = await Post.create({
       ...req.body,
       postedBy: userId,
@@ -59,6 +67,31 @@ export const getAllPosts = async (
     res
       .status(StatusCodes.OK)
       .json({ success: true, data: posts, count: posts.length });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const getPostBySlugOrId = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { slugOrId } = req.params;
+  try {
+    let post: PostType | null;
+
+    if (mongoose.Types.ObjectId.isValid(slugOrId)) {
+      post = await Post.findById(slugOrId).populate("postedBy");
+    } else {
+      post = await Post.findOne({ slug: slugOrId }).populate("postedBy");
+    }
+
+    if (!post) {
+      throw new NotFound("Post not found");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: post });
   } catch (err) {
     return next(err);
   }

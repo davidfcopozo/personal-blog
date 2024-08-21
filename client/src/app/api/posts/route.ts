@@ -1,4 +1,6 @@
 import axios from "axios";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 export async function GET() {
   try {
@@ -16,7 +18,7 @@ export async function GET() {
       status: res.status,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error: any) {
+  } catch (error: Error | any) {
     return new Response(
       JSON.stringify({
         message: error.response?.data?.msg || "Internal server error",
@@ -29,19 +31,32 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
+  const token = await getToken({
+    req: req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  if (!token) {
+    return new Response(JSON.stringify({ message: "No token found" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
-    const body = await request.json();
-    const res: Response = await axios.post(
+    const body = await req.json();
+    const res = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts`,
-      body
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token.accessToken}`,
+        },
+      }
     );
 
-    if (!res.ok) {
-      throw new Error(res?.statusText);
-    }
-
-    return new Response(JSON.stringify(await res.json()), {
+    return new Response(JSON.stringify(res.data), {
       status: res.status,
       headers: { "Content-Type": "application/json" },
     });

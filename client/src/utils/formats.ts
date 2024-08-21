@@ -140,10 +140,9 @@ export function showMonthDayYear(
 }
 
 export function getNameInitials(user: any): string {
-  if (!user || !user?.firstName || !user?.lastName) {
+  if (!user || typeof user !== "object" || !user.firstName || !user.lastName) {
     return "TC";
   }
-
   const firstInitial = user?.firstName.charAt(0).toUpperCase();
 
   const lastInitial = user?.lastName.charAt(0).toUpperCase();
@@ -168,3 +167,13 @@ export function getFullName(user: any) {
     ? `${firstName} ${lastName}`
     : firstName + lastName;
 }
+
+export const extractFirstParagraphText = (
+  htmlContent: string
+): string | null => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, "text/html");
+  const firstParagraph = doc.querySelector("p");
+
+  return firstParagraph ? firstParagraph.textContent || "" : null;
+};

@@ -15,17 +15,25 @@ import { Input } from "@/components/ui/input";
 import { LogoIcon } from "./ui/icons";
 import { ModeToggle } from "./ui/mode-toggle";
 import { useTheme } from "next-themes";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useToast } from "./ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { PostType } from "@/typings/types";
+import { useRouter } from "next/navigation";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
   const { data: session, status } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const { toast } = useToast();
   const { logout } = useAuth();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const posts = queryClient.getQueryData(["posts"]) as { data: PostType[] };
 
   const handleSignout = async (e: FormEvent): Promise<any> => {
     e.preventDefault();
@@ -52,6 +60,17 @@ export function Header() {
     );
   }, [theme, systemTheme, session]);
 
+  const filteredPosts = useMemo(() => {
+    if (!posts?.data || !Array.isArray(posts.data)) {
+      return [];
+    }
+    return posts?.data
+      ?.filter((post: PostType) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 5);
+  }, [posts, searchQuery]);
+
   return (
     <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <Link
@@ -61,14 +80,37 @@ export function Header() {
         <LogoIcon width="80 " height="80" color={darkTheme} />
         <span className="sr-only">TechyComm logo</span>
       </Link>
-      <form className="ml-auto flex-initial flex-1 sm:hidden">
+      <form className="ml-auto flex-initial flex-1 relative sm:hidden">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search posts..."
             className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
           />
+          {filteredPosts &&
+            filteredPosts?.length > 0 &&
+            isFocused &&
+            searchQuery && (
+              <div className="absolute mt-4 bg-background rounded-md shadow-sm w-full">
+                {filteredPosts?.map((post: PostType) => (
+                  <Link
+                    key={`${post._id}`}
+                    href={`/blog/${post.slug}`}
+                    className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
+                    prefetch={false}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseUp={() => router.push(`/blog/${post.slug}`)}
+                  >
+                    {post.title}
+                  </Link>
+                ))}
+              </div>
+            )}
         </div>
       </form>
       <nav className="ml-auto flex-col items-center gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">

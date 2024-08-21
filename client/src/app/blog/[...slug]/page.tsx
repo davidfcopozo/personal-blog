@@ -1,6 +1,8 @@
 import BlogPost from "@/components/blog-post";
 
-const Blog = ({ slug }: { slug: string }) => {
+const Blog = async ({ params }: { params: { slug: string[] } }) => {
+  const slug = decodeURI(params.slug.join("/"));
+
   return (
     <div>
       <BlogPost slug={slug} />
