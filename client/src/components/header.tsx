@@ -26,6 +26,8 @@ export function Header() {
   const [darkTheme, setDarkTheme] = useState("#000000");
   const { toast } = useToast();
   const { logout } = useAuth();
+  const queryClient = useQueryClient();
+  const posts = queryClient.getQueryData(["posts"]) as { data: PostType[] };
 
   const handleSignout = async (e: FormEvent): Promise<any> => {
     e.preventDefault();
