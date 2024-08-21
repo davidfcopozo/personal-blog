@@ -84,7 +84,7 @@ export default function Home() {
                       onBlur={() => setIsFocused(false)}
                     />
                     {filteredPosts?.length > 0 && isFocused && searchQuery && (
-                      <div className="mt-4 bg-background rounded-md shadow-sm">
+                      <div className="absolute mt-4 bg-background rounded-md shadow-sm w-full">
                         {filteredPosts?.map((post: PostInterface) => (
                           <Link
                             key={`${post._id}`}
