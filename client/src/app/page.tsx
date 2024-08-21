@@ -91,6 +91,8 @@ export default function Home() {
                             href={`/blog/${post.slug}`}
                             className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
                             prefetch={false}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onMouseUp={() => router.push(`/blog/${post.slug}`)}
                           >
                             {post.title}
                           </Link>
