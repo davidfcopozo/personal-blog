@@ -1,5 +1,4 @@
 import Post from "../models/postModel";
-
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -8,6 +7,11 @@ import { PostType, UserType } from "../typings/types";
 import { slugValidator } from "../utils/validators";
 import User from "../models/userModel";
 import mongoose from "mongoose";
+import { JSDOM } from "jsdom";
+import createDOMPurify from "dompurify";
+
+const window = new JSDOM("").window;
+const DOMPurify = createDOMPurify(window);
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -30,6 +34,8 @@ export const createPost = async (
       );
     }
 
+    const sanitizedContent = DOMPurify.sanitize(req.body.content);
+
     const existingSlug = await Post.findOne({
       slug,
     });
@@ -40,6 +46,7 @@ export const createPost = async (
 
     const post: PostType = await Post.create({
       ...req.body,
+      content: sanitizedContent,
       postedBy: userId,
       slug: slug,
     });
@@ -145,10 +152,11 @@ export const updatePostById = async (
         "Nothing to update. Please provide the data to be updated"
       );
     }
+    const sanitizedContent = DOMPurify.sanitize(req.body.content);
 
     const post: PostType = await Post.findOneAndUpdate(
       { _id: postId, postedBy: userId },
-      req.body,
+      { ...req.body, content: sanitizedContent },
       { new: true, runValidators: true }
     );
 

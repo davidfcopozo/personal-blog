@@ -16,7 +16,9 @@ export const getUsers = async (
   next: NextFunction
 ) => {
   try {
-    const users: UserType[] = await User.find().select(sensitiveDataToExclude);
+    const users: UserType[] = await User.find()
+      .select(sensitiveDataToExclude)
+      .lean();
 
     if (!users) {
       throw new NotFound("Users not found");
@@ -40,9 +42,9 @@ export const getUserById = async (
   } = req;
 
   try {
-    const user: UserType = await User.findById(userId).select(
-      sensitiveDataToExclude
-    );
+    const user: UserType = await User.findById(userId)
+      .select(sensitiveDataToExclude)
+      .lean();
 
     if (!user) {
       throw new NotFound("User not found");
@@ -112,7 +114,9 @@ export const updateUserById = async (
       { _id: user.role === "admin" ? userIdParam : userId },
       fieldsToUpdate,
       { new: true, runValidators: true }
-    ).select(sensitiveDataToExclude);
+    )
+      .select(sensitiveDataToExclude)
+      .lean();
 
     if (!updatedUser?._id) {
       throw new Error("Something went wrong, please try again later");
