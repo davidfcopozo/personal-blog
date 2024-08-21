@@ -88,7 +88,7 @@ export default function Home() {
                         {filteredPosts?.map((post: PostInterface) => (
                           <Link
                             key={`${post._id}`}
-                            href="#"
+                            href={`/blog/${post.slug}`}
                             className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
                             prefetch={false}
                           >
