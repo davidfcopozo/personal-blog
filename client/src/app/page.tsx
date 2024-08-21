@@ -7,7 +7,7 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 import { useEffect, useMemo, useState } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { PostInterface } from "../../../api/src/typings/models/post";
+import { PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -36,7 +36,7 @@ export default function Home() {
       return [];
     }
     return posts?.data
-      ?.filter((post: PostInterface) =>
+      ?.filter((post: PostType) =>
         post.title.toLowerCase().includes(searchQuery.toLowerCase())
       )
       .slice(0, 2);
@@ -45,7 +45,7 @@ export default function Home() {
   const blogCards = useMemo(() => {
     if (Array.isArray(posts?.data))
       return posts?.data?.map(
-        (post: PostInterface, index: { toString: () => any }) => (
+        (post: PostType, index: { toString: () => any }) => (
           <BlogCard
             key={post?._id.toString() + index.toString()}
             post={post}
@@ -90,7 +90,7 @@ export default function Home() {
                     />
                     {filteredPosts?.length > 0 && isFocused && searchQuery && (
                       <div className="absolute mt-4 bg-background rounded-md shadow-sm w-full">
-                        {filteredPosts?.map((post: PostInterface) => (
+                        {filteredPosts?.map((post: PostType) => (
                           <Link
                             key={`${post._id}`}
                             href={`/blog/${post.slug}`}
