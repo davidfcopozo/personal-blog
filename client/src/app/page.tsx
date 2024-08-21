@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { PostInterface } from "../../../api/src/typings/models/post";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { toast } = useToast();
@@ -18,6 +19,7 @@ export default function Home() {
   } = useFetchRequest("posts", `/api/posts`);
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (error) {
@@ -30,6 +32,9 @@ export default function Home() {
   }, [error, toast]);
 
   const filteredPosts = useMemo(() => {
+    if (!posts?.data || !Array.isArray(posts.data)) {
+      return [];
+    }
     return posts?.data
       ?.filter((post: PostInterface) =>
         post.title.toLowerCase().includes(searchQuery.toLowerCase())
