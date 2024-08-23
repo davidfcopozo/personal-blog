@@ -67,8 +67,8 @@ export const getCategoriesByTopic = async (
     const category = await Category.find({
       topic: new RegExp(`^${topic}$`, "i"),
     });
-    if (!category) {
-      throw new NotFound("Category not found");
+    if (!category.length || category.length === 0) {
+      throw new NotFound("There are no categories for this topic");
     }
     res
       .status(StatusCodes.OK)
