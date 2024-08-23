@@ -66,11 +66,17 @@ export const getCategoriesByTopic = async (
   const { topic } = req.params;
   try {
     if (!topic) {
+      throw new BadRequest("Please provide a topic name");
+    }
+
+    const topicName = await Topic.findOne({
+      name: { $regex: new RegExp(topic, "i") },
+    }).lean();
+    if (!topicName) {
       throw new NotFound("Topic not found");
     }
-    const category = await Category.find({
-      topic: new RegExp(`^${topic}$`, "i"),
-    });
+    const category = await Category.find({ topic: topicName._id });
+
     if (!category.length || category.length === 0) {
       throw new NotFound("There are no categories for this topic");
     }
