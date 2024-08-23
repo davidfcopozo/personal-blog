@@ -9,13 +9,17 @@ export const createCategory = async (
   next: NextFunction
 ) => {
   try {
-    const { name, description, subcategories } = req.body;
-    const category = new Category({
+    const { name, topic } = req.body;
+    if (!name || !topic) {
+      throw new BadRequest("Please provide a name and topic for the category");
+    }
+    if (!topicNameValidator(topic) || !categoryValidator(name)) {
+      throw new BadRequest("Invalid input for category or topic");
+    }
+    const category = await Category.create({
       name,
-      description,
-      subcategories,
+      topic,
     });
-    await category.save();
     res.status(StatusCodes.CREATED).json({ success: true, data: category });
   } catch (error: Error | any) {
     return next(error);
