@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import useFetchRequest from "@/hooks/useFetchRequest";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { PostType } from "@/typings/types";
+import { CategoryType, PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
+import CategoriesSkeleton from "@/components/categories-skeleton";
 
 export default function Home() {
   const { toast } = useToast();
@@ -17,6 +18,11 @@ export default function Home() {
     error,
     isFetching,
   } = useFetchRequest("posts", `/api/posts`);
+  const {
+    data: categories,
+    error: categoriesError,
+    isFetching: isCategoriesFetching,
+  } = useFetchRequest("categories", `/api/categories`);
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
@@ -29,7 +35,14 @@ export default function Home() {
         description: error.message || "An error occurred",
       });
     }
-  }, [error, toast]);
+    if (categoriesError) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: categoriesError.message || "An error occurred",
+      });
+    }
+  }, [error, categoriesError, toast]);
 
   const filteredPosts = useMemo(() => {
     if (!posts?.data || !Array.isArray(posts.data)) {
@@ -41,6 +54,24 @@ export default function Home() {
       )
       .slice(0, 2);
   }, [posts, searchQuery]);
+
+  const filteredCategories = useMemo(() => {
+    if (!categories?.data || !Array.isArray(categories.data)) {
+      return [];
+    }
+    return categories?.data
+      ?.toSorted(
+        (a: CategoryType, b: CategoryType) => b.usageCount - a.usageCount
+      )
+      .slice(0, 5);
+  }, [categories]);
+
+  const handleLinkClick = useCallback(
+    (slug: string) => {
+      router.push(`/blog/${slug}`);
+    },
+    [router]
+  );
 
   const blogCards = useMemo(() => {
     if (Array.isArray(posts?.data))
@@ -97,7 +128,8 @@ export default function Home() {
                             className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
                             prefetch={false}
                             onMouseDown={(e) => e.preventDefault()}
-                            onMouseUp={() => router.push(`/blog/${post.slug}`)}
+                            onMouseUp={() => () =>
+                              handleLinkClick(post.slug as string)}
                           >
                             {post.title}
                           </Link>
@@ -111,30 +143,20 @@ export default function Home() {
                     What do you want to read about?
                   </p>
                   <div className="flex flex-wrap gap-3 text-middle text-accent font-semibold text-background">
-                    <Link
-                      href="/#"
-                      className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
-                    >
-                      <p>CSS</p>
-                    </Link>
-                    <Link
-                      href="/#"
-                      className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
-                    >
-                      Javascript
-                    </Link>
-                    <Link
-                      href="/#"
-                      className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
-                    >
-                      Node Js
-                    </Link>
-                    <Link
-                      href="/#"
-                      className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
-                    >
-                      Next.Js
-                    </Link>
+                    {isCategoriesFetching ? (
+                      <CategoriesSkeleton />
+                    ) : (
+                      filteredCategories?.map((category: CategoryType) => (
+                        <Link
+                          key={`${category._id}`}
+                          href={`/blog/${category.name}`}
+                          className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
+                          prefetch={false}
+                        >
+                          <p>{category.name}</p>
+                        </Link>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
