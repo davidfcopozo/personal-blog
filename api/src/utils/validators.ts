@@ -4,6 +4,8 @@ const usernameRegex =
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const websiteRegex =
   /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+([\/\w \.-]*)*\/?$/;
+const topicNameRegex = /^[a-zA-Z0-9]+[a-zA-Z0-9-_ ]{0,48}[a-zA-Z0-9]+$/;
+const categoryNameRegex = /^[a-zA-Z0-9]+[a-zA-Z0-9-_ ]{0,48}[a-zA-Z0-9]+$/;
 
 type StringProp = string;
 
@@ -21,4 +23,12 @@ export const slugValidator = (slug: StringProp) => {
 
 export const websiteValidator = (web: StringProp) => {
   return websiteRegex.test(web);
+};
+
+export const topicNameValidator = (topic: StringProp) => {
+  return topicNameRegex.test(topic);
+};
+
+export const categoryValidator = (name: StringProp) => {
+  return categoryNameRegex.test(name);
 };
