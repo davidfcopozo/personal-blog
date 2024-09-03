@@ -9,6 +9,11 @@ const categorySchema = new Schema(
       required: [true, "Category name is required"],
       unique: true,
     },
+    slug: {
+      type: String,
+      required: [true, "Category slug is required"],
+      unique: true,
+    },
     topic: {
       type: ObjectId,
       ref: "Topic",
