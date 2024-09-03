@@ -149,7 +149,7 @@ export default function Home() {
                       filteredCategories?.map((category: CategoryType) => (
                         <Link
                           key={`${category._id}`}
-                          href={`/blog/${category.name}`}
+                          href={`/blog/${category.slug}`}
                           className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
                           prefetch={false}
                         >
