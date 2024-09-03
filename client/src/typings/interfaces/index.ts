@@ -59,3 +59,11 @@ export interface CommentInterface {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface CategoryInterface {
+  _id: ObjectId;
+  name: string;
+  topic: ObjectId;
+  postedBy: ObjectId;
+  usageCount: number;
+}
