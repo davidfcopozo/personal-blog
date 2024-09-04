@@ -1,15 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/hooks/useUser";
 import { PostType } from "@/typings/types";
 import {
   calculateReadingTime,
+  extractFirstParagraphText,
   getFullName,
   getNameInitials,
   showMonthDay,
+  truncateText,
 } from "@/utils/formats";
-import { Archive, Heart, MessageCircle } from "lucide-react";
+import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
   const {
@@ -21,16 +23,16 @@ export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
     comments,
     featuredImage,
     postedBy,
+    slug,
   } = post;
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useUser(postedBy._id.toString() as string);
 
+  let description = extractFirstParagraphText(content as string);
   return (
-    <div className="flex flex-col md:flex-row w-full border rounded-lg overflow-hidden shadow-sm mb-6">
-      <div className="md:w-1/3">
+    <Link
+      href={`/blog/${slug}`}
+      className="flex flex-col max-w-sm sm:max-h-[250px] sm:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]"
+    >
+      <div className="sm:w-1/3">
         <Image
           src={featuredImage as string}
           alt={title as string}
@@ -46,39 +48,51 @@ export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
             {calculateReadingTime(content as string)}
           </p>
           <h2 className="text-2xl font-bold mb-4">{title}</h2>
+          <p className="text-foreground text-base mb-4">
+            {truncateText(description as string, 150)}
+          </p>
         </div>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start">
+          <div className="flex sm:items-center space-x-4">
             <Avatar>
               <AvatarImage
-                src={user?.data?.avatar as string}
-                alt={getFullName(user?.data)}
+                src={postedBy?.avatar as string}
+                alt={getFullName(postedBy)}
               />
-              <AvatarFallback>{getNameInitials(user)}</AvatarFallback>
+              <AvatarFallback>{getNameInitials(postedBy)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold">{getFullName(user?.data)}</p>
+              <p className="font-semibold">{getFullName(postedBy)}</p>
               <p className="text-sm text-muted-foreground">
                 {showMonthDay(createdAt!.toString())}
               </p>
             </div>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-1">
             <Button variant="ghost" size="icon">
-              <Archive className="h-4 w-4" />
+              <Bookmark className="h-4 w-4" />
+              <span className="text-sm text-center pl-[0.1em]">
+                {bookmarks?.length}
+              </span>
               <span className="sr-only">Archive</span>
             </Button>
             <Button variant="ghost" size="icon">
               <Heart className="h-4 w-4" />
+              <span className="text-sm text-center pl-[0.2em]">
+                {likes?.length}
+              </span>
               <span className="sr-only">Like</span>
             </Button>
             <Button variant="ghost" size="icon">
               <MessageCircle className="h-4 w-4" />
+              <span className="text-sm text-center pl-[0.2em]">
+                {comments?.length}
+              </span>
               <span className="sr-only">Comment</span>
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
