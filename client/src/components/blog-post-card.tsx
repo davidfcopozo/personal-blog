@@ -42,7 +42,7 @@ export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
           className="w-full h-full"
         />
       </div>
-      <div className="md:w-2/3 p-6 flex flex-col justify-between">
+      <div className="w-full p-6 flex flex-col justify-between">
         <div>
           <p className="text-sm text-muted-foreground mb-2">
             {calculateReadingTime(content as string)}
@@ -68,7 +68,7 @@ export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
               </p>
             </div>
           </div>
-          <div className="flex space-x-1">
+          <div className="flex space-x-1 sm:mr-6">
             <Button variant="ghost" size="icon">
               <Bookmark className="h-4 w-4" />
               <span className="text-sm text-center pl-[0.1em]">
