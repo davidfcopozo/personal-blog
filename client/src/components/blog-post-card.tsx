@@ -13,7 +13,13 @@ import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
+export const BlogPostCard = ({
+  post,
+}: {
+  key: string;
+  post: PostType;
+  slug?: string;
+}) => {
   const {
     title,
     content,
@@ -30,9 +36,9 @@ export const BlogPostCard = ({ post }: { key: string; post: PostType }) => {
   return (
     <Link
       href={`/blog/${slug}`}
-      className="flex flex-col max-w-sm sm:max-h-[250px] sm:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]"
+      className="flex flex-col max-w-sm md:max-h-[250px] md:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]"
     >
-      <div className="sm:w-1/3">
+      <div className="md:w-1/3">
         <Image
           src={featuredImage as string}
           alt={title as string}
