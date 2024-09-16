@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { PostType } from "@/typings/types";
+import { BlogPostCardProps } from "@/typings/types";
 import {
   calculateReadingTime,
   extractFirstParagraphText,
@@ -13,13 +13,7 @@ import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export const BlogPostCard = ({
-  post,
-}: {
-  key: string;
-  post: PostType;
-  slug?: string;
-}) => {
+export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const {
     title,
     content,
