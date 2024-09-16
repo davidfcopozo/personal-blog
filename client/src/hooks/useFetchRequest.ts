@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useEffect } from "react";
 
 const getBaseURL = () => {
   if (typeof window !== "undefined") {
@@ -26,10 +25,6 @@ function useFetchRequest(key: string, url: string) {
       gcTime: 0,
       staleTime: 0,
     });
-
-    useEffect(() => {
-      fetchData();
-    }, []);
 
     return { data, error, isLoading, isFetching, refetch };
   } catch (error: Error | any) {
