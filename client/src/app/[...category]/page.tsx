@@ -38,8 +38,8 @@ export default function Category({ params }: { params: { category: string } }) {
   }, [error, toast]);
 
   return (
-    <div className="container px-4 mt-10 py-8">
-      <h1 className="text-3xl font-bold mb-8">{`Latest ${categoryToDisplay} Blog Posts`}</h1>
+    <div className="container px-4 mt-14 py-8">
+      <h1 className="text-3xl font-bold mb-10">{`Latest ${categoryToDisplay} Blog Posts`}</h1>
       <div className="space-y-6 flex justify-center flex-wrap md:justify-normal">
         {isFetching ? (
           <div className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2">
@@ -47,11 +47,14 @@ export default function Category({ params }: { params: { category: string } }) {
             <PostSkeletonCard />
             <PostSkeletonCard />
           </div>
-        ) : (
-          blogPosts &&
+        ) : blogPosts && blogPosts.length > 0 ? (
           blogPosts.map((post) => (
             <BlogPostCard key={post._id.toString()} post={post} />
           ))
+        ) : (
+          <div className="w-full flex justify-center items-center">
+            <p>Sorry, no posts to display!</p>
+          </div>
         )}
       </div>
     </div>
