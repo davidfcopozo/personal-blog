@@ -1,5 +1,4 @@
 "use client";
-import { BlogCard } from "@/components/blog-card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CategoryType, PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
 import CategoriesSkeleton from "@/components/categories-skeleton";
-import { PostInterface } from "../../../api/src/typings/models/post";
+import { BlogPostCard } from "@/components/blog-post-card";
 
 export default function Home() {
   const { toast } = useToast();
@@ -77,8 +76,8 @@ export default function Home() {
   const blogCards = useMemo(() => {
     if (Array.isArray(posts?.data))
       return posts?.data?.map(
-        (post: PostInterface, index: { toString: () => any }) => (
-          <BlogCard
+        (post: PostType, index: { toString: () => any }) => (
+          <BlogPostCard
             key={post?._id.toString() + index.toString()}
             post={post}
             slug={post?.slug as string}
