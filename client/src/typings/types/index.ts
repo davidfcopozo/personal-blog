@@ -10,9 +10,10 @@ export type UseRefType = Record<
   ClientSafeProvider
 > | null;
 
-export type BlogPostProps = {
-  post: PostInterface & { createdAt?: Date };
-  slug: string;
+export type BlogPostCardProps = {
+  post: PostType;
+  slug?: string;
+  key: string | number;
 };
 
 export type UsePostRequestType = {
