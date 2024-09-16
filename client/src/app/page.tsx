@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CategoryType, PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
 import CategoriesSkeleton from "@/components/categories-skeleton";
+import { PostInterface } from "../../../api/src/typings/models/post";
 
 export default function Home() {
   const { toast } = useToast();
@@ -76,7 +77,7 @@ export default function Home() {
   const blogCards = useMemo(() => {
     if (Array.isArray(posts?.data))
       return posts?.data?.map(
-        (post: PostType, index: { toString: () => any }) => (
+        (post: PostInterface, index: { toString: () => any }) => (
           <BlogCard
             key={post?._id.toString() + index.toString()}
             post={post}
@@ -149,7 +150,7 @@ export default function Home() {
                       filteredCategories?.map((category: CategoryType) => (
                         <Link
                           key={`${category._id}`}
-                          href={`/blog/${category.name}`}
+                          href={`/${category.slug}`}
                           className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
                           prefetch={false}
                         >

@@ -66,7 +66,9 @@ export function getRelativeTime(
 export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
   const wordsPerMinute = 200;
 
-  const wordCount = text.trim().split(/\s+/).length;
+  const cleanedContent = cleanBlogContent(text);
+
+  const wordCount = cleanedContent.trim().split(/\s+/).length;
 
   const readingTimeMinutes = Math.ceil(wordCount / wordsPerMinute);
 
@@ -176,4 +178,18 @@ export const extractFirstParagraphText = (
   const firstParagraph = doc.querySelector("p");
 
   return firstParagraph ? firstParagraph.textContent || "" : null;
+};
+
+export const convertSlugToName = (cat: string) => {
+  return cat
+    ?.split("-")
+    ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+const cleanBlogContent = (content: string) => {
+  const textOnly = content?.replace(/<[^>]*>/g, "");
+
+  const noImages = textOnly?.replace(/<img[^>]*>/g, "");
+
+  return noImages?.trim();
 };
