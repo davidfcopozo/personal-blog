@@ -1,11 +1,7 @@
+import { PostType } from "@/typings/types";
 import Link from "next/link";
-import { FC } from "react";
 
-interface BlogPostProps {
-  post: any;
-}
-
-const ProfileBlogPostCard: FC<BlogPostProps> = ({ post }) => {
+const ProfileBlogPostCard = ({ post }: { post: PostType }) => {
   const { _id, title, visits } = post;
   return (
     <div key={_id.toString()} className="border-b pb-4 last:border-b-0">
