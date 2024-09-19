@@ -25,6 +25,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     postedBy,
     slug,
   } = post;
+  const { _id: userID } = postedBy;
 
   let description = extractFirstParagraphText(content as string);
   return (
@@ -62,7 +63,12 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               <AvatarFallback>{getNameInitials(postedBy)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold">{getFullName(postedBy)}</p>
+              <Link
+                href={`/users/${userID.toString()}`}
+                className="font-semibold"
+              >
+                {getFullName(postedBy)}
+              </Link>
               <p className="text-sm text-muted-foreground">
                 {showMonthDay(createdAt!.toString())}
               </p>
