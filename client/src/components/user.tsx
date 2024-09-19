@@ -7,13 +7,31 @@ import { useUser } from "@/hooks/useUser";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ProfilePageSkeleton from "./profile-page-skeleton";
+import useFetchRequest from "@/hooks/useFetchRequest";
+import { PostType } from "@/typings/types";
+import ProfileBlogCard from "./profile-blog-card";
 
 const User = ({ id }: { id: string }) => {
-  const { data, error, isFetching, isLoading } = useUser(id as string);
-  const user = data?.data;
+  const {
+    data: userData,
+    error: userError,
+    isFetching: isUserFetching,
+    isLoading: isUserLoading,
+  } = useUser(id as string);
+  const {
+    data: posts,
+    error: postsError,
+    isFetching: arePostsFetching,
+  } = useFetchRequest("posts", `/api/posts`);
+  const user = userData?.data;
+  const blogPosts = Array.isArray(posts?.data)
+    ? posts.data.filter(
+        (post: PostType) => post?.postedBy?._id.toString() === id.toString()
+      )
+    : [];
   return (
     <>
-      {isFetching || isLoading ? (
+      {isUserFetching || isUserLoading ? (
         <ProfilePageSkeleton />
       ) : (
         <div className="container mx-auto px-4 py-8">
@@ -80,21 +98,15 @@ const User = ({ id }: { id: string }) => {
                   <CardTitle>Published Posts</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* <div className="space-y-4">
-                {blogPosts.map((post) => (
-                  <div key={post.id} className="border-b pb-4 last:border-b-0">
-                    <Link href={`/blog/${post.id}`} passHref>
-                      <h2 className="text-xl font-semibold hover:text-primary">
-                        {post.title}
-                      </h2>
-                    </Link>
-                    <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
-                      <span>{post.date}</span>
-                      <span>{post.views} views</span>
-                    </div>
+                  <div className="space-y-4">
+                    {blogPosts &&
+                      blogPosts.map((post: PostType, index: number) => (
+                        <ProfileBlogCard
+                          post={post}
+                          key={post?._id.toString() + index}
+                        />
+                      ))}
                   </div>
-                ))}
-              </div> */}
                 </CardContent>
               </Card>
             </div>
