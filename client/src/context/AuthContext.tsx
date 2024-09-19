@@ -14,6 +14,8 @@ import axios from "axios";
 type AuthContextType = {
   currentUser: any | null;
   isLoading: boolean;
+  isUserFetching: boolean;
+  isUserLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   socialLogin: (provider: "github" | "google") => Promise<void>;
   logout: () => Promise<void>;
@@ -27,7 +29,12 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
 
-  const { data: currentUser, refetch: refetchUser } = useQuery({
+  const {
+    data: currentUser,
+    refetch: refetchUser,
+    isFetching: isUserFetching,
+    isLoading: isUserLoading,
+  } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
       const session = await getSession();
@@ -94,7 +101,15 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, isLoading, login, socialLogin, logout }}
+      value={{
+        currentUser,
+        isLoading,
+        login,
+        socialLogin,
+        logout,
+        isUserFetching,
+        isUserLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>
