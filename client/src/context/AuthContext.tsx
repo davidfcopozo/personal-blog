@@ -1,26 +1,31 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  FC,
+} from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getSession, signIn, signOut } from "next-auth/react";
 import axios from "axios";
-
-type AuthContextType = {
-  currentUser: any | null;
-  isLoading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  socialLogin: (provider: "github" | "google") => Promise<void>;
-  logout: () => Promise<void>;
-};
+import { AuthContextType } from "@/typings/types";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
+export const AuthContextProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
 
-  const { data: currentUser, refetch: refetchUser } = useQuery({
+  const {
+    data: currentUser,
+    refetch: refetchUser,
+    isFetching: isUserFetching,
+    isLoading: isUserLoading,
+  } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
       const session = await getSession();
@@ -87,7 +92,15 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, isLoading, login, socialLogin, logout }}
+      value={{
+        currentUser,
+        isLoading,
+        login,
+        socialLogin,
+        logout,
+        isUserFetching,
+        isUserLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>
