@@ -57,3 +57,13 @@ export type CommentFetchType = {
   data: CommentInterface;
   success: boolean;
 };
+
+export type AuthContextType = {
+  currentUser: any | null;
+  isLoading: boolean;
+  isUserFetching: boolean;
+  isUserLoading: boolean;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
+  socialLogin: (provider: "github" | "google") => Promise<void>;
+  logout: () => Promise<void>;
+};
