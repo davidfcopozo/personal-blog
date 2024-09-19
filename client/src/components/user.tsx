@@ -23,13 +23,6 @@ const User = ({ id }: { id: string }) => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center">
-                    {/* <Image
-                  src={user?.avatar as string}
-                  alt="Profile Picture"
-                  width={150}
-                  height={150}
-                  className="rounded-full mb-4"
-                /> */}
                     <Avatar className="h-32 w-32 border-2 mb-4">
                       <AvatarImage
                         src={user?.avatar as string}
