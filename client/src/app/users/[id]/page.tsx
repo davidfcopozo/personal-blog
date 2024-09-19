@@ -5,9 +5,6 @@ import User from "@/components/user";
 const UserPage = ({ params }: { params: { id: string } }) => {
   const { id } = params;
 
-  console.log("Params===>", params);
-  console.log("ID===>", id);
-
   const blogPosts = [
     {
       id: 1,
