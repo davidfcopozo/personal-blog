@@ -10,16 +10,7 @@ import React, {
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getSession, signIn, signOut } from "next-auth/react";
 import axios from "axios";
-
-type AuthContextType = {
-  currentUser: any | null;
-  isLoading: boolean;
-  isUserFetching: boolean;
-  isUserLoading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  socialLogin: (provider: "github" | "google") => Promise<void>;
-  logout: () => Promise<void>;
-};
+import { AuthContextType } from "@/typings/types";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
