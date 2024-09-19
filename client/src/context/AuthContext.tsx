@@ -1,5 +1,12 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  FC,
+} from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getSession, signIn, signOut } from "next-auth/react";
 import axios from "axios";
@@ -14,7 +21,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
+export const AuthContextProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const queryClient = useQueryClient();
