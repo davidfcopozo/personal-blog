@@ -72,6 +72,13 @@ const userSchema = new Schema<UserInterface>(
         message: "One or more selected technologies are invalid.",
       },
     },
+    socialMediaProfiles: {
+      x: String,
+      linkedIn: String,
+      github: String,
+      facebook: String,
+      instagram: String,
+    },
   },
   { timestamps: true }
 );
