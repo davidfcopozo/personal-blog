@@ -79,6 +79,7 @@ const userSchema = new Schema<UserInterface>(
       facebook: String,
       instagram: String,
     },
+    isOnboarded: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
