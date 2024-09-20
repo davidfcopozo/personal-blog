@@ -29,6 +29,13 @@ export interface UserInterface extends Document, ModelMethods {
   provider: String;
   topicsOfInterest?: String[];
   technologies?: String[];
+  socialMediaProfiles?: {
+    x?: String;
+    linkedIn?: String;
+    github?: String;
+    facebook?: String;
+    instagram?: String;
+  };
 }
 
 export interface RequestWithUserInfo extends Request {
