@@ -27,6 +27,8 @@ export interface UserInterface extends Document, ModelMethods {
   likes?: mongoose.Types.ObjectId[];
   avatar?: String;
   provider: String;
+  topicsOfInterest?: String[];
+  technologies?: String[];
 }
 
 export interface RequestWithUserInfo extends Request {
