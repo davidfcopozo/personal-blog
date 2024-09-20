@@ -78,6 +78,7 @@ const userSchema = new Schema<UserInterface>(
       github: String,
       facebook: String,
       instagram: String,
+      dribble: String,
     },
     isOnboarded: { type: Boolean, default: false },
   },
