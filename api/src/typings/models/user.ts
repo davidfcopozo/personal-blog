@@ -35,6 +35,7 @@ export interface UserInterface extends Document, ModelMethods {
     github?: String;
     facebook?: String;
     instagram?: String;
+    dribble?: String;
   };
   isOnboarded: Boolean;
 }
