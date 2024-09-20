@@ -1,15 +1,75 @@
 "use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName, getNameInitials } from "@/utils/formats";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { X } from "lucide-react";
 
 export const Settings = () => {
+  const router = useRouter();
   const { currentUser } = useAuth();
+  const [twitterHandle, setTwitterHandle] = useState("");
+  const [instagramHandle, setInstagramHandle] = useState("");
+  const [githubHandle, setGithubHandle] = useState("");
+  const [linkedinHandle, setLinkedinHandle] = useState("");
+  const [dribbleHandle, setDribbleHandle] = useState("");
+  const [skills, setSkills] = useState([
+    "React",
+    "Next.js",
+    "TypeScript",
+    "Node.js",
+    "Tailwind CSS",
+  ]);
+  const [interests, setInterests] = useState([
+    "Web Development",
+    "UI/UX Design",
+    "Machine Learning",
+    "Data Science",
+  ]);
+  const [newSkill, setNewSkill] = useState("");
+  const [newInterest, setNewInterest] = useState("");
+
+  const handleAddSkill = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newSkill && !skills.includes(newSkill)) {
+      setSkills([...skills, newSkill]);
+      setNewSkill("");
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setSkills(skills.filter((skill) => skill !== skillToRemove));
+  };
+
+  const handleAddInterest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newInterest && !interests.includes(newInterest)) {
+      setInterests([...interests, newInterest]);
+      setNewInterest("");
+    }
+  };
+
+  const handleRemoveInterest = (interestToRemove: string) => {
+    setInterests(interests.filter((interest) => interest !== interestToRemove));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Simulate an API call
+    setTimeout(() => {
+      // If successful, redirect to the profile page
+      router.push("/profile");
+    }, 1000);
+  };
 
   return (
     <div className="flex flex-col mt-16 md:mt-12 min-h-[100dvh]">
@@ -39,7 +99,6 @@ export const Settings = () => {
                   @{currentUser?.data?.username}
                 </p>
                 <p className="text-gray-500 mb-2">{currentUser?.data?.email}</p>
-                {/* Add website to the user model and types */}
                 <Link href="" className="text-gray-500 mb-2">
                   {currentUser?.data?.website}
                 </Link>
@@ -48,61 +107,219 @@ export const Settings = () => {
           </div>
           <div className="col-span-2 md:col-span-2">
             <div className="bg-background shadow-md rounded-lg p-6">
-              <form>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      type="text"
-                      defaultValue={currentUser?.data?.firstName}
-                    />
+              <Tabs defaultValue="personal" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="personal">Personal Info</TabsTrigger>
+                  <TabsTrigger value="social">Social Media</TabsTrigger>
+                  <TabsTrigger value="custom">Custom Experience</TabsTrigger>
+                </TabsList>
+                <form onSubmit={handleSubmit}>
+                  <TabsContent value="personal">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="firstName" className="font-bold">
+                            First Name
+                          </Label>
+                          <Input
+                            id="firstName"
+                            type="text"
+                            defaultValue={currentUser?.data?.firstName}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="lastName" className="font-bold">
+                            Last Name
+                          </Label>
+                          <Input
+                            id="lastName"
+                            type="text"
+                            defaultValue={currentUser?.data?.lastName}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="email" className="font-bold">
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          defaultValue={currentUser?.data?.email}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="username" className="font-bold">
+                          Username
+                        </Label>
+                        <Input
+                          id="username"
+                          type="text"
+                          defaultValue={currentUser?.data?.username}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bio" className="font-bold">
+                          Bio
+                        </Label>
+                        <Textarea
+                          id="bio"
+                          rows={4}
+                          defaultValue={currentUser?.data?.bio}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="social">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="website" className="font-bold">
+                          Website
+                        </Label>
+                        <Input
+                          id="website"
+                          type="text"
+                          defaultValue={currentUser?.data?.website}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="twitter" className="font-bold">
+                          Twitter Handle
+                        </Label>
+                        <div className="flex">
+                          <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                            @
+                          </span>
+                          <Input
+                            id="twitter"
+                            value={twitterHandle}
+                            onChange={(e) => setTwitterHandle(e.target.value)}
+                            className="rounded-l-none"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram" className="font-bold">
+                          Instagram Handle
+                        </Label>
+                        <div className="flex">
+                          <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                            @
+                          </span>
+                          <Input
+                            id="instagram"
+                            value={instagramHandle}
+                            onChange={(e) => setInstagramHandle(e.target.value)}
+                            className="rounded-l-none"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="github" className="font-bold">
+                          GitHub Handle
+                        </Label>
+                        <Input
+                          id="github"
+                          value={githubHandle}
+                          onChange={(e) => setGithubHandle(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="linkedin" className="font-bold">
+                          LinkedIn Handle
+                        </Label>
+                        <Input
+                          id="linkedin"
+                          value={linkedinHandle}
+                          onChange={(e) => setLinkedinHandle(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dribble" className="font-bold">
+                          Dribble Handle
+                        </Label>
+                        <Input
+                          id="dribble"
+                          value={dribbleHandle}
+                          onChange={(e) => setDribbleHandle(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="custom">
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="font-bold">Skills</Label>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {skills.map((skill) => (
+                            <Badge
+                              key={skill}
+                              variant="secondary"
+                              className="text-sm"
+                            >
+                              {skill}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSkill(skill)}
+                                className="ml-2 text-gray-500 hover:text-gray-700"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        <form onSubmit={handleAddSkill} className="flex gap-2">
+                          <Input
+                            value={newSkill}
+                            onChange={(e) => setNewSkill(e.target.value)}
+                            placeholder="Add a skill"
+                          />
+                          <Button type="submit" variant="outline">
+                            Add
+                          </Button>
+                        </form>
+                      </div>
+                      <div>
+                        <Label className="font-bold">Topics of interest</Label>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {interests.map((interest) => (
+                            <Badge
+                              key={interest}
+                              variant="secondary"
+                              className="text-sm"
+                            >
+                              {interest}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveInterest(interest)}
+                                className="ml-2 text-gray-500 hover:text-gray-700"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        <form
+                          onSubmit={handleAddInterest}
+                          className="flex gap-2"
+                        >
+                          <Input
+                            value={newInterest}
+                            onChange={(e) => setNewInterest(e.target.value)}
+                            placeholder="Add an interest"
+                          />
+                          <Button type="submit" variant="outline">
+                            Add
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <div className="flex pt-4 justify-start">
+                    <Button type="submit">Save Changes</Button>
                   </div>
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      type="text"
-                      defaultValue={currentUser?.data?.lastName}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      defaultValue={currentUser?.data?.email}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      type="text"
-                      defaultValue={currentUser?.data?.username}
-                    />
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    rows={4}
-                    defaultValue={currentUser?.data?.bio}
-                  />
-                </div>
-                <div className="mt-6">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    type="text"
-                    defaultValue={currentUser?.data?.website}
-                  />
-                </div>
-                <div className="flex pt-4 justify-start">
-                  <Button>Save Changes</Button>
-                </div>
-              </form>
+                </form>
+              </Tabs>
             </div>
           </div>
         </div>
