@@ -36,6 +36,7 @@ export interface UserInterface extends Document, ModelMethods {
     facebook?: String;
     instagram?: String;
   };
+  isOnboarded: Boolean;
 }
 
 export interface RequestWithUserInfo extends Request {
