@@ -27,6 +27,17 @@ export interface UserInterface extends Document, ModelMethods {
   likes?: mongoose.Types.ObjectId[];
   avatar?: String;
   provider: String;
+  topicsOfInterest?: String[];
+  technologies?: String[];
+  socialMediaProfiles?: {
+    x?: String;
+    linkedIn?: String;
+    github?: String;
+    facebook?: String;
+    instagram?: String;
+    dribble?: String;
+  };
+  isOnboarded: Boolean;
 }
 
 export interface RequestWithUserInfo extends Request {
