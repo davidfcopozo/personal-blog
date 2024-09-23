@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -13,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { useAuth } from "@/context/AuthContext";
 import { X } from "lucide-react";
+import useFetchRequest from "@/hooks/useFetchRequest";
+import SkillsSettings from "./skills-settings";
 
 export const Settings = () => {
   const router = useRouter();
@@ -22,34 +23,13 @@ export const Settings = () => {
   const [githubHandle, setGithubHandle] = useState("");
   const [linkedinHandle, setLinkedinHandle] = useState("");
   const [dribbleHandle, setDribbleHandle] = useState("");
-  const [skills, setSkills] = useState([
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Node.js",
-    "Tailwind CSS",
-  ]);
+  const [newInterest, setNewInterest] = useState("");
   const [interests, setInterests] = useState([
     "Web Development",
     "UI/UX Design",
     "Machine Learning",
     "Data Science",
   ]);
-  const [newSkill, setNewSkill] = useState("");
-  const [newInterest, setNewInterest] = useState("");
-
-  const handleAddSkill = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newSkill && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
-      setNewSkill("");
-    }
-  };
-
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove));
-  };
-
   const handleAddInterest = (e: React.FormEvent) => {
     e.preventDefault();
     if (newInterest && !interests.includes(newInterest)) {
@@ -248,37 +228,7 @@ export const Settings = () => {
                   </TabsContent>
                   <TabsContent value="custom">
                     <div className="space-y-4">
-                      <div>
-                        <Label className="font-bold">Skills</Label>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {skills.map((skill) => (
-                            <Badge
-                              key={skill}
-                              variant="secondary"
-                              className="text-sm"
-                            >
-                              {skill}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveSkill(skill)}
-                                className="ml-2 text-gray-500 hover:text-gray-700"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <form onSubmit={handleAddSkill} className="flex gap-2">
-                          <Input
-                            value={newSkill}
-                            onChange={(e) => setNewSkill(e.target.value)}
-                            placeholder="Add a skill"
-                          />
-                          <Button type="submit" variant="outline">
-                            Add
-                          </Button>
-                        </form>
-                      </div>
+                      <SkillsSettings />
                       <div>
                         <Label className="font-bold">Topics of interest</Label>
                         <div className="flex flex-wrap gap-2 mb-2">
