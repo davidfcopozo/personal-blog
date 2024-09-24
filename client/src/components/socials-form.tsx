@@ -2,10 +2,9 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { UserType } from "@/typings/types";
 
-const SocialsForm = () => {
-  const { currentUser } = useAuth();
+const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
   const [twitterHandle, setTwitterHandle] = useState("");
   const [instagramHandle, setInstagramHandle] = useState("");
   const [githubHandle, setGithubHandle] = useState("");
@@ -20,7 +19,7 @@ const SocialsForm = () => {
         <Input
           id="website"
           type="text"
-          defaultValue={currentUser?.data?.website}
+          defaultValue={currentUser?.website as string}
         />
       </div>
       <div>
