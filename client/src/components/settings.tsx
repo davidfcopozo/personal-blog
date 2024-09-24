@@ -7,13 +7,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { useAuth } from "@/context/AuthContext";
-import { X } from "lucide-react";
-import useFetchRequest from "@/hooks/useFetchRequest";
 import SkillsSettings from "./skills-settings";
+import InterestSettings from "./interests-settings";
 
 export const Settings = () => {
   const router = useRouter();
@@ -23,24 +21,6 @@ export const Settings = () => {
   const [githubHandle, setGithubHandle] = useState("");
   const [linkedinHandle, setLinkedinHandle] = useState("");
   const [dribbleHandle, setDribbleHandle] = useState("");
-  const [newInterest, setNewInterest] = useState("");
-  const [interests, setInterests] = useState([
-    "Web Development",
-    "UI/UX Design",
-    "Machine Learning",
-    "Data Science",
-  ]);
-  const handleAddInterest = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newInterest && !interests.includes(newInterest)) {
-      setInterests([...interests, newInterest]);
-      setNewInterest("");
-    }
-  };
-
-  const handleRemoveInterest = (interestToRemove: string) => {
-    setInterests(interests.filter((interest) => interest !== interestToRemove));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,40 +209,7 @@ export const Settings = () => {
                   <TabsContent value="custom">
                     <div className="space-y-4">
                       <SkillsSettings />
-                      <div>
-                        <Label className="font-bold">Topics of interest</Label>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {interests.map((interest) => (
-                            <Badge
-                              key={interest}
-                              variant="secondary"
-                              className="text-sm"
-                            >
-                              {interest}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveInterest(interest)}
-                                className="ml-2 text-gray-500 hover:text-gray-700"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <form
-                          onSubmit={handleAddInterest}
-                          className="flex gap-2"
-                        >
-                          <Input
-                            value={newInterest}
-                            onChange={(e) => setNewInterest(e.target.value)}
-                            placeholder="Add an interest"
-                          />
-                          <Button type="submit" variant="outline">
-                            Add
-                          </Button>
-                        </form>
-                      </div>
+                      <InterestSettings />
                     </div>
                   </TabsContent>
                   <div className="flex pt-4 justify-start">
