@@ -14,7 +14,7 @@ const topicSchema = new Schema(
       ref: "User",
       required: true,
     },
-    description: String, // Optional field to store additional information about the topic
+    description: String,
   },
   {
     timestamps: true,
