@@ -3,20 +3,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { useAuth } from "@/context/AuthContext";
 import SkillsForm from "./skills-form";
 import InterestForm from "./interests-form";
 import SocialsForm from "./socials-form";
+import PersonalInfoForm from "./personal-info-form";
 
 export const Settings = () => {
   const router = useRouter();
   const { currentUser } = useAuth();
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,60 +68,7 @@ export const Settings = () => {
                 </TabsList>
                 <form onSubmit={handleSubmit}>
                   <TabsContent value="personal">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="firstName" className="font-bold">
-                            First Name
-                          </Label>
-                          <Input
-                            id="firstName"
-                            type="text"
-                            defaultValue={currentUser?.data?.firstName}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="lastName" className="font-bold">
-                            Last Name
-                          </Label>
-                          <Input
-                            id="lastName"
-                            type="text"
-                            defaultValue={currentUser?.data?.lastName}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="email" className="font-bold">
-                          Email
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          defaultValue={currentUser?.data?.email}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="username" className="font-bold">
-                          Username
-                        </Label>
-                        <Input
-                          id="username"
-                          type="text"
-                          defaultValue={currentUser?.data?.username}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="bio" className="font-bold">
-                          Bio
-                        </Label>
-                        <Textarea
-                          id="bio"
-                          rows={4}
-                          defaultValue={currentUser?.data?.bio}
-                        />
-                      </div>
-                    </div>
+                    <PersonalInfoForm currentUser={currentUser?.data} />
                   </TabsContent>
                   <TabsContent value="social">
                     <SocialsForm />
