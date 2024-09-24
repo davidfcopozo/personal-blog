@@ -125,7 +125,11 @@ const SkillsSettings = () => {
         <div className="flex flex-wrap gap-2 mb-2">
           {Array.isArray(skills) &&
             skills?.map((skill: any) => (
-              <Badge key={skill._id} variant="secondary" className="text-sm">
+              <Badge
+                key={skill._id}
+                variant="secondary"
+                className="text-sm px-4"
+              >
                 {skill.name}
                 <button
                   type="button"
