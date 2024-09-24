@@ -72,7 +72,7 @@ export const Settings = () => {
                     <PersonalInfoForm currentUser={currentUser?.data} />
                   </TabsContent>
                   <TabsContent value="social">
-                    <SocialsForm />
+                    <SocialsForm currentUser={currentUser?.data} />
                   </TabsContent>
                   <TabsContent value="custom">
                     <div className="space-y-4">
