@@ -158,7 +158,7 @@ const SkillsSettings = () => {
                   ref={resultsRef}
                   onMouseDown={handleMouseDown}
                   id="results"
-                  className="absolute max-h-40 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full mt-2 bg-background rounded-md shadow-sm"
+                  className="absolute z-30 max-h-40 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full mt-2 bg-background rounded-md shadow-sm"
                 >
                   {availableSkills?.map((skill: any, index: number) => (
                     <div
