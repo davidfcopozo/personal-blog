@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { useAuth } from "@/context/AuthContext";
-import SkillsSettings from "./skills-settings";
-import InterestSettings from "./interests-settings";
+import SkillsForm from "./skills-form";
+import InterestForm from "./interests-form";
 
 export const Settings = () => {
   const router = useRouter();
@@ -208,8 +208,8 @@ export const Settings = () => {
                   </TabsContent>
                   <TabsContent value="custom">
                     <div className="space-y-4">
-                      <SkillsSettings />
-                      <InterestSettings />
+                      <SkillsForm />
+                      <InterestForm />
                     </div>
                   </TabsContent>
                   <div className="flex pt-4 justify-start">
