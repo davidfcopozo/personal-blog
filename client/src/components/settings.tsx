@@ -10,12 +10,13 @@ import SkillsForm from "./skills-form";
 import InterestForm from "./interests-form";
 import SocialsForm from "./socials-form";
 import PersonalInfoForm from "./personal-info-form";
+import { FormEvent } from "react";
 
 export const Settings = () => {
   const router = useRouter();
   const { currentUser } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     // Simulate an API call
     setTimeout(() => {
