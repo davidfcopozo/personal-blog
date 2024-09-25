@@ -5,6 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserType } from "@/typings/types";
 
 const PersonalInfoForm = ({ currentUser }: { currentUser: UserType }) => {
+  if (!currentUser) {
+    return (
+      <div className="space-y-4 text-center">Loading user information...</div>
+    );
+  }
   const { firstName, lastName, email, username, bio } = currentUser;
   return (
     <div className="space-y-4">
