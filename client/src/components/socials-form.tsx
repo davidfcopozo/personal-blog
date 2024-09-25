@@ -5,6 +5,9 @@ import { useState } from "react";
 import { UserType } from "@/typings/types";
 
 const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
+  const { website } = currentUser;
+  const { socialMediaProfiles } = currentUser;
+  const { x, instagram, github, linkedIn, dribble } = socialMediaProfiles || {};
   const [twitterHandle, setTwitterHandle] = useState("");
   const [instagramHandle, setInstagramHandle] = useState("");
   const [githubHandle, setGithubHandle] = useState("");
@@ -16,11 +19,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
         <Label htmlFor="website" className="font-bold">
           Website
         </Label>
-        <Input
-          id="website"
-          type="text"
-          defaultValue={currentUser?.website as string}
-        />
+        <Input id="website" type="text" defaultValue={website as string} />
       </div>
       <div>
         <Label htmlFor="twitter" className="font-bold">
@@ -35,6 +34,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
             value={twitterHandle}
             onChange={(e) => setTwitterHandle(e.target.value)}
             className="rounded-l-none"
+            defaultValue={x as string}
           />
         </div>
       </div>
@@ -51,6 +51,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
             value={instagramHandle}
             onChange={(e) => setInstagramHandle(e.target.value)}
             className="rounded-l-none"
+            defaultValue={instagram as string}
           />
         </div>
       </div>
@@ -62,6 +63,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
           id="github"
           value={githubHandle}
           onChange={(e) => setGithubHandle(e.target.value)}
+          defaultValue={github as string}
         />
       </div>
       <div>
@@ -72,6 +74,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
           id="linkedin"
           value={linkedinHandle}
           onChange={(e) => setLinkedinHandle(e.target.value)}
+          defaultValue={linkedIn as string}
         />
       </div>
       <div>
@@ -82,6 +85,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
           id="dribble"
           value={dribbleHandle}
           onChange={(e) => setDribbleHandle(e.target.value)}
+          defaultValue={dribble as string}
         />
       </div>
     </div>
