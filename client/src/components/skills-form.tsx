@@ -141,7 +141,7 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
               </Badge>
             ))}
         </div>
-        <form onSubmit={handleAddSkill} className="flex gap-2">
+        <div /* onSubmit={handleAddSkill} */ className="flex gap-2">
           <div className="relative w-full">
             <Input
               ref={inputRef}
@@ -175,10 +175,10 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
                 </div>
               )}
           </div>
-          <Button type="submit" variant="outline">
+          <Button type="submit" variant="outline" onClick={handleAddSkill}>
             Add
           </Button>
-        </form>
+        </div>
       </div>
     </div>
   );
