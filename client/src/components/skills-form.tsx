@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import useFetchRequest from "@/hooks/useFetchRequest";
+import { SkillsFormProps } from "@/typings/types";
 
-const SkillsForm = () => {
+const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
   const { data: categories } = useFetchRequest("categories", "/api/categories");
-  const [skills, setSkills] = useState<any[]>([]);
   const [availableSkills, setAvailableSkills] = useState<any[]>([]);
   const [skillSearchQuery, setSkillSearchQuery] = useState("");
   const [isSkillsInputFocused, setIsSkillsInputFocused] = useState(false);
@@ -34,7 +34,7 @@ const SkillsForm = () => {
   };
 
   const selectSkill = (skill: any) => {
-    setSkills((prevSkills) => [...prevSkills, skill]);
+    setSkills([...skills, skill]);
     setAvailableSkills((prevAvailableSkills) =>
       prevAvailableSkills.filter(
         (availableSkill) => availableSkill._id !== skill._id
