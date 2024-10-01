@@ -67,3 +67,43 @@ export type AuthContextType = {
   socialLogin: (provider: "github" | "google") => Promise<void>;
   logout: () => Promise<void>;
 };
+
+export type PersonalInfoFormProps = {
+  currentUser: UserType;
+  firstName: string;
+  setFirstName: (value: string) => void;
+  lastName: string;
+  setLastName: (value: string) => void;
+  email: string;
+  setEmail: (value: string) => void;
+  username: string;
+  setUsername: (value: string) => void;
+  bio: string;
+  setBio: (value: string) => void;
+};
+
+export type SocialsFormProps = {
+  currentUser: UserType;
+  website: string;
+  setWebsite: (value: string) => void;
+  twitterHandle: string;
+  setTwitterHandle: (value: string) => void;
+  instagramHandle: string;
+  setInstagramHandle: (value: string) => void;
+  githubHandle: string;
+  setGithubHandle: (value: string) => void;
+  linkedinHandle: string;
+  setLinkedinHandle: (value: string) => void;
+  dribbleHandle: string;
+  setDribbleHandle: (value: string) => void;
+};
+
+export type InterestFormProps = {
+  interests: any[];
+  setInterests: (interests: any[]) => void;
+};
+
+export type SkillsFormProps = {
+  skills: any[];
+  setSkills: (skills: any[]) => void;
+};
