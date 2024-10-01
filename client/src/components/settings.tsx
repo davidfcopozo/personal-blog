@@ -10,20 +10,50 @@ import SkillsForm from "./skills-form";
 import InterestForm from "./interests-form";
 import SocialsForm from "./socials-form";
 import PersonalInfoForm from "./personal-info-form";
-import { FormEvent } from "react";
+import { useUpdateSettings } from "@/hooks/useUpdateSettings";
 
 export const Settings = () => {
   const router = useRouter();
   const { currentUser } = useAuth();
 
-  const handleSubmit = (e: FormEvent) => {
+  const {
+    handleSubmit,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    email,
+    setEmail,
+    username,
+    setUsername,
+    bio,
+    setBio,
+    website,
+    setWebsite,
+    twitterHandle,
+    setTwitterHandle,
+    instagramHandle,
+    setInstagramHandle,
+    githubHandle,
+    setGithubHandle,
+    linkedinHandle,
+    setLinkedinHandle,
+    dribbleHandle,
+    setDribbleHandle,
+    skills,
+    setSkills,
+    interests,
+    setInterests,
+  } = useUpdateSettings();
+
+  /*   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     // Simulate an API call
     setTimeout(() => {
       // If successful, redirect to the profile page
       router.push("/profile");
     }, 1000);
-  };
+  }; */
 
   return (
     <div className="flex flex-col mt-16 md:mt-12 min-h-[100dvh]">
@@ -67,21 +97,69 @@ export const Settings = () => {
                   <TabsTrigger value="social">Social Media</TabsTrigger>
                   <TabsTrigger value="custom">Custom Experience</TabsTrigger>
                 </TabsList>
-                <form onSubmit={handleSubmit}>
+                <form
+                  onSubmit={(e) =>
+                    handleSubmit(e, {
+                      firstName,
+                      lastName,
+                      email,
+                      username,
+                      bio,
+                      twitterHandle,
+                      instagramHandle,
+                      githubHandle,
+                      linkedinHandle,
+                      dribbleHandle,
+                      skills,
+                      interests,
+                    })
+                  }
+                >
                   <TabsContent value="personal">
-                    <PersonalInfoForm currentUser={currentUser?.data} />
+                    <PersonalInfoForm
+                      currentUser={currentUser?.data}
+                      firstName={firstName}
+                      setFirstName={setFirstName}
+                      lastName={lastName}
+                      setLastName={setLastName}
+                      email={email}
+                      setEmail={setEmail}
+                      username={username as string}
+                      setUsername={setUsername}
+                      bio={bio as string}
+                      setBio={setBio}
+                    />
                   </TabsContent>
                   <TabsContent value="social">
-                    <SocialsForm currentUser={currentUser?.data} />
+                    <SocialsForm
+                      currentUser={currentUser?.data}
+                      website={website}
+                      setWebsite={setWebsite}
+                      twitterHandle={twitterHandle}
+                      setTwitterHandle={setTwitterHandle}
+                      instagramHandle={instagramHandle}
+                      setInstagramHandle={setInstagramHandle}
+                      githubHandle={githubHandle}
+                      setGithubHandle={setGithubHandle}
+                      linkedinHandle={linkedinHandle}
+                      setLinkedinHandle={setLinkedinHandle}
+                      dribbleHandle={dribbleHandle}
+                      setDribbleHandle={setDribbleHandle}
+                    />
                   </TabsContent>
                   <TabsContent value="custom">
                     <div className="space-y-4">
-                      <SkillsForm />
-                      <InterestForm />
+                      <SkillsForm setSkills={setSkills} skills={skills} />
+                      <InterestForm
+                        setInterests={setInterests}
+                        interests={interests}
+                      />
                     </div>
                   </TabsContent>
                   <div className="flex pt-4 justify-start">
-                    <Button type="submit">Save Changes</Button>
+                    <Button /* onClick={handleSubmit} */ type="submit">
+                      Save Changes
+                    </Button>
                   </div>
                 </form>
               </Tabs>
