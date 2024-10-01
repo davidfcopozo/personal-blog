@@ -12,11 +12,13 @@ import {
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { InterestFormProps } from "@/typings/types";
 
-const InterestForm = () => {
+
+
+const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
   const { data: topics } = useFetchRequest("topics", "/api/topics");
   const [newInterest, setNewInterest] = useState("");
-  const [interests, setInterests] = useState<any[]>([]);
   const [availableInterests, setAvailableInterests] = useState<any[]>([]);
   const [interestSearchQuery, setInterestSearchQuery] = useState("");
   const [isInterestsInputFocused, setIsInterestsInputFocused] = useState(false);
@@ -39,7 +41,7 @@ const InterestForm = () => {
   };
 
   const selectInterest = (interest: any) => {
-    setInterests((prevInterests) => [...prevInterests, interest]);
+    setInterests([...interests, interest]);
     setAvailableInterests((prevAvailableInterests) =>
       prevAvailableInterests.filter(
         (availableInterest) => availableInterest._id !== interest._id
@@ -150,7 +152,7 @@ const InterestForm = () => {
               </Badge>
             ))}
         </div>
-        <form onSubmit={handleAddInterest} className="flex gap-2">
+        <div /* onSubmit={handleAddInterest} */ className="flex gap-2">
           <div className="relative w-full">
             <Input
               ref={inputRef}
@@ -184,10 +186,10 @@ const InterestForm = () => {
                 </div>
               )}
           </div>
-          <Button type="submit" variant="outline">
+          <Button type="button" onClick={handleAddInterest} variant="outline">
             Add
           </Button>
-        </form>
+        </div>
       </div>
     </div>
   );
