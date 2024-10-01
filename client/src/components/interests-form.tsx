@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import {
   FormEvent,
+  KeyboardEvent,
   MouseEvent,
   useEffect,
   useMemo,
@@ -13,8 +14,6 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { InterestFormProps } from "@/typings/types";
-
-
 
 const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
   const { data: topics } = useFetchRequest("topics", "/api/topics");
@@ -101,7 +100,7 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
     setAvailableInterests(filteredInterests);
   }, [filteredInterests]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       setHighlightedIndex((prevIndex) =>
         Math.min(prevIndex + 1, availableInterests.length - 1)
@@ -159,7 +158,7 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
               value={interestSearchQuery}
               onChange={(e) => setInterestSearchQuery(e.target.value)}
               onFocus={() => setIsInterestsInputFocused(true)}
-              onKeyDown={() => handleKeyDown}
+              onKeyDown={handleKeyDown}
               placeholder="Search for topics of interest"
             />
             {availableInterests?.length > 0 &&
