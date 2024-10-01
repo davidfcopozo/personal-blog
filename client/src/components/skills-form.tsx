@@ -1,5 +1,5 @@
 "use client";
-import React, { FormEvent, MouseEvent } from "react";
+import React, { FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -90,8 +90,10 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
     setAvailableSkills(filteredSkills);
   }, [filteredSkills]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
+      console.log("ArrowDown");
+
       setHighlightedIndex((prevIndex) =>
         Math.min(prevIndex + 1, availableSkills.length - 1)
       );
@@ -141,14 +143,14 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
               </Badge>
             ))}
         </div>
-        <div /* onSubmit={handleAddSkill} */ className="flex gap-2">
+        <div className="flex gap-2">
           <div className="relative w-full">
             <Input
               ref={inputRef}
               value={skillSearchQuery}
               onChange={(e) => setSkillSearchQuery(e.target.value)}
               onFocus={() => setIsSkillsInputFocused(true)}
-              onKeyDown={() => handleKeyDown}
+              onKeyDown={handleKeyDown}
               placeholder="Search for skills"
             />
             {availableSkills?.length > 0 &&
