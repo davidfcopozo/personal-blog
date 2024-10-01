@@ -1,25 +1,38 @@
 "use client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { UserType } from "@/typings/types";
+import { SocialsFormProps } from "@/typings/types";
 
-const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
-  const { website } = currentUser;
+const SocialsForm = ({
+  currentUser,
+  website,
+  setWebsite,
+  twitterHandle,
+  setTwitterHandle,
+  instagramHandle,
+  setInstagramHandle,
+  githubHandle,
+  setGithubHandle,
+  linkedinHandle,
+  setLinkedinHandle,
+  dribbleHandle,
+  setDribbleHandle,
+}: SocialsFormProps) => {
+  const { website: currentWebsite } = currentUser;
   const { socialMediaProfiles } = currentUser;
   const { x, instagram, github, linkedIn, dribble } = socialMediaProfiles || {};
-  const [twitterHandle, setTwitterHandle] = useState("");
-  const [instagramHandle, setInstagramHandle] = useState("");
-  const [githubHandle, setGithubHandle] = useState("");
-  const [linkedinHandle, setLinkedinHandle] = useState("");
-  const [dribbleHandle, setDribbleHandle] = useState("");
   return (
     <div className="space-y-4">
       <div>
         <Label htmlFor="website" className="font-bold">
           Website
         </Label>
-        <Input id="website" type="text" defaultValue={website as string} />
+        <Input
+          id="website"
+          type="text"
+          onChange={(e) => setWebsite(e.target.value)}
+          value={website ? website : (currentWebsite as string)}
+        />
       </div>
       <div>
         <Label htmlFor="twitter" className="font-bold">
@@ -31,7 +44,7 @@ const SocialsForm = ({ currentUser }: { currentUser: UserType }) => {
           </span>
           <Input
             id="twitter"
-            value={twitterHandle}
+            value={twitterHandle ? twitterHandle : (x as string)}
             onChange={(e) => setTwitterHandle(e.target.value)}
             className="rounded-l-none"
             defaultValue={x as string}
