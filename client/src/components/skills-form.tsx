@@ -92,18 +92,23 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
-      console.log("ArrowDown");
-
+      if (highlightedIndex === availableSkills.length - 1) {
+        setHighlightedIndex(-1);
+      }
       setHighlightedIndex((prevIndex) =>
         Math.min(prevIndex + 1, availableSkills.length - 1)
       );
     } else if (e.key === "ArrowUp") {
+      if (highlightedIndex === -1 || highlightedIndex === 0) {
+        setHighlightedIndex(availableSkills.length);
+      }
       setHighlightedIndex((prevIndex) => Math.max(prevIndex - 1, 0));
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       e.preventDefault();
       selectSkill(availableSkills[highlightedIndex]);
     }
   };
+
   useEffect(() => {
     // Auto-scroll the results when navigating with the keyboard
     if (
