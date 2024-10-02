@@ -4,6 +4,7 @@ import { PostInterface } from "../../../../api/src/typings/models/post";
 import { UserInterface } from "../../../../api/src/typings/models/user";
 import { Date } from "mongoose";
 import { CategoryInterface, CommentInterface } from "../interfaces";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 
 export type UseRefType = Record<
   LiteralUnion<BuiltInProviderType, string>,
@@ -66,6 +67,9 @@ export type AuthContextType = {
   login: (credentials: { email: string; password: string }) => Promise<void>;
   socialLogin: (provider: "github" | "google") => Promise<void>;
   logout: () => Promise<void>;
+  refetchUser: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<any, Error>>;
 };
 
 export type PersonalInfoFormProps = {
