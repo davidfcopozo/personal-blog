@@ -62,7 +62,7 @@ export const Settings = () => {
           <div className="col-span-1 md:col-span-1">
             <div className="bg-background shadow-md rounded-lg p-6">
               <div className="flex flex-col items-center justify-center mb-4">
-                <Avatar className="h-24 w-24 mb-4">
+                <Avatar className="h-48 w-48 mb-4">
                   <AvatarImage src="/placeholder-user.jpg" />
                   <AvatarFallback className="text-lg font-bold">
                     {getNameInitials(currentUser)}
