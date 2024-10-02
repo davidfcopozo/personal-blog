@@ -44,16 +44,7 @@ export const Settings = () => {
     setSkills,
     interests,
     setInterests,
-  } = useUpdateSettings();
-
-  /*   const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    // Simulate an API call
-    setTimeout(() => {
-      // If successful, redirect to the profile page
-      router.push("/profile");
-    }, 1000);
-  }; */
+  } = useUpdateSettings(currentUser?.data?._id.toString());
 
   return (
     <div className="flex flex-col mt-16 md:mt-12 min-h-[100dvh]">
