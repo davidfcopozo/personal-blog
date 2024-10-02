@@ -1,6 +1,10 @@
 import { FormEvent, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
+import useUpdateRequest from "./useUpdateRequest";
+import { useAuth } from "@/context/AuthContext";
 
-export const useUpdateSettings = () => {
+export const useUpdateSettings = (id: string) => {
   /* Personal info */
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
@@ -18,18 +22,88 @@ export const useUpdateSettings = () => {
   const [skills, setSkills] = useState<any[]>([]);
   const [interests, setInterests] = useState<any[]>([]);
 
-  const handleSubmit = (e: FormEvent, inputFields: any) => {
-    console.log("submitting form===>", inputFields);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { refetchUser } = useAuth();
 
+  const { mutate, data, status, error } = useUpdateRequest({
+    url: `/api/users/${id}`,
+    onSuccess: () => {
+      toast({
+        variant: "default",
+        title: "User updated successfully",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["currentUser"],
+        exact: true,
+      });
+      refetchUser();
+      setFirstName("");
+      setLastName("");
+      setEmail;
+      setUsername("");
+      setBio("");
+      setWebsite("");
+      setTwitterHandle("");
+      setInstagramHandle("");
+      setGithubHandle("");
+      setLinkedinHandle("");
+      setDribbleHandle("");
+      setSkills([]);
+      setInterests([]);
+    },
+    onError: () => {
+      console.log("error from useUpdateSettings===>", error);
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: error?.message || "Please try again",
+      });
+      const previousPosts = queryClient.getQueryData(["currentUser"]);
+      queryClient.setQueryData(["currentUser"], previousPosts);
+    },
+    onMutate: async (user: any) => {
+      console.log("user from onMutate===>", user);
+
+      await queryClient.cancelQueries({
+        queryKey: ["currentUser"],
+        exact: true,
+      });
+      const previousUserData = queryClient.getQueryData(["currentUser"]);
+
+      queryClient.setQueryData(["currentUser"], (oldData: any | undefined) => ({
+        ...user,
+        ...oldData,
+      }));
+      return previousUserData;
+    },
+  });
+  const handleSubmit = (e: FormEvent, inputFields: any) => {
     e.preventDefault();
 
-    let fieldsToUpdate: { [key: string]: any } = {};
+    let fieldsToUpdate: {
+      title: string;
+      content: string;
+      featureImage: string;
+      [key: string]: any;
+    } = {
+      title: "",
+      content: "",
+      featureImage: "",
+    };
     for (const key in inputFields) {
-      if (inputFields[key]) {
+      if (key === "skills" || key === "interests") {
+        if (Array.isArray(inputFields[key]) && inputFields[key].length > 0) {
+          fieldsToUpdate[key] = inputFields[key];
+        }
+      } else if (inputFields[key]) {
         fieldsToUpdate[key] = inputFields[key];
       }
     }
-    return console.log(fieldsToUpdate);
+
+    if (Object.keys(fieldsToUpdate).length < 1) return;
+
+    mutate(fieldsToUpdate);
   };
 
   return {
