@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { isValidUsername, websiteValidator } from "../utils/validators";
-import { UserType, FieldsToUpdateType } from "../typings/types";
+import { UserType } from "../typings/types";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -64,7 +64,16 @@ export const updateUserById = async (
   const {
     user: { userId },
     params: { id: userIdParam },
-    body: { firstName, lastName, avatar, bio, title, username, website },
+    body: {
+      firstName,
+      lastName,
+      avatar,
+      bio,
+      title,
+      username,
+      website,
+      socialMediaProfiles,
+    },
   } = req;
 
   try {
@@ -75,7 +84,7 @@ export const updateUserById = async (
     }
 
     if (user.role !== "admin" && userId !== userIdParam) {
-      throw new Unauthenticated("Your not authorized to perform this action");
+      throw new Unauthenticated("You're not authorized to perform this action");
     }
 
     // Deep merge function for social media profiles with handle validation
@@ -109,6 +118,8 @@ export const updateUserById = async (
       }
       throw new BadRequest("Invalid social media profiles");
     }
+
+    let fields: Partial<UserType> = {
       firstName,
       lastName,
       avatar,
@@ -116,27 +127,37 @@ export const updateUserById = async (
       title,
       username,
       website,
+      socialMediaProfiles: updatedSocialMediaProfiles,
     };
-    let fieldsToUpdate: FieldsToUpdateType = {};
+    let fieldsToUpdate: Partial<UserType> = {};
 
     // Add key-value pair to the fieldsToUpdate object only if they have a value
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
-        if (fields[key]) {
-          fieldsToUpdate[key] = fields[key];
+        const typedKey = key as keyof UserType;
+        if (fields[typedKey] !== undefined) {
+          fieldsToUpdate[typedKey] = fields[
+            typedKey
+          ] as UserType[keyof UserType];
         }
       }
     }
 
-    if (Object.values(fieldsToUpdate).length < 1) {
+    if (Object.keys(fieldsToUpdate).length < 1) {
       throw new BadRequest("Please provide the fields to update");
     }
 
-    if (fieldsToUpdate.username && !isValidUsername(fieldsToUpdate.username)) {
+    if (
+      fieldsToUpdate.username &&
+      !isValidUsername(fieldsToUpdate.username as string)
+    ) {
       throw new BadRequest("Invalid username, please provide a valid one");
     }
 
-    if (fieldsToUpdate.website && !websiteValidator(fieldsToUpdate.website)) {
+    if (
+      fieldsToUpdate.website &&
+      !websiteValidator(fieldsToUpdate.website as string)
+    ) {
       throw new BadRequest("Invalid URL, please provide a valid one");
     }
 
