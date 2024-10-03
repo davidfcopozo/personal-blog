@@ -1,5 +1,5 @@
 "use client";
-import React, { FormEvent, MouseEvent } from "react";
+import React, { FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import useFetchRequest from "@/hooks/useFetchRequest";
+import { SkillsFormProps } from "@/typings/types";
 
-const SkillsSettings = () => {
+const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
   const { data: categories } = useFetchRequest("categories", "/api/categories");
-  const [skills, setSkills] = useState<any[]>([]);
   const [availableSkills, setAvailableSkills] = useState<any[]>([]);
   const [skillSearchQuery, setSkillSearchQuery] = useState("");
   const [isSkillsInputFocused, setIsSkillsInputFocused] = useState(false);
@@ -34,7 +34,7 @@ const SkillsSettings = () => {
   };
 
   const selectSkill = (skill: any) => {
-    setSkills((prevSkills) => [...prevSkills, skill]);
+    setSkills([...skills, skill]);
     setAvailableSkills((prevAvailableSkills) =>
       prevAvailableSkills.filter(
         (availableSkill) => availableSkill._id !== skill._id
@@ -90,18 +90,25 @@ const SkillsSettings = () => {
     setAvailableSkills(filteredSkills);
   }, [filteredSkills]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
+      if (highlightedIndex === availableSkills.length - 1) {
+        setHighlightedIndex(-1);
+      }
       setHighlightedIndex((prevIndex) =>
         Math.min(prevIndex + 1, availableSkills.length - 1)
       );
     } else if (e.key === "ArrowUp") {
+      if (highlightedIndex === -1 || highlightedIndex === 0) {
+        setHighlightedIndex(availableSkills.length);
+      }
       setHighlightedIndex((prevIndex) => Math.max(prevIndex - 1, 0));
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       e.preventDefault();
       selectSkill(availableSkills[highlightedIndex]);
     }
   };
+
   useEffect(() => {
     // Auto-scroll the results when navigating with the keyboard
     if (
@@ -125,7 +132,11 @@ const SkillsSettings = () => {
         <div className="flex flex-wrap gap-2 mb-2">
           {Array.isArray(skills) &&
             skills?.map((skill: any) => (
-              <Badge key={skill._id} variant="secondary" className="text-sm">
+              <Badge
+                key={skill._id}
+                variant="secondary"
+                className="text-sm px-4"
+              >
                 {skill.name}
                 <button
                   type="button"
@@ -137,14 +148,14 @@ const SkillsSettings = () => {
               </Badge>
             ))}
         </div>
-        <form onSubmit={handleAddSkill} className="flex gap-2">
+        <div className="flex gap-2">
           <div className="relative w-full">
             <Input
               ref={inputRef}
               value={skillSearchQuery}
               onChange={(e) => setSkillSearchQuery(e.target.value)}
               onFocus={() => setIsSkillsInputFocused(true)}
-              onKeyDown={() => handleKeyDown}
+              onKeyDown={handleKeyDown}
               placeholder="Search for skills"
             />
             {availableSkills?.length > 0 &&
@@ -154,7 +165,7 @@ const SkillsSettings = () => {
                   ref={resultsRef}
                   onMouseDown={handleMouseDown}
                   id="results"
-                  className="absolute max-h-40 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full mt-2 bg-background rounded-md shadow-sm"
+                  className="absolute z-30 max-h-40 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full mt-2 bg-background rounded-md shadow-sm"
                 >
                   {availableSkills?.map((skill: any, index: number) => (
                     <div
@@ -171,13 +182,13 @@ const SkillsSettings = () => {
                 </div>
               )}
           </div>
-          <Button type="submit" variant="outline">
+          <Button type="submit" variant="outline" onClick={handleAddSkill}>
             Add
           </Button>
-        </form>
+        </div>
       </div>
     </div>
   );
 };
 
-export default SkillsSettings;
+export default SkillsForm;

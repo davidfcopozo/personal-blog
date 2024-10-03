@@ -4,6 +4,7 @@ import { PostInterface } from "../../../../api/src/typings/models/post";
 import { UserInterface } from "../../../../api/src/typings/models/user";
 import { Date } from "mongoose";
 import { CategoryInterface, CommentInterface } from "../interfaces";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 
 export type UseRefType = Record<
   LiteralUnion<BuiltInProviderType, string>,
@@ -66,4 +67,47 @@ export type AuthContextType = {
   login: (credentials: { email: string; password: string }) => Promise<void>;
   socialLogin: (provider: "github" | "google") => Promise<void>;
   logout: () => Promise<void>;
+  refetchUser: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<any, Error>>;
+};
+
+export type PersonalInfoFormProps = {
+  currentUser: UserType;
+  firstName: string;
+  setFirstName: (value: string) => void;
+  lastName: string;
+  setLastName: (value: string) => void;
+  email: string;
+  setEmail: (value: string) => void;
+  username: string;
+  setUsername: (value: string) => void;
+  bio: string;
+  setBio: (value: string) => void;
+};
+
+export type SocialsFormProps = {
+  currentUser: UserType;
+  website: string;
+  setWebsite: (value: string) => void;
+  twitterHandle: string;
+  setTwitterHandle: (value: string) => void;
+  instagramHandle: string;
+  setInstagramHandle: (value: string) => void;
+  githubHandle: string;
+  setGithubHandle: (value: string) => void;
+  linkedinHandle: string;
+  setLinkedinHandle: (value: string) => void;
+  dribbleHandle: string;
+  setDribbleHandle: (value: string) => void;
+};
+
+export type InterestFormProps = {
+  interests: any[];
+  setInterests: (interests: any[]) => void;
+};
+
+export type SkillsFormProps = {
+  skills: any[];
+  setSkills: (skills: any[]) => void;
 };

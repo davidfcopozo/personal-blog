@@ -100,6 +100,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
         logout,
         isUserFetching,
         isUserLoading,
+        refetchUser,
       }}
     >
       {children}
