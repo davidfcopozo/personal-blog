@@ -78,7 +78,37 @@ export const updateUserById = async (
       throw new Unauthenticated("Your not authorized to perform this action");
     }
 
-    let fields: FieldsToUpdateType = {
+    // Deep merge function for social media profiles with handle validation
+    const deepMergeSocialMediaProfiles = (existing: any, updates: any) => {
+      const merged = { ...existing };
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null) {
+          delete merged[key];
+        } else if (typeof value === "object" && !Array.isArray(value)) {
+          merged[key] = deepMergeSocialMediaProfiles(merged[key] || {}, value);
+        } else {
+          // Validate the handle using isValidUsername
+          if (!isValidUsername(value as string)) {
+            throw new BadRequest(`Invalid social media handle for ${key}`);
+          }
+          merged[key] = value;
+        }
+      }
+      return merged;
+    };
+
+    let updatedSocialMediaProfiles;
+    try {
+      updatedSocialMediaProfiles = deepMergeSocialMediaProfiles(
+        user.socialMediaProfiles || {},
+        socialMediaProfiles || {}
+      );
+    } catch (error) {
+      if (error instanceof BadRequest) {
+        throw error;
+      }
+      throw new BadRequest("Invalid social media profiles");
+    }
       firstName,
       lastName,
       avatar,
