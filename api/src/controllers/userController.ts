@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { isValidUsername, websiteValidator } from "../utils/validators";
-import { UserType, FieldsToUpdateType } from "../typings/types";
+import { UserType } from "../typings/types";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -64,7 +64,16 @@ export const updateUserById = async (
   const {
     user: { userId },
     params: { id: userIdParam },
-    body: { firstName, lastName, avatar, bio, title, username, website },
+    body: {
+      firstName,
+      lastName,
+      avatar,
+      bio,
+      title,
+      username,
+      website,
+      socialMediaProfiles,
+    },
   } = req;
 
   try {
@@ -75,10 +84,42 @@ export const updateUserById = async (
     }
 
     if (user.role !== "admin" && userId !== userIdParam) {
-      throw new Unauthenticated("Your not authorized to perform this action");
+      throw new Unauthenticated("You're not authorized to perform this action");
     }
 
-    let fields: FieldsToUpdateType = {
+    // Deep merge function for social media profiles with handle validation
+    const deepMergeSocialMediaProfiles = (existing: any, updates: any) => {
+      const merged = { ...existing };
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null) {
+          delete merged[key];
+        } else if (typeof value === "object" && !Array.isArray(value)) {
+          merged[key] = deepMergeSocialMediaProfiles(merged[key] || {}, value);
+        } else {
+          // Validate the handle using isValidUsername
+          if (!isValidUsername(value as string)) {
+            throw new BadRequest(`Invalid social media handle for ${key}`);
+          }
+          merged[key] = value;
+        }
+      }
+      return merged;
+    };
+
+    let updatedSocialMediaProfiles;
+    try {
+      updatedSocialMediaProfiles = deepMergeSocialMediaProfiles(
+        user.socialMediaProfiles || {},
+        socialMediaProfiles || {}
+      );
+    } catch (error) {
+      if (error instanceof BadRequest) {
+        throw error;
+      }
+      throw new BadRequest("Invalid social media profiles");
+    }
+
+    let fields: Partial<UserType> = {
       firstName,
       lastName,
       avatar,
@@ -86,27 +127,37 @@ export const updateUserById = async (
       title,
       username,
       website,
+      socialMediaProfiles: updatedSocialMediaProfiles,
     };
-    let fieldsToUpdate: FieldsToUpdateType = {};
+    let fieldsToUpdate: Partial<UserType> = {};
 
     // Add key-value pair to the fieldsToUpdate object only if they have a value
     for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
-        if (fields[key]) {
-          fieldsToUpdate[key] = fields[key];
+        const typedKey = key as keyof UserType;
+        if (fields[typedKey] !== undefined) {
+          fieldsToUpdate[typedKey] = fields[
+            typedKey
+          ] as UserType[keyof UserType];
         }
       }
     }
 
-    if (Object.values(fieldsToUpdate).length < 1) {
+    if (Object.keys(fieldsToUpdate).length < 1) {
       throw new BadRequest("Please provide the fields to update");
     }
 
-    if (fieldsToUpdate.username && !isValidUsername(fieldsToUpdate.username)) {
+    if (
+      fieldsToUpdate.username &&
+      !isValidUsername(fieldsToUpdate.username as string)
+    ) {
       throw new BadRequest("Invalid username, please provide a valid one");
     }
 
-    if (fieldsToUpdate.website && !websiteValidator(fieldsToUpdate.website)) {
+    if (
+      fieldsToUpdate.website &&
+      !websiteValidator(fieldsToUpdate.website as string)
+    ) {
       throw new BadRequest("Invalid URL, please provide a valid one");
     }
 
