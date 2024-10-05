@@ -111,3 +111,8 @@ export type SkillsFormProps = {
   skills: any[];
   setSkills: (skills: any[]) => void;
 };
+
+export type InputFieldsProps = Omit<
+  Partial<UserType>,
+  "technologies" | "topicsOfInterest"
+> & { interests: string[]; skills: string[] };
