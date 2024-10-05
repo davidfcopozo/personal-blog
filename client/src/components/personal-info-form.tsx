@@ -39,7 +39,7 @@ const PersonalInfoForm = ({
           <Input
             id="firstName"
             type="text"
-            value={firstName ? firstName : (currentFirstName as string)}
+            value={firstName || (currentFirstName as string) || ""}
             onChange={(e) => setFirstName(e.target.value)}
           />
         </div>
@@ -50,7 +50,7 @@ const PersonalInfoForm = ({
           <Input
             id="lastName"
             type="text"
-            value={lastName ? lastName : (currentLastName as string)}
+            value={lastName || (currentLastName as string) || ""}
             onChange={(e) => setLastName(e.target.value)}
           />
         </div>
@@ -62,7 +62,7 @@ const PersonalInfoForm = ({
         <Input
           id="email"
           type="email"
-          value={email ? email : (currentEmail as string)}
+          value={email || (currentEmail as string) || ""}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
@@ -73,7 +73,7 @@ const PersonalInfoForm = ({
         <Input
           id="username"
           type="text"
-          value={username ? username : (currentUsername as string)}
+          value={username || (currentUsername as string) || ""}
           onChange={(e) => setUsername(e.target.value)}
         />
       </div>
@@ -84,7 +84,7 @@ const PersonalInfoForm = ({
         <Textarea
           id="bio"
           rows={4}
-          value={bio ? bio : (currentBio as string)}
+          value={bio || (currentBio as string) || ""}
           onChange={(e) => setBio(e.target.value)}
         />
       </div>

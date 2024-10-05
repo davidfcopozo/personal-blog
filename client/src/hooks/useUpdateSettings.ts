@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import useUpdateRequest from "./useUpdateRequest";
 import { useAuth } from "@/context/AuthContext";
+import { InputFieldsProps, UserType } from "@/typings/types";
 
 export const useUpdateSettings = (id: string) => {
   /* Personal info */
@@ -40,7 +41,7 @@ export const useUpdateSettings = (id: string) => {
       refetchUser();
       setFirstName("");
       setLastName("");
-      setEmail;
+      setEmail("");
       setUsername("");
       setBio("");
       setWebsite("");
@@ -53,7 +54,6 @@ export const useUpdateSettings = (id: string) => {
       setInterests([]);
     },
     onError: () => {
-      console.log("error from useUpdateSettings===>", error);
       toast({
         variant: "destructive",
         title: "Something went wrong",
@@ -62,43 +62,64 @@ export const useUpdateSettings = (id: string) => {
       const previousPosts = queryClient.getQueryData(["currentUser"]);
       queryClient.setQueryData(["currentUser"], previousPosts);
     },
-    onMutate: async (user: any) => {
-      console.log("user from onMutate===>", user);
-
+    onMutate: async (user: InputFieldsProps) => {
       await queryClient.cancelQueries({
         queryKey: ["currentUser"],
         exact: true,
       });
       const previousUserData = queryClient.getQueryData(["currentUser"]);
 
-      queryClient.setQueryData(["currentUser"], (oldData: any | undefined) => ({
-        ...user,
-        ...oldData,
-      }));
+      queryClient.setQueryData(
+        ["currentUser"],
+        (oldData: InputFieldsProps | undefined) => ({
+          ...user,
+          ...oldData,
+        })
+      );
       return previousUserData;
     },
   });
-  const handleSubmit = (e: FormEvent, inputFields: any) => {
+
+  const handleSubmit = (e: FormEvent, inputFields: InputFieldsProps) => {
     e.preventDefault();
 
-    let fieldsToUpdate: {
-      title: string;
-      content: string;
-      featureImage: string;
-      [key: string]: any;
-    } = {
-      title: "",
-      content: "",
-      featureImage: "",
-    };
+    // Filter out empty or undefined values from socialMediaProfiles
+    let filteredSocialMediaProfiles =
+      inputFields?.socialMediaProfiles &&
+      typeof inputFields.socialMediaProfiles === "object"
+        ? Object.fromEntries(
+            Object.entries(inputFields.socialMediaProfiles).filter(
+              ([_, value]) =>
+                value &&
+                typeof value === "string" &&
+                value.trim() !== "" &&
+                value.length > 0
+            )
+          )
+        : {};
+
+    let fieldsToUpdate: Partial<InputFieldsProps> = {};
+
     for (const key in inputFields) {
       if (key === "skills" || key === "interests") {
+        // Handle skills and interests (arrays)
         if (Array.isArray(inputFields[key]) && inputFields[key].length > 0) {
-          fieldsToUpdate[key] = inputFields[key];
+          fieldsToUpdate[key as keyof InputFieldsProps] =
+            inputFields[key as keyof InputFieldsProps];
         }
-      } else if (inputFields[key]) {
-        fieldsToUpdate[key] = inputFields[key];
+      } else if (
+        // Avoid handling socialMediaProfiles here since it's already filtered
+        key !== "socialMediaProfiles" &&
+        inputFields[key as keyof InputFieldsProps]
+      ) {
+        // Handle other fields except for socialMediaProfiles
+        fieldsToUpdate[key as keyof InputFieldsProps] =
+          inputFields[key as keyof InputFieldsProps];
       }
+    }
+
+    if (Object.keys(filteredSocialMediaProfiles).length > 0) {
+      fieldsToUpdate.socialMediaProfiles = filteredSocialMediaProfiles;
     }
 
     if (Object.keys(fieldsToUpdate).length < 1) return;

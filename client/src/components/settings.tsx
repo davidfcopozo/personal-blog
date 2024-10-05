@@ -96,13 +96,16 @@ export const Settings = () => {
                       email,
                       username,
                       bio,
-                      twitterHandle,
-                      instagramHandle,
-                      githubHandle,
-                      linkedinHandle,
-                      dribbleHandle,
+                      socialMediaProfiles: {
+                        x: twitterHandle,
+                        instagram: instagramHandle,
+                        github: githubHandle,
+                        linkedIn: linkedinHandle,
+                        dribble: dribbleHandle,
+                      },
                       skills,
                       interests,
+                      website,
                     })
                   }
                 >
@@ -148,9 +151,7 @@ export const Settings = () => {
                     </div>
                   </TabsContent>
                   <div className="flex pt-4 justify-start">
-                    <Button /* onClick={handleSubmit} */ type="submit">
-                      Save Changes
-                    </Button>
+                    <Button type="submit">Save Changes</Button>
                   </div>
                 </form>
               </Tabs>
