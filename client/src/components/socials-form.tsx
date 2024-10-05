@@ -31,7 +31,7 @@ const SocialsForm = ({
           id="website"
           type="text"
           onChange={(e) => setWebsite(e.target.value)}
-          value={website ? website : (currentWebsite as string)}
+          value={website || (currentWebsite as string) || ""}
         />
       </div>
       <div>
@@ -44,7 +44,7 @@ const SocialsForm = ({
           </span>
           <Input
             id="twitter"
-            value={twitterHandle ? twitterHandle : (x as string)}
+            value={twitterHandle || (x as string) || ""}
             onChange={(e) => setTwitterHandle(e.target.value)}
             className="rounded-l-none"
           />
@@ -60,7 +60,7 @@ const SocialsForm = ({
           </span>
           <Input
             id="instagram"
-            value={instagramHandle ? instagramHandle : (instagram as string)}
+            value={instagramHandle || (instagram as string) || ""}
             onChange={(e) => setInstagramHandle(e.target.value)}
             className="rounded-l-none"
           />
@@ -72,7 +72,7 @@ const SocialsForm = ({
         </Label>
         <Input
           id="github"
-          value={githubHandle ? githubHandle : (github as string)}
+          value={githubHandle || (github as string) || ""}
           onChange={(e) => setGithubHandle(e.target.value)}
         />
       </div>
@@ -82,7 +82,7 @@ const SocialsForm = ({
         </Label>
         <Input
           id="linkedin"
-          value={linkedinHandle ? linkedinHandle : (linkedIn as string)}
+          value={linkedinHandle || (linkedIn as string) || ""}
           onChange={(e) => setLinkedinHandle(e.target.value)}
         />
       </div>
@@ -92,7 +92,7 @@ const SocialsForm = ({
         </Label>
         <Input
           id="dribble"
-          value={dribbleHandle ? dribbleHandle : (dribble as string)}
+          value={dribbleHandle || (dribble as string) || ""}
           onChange={(e) => setDribbleHandle(e.target.value)}
         />
       </div>
