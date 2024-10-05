@@ -116,3 +116,10 @@ export type InputFieldsProps = Omit<
   Partial<UserType>,
   "technologies" | "topicsOfInterest"
 > & { interests: string[]; skills: string[] };
+
+export type IconProps = {
+  h?: string;
+  w?: string;
+  fill?: string;
+  stroke?: string;
+};
