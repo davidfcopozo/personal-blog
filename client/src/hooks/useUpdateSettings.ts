@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import useUpdateRequest from "./useUpdateRequest";
 import { useAuth } from "@/context/AuthContext";
-import { UserType } from "@/typings/types";
+import { InputFieldsProps, UserType } from "@/typings/types";
 
 export const useUpdateSettings = (id: string) => {
   /* Personal info */
@@ -79,11 +79,6 @@ export const useUpdateSettings = (id: string) => {
       return previousUserData;
     },
   });
-
-  type InputFieldsProps = Omit<
-    Partial<UserType>,
-    "technologies" | "topicsOfInterest"
-  > & { interests: string[]; skills: string[] };
 
   const handleSubmit = (e: FormEvent, inputFields: InputFieldsProps) => {
     e.preventDefault();
