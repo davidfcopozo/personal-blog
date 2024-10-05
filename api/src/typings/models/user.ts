@@ -1,5 +1,5 @@
 import { Request } from "express";
-import mongoose, { Document } from "mongoose";
+import { Document, ObjectId } from "mongoose";
 
 interface ModelMethods {
   comparePassword: (password: String) => Promise<boolean>;
@@ -7,7 +7,7 @@ interface ModelMethods {
 }
 
 export interface UserInterface extends Document, ModelMethods {
-  _id: mongoose.Types.ObjectId;
+  _id: ObjectId;
   firstName: String;
   lastName: String;
   email: String;
@@ -23,12 +23,12 @@ export interface UserInterface extends Document, ModelMethods {
   accessToken: String | null;
   passwordVerificationToken: String | null;
   passwordTokenExpirationDate: Date | null;
-  bookmarks?: mongoose.Types.ObjectId[];
-  likes?: mongoose.Types.ObjectId[];
+  bookmarks?: ObjectId[];
+  likes?: ObjectId[];
   avatar?: String;
   provider: String;
-  topicsOfInterest?: String[];
-  technologies?: String[];
+  topicsOfInterest?: ObjectId[];
+  technologies?: ObjectId[];
   socialMediaProfiles?: {
     x?: String;
     linkedIn?: String;
