@@ -62,17 +62,20 @@ export const useUpdateSettings = (id: string) => {
       const previousPosts = queryClient.getQueryData(["currentUser"]);
       queryClient.setQueryData(["currentUser"], previousPosts);
     },
-    onMutate: async (user: any) => {
+    onMutate: async (user: InputFieldsProps) => {
       await queryClient.cancelQueries({
         queryKey: ["currentUser"],
         exact: true,
       });
       const previousUserData = queryClient.getQueryData(["currentUser"]);
 
-      queryClient.setQueryData(["currentUser"], (oldData: any | undefined) => ({
-        ...user,
-        ...oldData,
-      }));
+      queryClient.setQueryData(
+        ["currentUser"],
+        (oldData: InputFieldsProps | undefined) => ({
+          ...user,
+          ...oldData,
+        })
+      );
       return previousUserData;
     },
   });
