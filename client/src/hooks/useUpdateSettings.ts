@@ -127,9 +127,7 @@ export const useUpdateSettings = (id: string) => {
       fieldsToUpdate.socialMediaProfiles = filteredSocialMediaProfiles;
     }
 
-    if (Object.keys(fieldsToUpdate).length < 1) {
-      return console.log("No fields to update");
-    }
+    if (Object.keys(fieldsToUpdate).length < 1) return;
 
     mutate(fieldsToUpdate);
   };
