@@ -39,7 +39,7 @@ const userSchema = new Schema<UserInterface>(
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     topicsOfInterest: {
-      type: [String],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Topic" }],
       validate: {
         validator: async function (topics: String[]) {
           const allowedTopics = await Topic.find({
@@ -55,7 +55,7 @@ const userSchema = new Schema<UserInterface>(
       },
     },
     technologies: {
-      type: [String],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
       validate: {
         validator: async function (techs: String[]) {
           const allowedTechnologies = await Category.find({
