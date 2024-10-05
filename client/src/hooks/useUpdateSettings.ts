@@ -54,7 +54,6 @@ export const useUpdateSettings = (id: string) => {
       setInterests([]);
     },
     onError: () => {
-      console.log("error from useUpdateSettings===>", error);
       toast({
         variant: "destructive",
         title: "Something went wrong",
@@ -64,8 +63,6 @@ export const useUpdateSettings = (id: string) => {
       queryClient.setQueryData(["currentUser"], previousPosts);
     },
     onMutate: async (user: any) => {
-      console.log("user from onMutate===>", user);
-
       await queryClient.cancelQueries({
         queryKey: ["currentUser"],
         exact: true,
