@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import useUpdateRequest from "./useUpdateRequest";
 import { useAuth } from "@/context/AuthContext";
+import { UserType } from "@/typings/types";
 
 export const useUpdateSettings = (id: string) => {
   /* Personal info */
@@ -40,7 +41,7 @@ export const useUpdateSettings = (id: string) => {
       refetchUser();
       setFirstName("");
       setLastName("");
-      setEmail;
+      setEmail("");
       setUsername("");
       setBio("");
       setWebsite("");
@@ -78,30 +79,57 @@ export const useUpdateSettings = (id: string) => {
       return previousUserData;
     },
   });
-  const handleSubmit = (e: FormEvent, inputFields: any) => {
+
+  type InputFieldsProps = Omit<
+    Partial<UserType>,
+    "technologies" | "topicsOfInterest"
+  > & { interests: string[]; skills: string[] };
+
+  const handleSubmit = (e: FormEvent, inputFields: InputFieldsProps) => {
     e.preventDefault();
 
-    let fieldsToUpdate: {
-      title: string;
-      content: string;
-      featureImage: string;
-      [key: string]: any;
-    } = {
-      title: "",
-      content: "",
-      featureImage: "",
-    };
+    // Filter out empty or undefined values from socialMediaProfiles
+    let filteredSocialMediaProfiles =
+      inputFields?.socialMediaProfiles &&
+      typeof inputFields.socialMediaProfiles === "object"
+        ? Object.fromEntries(
+            Object.entries(inputFields.socialMediaProfiles).filter(
+              ([_, value]) =>
+                value &&
+                typeof value === "string" &&
+                value.trim() !== "" &&
+                value.length > 0
+            )
+          )
+        : {};
+
+    let fieldsToUpdate: Partial<InputFieldsProps> = {};
+
     for (const key in inputFields) {
       if (key === "skills" || key === "interests") {
+        // Handle skills and interests (arrays)
         if (Array.isArray(inputFields[key]) && inputFields[key].length > 0) {
-          fieldsToUpdate[key] = inputFields[key];
+          fieldsToUpdate[key as keyof InputFieldsProps] =
+            inputFields[key as keyof InputFieldsProps];
         }
-      } else if (inputFields[key]) {
-        fieldsToUpdate[key] = inputFields[key];
+      } else if (
+        // Avoid handling socialMediaProfiles here since it's already filtered
+        key !== "socialMediaProfiles" &&
+        inputFields[key as keyof InputFieldsProps]
+      ) {
+        // Handle other fields except for socialMediaProfiles
+        fieldsToUpdate[key as keyof InputFieldsProps] =
+          inputFields[key as keyof InputFieldsProps];
       }
     }
 
-    if (Object.keys(fieldsToUpdate).length < 1) return;
+    if (Object.keys(filteredSocialMediaProfiles).length > 0) {
+      fieldsToUpdate.socialMediaProfiles = filteredSocialMediaProfiles;
+    }
+
+    if (Object.keys(fieldsToUpdate).length < 1) {
+      return console.log("No fields to update");
+    }
 
     mutate(fieldsToUpdate);
   };
