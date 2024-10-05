@@ -1,11 +1,10 @@
 import User from "../models/userModel";
-
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { isValidUsername, websiteValidator } from "../utils/validators";
-import { UserType } from "../typings/types";
+import { SocialMediaProfiles, UserType } from "../typings/types";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -85,15 +84,6 @@ export const updateUserById = async (
 
     if (user.role !== "admin" && userId !== userIdParam) {
       throw new Unauthenticated("You're not authorized to perform this action");
-    }
-
-    interface SocialMediaProfiles {
-      x?: string;
-      linkedIn?: string;
-      github?: string;
-      facebook?: string;
-      instagram?: string;
-      dribble?: string;
     }
 
     // Deep merge function for social media profiles with handle validation
