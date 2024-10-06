@@ -152,9 +152,9 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
         <Label className="font-bold">Topics of interest</Label>
         <div className="flex flex-wrap gap-2 mb-2">
           {Array.isArray(interests) &&
-            interests?.map((interest: any) => (
+            interests?.map((interest: SingleInterestType) => (
               <Badge
-                key={interest._id}
+                key={`${interest._id}`}
                 variant="secondary"
                 className="text-sm px-4"
               >
@@ -189,18 +189,20 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
                   id="results"
                   className="absolute max-h-40 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full mt-2 bg-background rounded-md shadow-sm"
                 >
-                  {availableInterests?.map((interest: any, index: number) => (
-                    <div
-                      key={`${interest._id}`}
-                      onClick={() => selectInterest(interest)}
-                      className={`px-4 py-2 cursor-pointer hover:bg-muted-foreground hover:text-background ${
-                        highlightedIndex === index &&
-                        "bg-foreground text-background"
-                      }`}
-                    >
-                      {interest.name}
-                    </div>
-                  ))}
+                  {availableInterests?.map(
+                    (interest: SingleInterestType, index: number) => (
+                      <div
+                        key={`${interest._id}`}
+                        onClick={() => selectInterest(interest)}
+                        className={`px-4 py-2 cursor-pointer hover:bg-muted-foreground hover:text-background ${
+                          highlightedIndex === index &&
+                          "bg-foreground text-background"
+                        }`}
+                      >
+                        {interest.name}
+                      </div>
+                    )
+                  )}
                 </div>
               )}
           </div>
