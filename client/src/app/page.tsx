@@ -61,7 +61,8 @@ export default function Home() {
     }
     return categories?.data
       ?.toSorted(
-        (a: CategoryType, b: CategoryType) => b.usageCount - a.usageCount
+        (a: CategoryType, b: CategoryType) =>
+          (b.usageCount as number) - (a.usageCount as number)
       )
       .slice(0, 5);
   }, [categories]);

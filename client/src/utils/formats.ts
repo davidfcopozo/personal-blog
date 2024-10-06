@@ -1,3 +1,5 @@
+import { UserType } from "@/typings/types";
+
 export function getRelativeTime(
   date: Date | number,
   language: "en" | "es" = "en"
@@ -141,7 +143,7 @@ export function showMonthDayYear(
   }
 }
 
-export function getNameInitials(user: any): string {
+export function getNameInitials(user: UserType): string {
   if (!user || typeof user !== "object" || !user.firstName || !user.lastName) {
     return "TC";
   }
@@ -152,7 +154,7 @@ export function getNameInitials(user: any): string {
   return `${firstInitial}${lastInitial}`;
 }
 
-export function getFullName(user: any) {
+export function getFullName(user: UserType) {
   if (!user) {
     return "";
   }
@@ -162,8 +164,10 @@ export function getFullName(user: any) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-  const firstName = user?.firstName ? capitalize(user?.firstName) : "";
-  const lastName = user?.lastName ? capitalize(user?.lastName) : "";
+  const firstName = user?.firstName
+    ? capitalize(user?.firstName as string)
+    : "";
+  const lastName = user?.lastName ? capitalize(user?.lastName as string) : "";
 
   return firstName && lastName
     ? `${firstName} ${lastName}`

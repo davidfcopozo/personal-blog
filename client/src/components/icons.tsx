@@ -1,5 +1,7 @@
 "use client";
 
+import { IconProps } from "@/typings/types";
+
 export const BouncingCircles = () => {
   return (
     <svg
@@ -46,7 +48,7 @@ export const BouncingCircles = () => {
   );
 };
 
-export function UploadIcon(props: any) {
+export function UploadIcon(props: IconProps) {
   return (
     <svg
       {...props}
@@ -67,7 +69,7 @@ export function UploadIcon(props: any) {
   );
 }
 
-export function XIcon(props: any) {
+export function XIcon(props: IconProps) {
   const { h, w } = props;
   return (
     <svg

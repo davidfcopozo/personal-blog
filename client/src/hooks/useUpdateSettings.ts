@@ -3,7 +3,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import useUpdateRequest from "./useUpdateRequest";
 import { useAuth } from "@/context/AuthContext";
-import { InputFieldsProps, UserType } from "@/typings/types";
+import {
+  InputFieldsProps,
+  SingleInterestType,
+  SingleSkillType,
+} from "@/typings/types";
 
 export const useUpdateSettings = (id: string) => {
   /* Personal info */
@@ -20,8 +24,8 @@ export const useUpdateSettings = (id: string) => {
   const [linkedinHandle, setLinkedinHandle] = useState("");
   const [dribbleHandle, setDribbleHandle] = useState("");
   /* Custom */
-  const [skills, setSkills] = useState<any[]>([]);
-  const [interests, setInterests] = useState<any[]>([]);
+  const [skills, setSkills] = useState<SingleSkillType[]>([]);
+  const [interests, setInterests] = useState<SingleInterestType[]>([]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();

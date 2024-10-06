@@ -1,11 +1,10 @@
 import User from "../models/userModel";
-
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { isValidUsername, websiteValidator } from "../utils/validators";
-import { UserType } from "../typings/types";
+import { SocialMediaProfiles, UserType } from "../typings/types";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -88,19 +87,22 @@ export const updateUserById = async (
     }
 
     // Deep merge function for social media profiles with handle validation
-    const deepMergeSocialMediaProfiles = (existing: any, updates: any) => {
+    const deepMergeSocialMediaProfiles = (
+      existing: SocialMediaProfiles,
+      updates: SocialMediaProfiles
+    ) => {
       const merged = { ...existing };
       for (const [key, value] of Object.entries(updates)) {
         if (value === null) {
-          delete merged[key];
+          delete merged[key as keyof SocialMediaProfiles];
         } else if (typeof value === "object" && !Array.isArray(value)) {
-          merged[key] = deepMergeSocialMediaProfiles(merged[key] || {}, value);
+          merged[key as keyof SocialMediaProfiles] = value as string;
         } else {
           // Validate the handle using isValidUsername
           if (!isValidUsername(value as string)) {
             throw new BadRequest(`Invalid social media handle for ${key}`);
           }
-          merged[key] = value;
+          merged[key as keyof SocialMediaProfiles] = value as string;
         }
       }
       return merged;
@@ -109,7 +111,7 @@ export const updateUserById = async (
     let updatedSocialMediaProfiles;
     try {
       updatedSocialMediaProfiles = deepMergeSocialMediaProfiles(
-        user.socialMediaProfiles || {},
+        (user.socialMediaProfiles as SocialMediaProfiles) || {},
         socialMediaProfiles || {}
       );
     } catch (error) {

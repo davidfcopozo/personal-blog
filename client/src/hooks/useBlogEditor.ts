@@ -17,6 +17,7 @@ import { InitialPost } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
+import { UserType } from "@/typings/types";
 
 export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [title, setTitle] = useState(initialPost?.title || "");
@@ -66,8 +67,13 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   });
 
   const deleteImageFromFirebase = useCallback(async (imageUrl: string) => {
-    const currentUser: any = await queryClient.getQueryData(["currentUser"]);
-    let currentUserId: string = await currentUser?.data._id;
+    const currentUser = await queryClient.getQueryData<{ data: UserType }>([
+      "currentUser",
+    ]);
+    if (!currentUser) {
+      throw new Error("Current user data not found");
+    }
+    let currentUserId: string = `${currentUser.data._id}`;
     try {
       const imagePath = imageUrl.split(`${currentUserId}%2F`)[1]?.split("?")[0];
       if (imagePath) {
@@ -124,9 +130,11 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   }, []);
 
   const handleImageUpload = useCallback(async (file: File) => {
-    const currentUser: any = await queryClient.getQueryData(["currentUser"]);
+    const currentUser = await queryClient.getQueryData<{ data: UserType }>([
+      "currentUser",
+    ]);
 
-    let currentUserId = await currentUser?.data._id;
+    let currentUserId = await `${currentUser?.data._id}`;
     try {
       const id = `${file.name.split(".")[0]}-${Date.now()}`;
       let idWithoutSpaces = id.replace(/\s+/g, "-");
