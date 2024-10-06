@@ -7,23 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import useFetchRequest from "@/hooks/useFetchRequest";
-import { SkillsFormProps } from "@/typings/types";
+import { SingleSkillType, SkillsFormProps } from "@/typings/types";
 
 const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
   const { data: categories } = useFetchRequest("categories", "/api/categories");
-  const [availableSkills, setAvailableSkills] = useState<any[]>([]);
+  const [availableSkills, setAvailableSkills] = useState<SingleSkillType[]>([]);
   const [skillSearchQuery, setSkillSearchQuery] = useState("");
   const [isSkillsInputFocused, setIsSkillsInputFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [newSkill, setNewSkill] = useState("");
+  const [newSkill, setNewSkill] = useState<SingleSkillType | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleAddSkill = (e: FormEvent) => {
     e.preventDefault();
-    if (newSkill && !skills.includes(newSkill)) {
+    if (
+      newSkill &&
+      skills &&
+      !skills.some((skill) => skill._id === newSkill._id)
+    ) {
       setSkills([...skills, newSkill]);
-      setNewSkill("");
+      setAvailableSkills((prevAvailableSkills) =>
+        prevAvailableSkills.filter(
+          (availableSkill) =>
+            availableSkill._id !== (newSkill as SingleSkillType)._id
+        )
+      );
+      setNewSkill(null);
     }
   };
 
@@ -33,7 +43,7 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
     inputRef.current?.focus();
   };
 
-  const selectSkill = (skill: any) => {
+  const selectSkill = (skill: SingleSkillType) => {
     setSkills([...skills, skill]);
     setAvailableSkills((prevAvailableSkills) =>
       prevAvailableSkills.filter(
@@ -46,11 +56,17 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
 
   const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(
-      skills.filter((skill: any) => skill._id.toString() !== skillToRemove)
+      skills.filter(
+        (skill: SingleSkillType) => skill._id.toString() !== skillToRemove
+      )
     );
     setAvailableSkills([
-      ...availableSkills,
-      skills.find((skill) => skill._id.toString() === skillToRemove),
+      ...(availableSkills.filter(
+        (skill): skill is SingleSkillType => skill !== undefined
+      ) as SingleSkillType[]),
+      skills.find(
+        (skill) => skill._id.toString() === skillToRemove
+      ) as SingleSkillType,
     ]);
   };
 
@@ -81,7 +97,7 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
     if (!categories?.data || !Array.isArray(categories.data)) {
       return [];
     }
-    return categories.data.filter((skill: any) =>
+    return categories.data.filter((skill: SingleSkillType) =>
       skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase())
     );
   }, [categories, skillSearchQuery]);
