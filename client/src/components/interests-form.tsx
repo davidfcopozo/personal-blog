@@ -13,12 +13,16 @@ import {
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { InterestFormProps } from "@/typings/types";
+import { InterestFormProps, SingleInterestType } from "@/typings/types";
 
 const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
   const { data: topics } = useFetchRequest("topics", "/api/topics");
-  const [newInterest, setNewInterest] = useState("");
-  const [availableInterests, setAvailableInterests] = useState<any[]>([]);
+  const [newInterest, setNewInterest] = useState<SingleInterestType | null>(
+    null
+  );
+  const [availableInterests, setAvailableInterests] = useState<
+    SingleInterestType[] | null
+  >([]);
   const [interestSearchQuery, setInterestSearchQuery] = useState("");
   const [isInterestsInputFocused, setIsInterestsInputFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -27,9 +31,9 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
 
   const handleAddInterest = (e: FormEvent) => {
     e.preventDefault();
-    if (newInterest && !interests.includes(newInterest)) {
+    if (newInterest && !interests?.includes(newInterest)) {
       setInterests([...interests, newInterest]);
-      setNewInterest("");
+      setNewInterest(null);
     }
   };
 
@@ -39,12 +43,14 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
     inputRef.current?.focus();
   };
 
-  const selectInterest = (interest: any) => {
+  const selectInterest = (interest: SingleInterestType) => {
     setInterests([...interests, interest]);
-    setAvailableInterests((prevAvailableInterests) =>
-      prevAvailableInterests.filter(
-        (availableInterest) => availableInterest._id !== interest._id
-      )
+    setAvailableInterests(
+      (prevAvailableInterests) =>
+        prevAvailableInterests &&
+        prevAvailableInterests.filter(
+          (availableInterest) => availableInterest._id !== interest._id
+        )
     );
     setInterestSearchQuery("");
     setHighlightedIndex(-1);
@@ -53,12 +59,13 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
   const handleRemoveInterest = (interestToRemove: string) => {
     setInterests(
       interests.filter(
-        (interest: any) => interest._id.toString() !== interestToRemove
+        (interest: SingleInterestType) =>
+          interest._id.toString() !== interestToRemove
       )
     );
     setAvailableInterests([
-      ...availableInterests,
-      interests.find(
+      ...(availableInterests || []),
+      ...interests.filter(
         (interest) => interest._id.toString() === interestToRemove
       ),
     ]);
@@ -91,7 +98,7 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
     if (!topics?.data || !Array.isArray(topics.data)) {
       return [];
     }
-    return topics.data.filter((interest: any) =>
+    return topics.data.filter((interest: SingleInterestType) =>
       interest.name.toLowerCase().includes(interestSearchQuery.toLowerCase())
     );
   }, [topics, interestSearchQuery]);
@@ -101,19 +108,23 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
   }, [filteredInterests]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "ArrowDown") {
+    if (e.key === "ArrowDown" && availableInterests) {
       if (highlightedIndex === availableInterests.length - 1) {
         setHighlightedIndex(-1);
       }
       setHighlightedIndex((prevIndex) =>
         Math.min(prevIndex + 1, availableInterests.length - 1)
       );
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === "ArrowUp" && availableInterests) {
       if (highlightedIndex === -1 || highlightedIndex === 0) {
         setHighlightedIndex(availableInterests.length);
       }
       setHighlightedIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-    } else if (e.key === "Enter" && highlightedIndex >= 0) {
+    } else if (
+      e.key === "Enter" &&
+      availableInterests &&
+      highlightedIndex >= 0
+    ) {
       e.preventDefault();
       selectInterest(availableInterests[highlightedIndex]);
     }
@@ -168,7 +179,8 @@ const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
               onKeyDown={handleKeyDown}
               placeholder="Search for topics of interest"
             />
-            {availableInterests?.length > 0 &&
+            {availableInterests &&
+              availableInterests?.length > 0 &&
               isInterestsInputFocused &&
               interestSearchQuery && (
                 <div
