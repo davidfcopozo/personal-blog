@@ -2,9 +2,12 @@ import { BuiltInProviderType } from "next-auth/providers/index";
 import { ClientSafeProvider, LiteralUnion } from "next-auth/react";
 import { PostInterface } from "../../../../api/src/typings/models/post";
 import { UserInterface } from "../../../../api/src/typings/models/user";
+import { TopicInterface } from "../../../../api/src/typings/models/topic";
+import { CategoryInterface } from "../../../../api/src/typings/models/category";
 import { Date } from "mongoose";
-import { CategoryInterface, CommentInterface } from "../interfaces";
+import { CommentInterface } from "../interfaces";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
 
 export type UseRefType = Record<
   LiteralUnion<BuiltInProviderType, string>,
@@ -103,19 +106,25 @@ export type SocialsFormProps = {
 };
 
 export type InterestFormProps = {
-  interests: any[];
-  setInterests: (interests: any[]) => void;
+  interests: SingleInterestType[];
+  setInterests: Dispatch<SetStateAction<SingleInterestType[]>>;
 };
 
 export type SkillsFormProps = {
-  skills: any[];
-  setSkills: (skills: any[]) => void;
+  skills: SingleSkillType[];
+  setSkills: Dispatch<SetStateAction<CategoryInterface[]>>;
 };
+
+export type SingleInterestType = TopicInterface;
+export type SingleSkillType = CategoryInterface;
 
 export type InputFieldsProps = Omit<
   Partial<UserType>,
   "technologies" | "topicsOfInterest"
-> & { interests: string[]; skills: string[] };
+> & {
+  interests: SingleInterestType[];
+  skills: SingleSkillType[];
+};
 
 export type IconProps = {
   h?: string;
