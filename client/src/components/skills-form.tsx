@@ -147,9 +147,9 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
         <Label className="font-bold">Skills</Label>
         <div className="flex flex-wrap gap-2 mb-2">
           {Array.isArray(skills) &&
-            skills?.map((skill: any) => (
+            skills?.map((skill: SingleSkillType) => (
               <Badge
-                key={skill._id}
+                key={`${skill._id}`}
                 variant="secondary"
                 className="text-sm px-4"
               >
@@ -183,18 +183,20 @@ const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
                   id="results"
                   className="absolute z-30 max-h-40 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted-foreground [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full mt-2 bg-background rounded-md shadow-sm"
                 >
-                  {availableSkills?.map((skill: any, index: number) => (
-                    <div
-                      key={`${skill._id}`}
-                      onClick={() => selectSkill(skill)}
-                      className={`px-4 py-2 cursor-pointer hover:bg-muted-foreground hover:text-background ${
-                        highlightedIndex === index &&
-                        "bg-foreground text-background"
-                      }`}
-                    >
-                      {skill.name}
-                    </div>
-                  ))}
+                  {availableSkills?.map(
+                    (skill: SingleSkillType, index: number) => (
+                      <div
+                        key={`${skill._id}`}
+                        onClick={() => selectSkill(skill)}
+                        className={`px-4 py-2 cursor-pointer hover:bg-muted-foreground hover:text-background ${
+                          highlightedIndex === index &&
+                          "bg-foreground text-background"
+                        }`}
+                      >
+                        {skill.name}
+                      </div>
+                    )
+                  )}
                 </div>
               )}
           </div>
