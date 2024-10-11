@@ -1,45 +1,80 @@
-import { MouseEvent, useState } from "react";
+import { MouseEvent, useEffect, useMemo, useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
+import { CategoryInterface } from "@/typings/interfaces";
+import useFetchRequest from "@/hooks/useFetchRequest";
 
 const Categories = () => {
-  const [categories, setCategories] = useState([
-    { id: 1, name: "Javascript" },
-    { id: 2, name: "Node JS" },
-    { id: 3, name: "Next.js" },
-    { id: 4, name: "React" },
-    { id: 5, name: "TailwindCSS" },
-    { id: 6, name: "CSS" },
-    { id: 7, name: "HTML" },
-    { id: 8, name: "Express" },
-  ]);
+  const {
+    data: fetchCategories,
+    isLoading,
+    error,
+  } = useFetchRequest("categories", "/api/categories");
+  const [categories, setCategories] = useState<CategoryInterface[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<
+    CategoryInterface[]
+  >([]);
   const [showMore, setShowMore] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [newCategory, setNewCategory] = useState<CategoryInterface | null>(
+    null
+  );
+  const [selectedCategories, setSelectedCategories] = useState<
+    CategoryInterface[]
+  >([]);
+  const [categorySearchQuery, setCategorySearchQuery] = useState("");
+  const AMOUNT_OF_CATEGORIES = 5;
+
   const handleAddCategory = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (newCategory.trim() !== "") {
-      setCategories([
-        { id: categories.length + 1, name: newCategory.trim() },
-        ...categories,
-      ]);
-      setNewCategory("");
+    if (newCategory) {
+      setCategories([...categories, newCategory]);
+      setNewCategory(null);
     }
   };
+
+  const selectCategory = (category: CategoryInterface) => {
+    setCategories([...categories, category]);
+    setAvailableCategories((prevAvailableCategories) =>
+      prevAvailableCategories.filter(
+        (availableCategory) => availableCategory._id !== category._id
+      )
+    );
+    setCategorySearchQuery("");
+    /* setHighlightedIndex(-1); */
+  };
+
   const handleCategoryClick = (
     e: MouseEvent<HTMLButtonElement>,
-    category: { id: number; name: string }
+    category: CategoryInterface
   ) => {
     e.preventDefault();
-    if (selectedCategories.includes(category.id)) {
-      setSelectedCategories(
-        selectedCategories.filter((id) => id !== category.id)
-      );
-    } else {
-      setSelectedCategories([...selectedCategories, category.id]);
+    if (selectedCategories.some((c) => c._id === category._id)) {
+      return; // Avoid duplicate selection
     }
+    setSelectedCategories([...selectedCategories, category]);
+    setAvailableCategories((prevAvailableCategories) =>
+      prevAvailableCategories.filter(
+        (availableCategory) => availableCategory._id !== category._id
+      )
+    );
   };
+
+  useEffect(() => {
+    if (fetchCategories?.data && Array.isArray(fetchCategories.data)) {
+      setAvailableCategories(fetchCategories.data);
+    }
+  }, [fetchCategories]);
+
+  const filteredCategories = useMemo(() => {
+    if (categorySearchQuery === "") {
+      return availableCategories;
+    }
+    return availableCategories.filter((category) =>
+      category.name.toLowerCase().includes(categorySearchQuery.toLowerCase())
+    );
+  }, [availableCategories, categorySearchQuery]);
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -47,23 +82,30 @@ const Categories = () => {
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
-          {categories
-            .slice(0, showMore ? categories.length : 5)
-            .map((category: any) => (
-              <Button
-                key={category.id}
-                variant={
-                  selectedCategories.includes(category.id)
-                    ? "default"
-                    : "outline"
-                }
-                className="flex items-center gap-2 font-normal cursor-pointer justify-start"
-                onClick={(e) => handleCategoryClick(e, category)}
-              >
-                {category.name}
-              </Button>
-            ))}
-          {categories.length > 5 && (
+          {availableCategories &&
+            availableCategories
+              .slice(
+                0,
+                showMore ? AMOUNT_OF_CATEGORIES + 5 : AMOUNT_OF_CATEGORIES
+              )
+              .map((category: CategoryInterface) => (
+                <Button
+                  key={`${category._id}`}
+                  variant={
+                    selectedCategories.filter(
+                      (selectedCategory) =>
+                        selectedCategory._id === category._id
+                    ).length > 0
+                      ? "default"
+                      : "outline"
+                  }
+                  className="flex items-center gap-2 font-normal cursor-pointer justify-start"
+                  onClick={(e) => handleCategoryClick(e, category)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+          {availableCategories && availableCategories.length > 5 && (
             <Button
               variant="ghost"
               className="w-full justify-center"
@@ -74,11 +116,12 @@ const Categories = () => {
           )}
         </div>
         <div className="mt-4 grid gap-2">
-          <div className="grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
+          <div className="relative grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
             <Input
               placeholder="Add new category"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
+              value={categorySearchQuery}
+              onChange={(e) => setCategorySearchQuery(e.target.value)}
+              /* onChange={(e) => handleAddCategory(e)} */
             />
             <Button onClick={(e) => handleAddCategory(e)}>Add</Button>
           </div>
