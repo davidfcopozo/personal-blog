@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { CategoryInterface } from "@/typings/interfaces";
 import useFetchRequest from "@/hooks/useFetchRequest";
+import { Skeleton } from "./ui/skeleton";
 
 const Categories = () => {
   const {
     data: fetchCategories,
     isLoading,
+    isFetching,
     error,
   } = useFetchRequest("categories", "/api/categories");
   const [categories, setCategories] = useState<CategoryInterface[]>([]);
@@ -94,12 +96,16 @@ const Categories = () => {
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
-          {availableCategories &&
+          {isFetching || isLoading ? (
+            <div className="flex flex-col gap-2">
+              <Skeleton className="max-w-full h-[15px]" />
+              <Skeleton className="max-w-full h-[15px]" />
+              <Skeleton className="max-w-full h-[15px]" />
+            </div>
+          ) : (
+            availableCategories &&
             availableCategories
-              .slice(
-                0,
-                showMore ? AMOUNT_OF_CATEGORIES + 5 : AMOUNT_OF_CATEGORIES
-              )
+              .slice(0, showMore ? amountOfCategories : 5)
               .map((category: CategoryInterface) => (
                 <Button
                   key={`${category._id}`}
@@ -111,20 +117,32 @@ const Categories = () => {
                       ? "default"
                       : "outline"
                   }
-                  className="flex items-center gap-2 font-normal cursor-pointer justify-start"
+                  className="flex items-center gap-2 font-normal cursor-pointer justify-start w-content px-2"
                   onClick={(e) => handleCategoryClick(e, category)}
                 >
                   {category.name}
                 </Button>
-              ))}
+              ))
+          )}
           {availableCategories && availableCategories.length > 5 && (
-            <Button
-              variant="ghost"
-              className="w-full justify-center"
-              onClick={() => setShowMore(!showMore)}
-            >
-              {showMore ? "See Less" : "See More"}
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                className="w-full justify-center"
+                onClick={showMoreCategories}
+              >
+                See More
+              </Button>
+              {amountOfCategories > 5 && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-center"
+                  onClick={showLessCategories}
+                >
+                  See Less
+                </Button>
+              )}
+            </>
           )}
         </div>
         <div className="mt-4 grid gap-2">
