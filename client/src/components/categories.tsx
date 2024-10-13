@@ -23,7 +23,19 @@ const Categories = () => {
     CategoryInterface[]
   >([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
-  const AMOUNT_OF_CATEGORIES = 5;
+  const [amountOfCategories, setAmountOfCategories] = useState(0);
+
+  const showMoreCategories = () => {
+    setShowMore(true);
+    setAmountOfCategories(
+      (prevAmountOfCategories) => prevAmountOfCategories + 5
+    );
+  };
+  const showLessCategories = () => {
+    setAmountOfCategories(
+      (prevAmountOfCategories) => prevAmountOfCategories - 5
+    );
+  };
 
   const handleAddCategory = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
