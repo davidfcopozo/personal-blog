@@ -70,10 +70,11 @@ export function UploadIcon(props: IconProps) {
 }
 
 export function XIcon(props: IconProps) {
-  const { h, w } = props;
+  const { h, w, classes } = props;
   return (
     <svg
       {...props}
+      className={classes}
       xmlns="http://www.w3.org/2000/svg"
       width={w || "24"}
       height={h || "24"}
