@@ -103,8 +103,8 @@ const Categories = () => {
               <Skeleton className="max-w-full h-[15px]" />
             </div>
           ) : (
-            availableCategories &&
-            availableCategories
+            filteredCategories &&
+            filteredCategories
               .slice(0, showMore ? amountOfCategories : 5)
               .map((category: CategoryInterface) => (
                 <Button
