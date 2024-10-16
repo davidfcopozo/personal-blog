@@ -131,4 +131,5 @@ export type IconProps = {
   w?: string;
   fill?: string;
   stroke?: string;
+  classes?: string;
 };
