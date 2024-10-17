@@ -18,9 +18,6 @@ const Categories = () => {
     CategoryInterface[]
   >([]);
   const [showMore, setShowMore] = useState(false);
-  const [newCategories, setNewCategories] = useState<
-    CategoryInterface[] | null
-  >(null);
   const [selectedCategories, setSelectedCategories] = useState<
     CategoryInterface[]
   >([]);
