@@ -10,23 +10,30 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import CustomBadge from "./custom-badge";
+import { TagsProps } from "@/typings/types";
 
-export default function Tags() {
-  const [tags, setTags] = useState<string[]>([]);
+export default function Tags({ setTags }: TagsProps) {
+  const [addedTags, setAddedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
 
   const handleAddTag = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (newTag.trim() !== "") {
-      setTags([...tags, newTag.trim()]);
+      setAddedTags([...addedTags, newTag.trim()]);
+      setTags((prevTags) => [...prevTags, newTag.trim()]);
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (index: number) => {
-    const updatedTags = [...tags];
+    const updatedTags = [...addedTags];
     updatedTags.splice(index, 1);
-    setTags(updatedTags);
+    setAddedTags(updatedTags);
+    setTags((prevTags) => {
+      const updatedTags = [...prevTags];
+      updatedTags.splice(index, 1);
+      return updatedTags;
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -52,9 +59,9 @@ export default function Tags() {
           <Button onClick={(e) => handleAddTag(e)}>Add</Button>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
+          {addedTags.map((tag, index) => (
             <CustomBadge
-              key={index}
+              uniQueKey={index}
               value={tag}
               onRemove={() => handleRemoveTag(index)}
             />
