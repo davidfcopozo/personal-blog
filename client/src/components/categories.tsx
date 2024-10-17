@@ -6,8 +6,9 @@ import { CategoryInterface } from "@/typings/interfaces";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { Skeleton } from "./ui/skeleton";
 import { XIcon } from "./icons";
+import { CategoriesProps } from "@/typings/types";
 
-const Categories = () => {
+const Categories = ({ setCategories }: CategoriesProps) => {
   const {
     data: fetchCategories,
     isLoading,
@@ -55,6 +56,9 @@ const Categories = () => {
           initialCategories.findIndex((cat) => cat._id === b._id)
       );
     });
+    setCategories((prevCategories) =>
+      prevCategories.filter((c) => c._id !== category._id)
+    );
   };
 
   const handleCategoryClick = (
@@ -74,6 +78,7 @@ const Categories = () => {
         (availableCategory) => availableCategory._id !== category._id
       )
     );
+    setCategories((prevCategories) => [...prevCategories, category]);
   };
 
   useEffect(() => {
