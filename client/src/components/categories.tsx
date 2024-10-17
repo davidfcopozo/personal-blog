@@ -109,15 +109,8 @@ const Categories = () => {
               .map((category: CategoryInterface) => (
                 <Button
                   key={`${category._id}`}
-                  variant={
-                    selectedCategories.filter(
-                      (selectedCategory) =>
-                        selectedCategory._id === category._id
-                    ).length > 0
-                      ? "default"
-                      : "outline"
-                  }
-                  className="flex items-center gap-2 font-normal cursor-pointer justify-start w-content px-2"
+                  variant="outline"
+                  className="flex items-center whitespace-normal gap-2 font-normal cursor-pointer justify-center w-full h-full px-2"
                   onClick={(e) => handleCategoryClick(e, category)}
                 >
                   {category.name}
