@@ -137,3 +137,7 @@ export type IconProps = {
 export type CategoriesProps = {
   setCategories: Dispatch<SetStateAction<CategoryInterface[]>>;
 };
+
+export type TagsProps = {
+  setTags: Dispatch<SetStateAction<string[]>>;
+};

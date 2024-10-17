@@ -7,7 +7,7 @@ export interface BlogEditorProps {
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
-  key: string | number;
+  uniQueKey: string | number;
   onRemove?: () => void;
   classes?: string;
 }
