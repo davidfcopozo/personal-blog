@@ -31,7 +31,7 @@ export interface BlogEditorProps {
     title: string;
     content: string;
     featureImage: string | null;
-    categories?: string[];
+    categories?: CategoryInterface[];
     tags?: string[];
   } | null;
 }
@@ -40,7 +40,7 @@ export interface InitialPost {
   title: string;
   content: string;
   featureImage: string | null;
-  categories?: string[];
+  categories?: CategoryInterface[];
   tags?: string[];
 }
 

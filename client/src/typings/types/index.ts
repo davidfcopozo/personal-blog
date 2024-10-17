@@ -133,3 +133,7 @@ export type IconProps = {
   stroke?: string;
   classes?: string;
 };
+
+export type CategoriesProps = {
+  setCategories: Dispatch<SetStateAction<CategoryInterface[]>>;
+};
