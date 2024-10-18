@@ -131,4 +131,13 @@ export type IconProps = {
   w?: string;
   fill?: string;
   stroke?: string;
+  classes?: string;
+};
+
+export type CategoriesProps = {
+  setCategories: Dispatch<SetStateAction<CategoryInterface[]>>;
+};
+
+export type TagsProps = {
+  setTags: Dispatch<SetStateAction<string[]>>;
 };

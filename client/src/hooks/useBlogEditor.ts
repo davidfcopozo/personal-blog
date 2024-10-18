@@ -13,7 +13,7 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { InitialPost } from "@/typings/interfaces";
+import { CategoryInterface, InitialPost } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
@@ -27,7 +27,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   );
   const [temporaryFeatureImage, setTemporaryFeatureImage] =
     useState<File | null>(null);
-  const [categories, setCategories] = useState<string[]>(
+  const [categories, setCategories] = useState<CategoryInterface[]>(
     initialPost?.categories || []
   );
   const [tags, setTags] = useState<string[]>(initialPost?.tags || []);

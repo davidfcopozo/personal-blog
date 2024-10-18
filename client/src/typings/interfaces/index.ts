@@ -1,14 +1,11 @@
 import { FormEvent, HTMLAttributes, ReactNode } from "react";
 import { ObjectId } from "mongoose";
 
-export interface BlogEditorProps {
-  onSave: (data: { title: string; content: string }) => void;
-}
-
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
-  key: string | number;
+  uniQueKey: string | number;
   onRemove?: () => void;
+  classes?: string;
 }
 
 export interface EditorProps {
@@ -30,7 +27,7 @@ export interface BlogEditorProps {
     title: string;
     content: string;
     featureImage: string | null;
-    categories?: string[];
+    categories?: CategoryInterface[];
     tags?: string[];
   } | null;
 }
@@ -39,7 +36,7 @@ export interface InitialPost {
   title: string;
   content: string;
   featureImage: string | null;
-  categories?: string[];
+  categories?: CategoryInterface[];
   tags?: string[];
 }
 

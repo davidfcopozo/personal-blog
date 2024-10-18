@@ -32,6 +32,8 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
     handleSubmit,
     handleImageUpload,
     handleFeatureImagePick,
+    setCategories,
+    setTags,
   } = useBlogEditor(initialPost);
 
   useEffect(() => {
@@ -71,8 +73,8 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
-            <Categories />
-            <Tags />
+            <Categories setCategories={setCategories} />
+            <Tags setTags={setTags} />
           </div>
         </div>
       )}

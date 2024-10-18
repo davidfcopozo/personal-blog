@@ -39,7 +39,7 @@ const FeatureImage = ({
             className="w-[80%] mx-auto text-center"
             onClick={handleUploadClick}
           >
-            <UploadIcon className="mr-1 h-4 w-4" />
+            <UploadIcon classes="mr-1 h-4 w-4" />
             Upload Image
           </Button>
           <input
@@ -67,7 +67,7 @@ const FeatureImage = ({
                 className="w-[50%] my-2 mx-auto text-center"
                 onClick={() => onUpload(null)}
               >
-                <XIcon className="h-3 w-3 mr-1" />
+                <XIcon classes="h-3 w-3 mr-1" />
                 Remove
                 <span className="sr-only">Remove Image</span>
               </Button>

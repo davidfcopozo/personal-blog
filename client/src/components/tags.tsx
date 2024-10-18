@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { KeyboardEvent, SyntheticEvent, useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,26 +10,43 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import CustomBadge from "./custom-badge";
+import { TagsProps } from "@/typings/types";
+import { useToast } from "@/components/ui/use-toast";
 
-export default function Tags() {
-  const [tags, setTags] = useState<string[]>([]);
+export default function Tags({ setTags }: TagsProps) {
+  const { toast } = useToast();
+  const [addedTags, setAddedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
 
-  const handleAddTag = (e: React.SyntheticEvent) => {
+  const handleAddTag = (e: SyntheticEvent) => {
     e.preventDefault();
+    if (addedTags.includes(newTag.trim())) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You have already added this tag",
+      });
+      return;
+    }
     if (newTag.trim() !== "") {
-      setTags([...tags, newTag.trim()]);
+      setAddedTags([...addedTags, newTag.trim()]);
+      setTags((prevTags) => [...prevTags, newTag.trim()]);
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (index: number) => {
-    const updatedTags = [...tags];
+    const updatedTags = [...addedTags];
     updatedTags.splice(index, 1);
-    setTags(updatedTags);
+    setAddedTags(updatedTags);
+    setTags((prevTags) => {
+      const updatedTags = [...prevTags];
+      updatedTags.splice(index, 1);
+      return updatedTags;
+    });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleAddTag(e);
     }
@@ -52,9 +69,9 @@ export default function Tags() {
           <Button onClick={(e) => handleAddTag(e)}>Add</Button>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
+          {addedTags.map((tag, index) => (
             <CustomBadge
-              key={index}
+              uniQueKey={index}
               value={tag}
               onRemove={() => handleRemoveTag(index)}
             />
