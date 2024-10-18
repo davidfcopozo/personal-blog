@@ -11,13 +11,23 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import CustomBadge from "./custom-badge";
 import { TagsProps } from "@/typings/types";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Tags({ setTags }: TagsProps) {
+  const { toast } = useToast();
   const [addedTags, setAddedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
 
   const handleAddTag = (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (addedTags.includes(newTag.trim())) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You have already added this tag",
+      });
+      return;
+    }
     if (newTag.trim() !== "") {
       setAddedTags([...addedTags, newTag.trim()]);
       setTags((prevTags) => [...prevTags, newTag.trim()]);
