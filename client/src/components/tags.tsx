@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { KeyboardEvent, SyntheticEvent, useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ export default function Tags({ setTags }: TagsProps) {
   const [addedTags, setAddedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
 
-  const handleAddTag = (e: React.SyntheticEvent) => {
+  const handleAddTag = (e: SyntheticEvent) => {
     e.preventDefault();
     if (addedTags.includes(newTag.trim())) {
       toast({
@@ -46,7 +46,7 @@ export default function Tags({ setTags }: TagsProps) {
     });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleAddTag(e);
     }
