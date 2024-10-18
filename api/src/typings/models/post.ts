@@ -1,21 +1,22 @@
-import mongoose from "mongoose";
+import { ObjectId } from "mongoose";
+import { CategoryInterface } from "./category";
 
 export interface PostInterface {
-  _id: mongoose.Types.ObjectId;
+  _id: ObjectId;
   title: String;
   content: String;
   slug: String;
-  postedBy: mongoose.Types.ObjectId;
+  postedBy: ObjectId;
   featuredImage?: String;
-  likes?: mongoose.Types.ObjectId[];
-  bookmarks?: mongoose.Types.ObjectId[];
+  likes?: ObjectId[];
+  bookmarks?: ObjectId[];
   tags?: String[];
-  categories?: String[];
+  categories?: CategoryInterface[];
   visits?: Number;
   comments?: [
     {
       text: String;
-      postedBy: mongoose.Types.ObjectId;
+      postedBy: ObjectId;
     }
   ];
   published: Boolean;
