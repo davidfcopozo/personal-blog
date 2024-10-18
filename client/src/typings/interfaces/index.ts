@@ -1,10 +1,6 @@
 import { FormEvent, HTMLAttributes, ReactNode } from "react";
 import { ObjectId } from "mongoose";
 
-export interface BlogEditorProps {
-  onSave: (data: { title: string; content: string }) => void;
-}
-
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
   uniQueKey: string | number;
