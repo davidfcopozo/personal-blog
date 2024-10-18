@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const { Schema } = mongoose;
+const { Schema, model } = mongoose;
 const { ObjectId } = Schema.Types;
 
 const topicSchema = new Schema(
@@ -21,6 +21,6 @@ const topicSchema = new Schema(
   }
 );
 
-const Topic = mongoose.model("Topic", topicSchema);
+const Topic = model("Topic", topicSchema);
 
 export default Topic;
