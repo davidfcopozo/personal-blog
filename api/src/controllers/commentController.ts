@@ -128,7 +128,7 @@ export const deleteCommentById = async (
     // Remove comment from the post's comment's array property
     const result = await Post.updateOne(
       { _id: post._id },
-      { $pull: { comments: `${commentId}` } },
+      { $pull: { comments: commentId } },
       { new: true }
     );
 
@@ -182,7 +182,7 @@ export const toggleLike = async (
       // Add like to the comment's likes array property
       const result = await Comment.updateOne(
         { _id: comment._id },
-        { $addToSet: { likes: `${userId}` } },
+        { $addToSet: { likes: userId } },
         { new: true }
       );
 
@@ -198,7 +198,7 @@ export const toggleLike = async (
       // Remove like from the comment's likes array property
       const result = await Comment.updateOne(
         { _id: comment._id },
-        { $pull: { likes: `${userId}` } },
+        { $pull: { likes: userId } },
         { new: true }
       );
 
