@@ -1,23 +1,17 @@
-import { ObjectId } from "mongoose";
-import { CategoryInterface } from "./category";
+import { Types } from "mongoose";
 
 export interface PostInterface {
-  _id: ObjectId;
-  title: String;
-  content: String;
-  slug: String;
-  postedBy: ObjectId;
-  featuredImage?: String;
-  likes?: ObjectId[];
-  bookmarks?: ObjectId[];
-  tags?: String[];
-  categories?: CategoryInterface[];
-  visits?: Number;
-  comments?: [
-    {
-      text: String;
-      postedBy: ObjectId;
-    }
-  ];
-  published: Boolean;
+  _id: Types.ObjectId;
+  title: string;
+  content: string;
+  slug: string;
+  postedBy: Types.ObjectId;
+  featuredImage?: string;
+  likes?: Types.ObjectId[];
+  bookmarks?: Types.ObjectId[];
+  tags?: string[];
+  categories?: Types.ObjectId[]; // Categories should be ObjectIds if they refer to other documents
+  visits?: number;
+  comments?: Types.ObjectId[]; // Comments should be ObjectIds if they refer to other documents
+  published: boolean;
 }
