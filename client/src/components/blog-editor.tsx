@@ -25,7 +25,7 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
   const {
     title,
     content,
-    featureImage,
+    featuredImage,
     temporaryFeatureImage,
     handleTitleChange,
     handleContentChange,
@@ -53,14 +53,14 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
               <div className="mb-4">
                 <Input
                   id="title"
-                  value={title}
+                  value={initialPost?.title || title}
                   onChange={handleTitleChange}
                   placeholder="Enter blog title"
                 />
               </div>
               <div className="mb-4">
                 <Editor
-                  value={content}
+                  value={initialPost?.content || content}
                   onChange={handleContentChange}
                   handleImageUpload={handleImageUpload}
                 />
@@ -69,7 +69,7 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
             <FeatureImage
-              imageUrl={featureImage}
+              imageUrl={initialPost?.featuredImage || featuredImage}
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
