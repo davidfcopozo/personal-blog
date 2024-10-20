@@ -36,11 +36,24 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
     handleFeatureImagePick,
     setCategories,
     setTags,
+    setTitle,
+    setContent,
+    setFeaturedImage,
   } = useBlogEditor(initialPost);
 
   useEffect(() => {
     if (Editor) setIsEditorLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (initialPost) {
+      setTitle(initialPost.title || "");
+      setContent(initialPost.content || "");
+      setFeaturedImage(initialPost.featuredImage || null);
+      setCategories(initialPost.categories || []);
+      setTags(initialPost.tags || []);
+    }
+  }, [initialPost]);
 
   return (
     <Layout onSave={handleSave}>
@@ -55,7 +68,7 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
               <div className="mb-4">
                 <Input
                   id="title"
-                  value={title || initialPost?.title || ""}
+                  value={title}
                   onChange={handleTitleChange}
                   placeholder="Enter blog title"
                 />
@@ -71,15 +84,12 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
             <FeatureImage
-              imageUrl={featuredImage || (initialPost?.featuredImage as string)}
+              imageUrl={featuredImage}
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
-            <Categories
-              categories={initialPost?.categories || []}
-              setCategories={setCategories}
-            />
-            <Tags tags={initialPost?.tags || []} setTags={setTags} />
+            <Categories categories={categories} setCategories={setCategories} />
+            <Tags tags={tags} setTags={setTags} />
           </div>
         </div>
       )}
