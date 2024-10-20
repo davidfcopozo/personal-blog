@@ -153,10 +153,13 @@ export const updatePostById = async (
       );
     }
     const sanitizedContent = DOMPurify.sanitize(req.body.content);
+    const oldPostTags = oldPost.tags || [];
+    const newTags = req.body.tags || [];
+    const uniqueTags = [...new Set([...oldPostTags, ...newTags])];
 
     const post: PostType = await Post.findOneAndUpdate(
       { _id: postId, postedBy: userId },
-      { ...req.body, content: sanitizedContent },
+      { ...req.body, tags: uniqueTags, content: sanitizedContent },
       { new: true, runValidators: true }
     );
 
