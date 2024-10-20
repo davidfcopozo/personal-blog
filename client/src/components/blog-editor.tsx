@@ -27,6 +27,8 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
     content,
     featuredImage,
     temporaryFeatureImage,
+    tags,
+    categories,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
@@ -53,14 +55,14 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
               <div className="mb-4">
                 <Input
                   id="title"
-                  value={initialPost?.title || title}
+                  value={title || initialPost?.title || ""}
                   onChange={handleTitleChange}
                   placeholder="Enter blog title"
                 />
               </div>
               <div className="mb-4">
                 <Editor
-                  value={initialPost?.content || content}
+                  value={content || (initialPost?.content as string)}
                   onChange={handleContentChange}
                   handleImageUpload={handleImageUpload}
                 />
@@ -69,12 +71,15 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
             <FeatureImage
-              imageUrl={initialPost?.featuredImage || featuredImage}
+              imageUrl={featuredImage || (initialPost?.featuredImage as string)}
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
-            <Categories setCategories={setCategories} />
-            <Tags setTags={setTags} />
+            <Categories
+              categories={initialPost?.categories || []}
+              setCategories={setCategories}
+            />
+            <Tags tags={initialPost?.tags || []} setTags={setTags} />
           </div>
         </div>
       )}
