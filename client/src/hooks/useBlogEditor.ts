@@ -20,19 +20,13 @@ import DOMPurify from "dompurify";
 import { UserType } from "@/typings/types";
 
 export const useBlogEditor = (initialPost: InitialPost | null = null) => {
-  const [title, setTitle] = useState(
-    initialPost?.title ? initialPost.title : ""
-  );
-  const [content, setContent] = useState(initialPost?.content || "");
-  const [featuredImage, setFeaturedImage] = useState<string | null>(
-    initialPost?.featuredImage || null
-  );
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [temporaryFeatureImage, setTemporaryFeatureImage] =
     useState<File | null>(null);
-  const [categories, setCategories] = useState<CategoryInterface[]>(
-    initialPost?.categories || []
-  );
-  const [tags, setTags] = useState<string[]>(initialPost?.tags || []);
+  const [categories, setCategories] = useState<CategoryInterface[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -263,5 +257,8 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     handleFeatureImagePick,
     setTags,
     setCategories,
+    setTitle,
+    setContent,
+    setFeaturedImage,
   };
 };
