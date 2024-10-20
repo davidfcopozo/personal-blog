@@ -58,6 +58,7 @@ const FeatureImage = ({
                 height={200}
                 className="rounded-lg w-full h-auto"
                 style={{ objectFit: "cover" }}
+                priority
               />
             )}
             {displayImage && (
