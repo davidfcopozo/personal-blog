@@ -26,7 +26,7 @@ export interface BlogEditorProps {
   initialPost?: {
     title: string;
     content: string;
-    featureImage: string | null;
+    featuredImage: string | null;
     categories?: CategoryInterface[];
     tags?: string[];
   } | null;
@@ -35,7 +35,7 @@ export interface BlogEditorProps {
 export interface InitialPost {
   title: string;
   content: string;
-  featureImage: string | null;
+  featuredImage: string | null;
   categories?: CategoryInterface[];
   tags?: string[];
 }
