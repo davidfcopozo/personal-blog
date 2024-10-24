@@ -188,20 +188,20 @@ const Categories = ({
           )}
         </div>
         <div className="mt-4 grid gap-2">
-          <div className="relative grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
+          <div className="relative grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr]">
             <Input
               placeholder="Search categories"
               value={categorySearchQuery}
               onChange={(e) => setCategorySearchQuery(e.target.value)}
             />
-            <div className="grid gap-2">
+            <div className="flex gap-2 flex-wrap">
               {selectedCategories &&
                 selectedCategories.length > 0 &&
                 selectedCategories.map((category: CategoryInterface) => (
                   <Button
                     key={`${category._id}`}
                     variant="default"
-                    className="w-full justify-between items-center flex whitespace-normal px-2 py-6"
+                    className="max-w-content justify-between items-center flex whitespace-normal px-2 py-6"
                     onClick={() => handleRemoveCategory(category)}
                   >
                     <span className="flex-1 text-center ">{category.name}</span>
