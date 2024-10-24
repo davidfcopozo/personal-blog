@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -7,10 +7,14 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 import { Skeleton } from "./ui/skeleton";
 import { XIcon } from "./icons";
 import { CategoriesProps } from "@/typings/types";
+import { ObjectId } from "mongoose";
 
-const Categories = ({ setCategories }: CategoriesProps) => {
+const Categories = ({
+  setCategories,
+  categories: passedCategories,
+}: CategoriesProps) => {
   const {
-    data: fetchCategories,
+    data: fetchedCategories,
     isLoading,
     isFetching,
     error,
@@ -40,7 +44,7 @@ const Categories = ({ setCategories }: CategoriesProps) => {
             return fetchedCategories.data.find(
               (cat: CategoryInterface) =>
                 cat._id === (category as unknown as ObjectId)
-    );
+            );
           })
           .filter(Boolean) as CategoryInterface[];
 
@@ -77,32 +81,30 @@ const Categories = ({ setCategories }: CategoriesProps) => {
         (selectedCategory) => selectedCategory._id !== category._id
       )
     );
+
     setAvailableCategories((prevAvailableCategories) => {
       const updatedCategories = [...prevAvailableCategories, category];
-      // Sort the updated categories to maintain the original order
       return updatedCategories.sort(
         (a, b) =>
           initialCategories.findIndex((cat) => cat._id === a._id) -
           initialCategories.findIndex((cat) => cat._id === b._id)
       );
     });
+
     setCategories((prevCategories) =>
       prevCategories.filter((c) => c._id !== category._id)
     );
   };
 
-  const handleCategoryClick = (
-    e: MouseEvent<HTMLButtonElement>,
-    category: CategoryInterface
-  ) => {
-    e.preventDefault();
+  const handleAddCategory = (category: CategoryInterface) => {
     if (selectedCategories.some((c) => c._id === category._id)) {
-      return; // Avoid duplicate selection
+      return;
     }
     setSelectedCategories((prevSelectedCategories) => [
       ...prevSelectedCategories,
       category,
     ]);
+
     setAvailableCategories((prevAvailableCategories) =>
       prevAvailableCategories.filter(
         (availableCategory) => availableCategory._id !== category._id
@@ -111,12 +113,18 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     setCategories((prevCategories) => [...prevCategories, category]);
   };
 
-  useEffect(() => {
-    if (fetchCategories?.data && Array.isArray(fetchCategories.data)) {
-      setInitialCategories(fetchCategories.data);
-      setAvailableCategories(fetchCategories.data);
-    }
-  }, [fetchCategories]);
+  const showMoreCategories = () => {
+    setShowMore(true);
+    setAmountOfCategories(
+      (prevAmountOfCategories) => prevAmountOfCategories + 5
+    );
+  };
+
+  const showLessCategories = () => {
+    setAmountOfCategories((prevAmountOfCategories) =>
+      Math.max(prevAmountOfCategories - 5, 5)
+    );
+  };
 
   const filteredCategories = useMemo(() => {
     if (categorySearchQuery === "") {
@@ -125,7 +133,7 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     return (
       availableCategories &&
       availableCategories.filter((category) =>
-      category.name.toLowerCase().includes(categorySearchQuery.toLowerCase())
+        category.name.toLowerCase().includes(categorySearchQuery.toLowerCase())
       )
     );
   }, [availableCategories, categorySearchQuery]);
@@ -152,7 +160,7 @@ const Categories = ({ setCategories }: CategoriesProps) => {
                   key={`${category._id}`}
                   variant="outline"
                   className="flex items-center whitespace-normal gap-2 font-normal cursor-pointer justify-center w-full h-full px-2"
-                  onClick={(e) => handleCategoryClick(e, category)}
+                  onClick={(e) => handleAddCategory(category)}
                 >
                   {category.name}
                 </Button>
