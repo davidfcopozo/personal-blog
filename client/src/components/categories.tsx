@@ -28,16 +28,34 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     CategoryInterface[]
   >([]);
 
-  const showMoreCategories = () => {
-    setShowMore(true);
-    setAmountOfCategories(
-      (prevAmountOfCategories) => prevAmountOfCategories + 5
-    );
-  };
+  const isInitialSetup = useRef(true);
 
-  const showLessCategories = () => {
-    setAmountOfCategories((prevAmountOfCategories) =>
-      Math.max(prevAmountOfCategories - 5, 5)
+  useEffect(() => {
+    if (fetchedCategories?.data && Array.isArray(fetchedCategories.data)) {
+      setInitialCategories(fetchedCategories.data);
+
+      if (isInitialSetup.current) {
+        const selected = passedCategories
+          .map((category) => {
+            return fetchedCategories.data.find(
+              (cat: CategoryInterface) =>
+                cat._id === (category as unknown as ObjectId)
+    );
+          })
+          .filter(Boolean) as CategoryInterface[];
+
+        const availableCats = fetchedCategories.data.filter(
+          (category: CategoryInterface) =>
+            !selected.find((selectedCat) => selectedCat._id === category._id)
+        );
+
+        setSelectedCategories(selected);
+        setAvailableCategories(availableCats);
+        isInitialSetup.current = false;
+      }
+    }
+  }, [fetchedCategories]);
+
     );
   };
 
