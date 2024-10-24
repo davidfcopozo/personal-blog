@@ -18,6 +18,7 @@ import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
 import { UserType } from "@/typings/types";
+import { ObjectId } from "mongoose";
 
 export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [title, setTitle] = useState("");
@@ -25,7 +26,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [temporaryFeatureImage, setTemporaryFeatureImage] =
     useState<File | null>(null);
-  const [categories, setCategories] = useState<CategoryInterface[]>([]);
+  const [categories, setCategories] = useState<ObjectId[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
@@ -221,13 +222,13 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         const cleanContent = DOMPurify.sanitize(content, {
           USE_PROFILES: { html: true },
         });
-        mutate({
+        /*         mutate({
           title: cleanTitle,
           content: cleanContent,
           featuredImage: currentFeatureImage,
           categories,
           tags,
-        });
+        }); */
       }
     },
     [
