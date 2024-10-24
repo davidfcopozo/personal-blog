@@ -222,13 +222,13 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         const cleanContent = DOMPurify.sanitize(content, {
           USE_PROFILES: { html: true },
         });
-        /*         mutate({
+        mutate({
           title: cleanTitle,
           content: cleanContent,
           featuredImage: currentFeatureImage,
           categories,
           tags,
-        }); */
+        });
       }
     },
     [
