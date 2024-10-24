@@ -56,8 +56,20 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     }
   }, [fetchedCategories]);
 
-    );
-  };
+  useEffect(() => {
+    if (passedCategories) {
+      const selected = passedCategories
+        .map((category) => {
+          return fetchedCategories.data.find(
+            (cat: CategoryInterface) =>
+              cat._id === (category as unknown as ObjectId)
+          );
+        })
+        .filter(Boolean) as CategoryInterface[];
+
+      setSelectedCategories(selected);
+    }
+  }, [isInitialSetup.current]);
 
   const handleRemoveCategory = (category: CategoryInterface) => {
     setSelectedCategories((prevSelectedCategories) =>
