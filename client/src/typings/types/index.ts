@@ -4,7 +4,7 @@ import { PostInterface } from "../../../../api/src/typings/models/post";
 import { UserInterface } from "../../../../api/src/typings/models/user";
 import { TopicInterface } from "../../../../api/src/typings/models/topic";
 import { CategoryInterface } from "../../../../api/src/typings/models/category";
-import { Date } from "mongoose";
+import { Date, ObjectId } from "mongoose";
 import { CommentInterface } from "../interfaces";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Dispatch, SetStateAction } from "react";
@@ -135,8 +135,8 @@ export type IconProps = {
 };
 
 export type CategoriesProps = {
-  setCategories: Dispatch<SetStateAction<CategoryInterface[]>>;
-  categories: CategoryInterface[] | [];
+  setCategories: Dispatch<SetStateAction<ObjectId[]>>;
+  categories: ObjectId[] | [];
 };
 
 export type TagsProps = {
