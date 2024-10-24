@@ -122,8 +122,11 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     if (categorySearchQuery === "") {
       return availableCategories;
     }
-    return availableCategories.filter((category) =>
+    return (
+      availableCategories &&
+      availableCategories.filter((category) =>
       category.name.toLowerCase().includes(categorySearchQuery.toLowerCase())
+      )
     );
   }, [availableCategories, categorySearchQuery]);
 
