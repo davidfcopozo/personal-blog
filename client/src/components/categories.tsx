@@ -39,29 +39,13 @@ const Categories = ({
       setInitialCategories(fetchedCategories.data);
 
       if (isInitialSetup.current) {
-        const selected = passedCategories
-          .map((category) => {
-            return fetchedCategories.data.find(
-              (cat: CategoryInterface) =>
-                cat._id === (category as unknown as ObjectId)
-            );
-          })
-          .filter(Boolean) as CategoryInterface[];
-
-        const availableCats = fetchedCategories.data.filter(
-          (category: CategoryInterface) =>
-            !selected.find((selectedCat) => selectedCat._id === category._id)
-        );
-
-        setSelectedCategories(selected);
-        setAvailableCategories(availableCats);
         isInitialSetup.current = false;
       }
     }
   }, [fetchedCategories]);
 
   useEffect(() => {
-    if (passedCategories) {
+    if (passedCategories.length > 0 && isInitialSetup.current === false) {
       const selected = passedCategories
         .map((category) => {
           return fetchedCategories.data.find(
@@ -71,9 +55,15 @@ const Categories = ({
         })
         .filter(Boolean) as CategoryInterface[];
 
+      const availableCats = fetchedCategories.data.filter(
+        (category: CategoryInterface) =>
+          !selected.find((selectedCat) => selectedCat._id === category._id)
+      );
+
       setSelectedCategories(selected);
+      setAvailableCategories(availableCats);
     }
-  }, [isInitialSetup.current]);
+  }, [isInitialSetup.current, passedCategories]);
 
   const handleRemoveCategory = (category: CategoryInterface) => {
     setSelectedCategories((prevSelectedCategories) =>
