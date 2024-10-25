@@ -162,11 +162,21 @@ export const updatePostById = async (
     const sanitizedContent = DOMPurify.sanitize(req.body.content);
     const oldPostTags = oldPost.tags || [];
     const newTags = req.body.tags || [];
+    const oldPostCategories = oldPost.categories || [];
+    const newCategories = req.body.categories || [];
     const uniqueTags = [...new Set([...oldPostTags, ...newTags])];
+    const uniqueCategories = [
+      ...new Set([...oldPostCategories, ...newCategories]),
+    ];
 
     const post: PostType = await Post.findOneAndUpdate(
       { _id: postId, postedBy: userId },
-      { ...req.body, tags: uniqueTags, content: sanitizedContent },
+      {
+        ...req.body,
+        tags: uniqueTags,
+        categories: uniqueCategories,
+        content: sanitizedContent,
+      },
       { new: true, runValidators: true }
     );
 
