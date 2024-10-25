@@ -10,8 +10,8 @@ export interface PostInterface {
   likes?: Types.ObjectId[];
   bookmarks?: Types.ObjectId[];
   tags?: string[];
-  categories?: Types.ObjectId[]; // Categories should be ObjectIds if they refer to other documents
+  categories?: Types.ObjectId[];
   visits?: number;
-  comments?: Types.ObjectId[]; // Comments should be ObjectIds if they refer to other documents
+  comments?: Types.ObjectId[];
   published: boolean;
 }
