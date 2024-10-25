@@ -234,12 +234,12 @@ export const toggleLike = async (
       // Add like to the post's likes array property
       const postResult = await Post.updateOne(
         { _id: post._id },
-        { $addToSet: { likes: `${userId}` } },
+        { $addToSet: { likes: userId } },
         { session }
       );
       const userResult = await User.updateOne(
         { _id: user._id },
-        { $addToSet: { likes: `${postId}` } },
+        { $addToSet: { likes: postId } },
         { session }
       );
 
@@ -257,13 +257,13 @@ export const toggleLike = async (
       // Remove like from the post's likes array property
       const postResult = await Post.updateOne(
         { _id: post._id },
-        { $pull: { likes: `${userId}` } },
+        { $pull: { likes: userId } },
         { new: true }
       );
 
       const userResult = await User.updateOne(
         { _id: user._id },
-        { $pull: { likes: `${postId}` } },
+        { $pull: { likes: postId } },
         { new: true }
       );
 
@@ -319,12 +319,12 @@ export const toggleBookmark = async (
       // Add bookmark to the post's likes array property
       const postResult = await Post.updateOne(
         { _id: post._id },
-        { $addToSet: { bookmarks: `${userId}` } },
+        { $addToSet: { bookmarks: userId } },
         { session }
       );
       const userResult = await User.updateOne(
         { _id: user._id },
-        { $addToSet: { bookmarks: `${postId}` } },
+        { $addToSet: { bookmarks: postId } },
         { session }
       );
 
@@ -341,13 +341,13 @@ export const toggleBookmark = async (
       // Remove bookmark from the post's likes array property
       const postResult = await Post.updateOne(
         { _id: post._id },
-        { $pull: { bookmarks: `${userId}` } },
+        { $pull: { bookmarks: userId } },
         { new: true }
       );
 
       const userResult = await User.updateOne(
         { _id: user._id },
-        { $pull: { bookmarks: `${postId}` } },
+        { $pull: { bookmarks: postId } },
         { new: true }
       );
 
