@@ -44,10 +44,17 @@ export const createPost = async (
       slug = `${slug}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
     }
 
+    const newTags = req.body.tags || [];
+    const newCategories = req.body.categories || [];
+    const uniqueTags = [...new Set(newTags)];
+    const uniqueCategories = [...new Set(newCategories)];
+
     const post: PostType = await Post.create({
       ...req.body,
       content: sanitizedContent,
       postedBy: userId,
+      tags: uniqueTags,
+      categories: uniqueCategories,
       slug: slug,
     });
 
