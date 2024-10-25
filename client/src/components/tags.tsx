@@ -1,5 +1,5 @@
 "use client";
-import { KeyboardEvent, SyntheticEvent, useState } from "react";
+import { KeyboardEvent, SyntheticEvent, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,13 +13,21 @@ import CustomBadge from "./custom-badge";
 import { TagsProps } from "@/typings/types";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function Tags({ setTags }: TagsProps) {
+export default function Tags({ setTags, tags }: TagsProps) {
   const { toast } = useToast();
   const [addedTags, setAddedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
 
+  useEffect(() => {
+    if (tags && tags.length > 0) {
+      setAddedTags(tags);
+    }
+  }, [tags]);
+
   const handleAddTag = (e: SyntheticEvent) => {
     e.preventDefault();
+    if (newTag.trim() === "") return;
+
     if (addedTags.includes(newTag.trim())) {
       toast({
         variant: "destructive",
@@ -28,22 +36,16 @@ export default function Tags({ setTags }: TagsProps) {
       });
       return;
     }
-    if (newTag.trim() !== "") {
-      setAddedTags([...addedTags, newTag.trim()]);
-      setTags((prevTags) => [...prevTags, newTag.trim()]);
-      setNewTag("");
-    }
+
+    setAddedTags((prevTags) => [...prevTags, newTag.trim()]);
+    setTags((prevTags) => [...prevTags, newTag.trim()]);
+    setNewTag("");
   };
 
   const handleRemoveTag = (index: number) => {
-    const updatedTags = [...addedTags];
-    updatedTags.splice(index, 1);
+    const updatedTags = addedTags.filter((_, i) => i !== index);
     setAddedTags(updatedTags);
-    setTags((prevTags) => {
-      const updatedTags = [...prevTags];
-      updatedTags.splice(index, 1);
-      return updatedTags;
-    });
+    setTags(updatedTags);
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -51,6 +53,7 @@ export default function Tags({ setTags }: TagsProps) {
       handleAddTag(e);
     }
   };
+
   return (
     <Card>
       <CardHeader>
@@ -74,6 +77,7 @@ export default function Tags({ setTags }: TagsProps) {
               uniQueKey={index}
               value={tag}
               onRemove={() => handleRemoveTag(index)}
+              key={index}
             />
           ))}
         </div>

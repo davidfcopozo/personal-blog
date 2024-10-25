@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -7,10 +7,14 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 import { Skeleton } from "./ui/skeleton";
 import { XIcon } from "./icons";
 import { CategoriesProps } from "@/typings/types";
+import { ObjectId } from "mongoose";
 
-const Categories = ({ setCategories }: CategoriesProps) => {
+const Categories = ({
+  setCategories,
+  categories: passedCategories,
+}: CategoriesProps) => {
   const {
-    data: fetchCategories,
+    data: fetchedCategories,
     isLoading,
     isFetching,
     error,
@@ -28,6 +32,87 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     CategoryInterface[]
   >([]);
 
+  const isInitialSetup = useRef(true);
+
+  useEffect(() => {
+    if (fetchedCategories?.data && Array.isArray(fetchedCategories.data)) {
+      setInitialCategories(fetchedCategories.data);
+
+      if (isInitialSetup.current) {
+        const selected = passedCategories
+          .map((category) => {
+            return fetchedCategories.data.find(
+              (cat: CategoryInterface) =>
+                cat._id === (category as unknown as ObjectId)
+            );
+          })
+          .filter(Boolean) as CategoryInterface[];
+
+        const availableCats = fetchedCategories.data.filter(
+          (category: CategoryInterface) =>
+            !selected.find((selectedCat) => selectedCat._id === category._id)
+        );
+
+        setSelectedCategories(selected);
+        setAvailableCategories(availableCats);
+        isInitialSetup.current = false;
+      }
+    }
+  }, [fetchedCategories]);
+
+  useEffect(() => {
+    if (passedCategories) {
+      const selected = passedCategories
+        .map((category) => {
+          return fetchedCategories.data.find(
+            (cat: CategoryInterface) =>
+              cat._id === (category as unknown as ObjectId)
+          );
+        })
+        .filter(Boolean) as CategoryInterface[];
+
+      setSelectedCategories(selected);
+    }
+  }, [isInitialSetup.current]);
+
+  const handleRemoveCategory = (category: CategoryInterface) => {
+    setSelectedCategories((prevSelectedCategories) =>
+      prevSelectedCategories.filter(
+        (selectedCategory) => selectedCategory._id !== category._id
+      )
+    );
+
+    setAvailableCategories((prevAvailableCategories) => {
+      const updatedCategories = [...prevAvailableCategories, category];
+      return updatedCategories.sort(
+        (a, b) =>
+          initialCategories.findIndex((cat) => cat._id === a._id) -
+          initialCategories.findIndex((cat) => cat._id === b._id)
+      );
+    });
+
+    setCategories((prevCategories) =>
+      prevCategories.filter((c) => c !== category._id)
+    );
+  };
+
+  const handleAddCategory = (category: CategoryInterface) => {
+    if (selectedCategories.some((c) => c._id === category._id)) {
+      return;
+    }
+    setSelectedCategories((prevSelectedCategories) => [
+      ...prevSelectedCategories,
+      category,
+    ]);
+
+    setAvailableCategories((prevAvailableCategories) =>
+      prevAvailableCategories.filter(
+        (availableCategory) => availableCategory._id !== category._id
+      )
+    );
+    setCategories((prevCategories) => [...prevCategories, category._id]);
+  };
+
   const showMoreCategories = () => {
     setShowMore(true);
     setAmountOfCategories(
@@ -41,59 +126,15 @@ const Categories = ({ setCategories }: CategoriesProps) => {
     );
   };
 
-  const handleRemoveCategory = (category: CategoryInterface) => {
-    setSelectedCategories((prevSelectedCategories) =>
-      prevSelectedCategories.filter(
-        (selectedCategory) => selectedCategory._id !== category._id
-      )
-    );
-    setAvailableCategories((prevAvailableCategories) => {
-      const updatedCategories = [...prevAvailableCategories, category];
-      // Sort the updated categories to maintain the original order
-      return updatedCategories.sort(
-        (a, b) =>
-          initialCategories.findIndex((cat) => cat._id === a._id) -
-          initialCategories.findIndex((cat) => cat._id === b._id)
-      );
-    });
-    setCategories((prevCategories) =>
-      prevCategories.filter((c) => c._id !== category._id)
-    );
-  };
-
-  const handleCategoryClick = (
-    e: MouseEvent<HTMLButtonElement>,
-    category: CategoryInterface
-  ) => {
-    e.preventDefault();
-    if (selectedCategories.some((c) => c._id === category._id)) {
-      return; // Avoid duplicate selection
-    }
-    setSelectedCategories((prevSelectedCategories) => [
-      ...prevSelectedCategories,
-      category,
-    ]);
-    setAvailableCategories((prevAvailableCategories) =>
-      prevAvailableCategories.filter(
-        (availableCategory) => availableCategory._id !== category._id
-      )
-    );
-    setCategories((prevCategories) => [...prevCategories, category]);
-  };
-
-  useEffect(() => {
-    if (fetchCategories?.data && Array.isArray(fetchCategories.data)) {
-      setInitialCategories(fetchCategories.data);
-      setAvailableCategories(fetchCategories.data);
-    }
-  }, [fetchCategories]);
-
   const filteredCategories = useMemo(() => {
     if (categorySearchQuery === "") {
       return availableCategories;
     }
-    return availableCategories.filter((category) =>
-      category.name.toLowerCase().includes(categorySearchQuery.toLowerCase())
+    return (
+      availableCategories &&
+      availableCategories.filter((category) =>
+        category.name.toLowerCase().includes(categorySearchQuery.toLowerCase())
+      )
     );
   }, [availableCategories, categorySearchQuery]);
 
@@ -119,7 +160,7 @@ const Categories = ({ setCategories }: CategoriesProps) => {
                   key={`${category._id}`}
                   variant="outline"
                   className="flex items-center whitespace-normal gap-2 font-normal cursor-pointer justify-center w-full h-full px-2"
-                  onClick={(e) => handleCategoryClick(e, category)}
+                  onClick={(e) => handleAddCategory(category)}
                 >
                   {category.name}
                 </Button>
@@ -147,20 +188,20 @@ const Categories = ({ setCategories }: CategoriesProps) => {
           )}
         </div>
         <div className="mt-4 grid gap-2">
-          <div className="relative grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
+          <div className="relative grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr]">
             <Input
               placeholder="Search categories"
               value={categorySearchQuery}
               onChange={(e) => setCategorySearchQuery(e.target.value)}
             />
-            <div className="grid gap-2">
+            <div className="flex gap-2 flex-wrap">
               {selectedCategories &&
                 selectedCategories.length > 0 &&
                 selectedCategories.map((category: CategoryInterface) => (
                   <Button
                     key={`${category._id}`}
                     variant="default"
-                    className="w-full justify-between items-center flex whitespace-normal px-2 py-6"
+                    className="max-w-content justify-between items-center flex whitespace-normal px-2 py-6"
                     onClick={() => handleRemoveCategory(category)}
                   >
                     <span className="flex-1 text-center ">{category.name}</span>

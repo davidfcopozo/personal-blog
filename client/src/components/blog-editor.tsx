@@ -25,8 +25,10 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
   const {
     title,
     content,
-    featureImage,
+    featuredImage,
     temporaryFeatureImage,
+    tags,
+    categories,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
@@ -34,11 +36,24 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
     handleFeatureImagePick,
     setCategories,
     setTags,
+    setTitle,
+    setContent,
+    setFeaturedImage,
   } = useBlogEditor(initialPost);
 
   useEffect(() => {
     if (Editor) setIsEditorLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (initialPost) {
+      setTitle(initialPost.title || "");
+      setContent(initialPost.content || "");
+      setFeaturedImage(initialPost.featuredImage || null);
+      setCategories(initialPost.categories || []);
+      setTags(initialPost.tags || []);
+    }
+  }, [initialPost]);
 
   return (
     <Layout onSave={handleSave}>
@@ -60,7 +75,7 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
               </div>
               <div className="mb-4">
                 <Editor
-                  value={content}
+                  value={content || (initialPost?.content as string)}
                   onChange={handleContentChange}
                   handleImageUpload={handleImageUpload}
                 />
@@ -69,12 +84,12 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
             <FeatureImage
-              imageUrl={featureImage}
+              imageUrl={featuredImage}
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
-            <Categories setCategories={setCategories} />
-            <Tags setTags={setTags} />
+            <Categories categories={categories} setCategories={setCategories} />
+            <Tags tags={tags} setTags={setTags} />
           </div>
         </div>
       )}

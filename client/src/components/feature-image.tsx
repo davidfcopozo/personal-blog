@@ -49,7 +49,7 @@ const FeatureImage = ({
             accept="image/*"
             style={{ display: "none" }}
           />
-          <div className="gap-2 mx-auto">
+          <div className="gap-2 mx-auto px-8">
             {displayImage && (
               <Image
                 src={displayImage}
@@ -58,6 +58,7 @@ const FeatureImage = ({
                 height={200}
                 className="rounded-lg w-full h-auto"
                 style={{ objectFit: "cover" }}
+                priority
               />
             )}
             {displayImage && (

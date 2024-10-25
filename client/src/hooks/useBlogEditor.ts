@@ -18,19 +18,16 @@ import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
 import { UserType } from "@/typings/types";
+import { ObjectId } from "mongoose";
 
 export const useBlogEditor = (initialPost: InitialPost | null = null) => {
-  const [title, setTitle] = useState(initialPost?.title || "");
-  const [content, setContent] = useState(initialPost?.content || "");
-  const [featureImage, setFeatureImage] = useState<string | null>(
-    initialPost?.featureImage || null
-  );
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [temporaryFeatureImage, setTemporaryFeatureImage] =
     useState<File | null>(null);
-  const [categories, setCategories] = useState<CategoryInterface[]>(
-    initialPost?.categories || []
-  );
-  const [tags, setTags] = useState<string[]>(initialPost?.tags || []);
+  const [categories, setCategories] = useState<ObjectId[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -41,7 +38,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
       setTitle("");
       setContent("");
-      setFeatureImage(null);
+      setFeaturedImage(null);
       setCategories([]);
       setTags([]);
       setTemporaryFeatureImage(null);
@@ -125,7 +122,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
       setTemporaryFeatureImage(file);
     } else {
       setTemporaryFeatureImage(null);
-      setFeatureImage(null);
+      setFeaturedImage(null);
     }
   }, []);
 
@@ -158,7 +155,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   const handleFeatureImageUpload = useCallback(async () => {
     if (temporaryFeatureImage) {
       const uploadedUrl = await handleImageUpload(temporaryFeatureImage);
-      setFeatureImage(uploadedUrl);
+      setFeaturedImage(uploadedUrl);
       setTemporaryFeatureImage(null);
     }
   }, [temporaryFeatureImage, handleImageUpload]);
@@ -203,7 +200,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         });
       }
 
-      let currentFeatureImage = featureImage;
+      let currentFeatureImage = featuredImage;
       if (temporaryFeatureImage) {
         currentFeatureImage = await handleImageUpload(temporaryFeatureImage);
       }
@@ -213,7 +210,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         console.log("Updating post:", {
           title,
           content,
-          featureImage,
+          featuredImage,
           categories,
           tags,
         });
@@ -228,7 +225,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
         mutate({
           title: cleanTitle,
           content: cleanContent,
-          featureImage: currentFeatureImage,
+          featuredImage: currentFeatureImage,
           categories,
           tags,
         });
@@ -237,7 +234,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     [
       title,
       content,
-      featureImage,
+      featuredImage,
       categories,
       tags,
       initialPost,
@@ -250,7 +247,7 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
   return {
     title,
     content,
-    featureImage,
+    featuredImage,
     temporaryFeatureImage,
     tags,
     categories,
@@ -261,5 +258,8 @@ export const useBlogEditor = (initialPost: InitialPost | null = null) => {
     handleFeatureImagePick,
     setTags,
     setCategories,
+    setTitle,
+    setContent,
+    setFeaturedImage,
   };
 };
