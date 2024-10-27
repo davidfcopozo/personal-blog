@@ -30,6 +30,7 @@ export interface BlogEditorProps {
     categories?: ObjectId[];
     tags?: string[];
   } | null;
+  slug?: string;
 }
 
 export interface InitialPost {
@@ -38,6 +39,10 @@ export interface InitialPost {
   featuredImage: string | null;
   categories?: ObjectId[];
   tags?: string[];
+}
+export interface UseBlogEditorProps {
+  initialPost?: InitialPost | null;
+  slug?: string | null;
 }
 
 export interface FeatureImageProps {
