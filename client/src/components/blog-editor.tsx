@@ -15,7 +15,10 @@ const Editor = dynamic(() => import("./editor"), {
   ssr: false,
 });
 
-const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
+const BlogEditor: FC<BlogEditorProps> = ({
+  initialPost = null,
+  slug = null,
+}) => {
   const [isEditorLoaded, setIsEditorLoaded] = useState(false);
 
   const handleSave = (e: FormEvent) => {
@@ -39,7 +42,7 @@ const BlogEditor: FC<BlogEditorProps> = ({ initialPost = null }) => {
     setTitle,
     setContent,
     setFeaturedImage,
-  } = useBlogEditor(initialPost);
+  } = useBlogEditor({ initialPost, slug });
 
   useEffect(() => {
     if (Editor) setIsEditorLoaded(true);
