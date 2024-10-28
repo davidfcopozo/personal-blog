@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 export interface PostInterface {
   _id: Types.ObjectId;
@@ -10,7 +10,7 @@ export interface PostInterface {
   likes?: Types.ObjectId[];
   bookmarks?: Types.ObjectId[];
   tags?: string[];
-  categories?: Types.ObjectId[];
+  categories?: mongoose.Schema.Types.ObjectId[];
   visits?: number;
   comments?: Types.ObjectId[];
   published: boolean;

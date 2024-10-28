@@ -34,6 +34,7 @@ export interface BlogEditorProps {
 }
 
 export interface InitialPost {
+  _id?: ObjectId;
   title: string;
   content: string;
   featuredImage: string | null;
