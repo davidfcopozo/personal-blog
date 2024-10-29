@@ -4,7 +4,7 @@ import { auth } from "../middleware/auth";
 import {
   createPost,
   getAllPosts,
-  updatePostById,
+  updatePostBySlugOrId,
   deletePostById,
   toggleLike,
   toggleBookmark,
@@ -15,7 +15,10 @@ import { visitsCounter } from "../middleware/visits-counter";
 router.route("/").get(getAllPosts).post(auth, createPost);
 router.route("/like").put(auth, toggleLike);
 router.route("/bookmark").put(auth, toggleBookmark);
-router.route("/:slugOrId").get(visitsCounter, getPostBySlugOrId);
-router.route("/:id").put(auth, updatePostById).delete(auth, deletePostById);
+router
+  .route("/:slugOrId")
+  .get(visitsCounter, getPostBySlugOrId)
+  .patch(auth, updatePostBySlugOrId);
+router.route("/:id").delete(auth, deletePostById);
 
 export default router;
