@@ -1,19 +1,38 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
-const useUpdateRequest = ({
+// Generic interface for the context that will be passed between callbacks
+interface MutationContext<TData> {
+  previousData?: TData;
+  newData?: TData;
+  // Add other context properties as needed
+}
+
+// Props interface for the hook
+interface UseUpdateRequestProps<TData, TVariables> {
+  url: string;
+  onSuccess?: (data: TData, variables: TVariables) => void;
+  onError?: (
+    error: AxiosError,
+    variables: TVariables,
+    context: MutationContext<TData> | undefined
+  ) => void;
+  onMutate?: (variables: TVariables) => Promise<MutationContext<TData>>;
+  onSettled?: (
+    data: TData | undefined,
+    error: AxiosError | null,
+    variables: TVariables,
+    context: MutationContext<TData> | undefined
+  ) => void;
+}
+
+const useUpdateRequest = <TData = unknown, TVariables = unknown>({
   url,
   onSuccess,
   onError,
   onMutate,
   onSettled,
-}: {
-  url: string;
-  onSuccess: () => void;
-  onError: () => void;
-  onMutate: (data: any) => Promise<unknown>;
-  onSettled?: () => void;
-}) => {
+}: UseUpdateRequestProps<TData, TVariables>) => {
   const { mutate, data, status, error } = useMutation({
     mutationFn: async (body: any) => {
       const res = await axios.patch(url, body);
