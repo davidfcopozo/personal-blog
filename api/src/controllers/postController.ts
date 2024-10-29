@@ -186,6 +186,61 @@ export const updatePostById = async (
   }
 };
 
+export const updatePostBySlugOrId = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    params: { slugOrId },
+  } = req;
+
+  try {
+    const oldPost: PostType = await Post.findOne({
+      $or: [{ slug: slugOrId }, { _id: slugOrId }],
+    });
+
+    if (!oldPost) {
+      throw new NotFound("Post not found");
+    }
+
+    if (oldPost && oldPost?.postedBy?.toString() !== userId) {
+      throw new Unauthenticated("You are not authorized to update this post");
+    }
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+      throw new BadRequest(
+        "Nothing to update. Please provide the data to be updated"
+      );
+    }
+    const sanitizedContent = DOMPurify.sanitize(req.body.content);
+    const oldPostTags = oldPost.tags || [];
+    const newTags = req.body.tags || [];
+    const oldPostCategories = oldPost.categories || [];
+    const newCategories = req.body.categories || [];
+    const uniqueTags = [...new Set([...oldPostTags, ...newTags])];
+    const uniqueCategories = [
+      ...new Set([...oldPostCategories, ...newCategories]),
+    ];
+
+    const post: PostType = await Post.findOneAndUpdate(
+      { _id: oldPost._id, postedBy: userId },
+      {
+        ...req.body,
+        tags: uniqueTags,
+        categories: uniqueCategories,
+        content: sanitizedContent,
+      },
+      { new: true, runValidators: true }
+    );
+
+    res.status(StatusCodes.OK).json({ success: true, data: post });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 export const deletePostById = async (
   req: RequestWithUserInfo | any,
   res: Response,
