@@ -17,7 +17,7 @@ import { InitialPost, UseBlogEditorProps } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
-import { PostType, UserType } from "@/typings/types";
+import { PostType, UpdatePostPayload, UserType } from "@/typings/types";
 import { ObjectId } from "mongoose";
 import useUpdateRequest from "./useUpdateRequest";
 
@@ -93,13 +93,15 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         description: "Failed to update blog post: " + error.message,
       });
     },
-    onMutate: async (newPost: InitialPost) => {
+    onMutate: async (newPost: UpdatePostPayload) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
 
-      const previousData = queryClient.getQueryData<PostType[]>(["posts"]);
+      const previousData = queryClient.getQueryData<UpdatePostPayload[]>([
+        "posts",
+      ]);
 
       if (previousData) {
-        queryClient.setQueryData<InitialPost>(
+        queryClient.setQueryData<UpdatePostPayload>(
           ["posts", newPost?._id],
           (old) => ({
             ...old,
@@ -259,7 +261,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
       if (initialPost && slug) {
         console.log("Updating post");
-
         // Update existing post
         const cleanTitle = DOMPurify.sanitize(title, {
           USE_PROFILES: { html: true },
@@ -267,13 +268,43 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         const cleanContent = DOMPurify.sanitize(content, {
           USE_PROFILES: { html: true },
         });
-        updatePostMutate({
-          title: cleanTitle,
-          content: cleanContent,
-          featuredImage,
-          categories,
-          tags,
-        });
+        // Create an object to track changes
+        const changes: Partial<PostType> = {};
+
+        // Only add properties that have changed
+        if (cleanTitle !== initialPost.title) {
+          changes.title = cleanTitle;
+        }
+
+        if (cleanContent !== initialPost.content) {
+          changes.content = cleanContent;
+        }
+
+        if (currentFeatureImage !== initialPost.featuredImage) {
+          changes.featuredImage = currentFeatureImage || undefined;
+        }
+
+        // Compare arrays using JSON.stringify for deep equality
+        if (
+          JSON.stringify(categories) !== JSON.stringify(initialPost.categories)
+        ) {
+          changes.categories = categories;
+        }
+
+        if (JSON.stringify(tags) !== JSON.stringify(initialPost.tags)) {
+          changes.tags = tags;
+        }
+
+        // Only make the update request if there are changes
+        if (Object.keys(changes).length > 0) {
+          /* updatePostMutate({ ...changes, _id: initialPost._id }); */
+          console.log("Changes===>", { ...changes, _id: initialPost._id });
+        } else {
+          toast({
+            title: "No Changes",
+            description: "No changes were made to the post.",
+          });
+        }
       } else {
         console.log("Creating post");
         // Create new post
