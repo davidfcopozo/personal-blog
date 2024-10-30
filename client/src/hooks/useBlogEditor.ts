@@ -284,7 +284,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           changes.featuredImage = currentFeatureImage || undefined;
         }
 
-        // Compare arrays using JSON.stringify for deep equality
+        // Compare arrays using for deep equality
         if (
           JSON.stringify(categories) !== JSON.stringify(initialPost.categories)
         ) {
