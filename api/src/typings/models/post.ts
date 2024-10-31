@@ -1,7 +1,7 @@
 import mongoose, { Types } from "mongoose";
 
 export interface PostInterface {
-  _id: Types.ObjectId;
+  _id: mongoose.Schema.Types.ObjectId;
   title: string;
   content: string;
   slug: string;
