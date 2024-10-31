@@ -5,8 +5,8 @@ const { ObjectId } = Schema.Types;
 
 const postSchema = new Schema<PostInterface>(
   {
-    title: { type: String, required: [true, "Title is required"] },
-    content: { type: String, required: [true, "Content is required"] },
+    title: { type: String },
+    content: { type: String },
     slug: { type: String, required: [true, "Slug is required"] },
     postedBy: {
       type: ObjectId,
