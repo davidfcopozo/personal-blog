@@ -6,7 +6,7 @@ import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
 import { PostType, UserType } from "../typings/types";
 import { slugValidator } from "../utils/validators";
 import User from "../models/userModel";
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import { JSDOM } from "jsdom";
 import createDOMPurify from "dompurify";
 
@@ -181,6 +181,108 @@ export const updatePostById = async (
     );
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const updatePostBySlugOrId = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    params: { slugOrId },
+  } = req;
+
+  try {
+    const oldPost = await Post.findOne({
+      $or: [{ slug: slugOrId }, { _id: slugOrId }],
+    });
+
+    if (!oldPost) {
+      throw new NotFound("Post not found");
+    }
+
+    if (oldPost.postedBy.toString() !== userId) {
+      throw new Unauthenticated("You are not authorized to update this post");
+    }
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+      throw new BadRequest(
+        "Nothing to update. Please provide the data to be updated"
+      );
+    }
+
+    const {
+      title,
+      content,
+      slug,
+      featuredImage,
+      bookmarks,
+      comments,
+      published,
+      tags = [],
+      categories = [],
+    } = req.body;
+
+    const sanitizedContent = DOMPurify.sanitize(content);
+    const fieldsToUpdate: Partial<PostType> = {
+      title,
+      content: sanitizedContent,
+      slug,
+      featuredImage,
+      bookmarks,
+      comments,
+      published,
+    };
+
+    // First Update: Add new unique tags and categories using $addToSet
+    await Post.updateOne(
+      { _id: oldPost._id, postedBy: userId },
+      {
+        ...fieldsToUpdate,
+        $addToSet: {
+          tags: {
+            $each: tags.filter(
+              (tag: string) => oldPost.tags && !oldPost.tags.includes(tag)
+            ),
+          },
+          categories: {
+            $each: categories.filter(
+              (cat: ObjectId) =>
+                oldPost.categories && !oldPost.categories.includes(cat)
+            ),
+          },
+        },
+      }
+    );
+
+    // Second Update: Remove tags and categories that are not in the updated list using $pull
+    await Post.updateOne(
+      { _id: oldPost._id, postedBy: userId },
+      {
+        $pull: {
+          tags: {
+            $in: (oldPost.tags || []).filter(
+              (tag: string) => !tags.includes(tag)
+            ),
+          },
+          categories: {
+            $in: (oldPost.categories ?? []).filter(
+              (cat: ObjectId) => !categories.includes(cat)
+            ),
+          },
+        },
+      }
+    );
+
+    const updatedPost = await Post.findOne({ _id: oldPost._id }).populate(
+      "postedBy"
+    );
+
+    res.status(StatusCodes.OK).json({ success: true, data: updatedPost });
   } catch (err) {
     return next(err);
   }

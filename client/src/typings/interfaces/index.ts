@@ -30,14 +30,20 @@ export interface BlogEditorProps {
     categories?: ObjectId[];
     tags?: string[];
   } | null;
+  slug?: string;
 }
 
 export interface InitialPost {
+  _id?: ObjectId;
   title: string;
   content: string;
   featuredImage: string | null;
   categories?: ObjectId[];
   tags?: string[];
+}
+export interface UseBlogEditorProps {
+  initialPost?: InitialPost | null;
+  slug?: string | null;
 }
 
 export interface FeatureImageProps {

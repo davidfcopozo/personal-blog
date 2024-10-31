@@ -11,7 +11,7 @@ const EditPostPage = ({ params }: { params: { slug: string } }) => {
   return (
     <div className="pt-24 bg-background min-h-screen">
       <div className="bg-background">
-        <BlogEditor initialPost={post} />
+        <BlogEditor initialPost={post} slug={slug} />
       </div>
     </div>
   );

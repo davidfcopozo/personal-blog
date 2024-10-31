@@ -22,7 +22,7 @@ export const register = async (
 ) => {
   try {
     const { firstName, lastName, username, email, password } = req.body;
-
+    let usernameFromEmail;
     const userExist: UserType = await User.findOne({ email });
     const usernameExist: UserType = await User.findOne({
       username: username.toLowerCase(),
@@ -36,6 +36,22 @@ export const register = async (
     //Check if username already exists
     if (usernameExist) {
       throw new BadRequest("An account with this username already exists");
+    }
+
+    if (!username) {
+      //crete a username from the email
+      const emailSplit = email.split("@")[0];
+      usernameFromEmail = emailSplit;
+      //Check if username already exists
+      const usernameExist: UserType = await User.findOne({
+        username: usernameFromEmail.toLowerCase(),
+      });
+
+      if (usernameExist) {
+        //generate a unique username
+        const uniqueUsername = await generateUniqueUsername(usernameFromEmail);
+        usernameFromEmail = uniqueUsername;
+      }
     }
 
     //Check if this is the first account created

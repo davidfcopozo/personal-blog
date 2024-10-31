@@ -143,3 +143,5 @@ export type TagsProps = {
   setTags: Dispatch<SetStateAction<string[]>>;
   tags: string[] | [];
 };
+
+export type UpdatePostPayload = Partial<PostType>;

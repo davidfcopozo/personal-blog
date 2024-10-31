@@ -25,12 +25,12 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     postedBy,
     slug,
   } = post;
-  const { _id: userID } = postedBy;
+  const { _id: userID, username } = postedBy;
 
   let description = extractFirstParagraphText(content as string);
   return (
     <Link
-      href={`/blog/${slug}`}
+      href={`/${username}/${slug}`}
       className="flex flex-col max-w-sm md:max-h-[250px] md:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]"
     >
       <div className="md:w-1/3">
