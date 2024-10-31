@@ -6,7 +6,7 @@ import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
 import { PostType, UserType } from "../typings/types";
 import { slugValidator } from "../utils/validators";
 import User from "../models/userModel";
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import { JSDOM } from "jsdom";
 import createDOMPurify from "dompurify";
 
@@ -197,7 +197,7 @@ export const updatePostBySlugOrId = async (
   } = req;
 
   try {
-    const oldPost: PostType = await Post.findOne({
+    const oldPost = await Post.findOne({
       $or: [{ slug: slugOrId }, { _id: slugOrId }],
     });
 
@@ -205,7 +205,7 @@ export const updatePostBySlugOrId = async (
       throw new NotFound("Post not found");
     }
 
-    if (oldPost && oldPost?.postedBy?.toString() !== userId) {
+    if (oldPost.postedBy.toString() !== userId) {
       throw new Unauthenticated("You are not authorized to update this post");
     }
 
@@ -214,28 +214,75 @@ export const updatePostBySlugOrId = async (
         "Nothing to update. Please provide the data to be updated"
       );
     }
-    const sanitizedContent = DOMPurify.sanitize(req.body.content);
-    const oldPostTags = oldPost.tags || [];
-    const newTags = req.body.tags || [];
-    const oldPostCategories = oldPost.categories || [];
-    const newCategories = req.body.categories || [];
-    const uniqueTags = [...new Set([...oldPostTags, ...newTags])];
-    const uniqueCategories = [
-      ...new Set([...oldPostCategories, ...newCategories]),
-    ];
 
-    const post: PostType = await Post.findOneAndUpdate(
+    const {
+      title,
+      content,
+      slug,
+      featuredImage,
+      bookmarks,
+      comments,
+      published,
+      tags = [],
+      categories = [],
+    } = req.body;
+
+    const sanitizedContent = DOMPurify.sanitize(content);
+    const fieldsToUpdate: Partial<PostType> = {
+      title,
+      content: sanitizedContent,
+      slug,
+      featuredImage,
+      bookmarks,
+      comments,
+      published,
+    };
+
+    // First Update: Add new unique tags and categories using $addToSet
+    await Post.updateOne(
       { _id: oldPost._id, postedBy: userId },
       {
-        ...req.body,
-        tags: uniqueTags,
-        categories: uniqueCategories,
-        content: sanitizedContent,
-      },
-      { new: true, runValidators: true }
+        ...fieldsToUpdate,
+        $addToSet: {
+          tags: {
+            $each: tags.filter(
+              (tag: string) => oldPost.tags && !oldPost.tags.includes(tag)
+            ),
+          },
+          categories: {
+            $each: categories.filter(
+              (cat: ObjectId) =>
+                oldPost.categories && !oldPost.categories.includes(cat)
+            ),
+          },
+        },
+      }
     );
 
-    res.status(StatusCodes.OK).json({ success: true, data: post });
+    // Second Update: Remove tags and categories that are not in the updated list using $pull
+    await Post.updateOne(
+      { _id: oldPost._id, postedBy: userId },
+      {
+        $pull: {
+          tags: {
+            $in: (oldPost.tags || []).filter(
+              (tag: string) => !tags.includes(tag)
+            ),
+          },
+          categories: {
+            $in: (oldPost.categories ?? []).filter(
+              (cat: ObjectId) => !categories.includes(cat)
+            ),
+          },
+        },
+      }
+    );
+
+    const updatedPost = await Post.findOne({ _id: oldPost._id }).populate(
+      "postedBy"
+    );
+
+    res.status(StatusCodes.OK).json({ success: true, data: updatedPost });
   } catch (err) {
     return next(err);
   }
