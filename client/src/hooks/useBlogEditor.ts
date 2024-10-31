@@ -261,15 +261,14 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
       if (initialPost && slug) {
         console.log("Updating post");
-        // Update existing post
         const cleanTitle = DOMPurify.sanitize(title, {
           USE_PROFILES: { html: true },
         });
         const cleanContent = DOMPurify.sanitize(content, {
           USE_PROFILES: { html: true },
         });
-        // Create an object to track changes
-        const changes: Partial<PostType> = {};
+
+        const changes: UpdatePostPayload = {};
 
         // Only add properties that have changed
         if (cleanTitle !== initialPost.title) {
@@ -297,7 +296,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
         // Only make the update request if there are changes
         if (Object.keys(changes).length > 0) {
-          /* updatePostMutate({ ...changes, _id: initialPost._id }); */
+          updatePostMutate({ ...changes, _id: initialPost._id });
           console.log("Changes===>", { ...changes, _id: initialPost._id });
         } else {
           toast({
@@ -307,7 +306,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         }
       } else {
         console.log("Creating post");
-        // Create new post
         const cleanTitle = DOMPurify.sanitize(title, {
           USE_PROFILES: { html: true },
         });
