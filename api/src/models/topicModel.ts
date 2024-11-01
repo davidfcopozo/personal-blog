@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
-const { ObjectId } = Schema.Types;
 
 const topicSchema = new Schema(
   {
@@ -10,7 +9,7 @@ const topicSchema = new Schema(
       unique: true,
     },
     postedBy: {
-      type: ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
