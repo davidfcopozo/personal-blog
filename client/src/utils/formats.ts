@@ -190,6 +190,7 @@ export const convertSlugToName = (cat: string) => {
     ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 };
+
 const cleanBlogContent = (content: string) => {
   const textOnly = content?.replace(/<[^>]*>/g, "");
 
@@ -197,3 +198,9 @@ const cleanBlogContent = (content: string) => {
 
   return noImages?.trim();
 };
+
+export function arraysEqual(a: any[], b: any[]): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  return a.every((val, index) => val === b[index]);
+}

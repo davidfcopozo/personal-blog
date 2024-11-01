@@ -37,6 +37,7 @@ const Categories = ({
   useEffect(() => {
     if (fetchedCategories?.data && Array.isArray(fetchedCategories.data)) {
       setInitialCategories(fetchedCategories.data);
+      setAvailableCategories(fetchedCategories.data);
 
       if (isInitialSetup.current) {
         isInitialSetup.current = false;

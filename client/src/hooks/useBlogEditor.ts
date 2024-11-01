@@ -17,9 +17,10 @@ import { InitialPost, UseBlogEditorProps } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
-import { PostType, UpdatePostPayload, UserType } from "@/typings/types";
-import { ObjectId } from "mongoose";
+import { UpdatePostPayload, UserType } from "@/typings/types";
+import mongoose, { ObjectId } from "mongoose";
 import useUpdateRequest from "./useUpdateRequest";
+import { arraysEqual } from "@/utils/formats";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const [title, setTitle] = useState("");
@@ -238,6 +239,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
+
       if (!title) {
         return toast({
           variant: "destructive",
@@ -260,7 +262,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       }
 
       if (initialPost && slug) {
-        console.log("Updating post");
         const cleanTitle = DOMPurify.sanitize(title, {
           USE_PROFILES: { html: true },
         });
@@ -270,34 +271,39 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
         const changes: UpdatePostPayload = {};
 
-        // Only add properties that have changed
+        // Add changed properties to changes object only if they differ
         if (cleanTitle !== initialPost.title) {
           changes.title = cleanTitle;
         }
-
         if (cleanContent !== initialPost.content) {
           changes.content = cleanContent;
         }
-
         if (currentFeatureImage !== initialPost.featuredImage) {
-          changes.featuredImage = currentFeatureImage || undefined;
+          changes.featuredImage = currentFeatureImage as string;
         }
 
-        // Compare arrays using for deep equality
+        // Compare categories and tags for genuine differences
         if (
-          JSON.stringify(categories) !== JSON.stringify(initialPost.categories)
+          categories.length > 0 ||
+          (initialPost.categories && initialPost.categories.length > 0)
         ) {
-          changes.categories = categories;
+          if (!arraysEqual(categories, initialPost.categories || [])) {
+            changes.categories = categories;
+          }
         }
 
-        if (JSON.stringify(tags) !== JSON.stringify(initialPost.tags)) {
-          changes.tags = tags;
+        if (tags.length > 0 || (initialPost.tags ?? []).length > 0) {
+          if (!arraysEqual(tags, initialPost.tags || [])) {
+            changes.tags = tags;
+          }
         }
 
-        // Only make the update request if there are changes
+        // Only proceed with mutation if there are changes to be made
         if (Object.keys(changes).length > 0) {
-          updatePostMutate({ ...changes, _id: initialPost._id });
-          console.log("Changes===>", { ...changes, _id: initialPost._id });
+          updatePostMutate({
+            ...changes,
+            _id: initialPost._id as unknown as mongoose.Types.ObjectId,
+          });
         } else {
           toast({
             title: "No Changes",
@@ -305,7 +311,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           });
         }
       } else {
-        console.log("Creating post");
         const cleanTitle = DOMPurify.sanitize(title, {
           USE_PROFILES: { html: true },
         });
@@ -334,6 +339,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       toast,
     ]
   );
+
   return {
     title,
     content,

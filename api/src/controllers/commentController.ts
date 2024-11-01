@@ -6,7 +6,7 @@ import { RequestWithUserInfo } from "../typings/models/user";
 import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
-import { CommentType, PostType } from "../typings/types";
+import { CommentType, PostMongooseType, PostType } from "../typings/types";
 
 export const createComment = async (
   req: RequestWithUserInfo | any,
@@ -111,7 +111,10 @@ export const deleteCommentById = async (
   } = req;
 
   try {
-    const post: PostType = await Post.findById(postId);
+    const post = (await Post.findById(postId)) as PostMongooseType | null;
+    if (!post) {
+      throw new NotFound("This post doesn't exist");
+    }
     const comment: CommentType = await Comment.findOne({
       _id: commentId,
       postedBy: userId,
@@ -161,7 +164,7 @@ export const toggleLike = async (
   } = req;
 
   try {
-    const post: PostType = await Post.findById(postId);
+    const post = (await Post.findById(postId)) as PostMongooseType | null;
     const comment: CommentType = await Comment.findById({
       _id: commentId,
       postedBy: userId,

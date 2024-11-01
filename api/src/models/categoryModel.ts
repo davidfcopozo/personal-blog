@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
-const { ObjectId } = Schema.Types;
 
 const categorySchema = new Schema(
   {
@@ -15,12 +14,12 @@ const categorySchema = new Schema(
       unique: true,
     },
     topic: {
-      type: ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Topic",
       required: true,
     },
     postedBy: {
-      type: ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },

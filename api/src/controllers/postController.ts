@@ -6,7 +6,7 @@ import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
 import { PostType, UserType } from "../typings/types";
 import { slugValidator } from "../utils/validators";
 import User from "../models/userModel";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { JSDOM } from "jsdom";
 import createDOMPurify from "dompurify";
 
@@ -223,64 +223,57 @@ export const updatePostBySlugOrId = async (
       bookmarks,
       comments,
       published,
-      tags = [],
-      categories = [],
+      tags,
+      categories,
     } = req.body;
 
-    const sanitizedContent = DOMPurify.sanitize(content);
-    const fieldsToUpdate: Partial<PostType> = {
-      title,
-      content: sanitizedContent,
-      slug,
-      featuredImage,
-      bookmarks,
-      comments,
-      published,
-    };
+    // Initialize update operations
+    const updateOperations: any = {};
 
-    // First Update: Add new unique tags and categories using $addToSet
-    await Post.updateOne(
+    // Handle regular fields only if they are provided
+    const setFields: any = {};
+
+    if (title !== undefined) setFields.title = title;
+    if (content !== undefined) setFields.content = DOMPurify.sanitize(content);
+    if (slug !== undefined) setFields.slug = slug;
+    if (featuredImage !== undefined) setFields.featuredImage = featuredImage;
+    if (bookmarks !== undefined) setFields.bookmarks = bookmarks;
+    if (comments !== undefined) setFields.comments = comments;
+    if (published !== undefined) setFields.published = published;
+
+    // Only add $set if there are fields to set
+    if (Object.keys(setFields).length > 0) {
+      updateOperations.$set = setFields;
+    }
+
+    // Handle tags and categories only if they are provided
+    if (Array.isArray(tags)) {
+      updateOperations.$set = {
+        ...updateOperations.$set,
+        tags: tags,
+      };
+    }
+
+    if (Array.isArray(categories)) {
+      updateOperations.$set = {
+        ...updateOperations.$set,
+        categories: categories,
+      };
+    }
+
+    // Perform a single atomic update
+    const updatedPost = await Post.findOneAndUpdate(
       { _id: oldPost._id, postedBy: userId },
+      updateOperations,
       {
-        ...fieldsToUpdate,
-        $addToSet: {
-          tags: {
-            $each: tags.filter(
-              (tag: string) => oldPost.tags && !oldPost.tags.includes(tag)
-            ),
-          },
-          categories: {
-            $each: categories.filter(
-              (cat: ObjectId) =>
-                oldPost.categories && !oldPost.categories.includes(cat)
-            ),
-          },
-        },
+        new: true,
+        runValidators: true,
       }
-    );
+    ).populate("postedBy");
 
-    // Second Update: Remove tags and categories that are not in the updated list using $pull
-    await Post.updateOne(
-      { _id: oldPost._id, postedBy: userId },
-      {
-        $pull: {
-          tags: {
-            $in: (oldPost.tags || []).filter(
-              (tag: string) => !tags.includes(tag)
-            ),
-          },
-          categories: {
-            $in: (oldPost.categories ?? []).filter(
-              (cat: ObjectId) => !categories.includes(cat)
-            ),
-          },
-        },
-      }
-    );
-
-    const updatedPost = await Post.findOne({ _id: oldPost._id }).populate(
-      "postedBy"
-    );
+    if (!updatedPost) {
+      throw new NotFound("Post could not be updated");
+    }
 
     res.status(StatusCodes.OK).json({ success: true, data: updatedPost });
   } catch (err) {
