@@ -20,6 +20,7 @@ import DOMPurify from "dompurify";
 import { UpdatePostPayload, UserType } from "@/typings/types";
 import mongoose, { ObjectId } from "mongoose";
 import useUpdateRequest from "./useUpdateRequest";
+import { arraysEqual } from "@/utils/formats";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const [title, setTitle] = useState("");
@@ -283,17 +284,14 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           changes.featuredImage = currentFeatureImage || undefined;
         }
 
-        // Compare arrays using for deep equality
-        if (
-          JSON.stringify(categories) !== JSON.stringify(initialPost.categories)
-        ) {
+        // Compare categories and tags, ensuring deep equality
+        if (!arraysEqual(categories, initialPost.categories || [])) {
           changes.categories = categories;
         }
 
-        if (JSON.stringify(tags) !== JSON.stringify(initialPost.tags)) {
+        if (!arraysEqual(tags, initialPost.tags || [])) {
           changes.tags = tags;
         }
-
         // Only make the update request if there are changes
         if (Object.keys(changes).length > 0) {
           updatePostMutate({
@@ -337,6 +335,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       toast,
     ]
   );
+
   return {
     title,
     content,
