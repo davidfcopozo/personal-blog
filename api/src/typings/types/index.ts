@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { CommentInterface } from "../models/comment";
 import { PostInterface } from "../models/post";
 import { UserInterface } from "../models/user";
@@ -12,4 +13,8 @@ export type SocialMediaProfiles = {
   facebook?: string;
   instagram?: string;
   dribble?: string;
+};
+
+export type PostMongooseType = Omit<PostType, "_id"> & {
+  _id: mongoose.Types.ObjectId;
 };

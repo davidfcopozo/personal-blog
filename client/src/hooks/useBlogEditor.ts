@@ -17,8 +17,8 @@ import { InitialPost, UseBlogEditorProps } from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
-import { PostType, UpdatePostPayload, UserType } from "@/typings/types";
-import { ObjectId } from "mongoose";
+import { UpdatePostPayload, UserType } from "@/typings/types";
+import mongoose, { ObjectId } from "mongoose";
 import useUpdateRequest from "./useUpdateRequest";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
@@ -296,7 +296,10 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
         // Only make the update request if there are changes
         if (Object.keys(changes).length > 0) {
-          updatePostMutate({ ...changes, _id: initialPost._id });
+          updatePostMutate({
+            ...changes,
+            _id: initialPost._id as unknown as mongoose.Types.ObjectId,
+          });
           console.log("Changes===>", { ...changes, _id: initialPost._id });
         } else {
           toast({
