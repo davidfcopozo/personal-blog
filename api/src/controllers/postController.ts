@@ -236,10 +236,13 @@ export const updatePostBySlugOrId = async (
     if (title !== undefined) setFields.title = title;
     if (content !== undefined) setFields.content = DOMPurify.sanitize(content);
     if (slug !== undefined) setFields.slug = slug;
-    if (featuredImage !== undefined) setFields.featuredImage = featuredImage;
     if (bookmarks !== undefined) setFields.bookmarks = bookmarks;
     if (comments !== undefined) setFields.comments = comments;
     if (published !== undefined) setFields.published = published;
+
+    if (featuredImage !== undefined) {
+      setFields.featuredImage = featuredImage || process.env.DEFAULT_POST_IMAGE;
+    }
 
     // Only add $set if there are fields to set
     if (Object.keys(setFields).length > 0) {
