@@ -2,6 +2,7 @@ import { CommentSectionPropsType } from "@/typings/types";
 import Comment from "./comment";
 import CommentBox from "./comment-box";
 import useCommentFetch from "@/hooks/useCommentFetch";
+import { CommentInterface } from "@/typings/interfaces";
 
 export default function CommentSection({ comments }: CommentSectionPropsType) {
   const { data: fetchedComments } = useCommentFetch(comments);
@@ -12,7 +13,7 @@ export default function CommentSection({ comments }: CommentSectionPropsType) {
         <h2 className="text-2xl font-bold">Comments</h2>
         <div className="grid gap-6">
           {fetchedComments && fetchedComments.length >= 1 ? (
-            fetchedComments?.map((comment) => (
+            fetchedComments?.map((comment: CommentInterface) => (
               <Comment key={`${comment?._id}`} comment={comment} />
             ))
           ) : (
