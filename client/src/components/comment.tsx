@@ -8,6 +8,7 @@ import { CommentProps } from "@/typings/types";
 import useCommentFetch from "@/hooks/useCommentFetch";
 import CommentSkeleton from "./comment-skeleton";
 import useFetchRequest from "@/hooks/useFetchRequest";
+import { CommentInterface } from "@/typings/interfaces";
 
 const Comment: React.FC<CommentProps> = ({ comment }) => {
   const {
@@ -61,7 +62,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
           </div>
           {fetchedReplies &&
             fetchedReplies?.length >= 1 &&
-            fetchedReplies.map((reply) => (
+            fetchedReplies.map((reply: CommentInterface) => (
               <Reply key={`${reply?._id}`} reply={reply} />
             ))}
         </div>
