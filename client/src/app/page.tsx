@@ -10,6 +10,7 @@ import { CategoryType, PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
 import CategoriesSkeleton from "@/components/categories-skeleton";
 import { BlogPostCard } from "@/components/blog-post-card";
+import SearchResults from "@/components/search-results";
 
 export default function Home() {
   const { toast } = useToast();
@@ -67,12 +68,10 @@ export default function Home() {
       .slice(0, 5);
   }, [categories]);
 
-  const handleLinkClick = useCallback(
-    (slug: string) => {
-      router.push(`/blog/${slug}`);
-    },
-    [router]
-  );
+  const handleLinkClick = useCallback((slug: string) => {
+    setSearchQuery("");
+    setIsFocused(false);
+  }, []);
 
   const blogCards = useMemo(() => {
     if (Array.isArray(posts?.data))
@@ -120,23 +119,14 @@ export default function Home() {
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
                     />
-                    {filteredPosts?.length > 0 && isFocused && searchQuery && (
-                      <div className="absolute mt-4 bg-background rounded-md shadow-sm w-full">
-                        {filteredPosts?.map((post: PostType) => (
-                          <Link
-                            key={`${post._id}`}
-                            href={`/blog/${post.slug}`}
-                            className="block px-4 py-3 hover:bg-muted/50 hover:rounded-lg transition-colors"
-                            prefetch={false}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onMouseUp={() => () =>
-                              handleLinkClick(post.slug as string)}
-                          >
-                            {post.title}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                    <div className="absolute mt-4 bg-background rounded-md shadow-sm w-full">
+                      <SearchResults
+                        filteredPosts={filteredPosts}
+                        isFocused={isFocused}
+                        searchQuery={searchQuery}
+                        onLinkClick={handleLinkClick}
+                      />
+                    </div>
                   </div>
                 </form>
                 <div className="flex ml-2 flex-col">
