@@ -80,7 +80,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               <span className="text-sm text-center pl-[0.1em]">
                 {bookmarks?.length}
               </span>
-              <span className="sr-only">Archive</span>
+              <span className="sr-only">Bookmark</span>
             </Button>
             <Button variant="ghost" size="icon">
               <Heart className="h-4 w-4" />
