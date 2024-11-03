@@ -89,13 +89,15 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               </span>
               <span className="sr-only">Like</span>
             </Button>
-            <Button variant="ghost" size="icon">
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-sm text-center pl-[0.2em]">
-                {comments?.length}
-              </span>
-              <span className="sr-only">Comment</span>
-            </Button>
+            <Link href={`/${username}/${post.slug}#comments-section`} passHref>
+              <Button variant="ghost" size="icon">
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm text-center pl-[0.2em]">
+                  {comments?.length}
+                </span>
+                <span className="sr-only">Comment</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
