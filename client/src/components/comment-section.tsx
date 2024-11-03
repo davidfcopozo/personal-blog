@@ -10,7 +10,9 @@ export default function CommentSection({ comments }: CommentSectionPropsType) {
   return (
     <div className="w-full max-w-3xl px-4 mx-auto space-y-6 mb-8 sm:px-6">
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Comments</h2>
+        <h2 id="comments-section" className="text-2xl font-bold">
+          Comments
+        </h2>
         <div className="grid gap-6">
           {fetchedComments && fetchedComments.length >= 1 ? (
             fetchedComments?.map((comment: CommentInterface) => (
