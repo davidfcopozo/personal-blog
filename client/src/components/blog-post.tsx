@@ -3,7 +3,7 @@ import usePostFetch from "@/hooks/usePostFetch";
 import { getFullName, showMonthDayYear } from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import SinglePostSkeleton from "./single-post-skeleton";
 import CommentSection from "./comment-section";
 
@@ -12,6 +12,16 @@ const BlogPost = ({ slug }: { slug: string }) => {
 
   const post = data?.data;
   const comments = post?.comments;
+
+  useEffect(() => {
+    if (window && window.location.hash) {
+      const element = document.getElementById(window.location.hash.slice(1));
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [post]);
+
   return (
     <div className="w-full h-full bg-background">
       {isLoading || isFetching ? (
