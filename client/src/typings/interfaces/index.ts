@@ -1,5 +1,6 @@
 import { FormEvent, HTMLAttributes, ReactNode } from "react";
 import { ObjectId } from "mongoose";
+import { AxiosError } from "axios";
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -72,4 +73,26 @@ export interface CategoryInterface {
   createdAt: Date;
   updatedAt: Date;
   usageCount: Number;
+}
+
+export interface MutationContext<TData> {
+  previousData?: TData;
+  newData?: TData;
+}
+
+export interface UseMutationRequestProps<TData, TVariables> {
+  url: string;
+  onSuccess?: (data: TData, variables: TVariables) => void;
+  onError?: (
+    error: AxiosError,
+    variables: TVariables,
+    context: MutationContext<TData> | undefined
+  ) => void;
+  onMutate?: (variables: TVariables) => Promise<MutationContext<TData>>;
+  onSettled?: (
+    data: TData | undefined,
+    error: AxiosError | null,
+    variables: TVariables,
+    context: MutationContext<TData> | undefined
+  ) => void;
 }
