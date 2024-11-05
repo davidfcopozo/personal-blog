@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-import useUpdateRequest from "./useUpdateRequest";
+import usePatchRequest from "./usePatchRequest";
 import { useAuth } from "@/context/AuthContext";
 import {
   InputFieldsProps,
@@ -31,7 +31,7 @@ export const useUpdateSettings = (id: string) => {
   const queryClient = useQueryClient();
   const { refetchUser } = useAuth();
 
-  const { mutate, data, status, error } = useUpdateRequest({
+  const { mutate, data, status, error } = usePatchRequest({
     url: `/api/users/${id}`,
     onSuccess: () => {
       toast({
