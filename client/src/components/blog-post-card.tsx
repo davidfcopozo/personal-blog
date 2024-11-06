@@ -10,9 +10,10 @@ import {
   truncateText,
 } from "@/utils/formats";
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
+import { getSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { MouseEvent } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 
 export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const {
@@ -29,6 +30,26 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const { _id: userID, username } = postedBy;
 
   let description = extractFirstParagraphText(content as string);
+  const [currentUser, setCurrentUser] = useState("");
+  const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    async function getUserId() {
+      const session = await getSession();
+      if (session?.user?.id) {
+        setCurrentUser(`${session.user.id}`);
+      }
+    }
+
+    getUserId();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && likes?.length) {
+      const userLiked = likes.some((like) => like.toString() === currentUser);
+      setLiked(userLiked);
+    }
+  }, [currentUser, postedBy]);
 
   const handleBookmarkClick = (e: MouseEvent) => {
     e.stopPropagation();
@@ -98,7 +119,11 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               <span className="sr-only">Bookmark</span>
             </Button>
             <Button variant="ghost" size="icon" onClick={handleLikeClick}>
-              <Heart className="h-4 w-4" />
+              <Heart
+                className={`h-4 w-4 ${
+                  liked && `fill-[#F91880] stroke-[#F91880]`
+                } transition-all duration-200`}
+              />
               <span className="text-sm text-center pl-[0.2em]">
                 {likes?.length}
               </span>
