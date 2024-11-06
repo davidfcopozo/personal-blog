@@ -2,7 +2,7 @@ import { UseMutationRequestProps } from "@/typings/interfaces";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-const usePatchRequest = <TData = unknown, TVariables = unknown>({
+const usePutRequest = <TData = unknown, TVariables = unknown>({
   url,
   onSuccess,
   onError,
@@ -22,4 +22,4 @@ const usePatchRequest = <TData = unknown, TVariables = unknown>({
   return { mutate, data, status, error };
 };
 
-export default usePatchRequest;
+export default usePutRequest;
