@@ -145,3 +145,9 @@ export type TagsProps = {
 };
 
 export type UpdatePostPayload = Partial<PostType>;
+
+export type PostFetchType = {
+  data: PostInterface[];
+  success: boolean;
+  count: number;
+};
