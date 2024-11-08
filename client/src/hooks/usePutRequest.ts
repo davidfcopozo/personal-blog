@@ -12,7 +12,7 @@ const usePutRequest = <TData = unknown, TVariables = unknown>({
   const { mutate, data, status, error } = useMutation({
     mutationFn: async (body: any) => {
       const res = await axios.put(url, body);
-      return res.data.data;
+      return res.data;
     },
     onSuccess: onSuccess,
     onError: onError,
