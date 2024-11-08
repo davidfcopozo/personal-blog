@@ -59,7 +59,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
 
   const handleLikeClick = (e: MouseEvent) => {
     e.preventDefault();
-    likeInteraction(post._id.toString(), "/api/posts/like");
+    likeInteraction(post._id.toString());
   };
 
   return (
