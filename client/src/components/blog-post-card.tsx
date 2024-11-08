@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useInteractions } from "@/hooks/useInteractions";
 import { BlogPostCardProps } from "@/typings/types";
 import {
   calculateReadingTime,
@@ -28,7 +29,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     slug,
   } = post;
   const { _id: userID, username } = postedBy;
-
+  const { likeInteraction } = useInteractions();
   let description = extractFirstParagraphText(content as string);
   const [currentUser, setCurrentUser] = useState("");
   const [liked, setLiked] = useState(false);
@@ -52,14 +53,15 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   }, [currentUser, postedBy]);
 
   const handleBookmarkClick = (e: MouseEvent) => {
-    e.stopPropagation();
+    e.preventDefault();
     console.log("Bookmark clicked");
   };
 
   const handleLikeClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    console.log("Like clicked");
+    e.preventDefault();
+    likeInteraction(post._id.toString(), "/api/posts/like");
   };
+
   return (
     <div className="flex flex-col max-w-sm md:max-h-[250px] md:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]">
       <Link className="md:w-1/3" href={`/${username}/${slug}`}>
@@ -118,7 +120,12 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               </span>
               <span className="sr-only">Bookmark</span>
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleLikeClick}>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              onClick={handleLikeClick}
+            >
               <Heart
                 className={`h-4 w-4 ${
                   liked && `fill-[#F91880] stroke-[#F91880]`
