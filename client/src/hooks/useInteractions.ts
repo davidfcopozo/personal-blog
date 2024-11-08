@@ -120,5 +120,7 @@ export const useInteractions = () => {
     likeMutation.mutate({ postId });
   };
 
-  return { likeInteraction };
+  const { status: likeStatus } = likeMutation;
+
+  return { likeInteraction, likeStatus };
 };
