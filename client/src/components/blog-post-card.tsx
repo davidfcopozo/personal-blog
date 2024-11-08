@@ -50,7 +50,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
       const userLiked = likes.some((like) => like.toString() === currentUser);
       setLiked(userLiked);
     }
-  }, [currentUser, postedBy]);
+  }, [currentUser, likes]);
 
   const handleBookmarkClick = (e: MouseEvent) => {
     e.preventDefault();
@@ -60,6 +60,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const handleLikeClick = (e: MouseEvent) => {
     e.preventDefault();
     likeInteraction(post._id.toString());
+    setLiked(!liked);
   };
 
   return (
