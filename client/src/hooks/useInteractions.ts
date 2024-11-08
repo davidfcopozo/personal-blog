@@ -11,8 +11,39 @@ export const useInteractions = () => {
 
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+    onSuccess: (_, variables: { postId: string }) => {
+      const postsData = queryClient.getQueryData<PostFetchType>(["posts"]);
+
+      if (postsData?.data) {
+        // Update the specific post in the cached data to avoid full refetch of posts with query validation
+        const updatedPosts = {
+          ...postsData,
+          data: postsData.data.map((post: PostInterface) => {
+            if (post._id.toString() === variables.postId.toString()) {
+              const userId = queryClient.getQueryData<{
+                data: { _id: ObjectId };
+              }>(["currentUser"])?.data._id;
+              const userIdString = userId?.toString();
+              const isLiked = post.likes?.some(
+                (like) => like.toString() === userIdString
+              );
+
+              return {
+                ...post,
+                likes: isLiked
+                  ? post.likes?.filter(
+                      (like) => like.toString() !== userIdString
+                    )
+                  : [...(post.likes || []), userId!],
+              };
+            }
+            return post;
+          }),
+        };
+
+        // Set the updated data back in the cache
+        queryClient.setQueryData(["posts"], updatedPosts);
+      }
 
       toast({
         title: "Success",
@@ -85,9 +116,9 @@ export const useInteractions = () => {
     },
   });
 
-  const likeInteraction = (postId: string, url: string) => {
+  const likeInteraction = (postId: string) => {
     likeMutation.mutate({ postId });
   };
 
-  return { likeInteraction  };
+  return { likeInteraction };
 };
