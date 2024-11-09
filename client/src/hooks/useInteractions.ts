@@ -51,13 +51,14 @@ export const useInteractions = () => {
       });
     },
     onError: (error) => {
+      //Error during mutation
       const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
       queryClient.setQueryData(["posts"], previousPosts);
 
       const errorMessage =
-        error && typeof error === "object"
-          ? `Failed to process the request. ${JSON.stringify(error, null, 2)}`
-          : "Failed to process the request. Please try again.";
+        error &&
+        typeof error === "object" &&
+        "Failed to process the request. Please try again.";
 
       toast({
         variant: "destructive",
@@ -73,16 +74,11 @@ export const useInteractions = () => {
       ]);
       const previousPosts = previousPostsData?.data;
       if (!Array.isArray(previousPosts)) {
-        console.error("Expected posts to be an array, but got:", previousPosts);
         return { previousData: previousPosts };
       }
 
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!Array.isArray(oldPosts?.data)) {
-          console.error(
-            "Expected oldPosts to be an array during update:",
-            oldPosts?.data
-          );
           return oldPosts;
         }
 
@@ -116,11 +112,30 @@ export const useInteractions = () => {
     },
   });
 
-  const likeInteraction = (postId: string) => {
-    likeMutation.mutate({ postId });
+  const likeInteraction = (
+    postId: string,
+    { onError }: { onError?: () => void }
+  ) => {
+    likeMutation.mutate(
+      { postId },
+      {
+        onError: (error) => {
+          if (onError) onError();
+          //Error after likeMutation's internal error
+          const errorMessage =
+            error &&
+            typeof error === "object" &&
+            "Failed to process the request. Please try again.";
+
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: errorMessage,
+          });
+        },
+      }
+    );
   };
 
-  const { status: likeStatus } = likeMutation;
-
-  return { likeInteraction, likeStatus };
+  return { likeInteraction, likeStatus: likeMutation.status };
 };
