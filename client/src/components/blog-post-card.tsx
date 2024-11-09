@@ -29,11 +29,13 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     slug,
   } = post;
   const { _id: userID, username } = postedBy;
-  const { likeInteraction } = useInteractions();
+  const { likeInteraction, bookmarkInteraction } = useInteractions();
   let description = extractFirstParagraphText(content as string);
   const [currentUser, setCurrentUser] = useState("");
   const [liked, setLiked] = useState(false);
   const [amountOfLikes, setAmountOfLikes] = useState(0);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
 
   useEffect(() => {
     async function getUserId() {
@@ -52,12 +54,15 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
       setLiked(userLiked);
       setAmountOfLikes(likes.length);
     }
-  }, [currentUser, likes]);
 
-  const handleBookmarkClick = (e: MouseEvent) => {
-    e.preventDefault();
-    console.log("Bookmark clicked");
-  };
+    if (currentUser && bookmarks?.length) {
+      const userBookmarked = bookmarks.some(
+        (bookmark) => bookmark.toString() === currentUser
+      );
+      setBookmarked(userBookmarked);
+      setAmountOfBookmarks(bookmarks.length);
+    }
+  }, [currentUser, likes, bookmarks]);
 
   const handleLikeClick = (e: MouseEvent) => {
     e.preventDefault();
@@ -74,6 +79,23 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
         // Rollback UI changes on error
         setLiked(previousLikedState);
         setAmountOfLikes(previousLikesCount);
+      },
+    });
+  };
+
+  const handleBookmarkClick = (e: MouseEvent) => {
+    e.preventDefault();
+
+    const previousBookmarkedState = bookmarked;
+    const previousBookmarksCount = amountOfBookmarks;
+
+    setBookmarked(!bookmarked);
+    setAmountOfBookmarks((prev) => (bookmarked ? prev - 1 : prev + 1));
+
+    bookmarkInteraction(post._id.toString(), {
+      onError: () => {
+        setBookmarked(previousBookmarkedState);
+        setAmountOfBookmarks(previousBookmarksCount);
       },
     });
   };
@@ -129,12 +151,45 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
             </div>
           </div>
           <div className="flex space-x-1 sm:mr-6">
-            <Button variant="ghost" size="icon" onClick={handleBookmarkClick}>
-              <Bookmark className="h-4 w-4" />
-              <span className="text-sm text-center pl-[0.1em]">
-                {bookmarks?.length}
-              </span>
-              <span className="sr-only">Bookmark</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              onClick={handleBookmarkClick}
+              className="group flex items-center focus:outline-none transition-colors duration-300 hover:bg-transparent hover:shadow-[inset_0px_0px_40px_0px_rgba(29,161,242,0.2)] "
+            >
+              <div className="relative">
+                <Bookmark
+                  className={`h-4 w-4 transition-colors duration-300 ${
+                    bookmarked ? "stroke-[#1d9bf0]" : "stroke-gray-400"
+                  }`}
+                />
+                <Bookmark
+                  className={`absolute inset-0 h-4 w-4 text-[#1d9bf0]  transition-all duration-300 ${
+                    bookmarked ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                  }`}
+                />
+              </div>
+              <div className="relative w-4 h-4 overflow-hidden">
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                    bookmarked ? "-translate-y-full" : "translate-y-0"
+                  }`}
+                >
+                  <span className="text-sm text-center text-gray-400 pl-[0.1em]">
+                    {amountOfBookmarks}
+                  </span>
+                </div>
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                    bookmarked ? "translate-y-0" : "translate-y-full"
+                  }`}
+                >
+                  <span className="text-sm text-center pl-[0.1em] text-[#1d9bf0]">
+                    {amountOfBookmarks}
+                  </span>
+                </div>
+              </div>
             </Button>
             <Button
               variant="ghost"
@@ -146,7 +201,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               <div className="relative">
                 <Heart
                   className={`h-4 w-4 transition-colors duration-300 ${
-                    liked ? "stroke-pink-500" : "stroke-white"
+                    liked ? "stroke-pink-500" : "stroke-gray-400"
                   }`}
                 />
                 <Heart
@@ -161,7 +216,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
                     liked ? "-translate-y-full" : "translate-y-0"
                   }`}
                 >
-                  <span className="text-sm text-center pl-[0.1em]">
+                  <span className="text-sm text-center text-gray-400 pl-[0.1em]">
                     {amountOfLikes}
                   </span>
                 </div>
@@ -178,8 +233,8 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
             </Button>
             <Link href={`/${username}/${post.slug}#comments-section`} passHref>
               <Button variant="ghost" size="icon">
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-sm text-center pl-[0.2em]">
+                <MessageCircle className="h-4 w-4 stroke-gray-400" />
+                <span className="text-sm text-center text-gray-400 pl-[0.2em]">
                   {comments?.length}
                 </span>
                 <span className="sr-only">Comment</span>
