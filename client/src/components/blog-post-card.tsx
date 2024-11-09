@@ -33,6 +33,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   let description = extractFirstParagraphText(content as string);
   const [currentUser, setCurrentUser] = useState("");
   const [liked, setLiked] = useState(false);
+  const [amountOfLikes, setAmountOfLikes] = useState(0);
 
   useEffect(() => {
     async function getUserId() {
@@ -49,6 +50,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     if (currentUser && likes?.length) {
       const userLiked = likes.some((like) => like.toString() === currentUser);
       setLiked(userLiked);
+      setAmountOfLikes(likes.length);
     }
   }, [currentUser, likes]);
 
@@ -59,8 +61,21 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
 
   const handleLikeClick = (e: MouseEvent) => {
     e.preventDefault();
-    likeInteraction(post._id.toString());
+
+    // Optimistic UI changes
+    const previousLikedState = liked;
+    const previousLikesCount = amountOfLikes;
+
     setLiked(!liked);
+    setAmountOfLikes((prev) => (liked ? prev - 1 : prev + 1));
+
+    likeInteraction(post._id.toString(), {
+      onError: () => {
+        // Rollback UI changes on error
+        setLiked(previousLikedState);
+        setAmountOfLikes(previousLikesCount);
+      },
+    });
   };
 
   return (
@@ -133,7 +148,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
                 } transition-all duration-200`}
               />
               <span className="text-sm text-center pl-[0.2em]">
-                {likes?.length}
+                {amountOfLikes}
               </span>
               <span className="sr-only">Like</span>
             </Button>
