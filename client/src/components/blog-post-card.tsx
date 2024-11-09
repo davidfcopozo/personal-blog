@@ -141,16 +141,40 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               size="icon"
               type="button"
               onClick={handleLikeClick}
+              className="group flex items-center focus:outline-none transition-colors duration-300 hover:bg-transparent hover:shadow-[inset_0px_0px_40px_0px_rgba(236,72,153,0.2)] "
             >
-              <Heart
-                className={`h-4 w-4 ${
-                  liked && `fill-[#F91880] stroke-[#F91880]`
-                } transition-all duration-200`}
-              />
-              <span className="text-sm text-center pl-[0.2em]">
-                {amountOfLikes}
-              </span>
-              <span className="sr-only">Like</span>
+              <div className="relative">
+                <Heart
+                  className={`h-4 w-4 transition-colors duration-300 ${
+                    liked ? "stroke-pink-500" : "stroke-white"
+                  }`}
+                />
+                <Heart
+                  className={`absolute inset-0 h-4 w-4 text-pink-500 transition-all duration-300 ${
+                    liked ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                  }`}
+                />
+              </div>
+              <div className="relative w-4 h-4 overflow-hidden">
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                    liked ? "-translate-y-full" : "translate-y-0"
+                  }`}
+                >
+                  <span className="text-sm text-center pl-[0.1em]">
+                    {amountOfLikes}
+                  </span>
+                </div>
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                    liked ? "translate-y-0" : "translate-y-full"
+                  }`}
+                >
+                  <span className="text-sm text-center pl-[0.1em] text-pink-500">
+                    {amountOfLikes}
+                  </span>
+                </div>
+              </div>
             </Button>
             <Link href={`/${username}/${post.slug}#comments-section`} passHref>
               <Button variant="ghost" size="icon">
