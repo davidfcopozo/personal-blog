@@ -4,10 +4,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { PostFetchType } from "@/typings/types";
 import { ObjectId } from "mongoose";
 import { PostInterface } from "../../../api/src/typings/models/post";
+import usePostRequest from "./usePostRequest";
+import { useState } from "react";
+import { CommentInterface } from "@/typings/interfaces";
 
-export const useInteractions = () => {
+export const useInteractions = (postId?: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [content, setContent] = useState<string>("");
 
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
@@ -112,6 +116,31 @@ export const useInteractions = () => {
     },
   });
 
+  const likeInteraction = (
+    postId: string,
+    { onError }: { onError?: () => void }
+  ) => {
+    likeMutation.mutate(
+      { postId },
+      {
+        onError: (error) => {
+          if (onError) onError();
+          //Error after likeMutation's internal error
+          const errorMessage =
+            error &&
+            typeof error === "object" &&
+            "Failed to process the request. Please try again.";
+
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: errorMessage,
+          });
+        },
+      }
+    );
+  };
+
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
     onSuccess: (_, variables: { postId: string }) => {
@@ -215,31 +244,6 @@ export const useInteractions = () => {
     },
   });
 
-  const likeInteraction = (
-    postId: string,
-    { onError }: { onError?: () => void }
-  ) => {
-    likeMutation.mutate(
-      { postId },
-      {
-        onError: (error) => {
-          if (onError) onError();
-          //Error after likeMutation's internal error
-          const errorMessage =
-            error &&
-            typeof error === "object" &&
-            "Failed to process the request. Please try again.";
-
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: errorMessage,
-          });
-        },
-      }
-    );
-  };
-
   const bookmarkInteraction = (
     postId: string,
     { onError }: { onError?: () => void }
@@ -265,9 +269,92 @@ export const useInteractions = () => {
     );
   };
 
+  const createCommentMutation = usePostRequest({
+    url: `/api/comments/${postId}`,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      setContent("");
+      toast({
+        title: "Success",
+        description: "Your comment was successfully added.",
+      });
+    },
+    onError: (error) => {
+      const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
+      queryClient.setQueryData(["posts"], previousPosts);
+
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "Failed to process the request. Please try again.";
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    },
+    onMutate: async (comment: CommentInterface) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
+
+      const previousPostsData = queryClient.getQueryData<PostFetchType>([
+        "posts",
+      ]);
+      const previousPosts = previousPostsData?.data;
+      if (!Array.isArray(previousPosts)) {
+        return { previousData: previousPosts };
+      }
+
+      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
+        if (!Array.isArray(oldPosts?.data)) {
+          return oldPosts;
+        }
+
+        return {
+          ...oldPosts,
+          data: oldPosts.data.map((post: PostInterface) => {
+            if (post._id.toString() === comment._id.toString()) {
+              return {
+                ...post,
+                comments: [...(post.comments || []), comment],
+              };
+            }
+            return post;
+          }),
+        };
+      });
+
+      return { previousData: previousPosts };
+    },
+  });
+
+  const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
+    createCommentMutation.mutate(
+      { _id: postId, content },
+      {
+        onError: (error) => {
+          if (onError) onError();
+          const errorMessage =
+            error &&
+            typeof error === "object" &&
+            "Failed to process the request. Please try again.";
+
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: errorMessage,
+          });
+        },
+      }
+    );
+  };
+
   return {
     likeInteraction,
     likeStatus: likeMutation.status,
     bookmarkInteraction,
+    createCommentInteraction,
+    content,
+    setContent,
   };
 };
