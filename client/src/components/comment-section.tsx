@@ -4,7 +4,10 @@ import CommentBox from "./comment-box";
 import useCommentFetch from "@/hooks/useCommentFetch";
 import { CommentInterface } from "@/typings/interfaces";
 
-export default function CommentSection({ comments }: CommentSectionPropsType) {
+export default function CommentSection({
+  comments,
+  id,
+}: CommentSectionPropsType) {
   const { data: fetchedComments } = useCommentFetch(comments);
 
   return (
@@ -23,7 +26,7 @@ export default function CommentSection({ comments }: CommentSectionPropsType) {
           )}
         </div>
       </div>
-      <CommentBox />
+      <CommentBox id={id} />
     </div>
   );
 }
