@@ -1,4 +1,3 @@
-import { InitialPost } from "@/typings/interfaces";
 import { UsePostRequestType } from "@/typings/types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -10,7 +9,7 @@ function usePostRequest({
   onMutate,
 }: UsePostRequestType) {
   const { mutate, data, status, error } = useMutation({
-    mutationFn: async (body: InitialPost) => {
+    mutationFn: async (body: any) => {
       const res = await axios.post(url, body);
       return res.data.data;
     },
