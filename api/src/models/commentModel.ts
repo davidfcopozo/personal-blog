@@ -18,6 +18,7 @@ const commentSchema = new mongoose.Schema<CommentInterface>(
     },
     replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reply" }],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    isReply: { type: Boolean, required: true, default: false },
   },
   { timestamps: true }
 );
