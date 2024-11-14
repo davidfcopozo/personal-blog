@@ -62,6 +62,7 @@ export interface CommentInterface {
   likes: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
+  isReply: boolean;
 }
 
 export interface CategoryInterface {
