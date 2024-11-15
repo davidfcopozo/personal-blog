@@ -5,10 +5,11 @@ import { PostFetchType } from "@/typings/types";
 import { ObjectId } from "mongoose";
 import { PostInterface } from "../../../api/src/typings/models/post";
 import usePostRequest from "./usePostRequest";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CommentInterface } from "@/typings/interfaces";
 
-export const useInteractions = (postId?: string) => {
+export const useInteractions = (id?: string) => {
+  const postId = useRef(id).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [content, setContent] = useState<string>("");
@@ -271,8 +272,43 @@ export const useInteractions = (postId?: string) => {
 
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    onSuccess: (newComment) => {
+      // Update the posts cache directly
+      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
+        if (!oldPosts || !oldPosts.data) {
+          return oldPosts;
+        }
+
+        const postList = Array.isArray(oldPosts.data)
+          ? oldPosts.data
+          : [oldPosts.data];
+
+        return {
+          ...oldPosts,
+          data: postList.map((post: PostInterface) => {
+            if (post._id.toString() === postId) {
+              return {
+                ...post,
+                comments: [...(post.comments || []), newComment._id],
+              };
+            }
+            return post;
+          }),
+        };
+      });
+
+      // Update comments cache directly
+      queryClient.setQueryData<CommentInterface[]>(
+        ["comments"],
+        (oldComments) => {
+          if (!oldComments) {
+            return [newComment];
+          }
+
+          return [...oldComments, newComment];
+        }
+      );
+
       setContent("");
       toast({
         title: "Success",
@@ -282,12 +318,10 @@ export const useInteractions = (postId?: string) => {
     onError: (error) => {
       const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
       queryClient.setQueryData(["posts"], previousPosts);
-
       const errorMessage =
         error &&
         typeof error === "object" &&
         "Failed to process the request. Please try again.";
-
       toast({
         variant: "destructive",
         title: "Error",
@@ -295,28 +329,29 @@ export const useInteractions = (postId?: string) => {
       });
     },
     onMutate: async (comment: CommentInterface) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
-
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
       ]);
-      const previousPosts = previousPostsData?.data;
-      if (!Array.isArray(previousPosts)) {
-        return { previousData: previousPosts };
-      }
 
+      // Optimistically update the cache
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!Array.isArray(oldPosts?.data)) {
+        if (!oldPosts || !oldPosts.data) {
           return oldPosts;
         }
 
+        const postList = Array.isArray(oldPosts.data)
+          ? oldPosts.data
+          : [oldPosts.data];
+
         return {
           ...oldPosts,
-          data: oldPosts.data.map((post: PostInterface) => {
-            if (post._id.toString() === comment._id.toString()) {
+          data: postList.map((post: PostInterface) => {
+            if (post._id.toString() === postId) {
               return {
                 ...post,
-                comments: [...(post.comments || []), comment],
+                comments: [...(post.comments || []), comment._id],
               };
             }
             return post;
@@ -324,7 +359,7 @@ export const useInteractions = (postId?: string) => {
         };
       });
 
-      return { previousData: previousPosts };
+      return { previousData: previousPostsData };
     },
   });
 
