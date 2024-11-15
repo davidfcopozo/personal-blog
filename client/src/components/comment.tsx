@@ -15,7 +15,10 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
     data: fetchedReplies,
     isLoading,
     isFetching,
-  } = useCommentFetch(comment.replies);
+  } = useCommentFetch(
+    comment?.replies?.length >= 1 ? comment?.replies : [],
+    "replies"
+  );
 
   const { data: postedBy } = useFetchRequest(
     "commentPostedBy",

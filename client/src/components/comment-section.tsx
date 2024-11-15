@@ -8,7 +8,7 @@ export default function CommentSection({
   comments,
   id,
 }: CommentSectionPropsType) {
-  const { data: fetchedComments } = useCommentFetch(comments);
+  const { data: fetchedComments } = useCommentFetch(comments, "comments");
 
   return (
     <div className="w-full max-w-3xl px-4 mx-auto space-y-6 mb-8 sm:px-6">
