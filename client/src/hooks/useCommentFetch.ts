@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { CommentInterface } from "@/typings/interfaces";
-import { useEffect } from "react";
 
 const getBaseURL = () => {
   if (typeof window !== "undefined") {
@@ -10,15 +9,17 @@ const getBaseURL = () => {
   return "http://localhost:3000";
 };
 
-const useCommentFetch = (ids: string[]) => {
-  const baseULR = getBaseURL();
+const useCommentFetch = (ids: string[], key: string) => {
+  const baseURL = getBaseURL();
 
   const fetchComments = async (): Promise<CommentInterface[]> => {
+    if (!ids.length) return [];
+
     const commentPromises = ids.map(async (id) => {
       const { data } = await axios.get<{
         success: boolean;
         data: CommentInterface;
-      }>(`${baseULR}/api/comments/${id}`);
+      }>(`${baseURL}/api/comments/${id}`);
       return data.data;
     });
 
@@ -27,12 +28,13 @@ const useCommentFetch = (ids: string[]) => {
   };
 
   const { data, error, isLoading, isFetching } = useQuery<CommentInterface[]>({
-    queryKey: ["comments", ...ids],
+    queryKey: [key],
     queryFn: fetchComments,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     gcTime: 0,
     staleTime: 0,
+    enabled: ids?.length > 0,
   });
 
   return { data, error, isLoading, isFetching };
