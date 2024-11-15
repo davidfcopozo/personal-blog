@@ -89,7 +89,7 @@ const BlogPost = ({ slug }: { slug: string }) => {
               dangerouslySetInnerHTML={{ __html: post?.content }}
             />
           </div>
-          <CommentSection comments={comments} id={post._id} />
+          <CommentSection comments={comments} id={post?._id} />
         </div>
       )}
     </div>
