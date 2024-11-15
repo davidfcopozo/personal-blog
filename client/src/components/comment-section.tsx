@@ -18,9 +18,11 @@ export default function CommentSection({
         </h2>
         <div className="grid gap-6">
           {fetchedComments && fetchedComments.length >= 1 ? (
-            fetchedComments?.map((comment: CommentInterface) => (
-              <Comment key={`${comment?._id}`} comment={comment} />
-            ))
+            fetchedComments
+              .filter((comment: CommentInterface) => !comment.isReply)
+              .map((comment: CommentInterface) => (
+                <Comment key={`${comment._id}`} comment={comment} />
+              ))
           ) : (
             <p>No comments yet, be the first!</p>
           )}
