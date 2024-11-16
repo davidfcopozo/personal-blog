@@ -313,10 +313,9 @@ export const useInteractions = (id?: string, post?: PostType) => {
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
+      // Update the posts list cache
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!oldPosts || !oldPosts.data) {
-          return oldPosts;
-        }
+        if (!oldPosts?.data) return oldPosts;
 
         const postList = Array.isArray(oldPosts.data)
           ? oldPosts.data
@@ -333,6 +332,19 @@ export const useInteractions = (id?: string, post?: PostType) => {
             }
             return post;
           }),
+        };
+      });
+
+      // Update the individual post cache
+      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
+        if (!oldPost?.data) return oldPost;
+
+        return {
+          ...oldPost,
+          data: {
+            ...oldPost.data,
+            comments: [...(oldPost.data.comments || []), newComment._id],
+          },
         };
       });
 
@@ -350,10 +362,16 @@ export const useInteractions = (id?: string, post?: PostType) => {
         description: "Your comment was successfully added.",
       });
     },
-
     onError: (error) => {
       const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
+      const previousPost = queryClient.getQueryData<PostFetchType>([
+        "post",
+        post?.slug,
+      ]);
+
       queryClient.setQueryData(["posts"], previousPosts);
+      queryClient.setQueryData(["post", post?.slug], previousPost);
+
       const errorMessage =
         error &&
         typeof error === "object" &&
@@ -364,16 +382,21 @@ export const useInteractions = (id?: string, post?: PostType) => {
         description: errorMessage,
       });
     },
-    onMutate: async (newComment: CommentInterface) => {
+    onMutate: async (comment: CommentInterface) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
+      await queryClient.cancelQueries({ queryKey: ["post", post?.slug] });
+
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
       ]);
+      const previousPostData = queryClient.getQueryData<PostFetchType>([
+        "post",
+        post?.slug,
+      ]);
 
+      // Optimistically update both caches...
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!oldPosts || !oldPosts.data) {
-          return oldPosts;
-        }
+        if (!oldPosts?.data) return oldPosts;
 
         const postList = Array.isArray(oldPosts.data)
           ? oldPosts.data
@@ -385,7 +408,7 @@ export const useInteractions = (id?: string, post?: PostType) => {
             if (post._id.toString() === postId) {
               return {
                 ...post,
-                comments: [...(post.comments || []), newComment._id],
+                comments: [...(post.comments || []), comment._id],
               };
             }
             return post;
@@ -393,7 +416,19 @@ export const useInteractions = (id?: string, post?: PostType) => {
         };
       });
 
-      return { previousData: previousPostsData };
+      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
+        if (!oldPost?.data) return oldPost;
+
+        return {
+          ...oldPost,
+          data: {
+            ...oldPost.data,
+            comments: [...(oldPost.data.comments || []), comment._id],
+          },
+        };
+      });
+
+      return { previousPostsData, previousPostData };
     },
   });
 
