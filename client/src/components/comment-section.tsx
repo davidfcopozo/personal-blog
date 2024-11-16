@@ -7,6 +7,7 @@ import { CommentInterface } from "@/typings/interfaces";
 export default function CommentSection({
   comments,
   id,
+  post,
 }: CommentSectionPropsType) {
   const { data: fetchedComments } = useCommentFetch(comments, "comments");
 
@@ -22,7 +23,7 @@ export default function CommentSection({
             fetchedComments
               .filter((comment: CommentInterface) => !comment.isReply)
               .map((comment: CommentInterface) => (
-                <Comment key={`${comment._id}`} comment={comment} />
+                <Comment key={`${comment._id}`} comment={comment} post={post} />
               ))
           ) : (
             <p>No comments yet, be the first!</p>
