@@ -42,7 +42,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     e.preventDefault();
     bookmarkInteraction(`${post._id}`, {
       onError: () => {
-        console.error("Error handling like interaction");
+        console.error("Error handling bookmark interaction");
       },
     });
   };

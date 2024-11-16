@@ -10,6 +10,7 @@ const getBaseURL = () => {
 
 function useFetchRequest(key: string, url: string) {
   const baseULR = getBaseURL();
+
   try {
     const fetchData = async () => {
       const { data } = await axios.get(`${baseULR}${url}`);

@@ -24,7 +24,7 @@ const BlogPost = ({ slug }: { slug: string }) => {
 
     post.current = data?.data;
     postedBy.current = post.current?.postedBy;
-  }, [post]);
+  }, [data]);
 
   if (isLoading || isFetching) {
     return <SinglePostSkeleton />;
@@ -88,7 +88,7 @@ const BlogPost = ({ slug }: { slug: string }) => {
         </div>
         <CommentSection
           comments={post.current?.comments as string[]}
-          id={post.current?._id.toString() as string}
+          id={`${post.current?._id}`}
         />
       </div>
     </div>
