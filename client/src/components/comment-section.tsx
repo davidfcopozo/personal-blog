@@ -16,6 +16,7 @@ export default function CommentSection({
         <h2 id="comments-section" className="text-2xl font-bold">
           Comments
         </h2>
+        <CommentBox id={id} />
         <div className="grid gap-6">
           {fetchedComments && fetchedComments.length >= 1 ? (
             fetchedComments
@@ -28,7 +29,6 @@ export default function CommentSection({
           )}
         </div>
       </div>
-      <CommentBox id={id} />
     </div>
   );
 }
