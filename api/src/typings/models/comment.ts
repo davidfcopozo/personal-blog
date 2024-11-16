@@ -7,4 +7,5 @@ export interface CommentInterface {
   content: String;
   likes?: mongoose.Types.ObjectId[];
   replies?: mongoose.Types.ObjectId[];
+  isReply: Boolean;
 }

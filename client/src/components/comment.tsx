@@ -15,11 +15,14 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
     data: fetchedReplies,
     isLoading,
     isFetching,
-  } = useCommentFetch(comment.replies);
+  } = useCommentFetch(
+    comment?.replies?.length >= 1 ? comment?.replies : [],
+    "replies"
+  );
 
   const { data: postedBy } = useFetchRequest(
     "commentPostedBy",
-    `/api/users/${comment.postedBy}`
+    `/api/users/${comment?.postedBy}`
   );
 
   return (
@@ -53,7 +56,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
                 >
                   <ThumbsUp className="w-4 h-4" />
                   <span className="text-xs text-muted-foreground">
-                    {comment.likes.length}
+                    {comment?.likes?.length}
                   </span>
                   <span className="sr-only">Like</span>
                 </Button>

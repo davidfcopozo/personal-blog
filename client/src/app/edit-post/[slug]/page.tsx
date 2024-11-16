@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import BlogEditor from "@/components/blog-editor";
-import useFetchPost from "@/hooks/usePostFetch";
+import useFetchPost from "@/hooks/useFetchPost";
 
 const EditPostPage = ({ params }: { params: { slug: string } }) => {
   const slug = decodeURI(params.slug);

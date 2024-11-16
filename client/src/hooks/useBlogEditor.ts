@@ -19,7 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
 import { UpdatePostPayload, UserType } from "@/typings/types";
 import mongoose, { ObjectId } from "mongoose";
-import useUpdateRequest from "./useUpdateRequest";
+import usePatchRequest from "./usePatchRequest";
 import { arraysEqual } from "@/utils/formats";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
@@ -75,7 +75,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     data: updatePostData,
     status: updatePostStatus,
     error: updatePostError,
-  } = useUpdateRequest({
+  } = usePatchRequest({
     url: `/api/posts/${initialPost?._id}`,
     onSuccess: (updatePostData, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });

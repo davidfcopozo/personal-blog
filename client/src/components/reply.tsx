@@ -9,7 +9,7 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 const Reply: React.FC<ReplyProps> = ({ reply }) => {
   const { data: postedBy } = useFetchRequest(
     "commentPostedBy",
-    `/api/users/${reply.postedBy}`
+    `/api/users/${reply?.postedBy}`
   );
   return (
     <div key={`${reply?._id}`} className="flex items-start gap-4 pl-14">
@@ -37,7 +37,7 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
           >
             <ThumbsUp className="w-4 h-4" />
             <span className="text-xs text-muted-foreground">
-              {reply?.likes.length}
+              {reply?.likes?.length}
             </span>
             <span className="sr-only">Like</span>
           </Button>

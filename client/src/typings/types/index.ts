@@ -34,10 +34,7 @@ export type UserType = UserInterface;
 
 export type PostType = Omit<PostInterface, "postedBy" | "comments"> & {
   postedBy: UserType;
-  comments?: Array<{
-    text: string;
-    postedBy: UserType;
-  }>;
+  comments?: string[];
   createdAt?: Date;
 };
 
@@ -45,6 +42,7 @@ export type CategoryType = CategoryInterface;
 
 export type CommentSectionPropsType = {
   comments: string[];
+  id: string;
 };
 
 export type CommentProps = {
@@ -145,3 +143,9 @@ export type TagsProps = {
 };
 
 export type UpdatePostPayload = Partial<PostType>;
+
+export type PostFetchType = {
+  data: PostInterface[];
+  success: boolean;
+  count: number;
+};

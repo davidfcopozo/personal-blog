@@ -41,6 +41,7 @@ export const createReply = async (
       ...req.body,
       postedBy: userId,
       post: postId,
+      isReply: true,
     });
 
     if (!reply) {
