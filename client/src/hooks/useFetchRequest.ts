@@ -8,18 +8,17 @@ const getBaseURL = () => {
   return "http://localhost:3000";
 };
 
-function useFetchRequest(key: string, url: string) {
+function useFetchRequest(queryKey: string[], url: string) {
   const baseULR = getBaseURL();
 
   try {
     const fetchData = async () => {
       const { data } = await axios.get(`${baseULR}${url}`);
-
       return data;
     };
 
     const { data, error, isLoading, isFetching, refetch } = useQuery({
-      queryKey: [key],
+      queryKey,
       queryFn: fetchData,
       refetchOnWindowFocus: false,
       refetchOnMount: true,
