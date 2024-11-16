@@ -43,11 +43,13 @@ export type CategoryType = CategoryInterface;
 export type CommentSectionPropsType = {
   comments: string[];
   id: string;
+  post: PostType;
 };
 
 export type CommentProps = {
   key: string | number;
   comment: CommentInterface;
+  post: PostType;
 };
 
 export type ReplyProps = {
