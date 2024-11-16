@@ -3,16 +3,22 @@ import useFetchPost from "@/hooks/useFetchPost";
 import { getFullName, showMonthDayYear } from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import SinglePostSkeleton from "./single-post-skeleton";
 import CommentSection from "./comment-section";
 import { PostType, UserType } from "@/typings/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BlogPost = ({ slug }: { slug: string }) => {
+  const queryClient = useQueryClient();
   const { data, isLoading, isFetching } = useFetchPost(slug);
+  const [hasInitialData, setHasInitialData] = useState(false);
 
-  let post = useRef<PostType | null>();
-  let postedBy = useRef<UserType | null>();
+  useEffect(() => {
+    if (data?.data && !hasInitialData) {
+      setHasInitialData(true);
+    }
+  }, [data?.data, hasInitialData]);
 
   useEffect(() => {
     if (window && window.location.hash) {
@@ -21,12 +27,15 @@ const BlogPost = ({ slug }: { slug: string }) => {
         element.scrollIntoView({ behavior: "smooth" });
       }
     }
+  }, []);
 
-    post.current = data?.data;
-    postedBy.current = post.current?.postedBy;
-  }, [data]);
+  // Get the latest post data from the cache
+  const post = queryClient.getQueryData<{ data: PostType }>([
+    "post",
+    slug,
+  ])?.data;
 
-  if (isLoading || isFetching) {
+  if (isLoading || (isFetching && !hasInitialData)) {
     return <SinglePostSkeleton />;
   }
 
@@ -40,15 +49,17 @@ const BlogPost = ({ slug }: { slug: string }) => {
     );
   }
 
+  const postedBy = post.postedBy;
+
   return (
     <div className="w-full h-full bg-background">
       <div className="w-full mx-auto mt-10 bg-background">
         <h1 className="w-[92%] mx-auto text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
-          {post.current?.title}
+          {post.title}
         </h1>
         <div className="flex items-center justify-center xl:w-[80%] w-[96%] mx-auto lg:h-[560px] md:h-[480px]">
           <Image
-            src={post.current?.featuredImage as string}
+            src={post.featuredImage as string}
             alt="Blog Cover"
             className="rounded-lg overflow-hidden aspect-square"
             width={500}
@@ -61,19 +72,19 @@ const BlogPost = ({ slug }: { slug: string }) => {
             <Link href="/#">
               <Image
                 className="w-10 h-10 rounded-full"
-                src={postedBy?.current?.avatar as string}
-                alt={`Avatar of ${getFullName(postedBy.current as UserType)}`}
+                src={postedBy?.avatar as string}
+                alt={`Avatar of ${getFullName(postedBy as UserType)}`}
                 width={300}
                 height={200}
               />
             </Link>
             <Link href="/#" className="text-sm font-semibold dark:text-white">
-              {getFullName(postedBy.current as UserType)}
+              {getFullName(postedBy as UserType)}
             </Link>
           </div>
           <div className="dark:text-gray-500">|</div>
           <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-            {showMonthDayYear(post.current?.createdAt?.toString() as string)}
+            {showMonthDayYear(post.createdAt?.toString() || "")}
           </h3>
           <div className="dark:text-gray-500">|</div>
           <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -83,12 +94,13 @@ const BlogPost = ({ slug }: { slug: string }) => {
         <div className="py-6 bg-background">
           <div
             className="md:w-[80%] w-[90%] mx-auto pt-4"
-            dangerouslySetInnerHTML={{ __html: post.current?.content || "" }}
+            dangerouslySetInnerHTML={{ __html: post.content || "" }}
           />
         </div>
         <CommentSection
-          comments={post.current?.comments as string[]}
-          id={`${post.current?._id}`}
+          comments={post.comments || []}
+          id={`${post._id}`}
+          post={post}
         />
       </div>
     </div>
