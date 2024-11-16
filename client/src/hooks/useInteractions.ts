@@ -273,7 +273,6 @@ export const useInteractions = (id?: string) => {
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
-      // Update the posts cache directly
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!oldPosts || !oldPosts.data) {
           return oldPosts;
@@ -297,15 +296,11 @@ export const useInteractions = (id?: string) => {
         };
       });
 
-      // Update comments cache directly
+      // Add the new full comment object to the comments cache
       queryClient.setQueryData<CommentInterface[]>(
         ["comments"],
         (oldComments) => {
-          if (!oldComments) {
-            return [newComment];
-          }
-
-          return [...oldComments, newComment];
+          return oldComments ? [...oldComments, newComment] : [newComment];
         }
       );
 
@@ -315,6 +310,7 @@ export const useInteractions = (id?: string) => {
         description: "Your comment was successfully added.",
       });
     },
+
     onError: (error) => {
       const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
       queryClient.setQueryData(["posts"], previousPosts);
@@ -328,14 +324,12 @@ export const useInteractions = (id?: string) => {
         description: errorMessage,
       });
     },
-    onMutate: async (comment: CommentInterface) => {
-      // Cancel any outgoing refetches so they don't overwrite our optimistic update
-      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
+    onMutate: async (newComment: CommentInterface) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
       ]);
 
-      // Optimistically update the cache
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!oldPosts || !oldPosts.data) {
           return oldPosts;
@@ -351,7 +345,7 @@ export const useInteractions = (id?: string) => {
             if (post._id.toString() === postId) {
               return {
                 ...post,
-                comments: [...(post.comments || []), comment._id],
+                comments: [...(post.comments || []), newComment._id],
               };
             }
             return post;
