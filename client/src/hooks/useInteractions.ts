@@ -1,18 +1,54 @@
 import { useQueryClient } from "@tanstack/react-query";
 import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
-import { PostFetchType } from "@/typings/types";
+import { PostFetchType, PostType } from "@/typings/types";
 import { ObjectId } from "mongoose";
 import { PostInterface } from "../../../api/src/typings/models/post";
 import usePostRequest from "./usePostRequest";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CommentInterface } from "@/typings/interfaces";
+import { getSession } from "next-auth/react";
 
-export const useInteractions = (id?: string) => {
+export const useInteractions = (id?: string, post?: PostType) => {
   const postId = useRef(id).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [content, setContent] = useState<string>("");
+
+  const [liked, setLiked] = useState(false);
+  const [amountOfLikes, setAmountOfLikes] = useState(0);
+  const [currentUser, setCurrentUser] = useState("");
+  const [bookmarked, setBookmarked] = useState(false);
+  const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
+  const bookmarks = post?.bookmarks ?? [];
+  const likes = post?.likes ?? [];
+
+  useEffect(() => {
+    async function getUserId() {
+      const session = await getSession();
+      if (session?.user?.id) {
+        setCurrentUser(`${session.user.id}`);
+      }
+    }
+
+    getUserId();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && likes?.length) {
+      const userLiked = likes.some((like) => like.toString() === currentUser);
+      setLiked(userLiked);
+      setAmountOfLikes(likes.length);
+    }
+
+    if (currentUser && bookmarks?.length) {
+      const userBookmarked = bookmarks.some(
+        (bookmark) => bookmark.toString() === currentUser
+      );
+      setBookmarked(userBookmarked);
+      setAmountOfBookmarks(bookmarks.length);
+    }
+  }, [currentUser, likes, bookmarks]);
 
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
@@ -121,21 +157,23 @@ export const useInteractions = (id?: string) => {
     postId: string,
     { onError }: { onError?: () => void }
   ) => {
+    const previousLikedState = liked;
+    const previousLikesCount = amountOfLikes;
+
+    setLiked(!liked);
+    setAmountOfLikes((prev) => (liked ? prev - 1 : prev + 1));
+
     likeMutation.mutate(
       { postId },
       {
         onError: (error) => {
+          setLiked(previousLikedState);
+          setAmountOfLikes(previousLikesCount);
           if (onError) onError();
-          //Error after likeMutation's internal error
-          const errorMessage =
-            error &&
-            typeof error === "object" &&
-            "Failed to process the request. Please try again.";
-
           toast({
             variant: "destructive",
             title: "Error",
-            description: errorMessage,
+            description: "Failed to process the request. Please try again.",
           });
         },
       }
@@ -249,21 +287,23 @@ export const useInteractions = (id?: string) => {
     postId: string,
     { onError }: { onError?: () => void }
   ) => {
+    const previousBookmarkedState = bookmarked;
+    const previousBookmarksCount = amountOfBookmarks;
+
+    setBookmarked(!bookmarked);
+    setAmountOfBookmarks((prev) => (bookmarked ? prev - 1 : prev + 1));
+
     bookmarkMutation.mutate(
       { postId },
       {
         onError: (error) => {
+          setBookmarked(previousBookmarkedState);
+          setAmountOfBookmarks(previousBookmarksCount);
           if (onError) onError();
-          //Error after likeMutation's internal error
-          const errorMessage =
-            error &&
-            typeof error === "object" &&
-            "Failed to process the request. Please try again.";
-
           toast({
             variant: "destructive",
             title: "Error",
-            description: errorMessage,
+            description: "Failed to process the request. Please try again.",
           });
         },
       }
@@ -381,7 +421,11 @@ export const useInteractions = (id?: string) => {
   return {
     likeInteraction,
     likeStatus: likeMutation.status,
+    liked,
+    amountOfLikes,
     bookmarkInteraction,
+    bookmarked,
+    amountOfBookmarks,
     createCommentInteraction,
     content,
     setContent,

@@ -11,91 +11,38 @@ import {
   truncateText,
 } from "@/utils/formats";
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
-import { getSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent } from "react";
 
 export const BlogPostCard = ({ post }: BlogPostCardProps) => {
-  const {
-    title,
-    content,
-    createdAt,
-    bookmarks,
-    likes,
-    comments,
-    featuredImage,
-    postedBy,
-    slug,
-  } = post;
+  const { title, content, createdAt, comments, featuredImage, postedBy, slug } =
+    post;
   const { _id: userID, username } = postedBy;
-  const { likeInteraction, bookmarkInteraction } = useInteractions();
+  const {
+    likeInteraction,
+    bookmarkInteraction,
+    liked,
+    amountOfLikes,
+    bookmarked,
+    amountOfBookmarks,
+  } = useInteractions(`${post._id}`, post);
   let description = extractFirstParagraphText(content as string);
-  const [currentUser, setCurrentUser] = useState("");
-  const [liked, setLiked] = useState(false);
-  const [amountOfLikes, setAmountOfLikes] = useState(0);
-  const [bookmarked, setBookmarked] = useState(false);
-  const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
-
-  useEffect(() => {
-    async function getUserId() {
-      const session = await getSession();
-      if (session?.user?.id) {
-        setCurrentUser(`${session.user.id}`);
-      }
-    }
-
-    getUserId();
-  }, []);
-
-  useEffect(() => {
-    if (currentUser && likes?.length) {
-      const userLiked = likes.some((like) => like.toString() === currentUser);
-      setLiked(userLiked);
-      setAmountOfLikes(likes.length);
-    }
-
-    if (currentUser && bookmarks?.length) {
-      const userBookmarked = bookmarks.some(
-        (bookmark) => bookmark.toString() === currentUser
-      );
-      setBookmarked(userBookmarked);
-      setAmountOfBookmarks(bookmarks.length);
-    }
-  }, [currentUser, likes, bookmarks]);
 
   const handleLikeClick = (e: MouseEvent) => {
     e.preventDefault();
-
-    // Optimistic UI changes
-    const previousLikedState = liked;
-    const previousLikesCount = amountOfLikes;
-
-    setLiked(!liked);
-    setAmountOfLikes((prev) => (liked ? prev - 1 : prev + 1));
-
-    likeInteraction(post._id.toString(), {
+    likeInteraction(`${post._id}`, {
       onError: () => {
-        // Rollback UI changes on error
-        setLiked(previousLikedState);
-        setAmountOfLikes(previousLikesCount);
+        console.error("Error handling like interaction");
       },
     });
   };
 
   const handleBookmarkClick = (e: MouseEvent) => {
     e.preventDefault();
-
-    const previousBookmarkedState = bookmarked;
-    const previousBookmarksCount = amountOfBookmarks;
-
-    setBookmarked(!bookmarked);
-    setAmountOfBookmarks((prev) => (bookmarked ? prev - 1 : prev + 1));
-
-    bookmarkInteraction(post._id.toString(), {
+    bookmarkInteraction(`${post._id}`, {
       onError: () => {
-        setBookmarked(previousBookmarkedState);
-        setAmountOfBookmarks(previousBookmarksCount);
+        console.error("Error handling like interaction");
       },
     });
   };
