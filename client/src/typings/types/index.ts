@@ -34,10 +34,7 @@ export type UserType = UserInterface;
 
 export type PostType = Omit<PostInterface, "postedBy" | "comments"> & {
   postedBy: UserType;
-  comments?: Array<{
-    text: string;
-    postedBy: UserType;
-  }>;
+  comments?: string[];
   createdAt?: Date;
 };
 
