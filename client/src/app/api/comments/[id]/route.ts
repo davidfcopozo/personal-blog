@@ -89,7 +89,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id: postId } = params;
   const token = await getToken({
     req: req,
     secret: process.env.NEXTAUTH_SECRET,
@@ -104,11 +104,11 @@ export async function PUT(
 
   try {
     const body = await req.json();
-    const { content } = body;
+    const { commentId } = body;
 
     const res = await axios.put(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${id}`,
-      { content },
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${postId}`,
+      { commentId },
       {
         headers: {
           Authorization: `Bearer ${token.accessToken}`,
