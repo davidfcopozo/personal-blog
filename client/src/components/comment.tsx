@@ -26,14 +26,14 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     `/api/users/${comment?.postedBy}`
   );
 
-  const { likeInteraction, liked, amountOfLikes } = useInteractions(
+  const { likeCommentInteraction, liked, amountOfLikes } = useInteractions(
     `${post._id}`,
     post
   );
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    likeInteraction(`${post._id}`, {
+    likeCommentInteraction(`${comment._id}`, {
       onError: () => {
         console.error("Error handling like interaction");
       },
