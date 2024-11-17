@@ -167,7 +167,6 @@ export const toggleLike = async (
     const post = (await Post.findById(postId)) as PostMongooseType | null;
     const comment: CommentType = await Comment.findById({
       _id: commentId,
-      postedBy: userId,
     });
 
     if (!comment) {
