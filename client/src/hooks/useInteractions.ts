@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
-import { PostFetchType, PostType } from "@/typings/types";
+import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
 import { ObjectId } from "mongoose";
 import { PostInterface } from "../../../api/src/typings/models/post";
 import usePostRequest from "./usePostRequest";
@@ -453,6 +453,157 @@ export const useInteractions = (id?: string, post?: PostType) => {
     );
   };
 
+  const likeCommentMutation = usePutRequest({
+    url: `/api/comments/${id}`,
+    onSuccess: (_, variables: { commentId: string }) => {
+      queryClient.setQueryData(
+        ["comments"],
+        (oldComments: CommentFetchType) => {
+          if (!oldComments?.data) return oldComments;
+
+          const commentList = Array.isArray(oldComments.data)
+            ? oldComments.data
+            : [oldComments.data];
+
+          return {
+            ...oldComments,
+            data: commentList.map((comment: CommentInterface) => {
+              if (comment._id.toString() === variables.commentId) {
+                return {
+                  ...comment,
+                  likes: [...(comment.likes || []), currentUser],
+                };
+              }
+              return post;
+            }),
+          };
+        }
+      );
+
+      // Update the individual post cache
+      queryClient.setQueryData(
+        ["comments", variables.commentId],
+        (oldComment: CommentFetchType) => {
+          if (!oldComment?.data) return oldComment;
+
+          return {
+            ...oldComment,
+            data: {
+              ...oldComment.data,
+              comments: [...(oldComment.data.likes || []), currentUser],
+            },
+          };
+        }
+      );
+
+      toast({
+        title: "Success",
+        description: "Your action was successful.",
+      });
+    },
+    onError: (error, variables) => {
+      //Error during mutation
+      const previousComments = queryClient.getQueryData<CommentFetchType>([
+        "comments",
+      ]);
+      queryClient.setQueryData(["comments"], previousComments);
+      queryClient.setQueryData(
+        ["comments", variables.commentId],
+        previousComments
+      );
+
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "Failed to process the request. Please try again.";
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    },
+    onMutate: async (commentId: object) => {
+      await queryClient.cancelQueries({ queryKey: ["comments"], exact: true });
+      await queryClient.cancelQueries({
+        queryKey: ["comments", `${commentId}`],
+        exact: true,
+      });
+
+      const previousCommentsData = queryClient.getQueryData<CommentFetchType>([
+        "comments",
+      ]);
+
+      const previousComments = previousCommentsData?.data;
+      if (!Array.isArray(previousComments)) {
+        return { previousData: previousComments };
+      }
+
+      queryClient.setQueryData(
+        ["comments"],
+        (oldComments: CommentFetchType) => {
+          if (!Array.isArray(oldComments?.data)) {
+            return oldComments;
+          }
+
+          return {
+            ...oldComments,
+            data: oldComments.data.map((comment: CommentInterface) => {
+              if (comment._id.toString() === commentId.toString()) {
+                const userId = queryClient.getQueryData<{
+                  data: { _id: ObjectId };
+                }>(["currentUser"])?.data._id;
+                const userIdString = userId?.toString();
+                const isLiked = comment.likes?.some(
+                  (like) => like.toString() === userIdString
+                );
+
+                return {
+                  ...post,
+                  likes: isLiked
+                    ? comment.likes?.filter(
+                        (like) => like.toString() !== userIdString
+                      )
+                    : [...(comment.likes || []), userId!],
+                };
+              }
+              return post;
+            }),
+          };
+        }
+      );
+
+      return { previousData: previousComments };
+    },
+  });
+
+  const likeCommentInteraction = (
+    commentId: string,
+    { onError }: { onError?: () => void }
+  ) => {
+    const previousLikedState = liked;
+    const previousLikesCount = amountOfLikes;
+
+    setLiked(!liked);
+    setAmountOfLikes((prev) => (liked ? prev - 1 : prev + 1));
+
+    likeCommentMutation.mutate(
+      { commentId },
+      {
+        onError: (error) => {
+          setLiked(previousLikedState);
+          setAmountOfLikes(previousLikesCount);
+          if (onError) onError();
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to process the request. Please try again.",
+          });
+        },
+      }
+    );
+  };
+
   return {
     likeInteraction,
     likeStatus: likeMutation.status,
@@ -464,5 +615,6 @@ export const useInteractions = (id?: string, post?: PostType) => {
     createCommentInteraction,
     content,
     setContent,
+    likeCommentInteraction,
   };
 };
