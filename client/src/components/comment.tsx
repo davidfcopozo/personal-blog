@@ -26,10 +26,8 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     `/api/users/${comment?.postedBy}`
   );
 
-  const { likeCommentInteraction, liked, amountOfLikes } = useInteractions(
-    `${post._id}`,
-    post
-  );
+  const { likeCommentInteraction, commentLiked, commentLikesCount } =
+    useInteractions(`${post._id}`, post, comment);
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -75,32 +73,34 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <div className="relative">
                     <ThumbsUp
                       className={`h-4 w-4 transition-colors duration-300 ${
-                        liked ? "stroke-[#49a4ff]" : "stroke-gray-400"
+                        commentLiked ? "stroke-[#49a4ff]" : "stroke-gray-400"
                       }`}
                     />
                     <ThumbsUp
                       className={`absolute inset-0 h-4 w-4 text-[#49a4ff] transition-all duration-300 ${
-                        liked ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                        commentLiked
+                          ? "scale-100 opacity-100"
+                          : "scale-0 opacity-0"
                       }`}
                     />
                   </div>
                   <div className="relative w-4 h-4 overflow-hidden">
                     <div
                       className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                        liked ? "-translate-y-full" : "translate-y-0"
+                        commentLiked ? "-translate-y-full" : "translate-y-0"
                       }`}
                     >
                       <span className="text-sm text-center text-gray-400 pl-[0.1em]">
-                        {amountOfLikes}
+                        {commentLikesCount}
                       </span>
                     </div>
                     <div
                       className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                        liked ? "translate-y-0" : "translate-y-full"
+                        commentLiked ? "translate-y-0" : "translate-y-full"
                       }`}
                     >
                       <span className="text-sm text-center pl-[0.1em] text-[#49a4ff]">
-                        {amountOfLikes}
+                        {commentLikesCount}
                       </span>
                     </div>
                   </div>
