@@ -1,7 +1,9 @@
-import React, { MouseEvent } from "react";
+"use client";
+
+import React, { MouseEvent, useEffect, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, ThumbsUp } from "lucide-react";
+import { MessageCircle, ThumbsUp, MoreVertical } from "lucide-react";
 import Reply from "./reply";
 import { getFullName, getNameInitials, getRelativeTime } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
@@ -10,8 +12,29 @@ import CommentSkeleton from "./comment-skeleton";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { CommentInterface } from "@/typings/interfaces";
 import { useInteractions } from "@/hooks/useInteractions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import useDeleteRequest from "@/hooks/useDeleteRequest";
 
 const Comment: React.FC<CommentProps> = ({ comment, post }) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const { mutate } = useDeleteRequest();
+
   const {
     data: fetchedReplies,
     isLoading,
@@ -38,6 +61,27 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     });
   };
 
+  const handleEdit = () => {
+    // Implement edit functionality
+    console.log("Edit comment");
+  };
+
+  const handleReportAbuse = () => {
+    // Implement report abuse functionality
+    console.log("Report abuse");
+  };
+
+  const handleDelete = () => {
+    // Implement delete functionality
+    console.log("Delete comment");
+    mutate({
+      url: `/api/comments/${post?._id}/${comment?._id}`,
+      itemId: `${comment?._id}`,
+      key: "comments",
+    });
+    setIsDeleteDialogOpen(false);
+  };
+
   return (
     <>
       {isLoading || isFetching ? (
@@ -55,6 +99,27 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {getRelativeTime(comment?.createdAt!)}
                 </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-auto">
+                      <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">More options</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleEdit}>
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleReportAbuse}>
+                      Report Abuse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <p>{comment?.content}</p>
               <div className="flex items-center gap-2">
@@ -115,6 +180,27 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
             ))}
         </div>
       )}
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this comment?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              comment and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
