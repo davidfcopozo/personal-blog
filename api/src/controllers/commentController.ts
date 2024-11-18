@@ -105,8 +105,7 @@ export const deleteCommentById = async (
   next: NextFunction
 ) => {
   const {
-    body: { commentId },
-    params: { id: postId },
+    params: { id: postId, commentId },
     user: { userId },
   } = req;
 
