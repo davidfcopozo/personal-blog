@@ -14,7 +14,8 @@ router
   .route("/:id")
   .get(getCommentById)
   .post(auth, createComment)
-  .put(auth, toggleLike)
-  .delete(auth, deleteCommentById);
+  .put(auth, toggleLike);
+
+router.route("/:id/:commentId").delete(auth, deleteCommentById);
 
 export default router;
