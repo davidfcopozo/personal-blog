@@ -9,7 +9,11 @@ import { useEffect, useRef, useState } from "react";
 import { CommentInterface } from "@/typings/interfaces";
 import { getSession } from "next-auth/react";
 
-export const useInteractions = (id?: string, post?: PostType) => {
+export const useInteractions = (
+  id?: string,
+  post?: PostType,
+  comment?: CommentInterface
+) => {
   const postId = useRef(id).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -22,6 +26,11 @@ export const useInteractions = (id?: string, post?: PostType) => {
   const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
   const bookmarks = post?.bookmarks ?? [];
   const likes = post?.likes ?? [];
+
+  const [commentLiked, setCommentLiked] = useState<boolean>(false);
+  const [commentLikesCount, setCommentLikesCount] = useState<number>(
+    comment?.likes?.length ?? 0
+  );
 
   useEffect(() => {
     async function getUserId() {
@@ -48,7 +57,21 @@ export const useInteractions = (id?: string, post?: PostType) => {
       setBookmarked(userBookmarked);
       setAmountOfBookmarks(bookmarks.length);
     }
-  }, [currentUser, likes, bookmarks]);
+
+    if (comment && currentUser) {
+      const userLikedComment =
+        comment.likes?.some((like) => like.toString() === currentUser) ?? false;
+      setCommentLiked(userLikedComment);
+      setCommentLikesCount(comment.likes?.length ?? 0);
+    }
+
+    if (currentUser && comment) {
+      const userLikedComment =
+        comment.likes?.some((like) => like.toString() === currentUser) ?? false;
+      setCommentLiked(userLikedComment);
+      setCommentLikesCount(comment.likes?.length ?? 0);
+    }
+  }, [currentUser, likes, bookmarks, comment]);
 
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
@@ -456,45 +479,10 @@ export const useInteractions = (id?: string, post?: PostType) => {
   const likeCommentMutation = usePutRequest({
     url: `/api/comments/${id}`,
     onSuccess: (_, variables: { commentId: string }) => {
-      queryClient.setQueryData(
-        ["comments"],
-        (oldComments: CommentFetchType) => {
-          if (!oldComments?.data) return oldComments;
-
-          const commentList = Array.isArray(oldComments.data)
-            ? oldComments.data
-            : [oldComments.data];
-
-          return {
-            ...oldComments,
-            data: commentList.map((comment: CommentInterface) => {
-              if (comment._id.toString() === variables.commentId) {
-                return {
-                  ...comment,
-                  likes: [...(comment.likes || []), currentUser],
-                };
-              }
-              return post;
-            }),
-          };
-        }
-      );
-
-      // Update the individual post cache
-      queryClient.setQueryData(
-        ["comments", variables.commentId],
-        (oldComment: CommentFetchType) => {
-          if (!oldComment?.data) return oldComment;
-
-          return {
-            ...oldComment,
-            data: {
-              ...oldComment.data,
-              comments: [...(oldComment.data.likes || []), currentUser],
-            },
-          };
-        }
-      );
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["comments", variables.commentId],
+      });
 
       toast({
         title: "Success",
@@ -503,14 +491,7 @@ export const useInteractions = (id?: string, post?: PostType) => {
     },
     onError: (error, variables) => {
       //Error during mutation
-      const previousComments = queryClient.getQueryData<CommentFetchType>([
-        "comments",
-      ]);
-      queryClient.setQueryData(["comments"], previousComments);
-      queryClient.setQueryData(
-        ["comments", variables.commentId],
-        previousComments
-      );
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
 
       const errorMessage =
         error &&
@@ -576,23 +557,22 @@ export const useInteractions = (id?: string, post?: PostType) => {
       return { previousData: previousComments };
     },
   });
-
   const likeCommentInteraction = (
     commentId: string,
     { onError }: { onError?: () => void }
   ) => {
-    const previousLikedState = liked;
-    const previousLikesCount = amountOfLikes;
+    const previousLikedState = commentLiked;
+    const previousLikesCount = commentLikesCount;
 
-    setLiked(!liked);
-    setAmountOfLikes((prev) => (liked ? prev - 1 : prev + 1));
+    setCommentLiked(!commentLiked);
+    setCommentLikesCount((prev) => (commentLiked ? prev - 1 : prev + 1));
 
     likeCommentMutation.mutate(
       { commentId },
       {
-        onError: (error) => {
-          setLiked(previousLikedState);
-          setAmountOfLikes(previousLikesCount);
+        onError: () => {
+          setCommentLiked(previousLikedState);
+          setCommentLikesCount(previousLikesCount);
           if (onError) onError();
           toast({
             variant: "destructive",
@@ -616,5 +596,7 @@ export const useInteractions = (id?: string, post?: PostType) => {
     content,
     setContent,
     likeCommentInteraction,
+    commentLiked,
+    commentLikesCount,
   };
 };
