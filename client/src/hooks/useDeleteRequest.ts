@@ -7,13 +7,25 @@ const useDeleteRequest = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { mutate, data, status, error } = useMutation({
-    mutationFn: async ({ url, itemId, key }: { url: string; itemId: string, key: string }) => {
+    mutationFn: async ({
+      url,
+      itemId,
+      key,
+    }: {
+      url: string;
+      itemId: string;
+      key: string;
+    }) => {
       const res = await axios.delete(url);
-      return { url: res.data.data, itemId, key  };
+      return { url: res.data.data, itemId, key };
     },
-    onSuccess: (variables: { url: string; itemId: string, key: string }) => {
-      queryClient.invalidateQueries({ queryKey: [variables.key] });
-      queryClient.invalidateQueries({
+    onSuccess: (variables: { url: string; itemId: string; key: string }) => {
+      queryClient.setQueryData([variables.key], (old: any) => {
+        if (!old) return old;
+        return old.filter((item: any) => item._id !== variables.itemId);
+      });
+
+      queryClient.removeQueries({
         queryKey: [variables.key, variables.itemId],
       });
 
@@ -22,7 +34,7 @@ const useDeleteRequest = () => {
         description: "Successfully deleted",
       });
     },
-    onError: (variables: { url: string; itemId: string, key: string }) => {
+    onError: (variables: { url: string; itemId: string; key: string }) => {
       queryClient.invalidateQueries({ queryKey: [variables.key] });
       queryClient.invalidateQueries({
         queryKey: [variables.key, variables.itemId],
@@ -39,13 +51,13 @@ const useDeleteRequest = () => {
         description: errorMessage,
       });
     },
-    onMutate: (variables: { url: string; itemId: string, key: string }) => {
-        queryClient.cancelQueries({ queryKey: [variables.key] });
-        const previousItems = queryClient.getQueryData([variables.key]);
-        queryClient.setQueryData([variables.key], (old: any) => {
-            return old.filter((item: any) => item._id !== variables.itemId);
-        });
-        return { previousItems };
+    onMutate: (variables: { url: string; itemId: string; key: string }) => {
+      queryClient.cancelQueries({ queryKey: [variables.key] });
+      const previousItems = queryClient.getQueryData([variables.key]);
+      queryClient.setQueryData([variables.key], (old: any) => {
+        return old.filter((item: any) => item._id !== variables.itemId);
+      });
+      return { previousItems };
     },
   });
   return { mutate, data, status, error };
