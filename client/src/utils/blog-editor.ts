@@ -22,6 +22,7 @@ export const formats = [
   "image",
   "clean",
   "video",
+  "code-block",
 ];
 
 export const modules = {
@@ -34,7 +35,7 @@ export const modules = {
     container: [
       ["undo", "redo"],
       [{ header: "1" }, { header: "2" }, { header: [1, 2, 3, 4, 5, 6, false] }],
-      ["bold", "italic", "underline", "strike", "blockquote"],
+      ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
       [
         { list: "ordered" },
         { list: "bullet" },
@@ -49,6 +50,7 @@ export const modules = {
 
       ["clean"],
     ],
+    syntax: true,
   },
   clipboard: {
     matchVisual: false,
