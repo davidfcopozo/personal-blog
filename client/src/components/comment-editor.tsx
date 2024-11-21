@@ -4,6 +4,7 @@ import "react-quill/dist/quill.snow.css";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
+import "@/styles/comment-editor.css";
 
 interface CommentEditorProps {
   onSubmit: (content: string) => void;
@@ -37,7 +38,7 @@ const formats = [
 export default function CommentEditor({
   onSubmit,
   onCancel,
-  placeholder = "Write your comment...",
+  placeholder,
   maxHeight = 300,
 }: CommentEditorProps) {
   const [content, setContent] = useState("");
@@ -49,6 +50,7 @@ export default function CommentEditor({
       // Reset height to auto to correctly calculate scroll height
       textarea.style.height = "auto";
       textarea.style.overflowY = "hidden";
+      textarea.ariaPlaceholder = placeholder as string;
 
       // Calculate new height, cap at maxHeight
       const newHeight = Math.min(textarea.scrollHeight, maxHeight);
@@ -65,26 +67,28 @@ export default function CommentEditor({
   };
 
   return (
-    <Card className="p-4 w-full max-w-2xl mx-auto pb-4">
-      <div className="mb-4">
-        <ReactQuill
-          theme="snow"
-          value={content}
-          onChange={setContent}
-          modules={modules}
-          formats={formats}
-          placeholder={placeholder}
-          className="bg-background text-foreground rounded-md"
-          ref={textareaRef}
-          style={{
-            maxHeight: `${maxHeight}px`,
-            overflowY: "auto",
-          }}
-        />
-      </div>
-      <div className="flex justify-end gap-2">
+    <>
+      <Card className="w-full max-w-2xl mx-auto border-[1px] border-muted-foreground rounded-md">
+        <div>
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={setContent}
+            modules={modules}
+            formats={formats}
+            placeholder={placeholder}
+            className="bg-background text-foreground"
+            ref={textareaRef}
+            style={{
+              maxHeight: `${maxHeight}px`,
+              overflowY: "auto",
+            }}
+          />
+        </div>
+      </Card>
+      <div className="flex justify-start gap-2 mt-4">
         {onCancel && (
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} className="py-4">
             Cancel
           </Button>
         )}
@@ -93,6 +97,6 @@ export default function CommentEditor({
           Submit
         </Button>
       </div>
-    </Card>
+    </>
   );
 }
