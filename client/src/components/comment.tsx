@@ -139,7 +139,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setShowEditor(true)}
+                    onClick={() => setShowEditor((showEditor) => !showEditor)}
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span className="sr-only">Reply</span>
@@ -192,6 +192,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <CommentEditor
                     onSubmit={handleSubmit}
                     onCancel={() => setShowEditor(false)}
+                    placeholder="Share your thoughts with the community..."
                   />
                 )}
               </div>
