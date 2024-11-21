@@ -1,0 +1,46 @@
+.quill {
+  display: flex;
+  flex-direction: column;
+  overflow-y: unset;
+  border-radius: 5px;
+}
+.ql-toolbar {
+  order: 2;
+}
+.ql-editor {
+  min-height: 140px;
+  order: 1;
+}
+
+.ql-container.ql-snow,
+.ql-toolbar.ql-snow {
+  border: none;
+}
+
+.ql-toolbar.ql-snow {
+  border-top: 1px solid;
+  @apply border-muted-foreground;
+  padding-block: 1rem;
+}
+
+.ql-snow.ql-toolbar button,
+.ql-snow .ql-toolbar button {
+  width: 28px;
+  height: 28px;
+  @apply text-input;
+}
+
+.ql-snow .ql-stroke {
+  fill: none;
+  @apply stroke-muted-foreground;
+}
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
+  @apply fill-muted-foreground;
+}
+
+.ql-editor.ql-blank::before {
+  @apply text-muted-foreground;
+  font-size: 1rem;
+  font-style: italic;
+}
