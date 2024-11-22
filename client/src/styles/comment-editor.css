@@ -12,6 +12,10 @@
   order: 1;
 }
 
+form .ql-editor {
+  min-height: 200px;
+}
+
 .ql-container.ql-snow,
 .ql-toolbar.ql-snow {
   border: none;
