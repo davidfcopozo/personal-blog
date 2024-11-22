@@ -5,17 +5,23 @@ const CommentEditor = dynamic(() => import("./comment-editor"), {
 });
 
 const CommentBox = ({ id }: { id: string }) => {
-  const { createCommentInteraction, setContent, content } = useInteractions(id);
+  const { createCommentInteraction, setCommentContent, commentContent } =
+    useInteractions(id);
+
+  const handleChange = (content: string) => {
+    setCommentContent(content);
+  };
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        createCommentInteraction({ onError: () => {} });
       }}
     >
       <h3 className="text-xl font-bold mb-4">Add a new comment</h3>
       <CommentEditor
-        onSubmit={() => {}}
+        value={commentContent}
+        onChange={handleChange}
+        onSubmit={createCommentInteraction}
         onCancel={() => {}}
         showCancelButton={false}
         placeholder="Share your thoughts with the community..."
