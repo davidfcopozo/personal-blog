@@ -6,14 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
 import "@/styles/comment-editor.css";
 import { setTitle } from "@/utils/blog-editor";
-
-interface CommentEditorProps {
-  onSubmit: (content: string) => void;
-  onCancel?: () => void;
-  placeholder?: string;
-  maxHeight?: number;
-  showCancelButton: boolean;
-}
+import { CommentEditorProps } from "@/typings/interfaces";
 
 const modules = {
   toolbar: [
