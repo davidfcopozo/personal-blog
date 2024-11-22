@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
 import "@/styles/comment-editor.css";
+import { setTitle } from "@/utils/blog-editor";
 
 interface CommentEditorProps {
   onSubmit: (content: string) => void;
   onCancel?: () => void;
   placeholder?: string;
   maxHeight?: number;
+  showCancelButton: boolean;
 }
 
 const modules = {
@@ -40,9 +42,22 @@ export default function CommentEditor({
   onCancel,
   placeholder,
   maxHeight = 300,
+  showCancelButton,
 }: CommentEditorProps) {
   const [content, setContent] = useState("");
   const textareaRef = useRef<ReactQuill>(null);
+
+  useEffect(() => {
+    const toolbar = document.querySelector(".ql-toolbar") as HTMLElement;
+
+    if (toolbar) {
+      // Assign title attribute for each toolbar item
+      modules.toolbar.forEach((group, index) => {
+        setTitle(group, toolbar, index);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     const quillEditor = textareaRef.current;
     if (quillEditor) {
@@ -68,7 +83,7 @@ export default function CommentEditor({
 
   return (
     <>
-      <Card className="w-full max-w-2xl mx-auto border-[1px] border-muted-foreground rounded-md">
+      <Card className="w-full mt-4 max-w-2xl border-[1px] border-muted-foreground rounded-md">
         <div>
           <ReactQuill
             theme="snow"
@@ -87,7 +102,7 @@ export default function CommentEditor({
         </div>
       </Card>
       <div className="flex justify-start gap-2 mt-4">
-        {onCancel && (
+        {onCancel && showCancelButton && (
           <Button variant="outline" onClick={onCancel} className="py-4">
             Cancel
           </Button>
