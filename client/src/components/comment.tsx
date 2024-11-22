@@ -54,8 +54,14 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     `/api/users/${comment?.postedBy}`
   );
 
-  const { likeCommentInteraction, commentLiked, commentLikesCount } =
-    useInteractions(`${post._id}`, post, comment);
+  const {
+    createReplyInteraction,
+    setReplyContent,
+    replyContent,
+    likeCommentInteraction,
+    commentLiked,
+    commentLikesCount,
+  } = useInteractions(`${post._id}`, post, comment);
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -77,8 +83,6 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   };
 
   const handleDelete = () => {
-    // Implement delete functionality
-    console.log("Delete comment");
     mutate({
       url: `/api/comments/${post?._id}/${comment?._id}`,
       itemId: `${comment?._id}`,
@@ -91,6 +95,11 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     console.log(content);
 
     setShowEditor(false);
+  };
+
+  const handleReplyChange = (content: string) => {
+    console.log(content);
+    setReplyContent(content);
   };
 
   return (
@@ -189,7 +198,9 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                 </div>
                 {showEditor && (
                   <CommentEditor
-                    onSubmit={handleSubmit}
+                    onSubmit={createReplyInteraction}
+                    value={replyContent}
+                    onChange={handleReplyChange}
                     onCancel={() => setShowEditor(false)}
                     showCancelButton={true}
                     placeholder="Write a reply..."
