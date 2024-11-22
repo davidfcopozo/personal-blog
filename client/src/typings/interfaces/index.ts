@@ -97,3 +97,11 @@ export interface UseMutationRequestProps<TData, TVariables> {
     context: MutationContext<TData> | undefined
   ) => void;
 }
+
+export interface CommentEditorProps {
+  onSubmit: (content: string) => void;
+  onCancel?: () => void;
+  placeholder?: string;
+  maxHeight?: number;
+  showCancelButton: boolean;
+}
