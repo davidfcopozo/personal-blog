@@ -36,8 +36,9 @@ export default function CommentEditor({
   placeholder,
   maxHeight = 300,
   showCancelButton,
+  value: content,
+  onChange,
 }: CommentEditorProps) {
-  const [content, setContent] = useState("");
   const textareaRef = useRef<ReactQuill>(null);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function CommentEditor({
   const handleSubmit = () => {
     if (content.trim()) {
       onSubmit(content);
-      setContent("");
+      /*       setContent(""); */
     }
   };
 
@@ -81,7 +82,7 @@ export default function CommentEditor({
           <ReactQuill
             theme="snow"
             value={content}
-            onChange={setContent}
+            onChange={onChange}
             modules={modules}
             formats={formats}
             placeholder={placeholder}
