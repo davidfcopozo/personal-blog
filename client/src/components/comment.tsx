@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import useDeleteRequest from "@/hooks/useDeleteRequest";
 import dynamic from "next/dynamic";
-/* import { CommentEditor } from "./comment-editor"; */
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
@@ -192,7 +191,8 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <CommentEditor
                     onSubmit={handleSubmit}
                     onCancel={() => setShowEditor(false)}
-                    placeholder="Share your thoughts with the community..."
+                    showCancelButton={true}
+                    placeholder="Write a reply..."
                   />
                 )}
               </div>
