@@ -99,9 +99,12 @@ export interface UseMutationRequestProps<TData, TVariables> {
 }
 
 export interface CommentEditorProps {
-  onSubmit: (content: string) => void;
+  onSubmit: (newItem: any) => void;
   onCancel?: () => void;
+
+  onChange: (e: string) => void;
   placeholder?: string;
   maxHeight?: number;
   showCancelButton: boolean;
+  value: string;
 }
