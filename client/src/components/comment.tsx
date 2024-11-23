@@ -113,8 +113,8 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
               <AvatarImage src="/placeholder-user.jpg" />
               <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
             </Avatar>
-            <div className="grid gap-2 flex-1">
-              <div className="flex items-center gap-2">
+            <div className="grid gap-2 flex-1 border border-[1px] rounded-md px-4 py-2">
+              <div className="flex ml-2 items-center gap-2">
                 <div className="font-medium">{getFullName(postedBy?.data)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {getRelativeTime(comment?.createdAt!)}
@@ -141,9 +141,12 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <p>{comment?.content}</p>
+              <div
+                className="ml-2"
+                dangerouslySetInnerHTML={{ __html: comment.content || "" }}
+              />
               <div className="h-content">
-                <div className="flex items-center gap-2 relative">
+                <div className="flex items-center justify-end mr-4 gap-2 relative">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -180,7 +183,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                           commentLiked ? "-translate-y-full" : "translate-y-0"
                         }`}
                       >
-                        <span className="text-sm text-center text-gray-400 pl-[0.1em]">
+                        <span className="text-sm text-center text-gray-400">
                           {commentLikesCount}
                         </span>
                       </div>
@@ -189,7 +192,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                           commentLiked ? "translate-y-0" : "translate-y-full"
                         }`}
                       >
-                        <span className="text-sm text-center pl-[0.1em] text-[#49a4ff]">
+                        <span className="text-sm text-center text-[#49a4ff]">
                           {commentLikesCount}
                         </span>
                       </div>
