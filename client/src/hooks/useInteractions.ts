@@ -17,7 +17,7 @@ export const useInteractions = (
   const postId = useRef(id).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [content, setContent] = useState<string>("");
+  const [commentContent, setCommentContent] = useState<string>("");
 
   const [liked, setLiked] = useState(false);
   const [amountOfLikes, setAmountOfLikes] = useState(0);
@@ -379,7 +379,7 @@ export const useInteractions = (
         }
       );
 
-      setContent("");
+      setCommentContent("");
       toast({
         title: "Success",
         description: "Your comment was successfully added.",
@@ -593,8 +593,8 @@ export const useInteractions = (
     bookmarked,
     amountOfBookmarks,
     createCommentInteraction,
-    content,
-    setContent,
+    commentContent,
+    setCommentContent,
     likeCommentInteraction,
     commentLiked,
     commentLikesCount,
