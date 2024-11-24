@@ -8,7 +8,7 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 
 const Reply: React.FC<ReplyProps> = ({ reply }) => {
   const { data: postedBy } = useFetchRequest(
-    "commentPostedBy",
+    ["commentPostedBy"],
     `/api/users/${reply?.postedBy}`
   );
   return (
