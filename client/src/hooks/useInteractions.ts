@@ -6,7 +6,7 @@ import { ObjectId } from "mongoose";
 import { PostInterface } from "../../../api/src/typings/models/post";
 import usePostRequest from "./usePostRequest";
 import { useEffect, useRef, useState } from "react";
-import { CommentInterface } from "@/typings/interfaces";
+import { CommentInterface, ReplyInterface } from "@/typings/interfaces";
 import { getSession } from "next-auth/react";
 
 export const useInteractions = (
@@ -26,11 +26,11 @@ export const useInteractions = (
   const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
   const bookmarks = post?.bookmarks ?? [];
   const likes = post?.likes ?? [];
-
   const [commentLiked, setCommentLiked] = useState<boolean>(false);
   const [commentLikesCount, setCommentLikesCount] = useState<number>(
     comment?.likes?.length ?? 0
   );
+  const [replyContent, setReplyContent] = useState<string>("");
 
   useEffect(() => {
     async function getUserId() {
@@ -72,6 +72,11 @@ export const useInteractions = (
       setCommentLikesCount(comment.likes?.length ?? 0);
     }
   }, [currentUser, likes, bookmarks, comment]);
+
+  const handleReplyContentChange = (content: string) => {
+    setReplyContent(content);
+    console.log(content);
+  };
 
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
@@ -457,7 +462,7 @@ export const useInteractions = (
 
   const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
     createCommentMutation.mutate(
-      { _id: postId, content },
+      { _id: postId, commentContent },
       {
         onError: (error) => {
           if (onError) onError();
@@ -465,6 +470,161 @@ export const useInteractions = (
             error &&
             typeof error === "object" &&
             "Failed to process the request. Please try again.";
+
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: errorMessage,
+          });
+        },
+      }
+    );
+  };
+
+  const createReplyMutation = usePostRequest({
+    url: `/api/replies/${postId}`,
+    onSuccess: (newReply: ReplyInterface) => {
+      // Update the posts list cache
+      queryClient.setQueryData(
+        ["comments"],
+        (oldComments: CommentFetchType) => {
+          if (!oldComments?.data) return oldComments;
+
+          const commentList = Array.isArray(oldComments.data)
+            ? oldComments.data
+            : [oldComments.data];
+
+          return {
+            ...oldComments,
+            data: commentList.map((existingComment: CommentInterface) => {
+              if (existingComment.post.toString() === postId) {
+                return {
+                  ...existingComment,
+                  replies: [...(existingComment.replies || []), newReply._id],
+                };
+              }
+              return existingComment;
+            }),
+          };
+        }
+      );
+
+      // Update the individual post cache to include the full reply object
+      queryClient.setQueryData(
+        ["comment", comment?._id],
+        (oldComment: CommentFetchType) => {
+          if (!oldComment?.data) return oldComment;
+
+          return {
+            ...oldComment,
+            data: {
+              ...oldComment.data,
+              comments: [...(oldComment.data.replies || []), newReply],
+            },
+          };
+        }
+      );
+
+      // Add the new full comment object to the comments cache
+      queryClient.setQueryData<ReplyInterface[]>(["replies"], (oldReplies) => {
+        return oldReplies ? [...oldReplies, newReply] : [newReply];
+      });
+
+      setReplyContent("");
+      toast({
+        title: "Success",
+        description: "Your comment was successfully added.",
+      });
+    },
+    onError: (error) => {
+      const previousComments = queryClient.getQueryData<PostFetchType>([
+        "comments",
+      ]);
+      const previousComment = queryClient.getQueryData<PostFetchType>([
+        "comments",
+        comment?._id,
+      ]);
+
+      queryClient.setQueryData(["comments"], previousComments);
+      queryClient.setQueryData(["comment", comment?._id], previousComment);
+
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "Failed to process the request. Please try again.";
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    },
+    onMutate: async (replyData: { _id: string; content: string }) => {
+      await queryClient.cancelQueries({ queryKey: ["comments"] });
+      await queryClient.cancelQueries({ queryKey: ["comment", comment?._id] });
+
+      const previousCommentsData = queryClient.getQueryData<CommentFetchType>([
+        "comments",
+      ]);
+      const previousCommentData = queryClient.getQueryData<CommentFetchType>([
+        "comment",
+        comment?._id,
+      ]);
+
+      // Optimistically update the comment with a temporary reply ID
+      const tempReplyId = `temp-${Date.now()}`;
+
+      queryClient.setQueryData(
+        ["comments"],
+        (oldComments: CommentFetchType) => {
+          if (!oldComments?.data) return oldComments;
+
+          const commentList = Array.isArray(oldComments.data)
+            ? oldComments.data
+            : [oldComments.data];
+
+          return {
+            ...oldComments,
+            data: commentList.map((existingComment: CommentInterface) => {
+              if (existingComment._id === comment?._id) {
+                return {
+                  ...existingComment,
+                  replies: [...(existingComment.replies || []), tempReplyId],
+                };
+              }
+              return existingComment;
+            }),
+          };
+        }
+      );
+
+      // Return context with snapshotted values
+      return { previousCommentsData, previousCommentData };
+    },
+  });
+
+  const createReplyInteraction = ({ onError }: { onError?: () => void }) => {
+    if (!postId || !comment?._id || !replyContent.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Missing required information to create reply.",
+      });
+      return;
+    }
+
+    createReplyMutation.mutate(
+      {
+        postId,
+        commentId: comment._id,
+        content: replyContent.trim(),
+      },
+      {
+        onError: (error) => {
+          if (onError) onError();
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to process the request. Please try again.";
 
           toast({
             variant: "destructive",
@@ -557,6 +717,7 @@ export const useInteractions = (
       return { previousData: previousComments };
     },
   });
+
   const likeCommentInteraction = (
     commentId: string,
     { onError }: { onError?: () => void }
@@ -598,5 +759,9 @@ export const useInteractions = (
     likeCommentInteraction,
     commentLiked,
     commentLikesCount,
+    handleReplyContentChange,
+    createReplyInteraction,
+    setReplyContent,
+    replyContent,
   };
 };
