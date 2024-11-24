@@ -61,6 +61,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     likeCommentInteraction,
     commentLiked,
     commentLikesCount,
+    handleReplyContentChange,
   } = useInteractions(`${post._id}`, post, comment);
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
@@ -203,7 +204,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <CommentEditor
                     onSubmit={createReplyInteraction}
                     value={replyContent}
-                    onChange={handleReplyChange}
+                    onChange={handleReplyContentChange}
                     onCancel={() => setShowEditor(false)}
                     showCancelButton={true}
                     placeholder="Write a reply..."
