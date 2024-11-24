@@ -71,7 +71,6 @@ export default function CommentEditor({
   const handleSubmit = () => {
     if (content.trim()) {
       onSubmit(content);
-      /*       setContent(""); */
     }
   };
 
