@@ -65,6 +65,18 @@ export interface CommentInterface {
   isReply: boolean;
 }
 
+export interface ReplyInterface {
+  _id: ObjectId;
+  postedBy: ObjectId;
+  post: ObjectId;
+  content: string;
+  replies: string[];
+  likes: ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+  isReply: boolean;
+}
+
 export interface CategoryInterface {
   _id: ObjectId;
   name: String;
