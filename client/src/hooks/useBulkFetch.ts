@@ -9,7 +9,14 @@ const getBaseURL = () => {
   return "http://localhost:3000";
 };
 
-const useCommentFetch = (ids: string[], key: string) => {
+interface UseBulkFetchProps {
+  ids: string[];
+  key: string;
+  dependantId?: string;
+  url: string;
+}
+
+const useBulkFetch = ({ ids, key, dependantId, url }: UseBulkFetchProps) => {
   const baseURL = getBaseURL();
 
   const fetchComments = async (): Promise<CommentInterface[]> => {
@@ -19,7 +26,7 @@ const useCommentFetch = (ids: string[], key: string) => {
       const { data } = await axios.get<{
         success: boolean;
         data: CommentInterface;
-      }>(`${baseURL}/api/comments/${id}`);
+      }>(`${baseURL}/${url}/${id}`);
       return data.data;
     });
 
@@ -40,4 +47,4 @@ const useCommentFetch = (ids: string[], key: string) => {
   return { data, error, isLoading, isFetching };
 };
 
-export default useCommentFetch;
+export default useBulkFetch;
