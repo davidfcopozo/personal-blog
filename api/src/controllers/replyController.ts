@@ -109,8 +109,7 @@ export const getReplyById = async (
   next: NextFunction
 ) => {
   const {
-    body: { commentId, replyId },
-    params: { id: postId },
+    params: { id: postId, commentId, replyId },
   } = req;
 
   try {
