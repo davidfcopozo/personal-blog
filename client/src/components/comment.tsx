@@ -1,16 +1,13 @@
 "use client";
 
-import React, { MouseEvent, useEffect, useState } from "react";
+import React, { MouseEvent, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp, MoreVertical } from "lucide-react";
-import Reply from "./reply";
 import { getFullName, getNameInitials, getRelativeTime } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
-import useCommentFetch from "@/hooks/useCommentFetch";
-import CommentSkeleton from "./comment-skeleton";
+import useBulkFetch from "@/hooks/useBulkFetch";
 import useFetchRequest from "@/hooks/useFetchRequest";
-import { CommentInterface } from "@/typings/interfaces";
 import { useInteractions } from "@/hooks/useInteractions";
 import {
   DropdownMenu,
@@ -44,10 +41,11 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     data: fetchedReplies,
     isLoading,
     isFetching,
-  } = useCommentFetch(
-    comment?.replies?.length >= 1 ? comment?.replies : [],
-    "replies"
-  );
+  } = useBulkFetch({
+    ids: comment?.replies?.length >= 1 ? comment?.replies : [],
+    key: "replies",
+    url: `/api/replies/${post._id}/${comment?._id}`,
+  });
 
   const { data: postedBy } = useFetchRequest(
     ["commentPostedBy"],
@@ -105,122 +103,108 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
 
   return (
     <>
-      {isLoading || isFetching ? (
-        <CommentSkeleton />
-      ) : (
-        <div>
-          <div id={`${comment?._id}`} className="flex items-start gap-4">
-            <Avatar className="w-10 h-10 border">
-              <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
-            </Avatar>
-            <div className="grid gap-2 flex-1 border border-[1px] rounded-md px-4 py-2">
-              <div className="flex ml-2 items-center gap-2">
-                <div className="font-medium">{getFullName(postedBy?.data)}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {getRelativeTime(comment?.createdAt!)}
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-auto">
-                      <MoreVertical className="h-4 w-4" />
-                      <span className="sr-only">More options</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleEdit}>
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleReportAbuse}>
-                      Report Abuse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setIsDeleteDialogOpen(true)}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+      <article className="flex gap-4 p-4 bg-background rounded-lg">
+        <div id={`${comment?._id}`} className="flex flex-1 items-start gap-4">
+          <Avatar className="w-10 h-10 border">
+            <AvatarImage src="/placeholder-user.jpg" />
+            <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
+          </Avatar>
+          <div className="grid gap-2 flex-1 border border-[1px] rounded-md px-4 py-2">
+            <div className="flex ml-2 items-center gap-2">
+              <div className="font-medium">{getFullName(postedBy?.data)}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {getRelativeTime(comment?.createdAt!)}
               </div>
-              <div
-                className="ml-2"
-                dangerouslySetInnerHTML={{ __html: comment.content || "" }}
-              />
-              <div className="h-content">
-                <div className="flex items-center justify-end mr-4 gap-2 relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowEditor((showEditor) => !showEditor)}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="sr-only">Reply</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="ml-auto">
+                    <MoreVertical className="h-4 w-4" />
+                    <span className="sr-only">More options</span>
                   </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleReportAbuse}>
+                    Report Abuse
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div
+              className="ml-2"
+              dangerouslySetInnerHTML={{ __html: comment.content || "" }}
+            />
+            <div className="h-content">
+              <div className="flex items-center justify-end mr-4 gap-2 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowEditor((showEditor) => !showEditor)}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="sr-only">Reply</span>
+                </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    onClick={handleLikeClick}
-                    className="group flex items-center focus:outline-none transition-colors duration-300 hover:bg-transparent hover:shadow-[inset_0px_0px_40px_0px_rgba(73,134,255,0.2)] "
-                  >
-                    <div className="relative">
-                      <ThumbsUp
-                        className={`h-4 w-4 transition-colors duration-300 ${
-                          commentLiked ? "stroke-[#49a4ff]" : "stroke-gray-400"
-                        }`}
-                      />
-                      <ThumbsUp
-                        className={`absolute inset-0 h-4 w-4 text-[#49a4ff] transition-all duration-300 ${
-                          commentLiked
-                            ? "scale-100 opacity-100"
-                            : "scale-0 opacity-0"
-                        }`}
-                      />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  onClick={handleLikeClick}
+                  className="group flex items-center focus:outline-none transition-colors duration-300 hover:bg-transparent hover:shadow-[inset_0px_0px_40px_0px_rgba(73,134,255,0.2)] "
+                >
+                  <div className="relative">
+                    <ThumbsUp
+                      className={`h-4 w-4 transition-colors duration-300 ${
+                        commentLiked ? "stroke-[#49a4ff]" : "stroke-gray-400"
+                      }`}
+                    />
+                    <ThumbsUp
+                      className={`absolute inset-0 h-4 w-4 text-[#49a4ff] transition-all duration-300 ${
+                        commentLiked
+                          ? "scale-100 opacity-100"
+                          : "scale-0 opacity-0"
+                      }`}
+                    />
+                  </div>
+                  <div className="relative w-4 h-4 overflow-hidden">
+                    <div
+                      className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                        commentLiked ? "-translate-y-full" : "translate-y-0"
+                      }`}
+                    >
+                      <span className="text-sm text-center text-gray-400">
+                        {commentLikesCount}
+                      </span>
                     </div>
-                    <div className="relative w-4 h-4 overflow-hidden">
-                      <div
-                        className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                          commentLiked ? "-translate-y-full" : "translate-y-0"
-                        }`}
-                      >
-                        <span className="text-sm text-center text-gray-400">
-                          {commentLikesCount}
-                        </span>
-                      </div>
-                      <div
-                        className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                          commentLiked ? "translate-y-0" : "translate-y-full"
-                        }`}
-                      >
-                        <span className="text-sm text-center text-[#49a4ff]">
-                          {commentLikesCount}
-                        </span>
-                      </div>
+                    <div
+                      className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                        commentLiked ? "translate-y-0" : "translate-y-full"
+                      }`}
+                    >
+                      <span className="text-sm text-center text-[#49a4ff]">
+                        {commentLikesCount}
+                      </span>
                     </div>
-                  </Button>
-                </div>
-                {showEditor && (
-                  <CommentEditor
-                    onSubmit={createReplyInteraction}
-                    value={replyContent}
-                    onChange={handleReplyContentChange}
-                    onCancel={() => setShowEditor(false)}
-                    showCancelButton={true}
-                    placeholder="Write a reply..."
-                  />
-                )}
+                  </div>
+                </Button>
               </div>
+              {showEditor && (
+                <CommentEditor
+                  onSubmit={createReplyInteraction}
+                  value={replyContent}
+                  onChange={handleReplyContentChange}
+                  onCancel={() => setShowEditor(false)}
+                  showCancelButton={true}
+                  placeholder="Write a reply..."
+                />
+              )}
             </div>
           </div>
-          {fetchedReplies &&
-            fetchedReplies?.length >= 1 &&
-            fetchedReplies.map((reply: CommentInterface) => (
-              <Reply key={`${reply?._id}`} reply={reply} />
-            ))}
         </div>
-      )}
-
+      </article>
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
