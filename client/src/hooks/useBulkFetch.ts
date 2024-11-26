@@ -12,11 +12,11 @@ const getBaseURL = () => {
 interface UseBulkFetchProps {
   ids: string[];
   key: string;
-  dependantId?: string;
+  dependantItem?: boolean;
   url: string;
 }
 
-const useBulkFetch = ({ ids, key, dependantId, url }: UseBulkFetchProps) => {
+const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
   const baseURL = getBaseURL();
 
   const fetchComments = async (): Promise<CommentInterface[]> => {
@@ -41,7 +41,7 @@ const useBulkFetch = ({ ids, key, dependantId, url }: UseBulkFetchProps) => {
     refetchOnMount: true,
     gcTime: 0,
     staleTime: 0,
-    enabled: ids?.length > 0,
+    enabled: ids?.length > 0 || dependantItem,
   });
 
   return { data, error, isLoading, isFetching };
