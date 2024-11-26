@@ -55,6 +55,7 @@ export type CommentProps = {
 export type ReplyProps = {
   key: string | number;
   reply: CommentInterface;
+  commentId: string;
 };
 
 export type CommentFetchType = {
