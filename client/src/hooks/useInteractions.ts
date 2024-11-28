@@ -462,7 +462,7 @@ export const useInteractions = (
 
   const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
     createCommentMutation.mutate(
-      { _id: postId, commentContent },
+      { _id: postId, content: commentContent },
       {
         onError: (error) => {
           if (onError) onError();
