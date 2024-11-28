@@ -54,24 +54,17 @@ const NestedComment: FC<NestedCommentProps> = ({
   } */
 
   return (
-    <article
-      className={`
-      space-y-4 relative 
-      transition-all 
-      duration-300 
-      ease-in-out 
-      shadow-sm 
-      group 
-      hover:shadow-md 
-      
-    `}
-    >
+    <article className={`space-y-4 relative group`}>
       <Comment key={`${comment._id}`} comment={comment} post={post} />
 
       {fetchedReplies && fetchedReplies.length > 0 && (
         <>
           {level < 2 || isExpanded ? (
-            <div className="space-y-4 pl-6 ml-1 border-l-2 border-muted-foreground group-hover:border-[#49a4ff]">
+            <div
+              className="space-y-4 pl-6 ml-1 border-l-2 border-muted-input group-hover:border-[--thread-border] transition-all 
+      duration-300 
+      ease-in-out "
+            >
               {fetchedReplies
                 .filter((reply: CommentInterface) => reply.isReply)
                 .map((reply: CommentInterface) => (
