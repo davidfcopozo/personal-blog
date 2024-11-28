@@ -103,13 +103,16 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
 
   return (
     <>
-      <article className="flex gap-4 p-4 bg-background rounded-lg">
-        <div id={`${comment?._id}`} className="flex flex-1 items-start gap-4">
+      <article className="flex bg-background rounded-lg">
+        <div
+          id={`${comment?._id}`}
+          className="flex flex-1 items-start gap-2 px-4 py-2 border border-[1px] rounded-md"
+        >
           <Avatar className="w-10 h-10 border">
             <AvatarImage src="/placeholder-user.jpg" />
             <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
           </Avatar>
-          <div className="grid gap-2 flex-1 border border-[1px] rounded-md px-4 py-2">
+          <div className="grid gap-2 flex-1">
             <div className="flex ml-2 items-center gap-2">
               <div className="font-medium">{getFullName(postedBy?.data)}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -191,20 +194,20 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   </div>
                 </Button>
               </div>
-              {showEditor && (
-                <CommentEditor
-                  onSubmit={createReplyInteraction}
-                  value={replyContent}
-                  onChange={handleReplyContentChange}
-                  onCancel={() => setShowEditor(false)}
-                  showCancelButton={true}
-                  placeholder="Write a reply..."
-                />
-              )}
             </div>
           </div>
         </div>
       </article>
+      {showEditor && (
+        <CommentEditor
+          onSubmit={createReplyInteraction}
+          value={replyContent}
+          onChange={handleReplyContentChange}
+          onCancel={() => setShowEditor(false)}
+          showCancelButton={true}
+          placeholder="Write a reply..."
+        />
+      )}
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
