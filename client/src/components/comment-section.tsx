@@ -26,6 +26,11 @@ export default function CommentSection({
           {fetchedComments && fetchedComments.length >= 1 ? (
             fetchedComments
               .filter((comment: CommentInterface) => !comment.isReply)
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
               .map((comment: CommentInterface) => (
                 <NestedComment
                   key={`${comment._id}`}
