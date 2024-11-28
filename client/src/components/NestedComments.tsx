@@ -49,22 +49,29 @@ const NestedComment: FC<NestedCommentProps> = ({
   };
 
   // If loading, show skeleton
-  if (isLoading || isFetching) {
+  /*   if (isLoading || isFetching) {
     return <CommentSkeleton />;
-  }
+  } */
 
   return (
     <article
-      className={`space-y-4 ${
-        level > 0 ? "ml-8 border-l-2 border-muted-foreground pl-4" : ""
-      }`}
+      className={`
+      space-y-4 relative 
+      transition-all 
+      duration-300 
+      ease-in-out 
+      shadow-sm 
+      group 
+      hover:shadow-md 
+      
+    `}
     >
       <Comment key={`${comment._id}`} comment={comment} post={post} />
 
       {fetchedReplies && fetchedReplies.length > 0 && (
-        <div>
+        <>
           {level < 2 || isExpanded ? (
-            <div className="pl-4">
+            <div className="space-y-4 pl-6 ml-1 border-l-2 border-muted-foreground group-hover:border-[#49a4ff]">
               {fetchedReplies
                 .filter((reply: CommentInterface) => reply.isReply)
                 .map((reply: CommentInterface) => (
@@ -87,7 +94,7 @@ const NestedComment: FC<NestedCommentProps> = ({
               Show {fetchedReplies?.length} more replies
             </button>
           )}
-        </div>
+        </>
       )}
     </article>
   );
