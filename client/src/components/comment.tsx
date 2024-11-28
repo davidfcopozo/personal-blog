@@ -91,7 +91,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   };
 
   const handleSubmit = (content: string) => {
-    console.log(content);
+    handleReplyContentChange(content);
 
     setShowEditor(false);
   };
@@ -202,7 +202,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
         <CommentEditor
           onSubmit={createReplyInteraction}
           value={replyContent}
-          onChange={handleReplyContentChange}
+          onChange={handleSubmit}
           onCancel={() => setShowEditor(false)}
           showCancelButton={true}
           placeholder="Write a reply..."
