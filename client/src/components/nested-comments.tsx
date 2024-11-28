@@ -1,15 +1,8 @@
 import React, { useState, useEffect, FC } from "react";
 import useBulkFetch from "@/hooks/useBulkFetch";
-import { CommentInterface } from "@/typings/interfaces";
+import { CommentInterface, NestedCommentProps } from "@/typings/interfaces";
 import CommentSkeleton from "./comment-skeleton";
 import Comment from "./comment";
-
-interface NestedCommentProps {
-  comment: CommentInterface;
-  post: any;
-  level?: number;
-  onMaxNestingReached?: () => void;
-}
 
 const NestedComment: FC<NestedCommentProps> = ({
   comment,

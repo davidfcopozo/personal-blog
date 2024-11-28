@@ -120,3 +120,10 @@ export interface CommentEditorProps {
   showCancelButton: boolean;
   value: string;
 }
+
+export interface NestedCommentProps {
+  comment: CommentInterface;
+  post: any;
+  level?: number;
+  onMaxNestingReached?: () => void;
+}
