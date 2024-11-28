@@ -2,7 +2,7 @@ import { CommentSectionPropsType } from "@/typings/types";
 import CommentBox from "./comment-box";
 import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface } from "@/typings/interfaces";
-import NestedComment from "./NestedComments";
+import NestedComment from "./nested-comments";
 
 export default function CommentSection({
   comments,
