@@ -106,7 +106,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
       <article className="flex bg-background rounded-lg">
         <div
           id={`${comment?._id}`}
-          className="flex flex-1 items-start gap-2 px-4 py-2 border border-[1px] rounded-md"
+          className="flex flex-1 items-start gap-2 px-4 py-2 border-[1px] rounded-md"
         >
           <Avatar className="w-10 h-10 border">
             <AvatarImage src="/placeholder-user.jpg" />

@@ -63,7 +63,7 @@ const NestedComment: FC<NestedCommentProps> = ({
             <div
               className="space-y-4 pl-6 ml-1 border-l-2 border-muted-input group-hover:border-[--thread-border] transition-all 
       duration-300 
-      ease-in-out "
+      ease-in-out"
             >
               {fetchedReplies
                 .filter((reply: CommentInterface) => reply.isReply)
@@ -82,7 +82,7 @@ const NestedComment: FC<NestedCommentProps> = ({
           ) : (
             <button
               onClick={toggleExpand}
-              className="text-blue-500 hover:underline mt-2"
+              className="text-[--thread-border] hover:underline mt-2"
             >
               Show {fetchedReplies?.length} more replies
             </button>
