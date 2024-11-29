@@ -136,10 +136,20 @@ export const deleteCommentById = async (
 
     //If the comment id has been removed from the post's comment array, also remove it from the comment document
     if (result.modifiedCount === 1) {
+      //check if comment has replies, if it does, delete them as well
+      let replies;
+      if (comment.replies?.length! > 0) {
+        replies = comment.replies;
+      }
       await Comment.deleteOne({
         _id: commentId,
         postedBy: userId,
       });
+
+      if (replies) {
+        await Comment.deleteMany({ _id: { $in: replies } });
+      }
+
       res
         .status(StatusCodes.OK)
         .json({ success: true, msg: "Comment has been successfully deleted." });
