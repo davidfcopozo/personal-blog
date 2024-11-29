@@ -90,8 +90,12 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleSubmit = (content: string) => {
-    handleReplyContentChange(content);
+  const handleSubmit = () => {
+    createReplyInteraction({
+      onError: () => {
+        console.error("Error handling reply interaction");
+      },
+    });
 
     setShowEditor(false);
   };
@@ -200,9 +204,9 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
       </article>
       {showEditor && (
         <CommentEditor
-          onSubmit={createReplyInteraction}
+          onSubmit={handleSubmit}
           value={replyContent}
-          onChange={handleSubmit}
+          onChange={handleReplyContentChange}
           onCancel={() => setShowEditor(false)}
           showCancelButton={true}
           placeholder="Write a reply..."
