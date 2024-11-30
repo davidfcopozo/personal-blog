@@ -52,7 +52,7 @@ const NestedComment: FC<NestedCommentProps> = ({
 
       {fetchedReplies && fetchedReplies.length > 0 && (
         <>
-          {level < 2 || isExpanded ? (
+          {level < 2 || !isExpanded ? (
             <div
               className="space-y-4 pl-6 ml-1 border-l-2 border-muted-input group-hover:border-[--thread-border] transition-all 
       duration-300 
@@ -60,6 +60,11 @@ const NestedComment: FC<NestedCommentProps> = ({
             >
               {fetchedReplies
                 .filter((reply: CommentInterface) => reply.isReply)
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                )
                 .map((reply: CommentInterface) => (
                   <NestedComment
                     key={`${reply._id}`}
