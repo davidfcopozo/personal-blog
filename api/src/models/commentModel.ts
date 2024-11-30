@@ -16,6 +16,7 @@ const commentSchema = new mongoose.Schema<CommentInterface>(
       type: String,
       required: [true, "Comment cannot be empty"],
     },
+    commentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
     replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reply" }],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     isReply: { type: Boolean, required: true, default: false },
