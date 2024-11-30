@@ -114,6 +114,7 @@ export const deleteCommentById = async (
     if (!post) {
       throw new NotFound("This post doesn't exist");
     }
+
     const comment: CommentType = await Comment.findOne({
       _id: commentId,
       postedBy: userId,
@@ -127,27 +128,45 @@ export const deleteCommentById = async (
       throw new BadRequest("Something went wrong");
     }
 
-    // Remove comment from the post's comment's array property
+    // Recursively collect all nested reply IDs to delete
+    const collectNestedReplyIds = async (
+      commentId: string
+    ): Promise<string[]> => {
+      const currentComment = await Comment.findById(commentId);
+      if (!currentComment || !currentComment.replies) return [];
+
+      const nestedReplies: string[] = [];
+      for (const replyId of currentComment.replies) {
+        nestedReplies.push(replyId.toString());
+        const childReplies = await collectNestedReplyIds(replyId.toString());
+        nestedReplies.push(...childReplies);
+      }
+
+      return nestedReplies;
+    };
+
+    // Collect all nested reply IDs
+    const allNestedReplyIds = await collectNestedReplyIds(commentId);
+
+    // Remove comment from the post's comments array
     const result = await Post.updateOne(
       { _id: post._id },
       { $pull: { comments: commentId } },
       { new: true }
     );
 
-    //If the comment id has been removed from the post's comment array, also remove it from the comment document
     if (result.modifiedCount === 1) {
-      //check if comment has replies, if it does, delete them as well
-      let replies;
-      if (comment.replies?.length! > 0) {
-        replies = comment.replies;
-      }
+      // Delete the main comment
       await Comment.deleteOne({
         _id: commentId,
         postedBy: userId,
       });
 
-      if (replies) {
-        await Comment.deleteMany({ _id: { $in: replies } });
+      // Delete all nested replies
+      if (allNestedReplyIds.length > 0) {
+        await Comment.deleteMany({
+          _id: { $in: [...allNestedReplyIds, commentId] },
+        });
       }
 
       res

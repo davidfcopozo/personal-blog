@@ -179,37 +179,57 @@ export const deleteReplyById = async (
       throw new NotFound("This comment doesn't exist or has been deleted");
     }
 
-    //Get the reply by filtering comment's replies
+    // Recursively collect all nested reply IDs to delete
+    const collectNestedReplyIds = async (
+      replyId: string
+    ): Promise<string[]> => {
+      const reply = await Comment.findById(replyId);
+      if (!reply || !reply.replies) return [];
+
+      const nestedReplies: string[] = [];
+      for (const childReplyId of reply.replies) {
+        nestedReplies.push(childReplyId.toString());
+        const childReplies = await collectNestedReplyIds(
+          childReplyId.toString()
+        );
+        nestedReplies.push(...childReplies);
+      }
+
+      return nestedReplies;
+    };
+
+    // Collect all nested reply IDs
+    const allNestedReplyIds = await collectNestedReplyIds(replyId);
+
     const commentReply = comment.replies?.filter((reply) =>
       reply.equals(replyId)
     );
 
-    //Make sure to get the comments and replies of the posts they belong to
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
     }
 
-    //Check if the given reply exist
     if (!commentReply?.length) {
       throw new NotFound("This comment does not exist or has been deleted");
     }
 
-    // Remove comment from the comment's replies array property
+    // Remove reply from the comment's replies array property
     const result = await Comment.updateOne(
       { _id: comment._id },
-      { $pull: { replies: `${commentReply}` } },
+      { $pull: { replies: replyId } },
       { new: true }
     );
 
-    //If the comment id has been removed from the comment's replies array, also remove it from the comment collection
+    //If the reply id has been removed from the comment's replies array, also remove it from the comment collection
     if (result.modifiedCount === 1) {
-      await Comment.deleteOne({
-        _id: replyId,
-        postedBy: userId,
+      // Delete the main reply and all its nested replies
+      await Comment.deleteMany({
+        _id: { $in: [...allNestedReplyIds, replyId] },
       });
+
       res
         .status(StatusCodes.OK)
-        .json({ success: true, msg: "Comment has been successfully deleted." });
+        .json({ success: true, msg: "Reply has been successfully deleted." });
     } else {
       throw new BadRequest("Something went wrong, please try again!");
     }
