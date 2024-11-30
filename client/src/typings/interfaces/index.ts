@@ -70,6 +70,7 @@ export interface ReplyInterface {
   postedBy: ObjectId;
   post: ObjectId;
   content: string;
+  commentId: string;
   replies: string[];
   likes: ObjectId[];
   createdAt: Date;
@@ -126,4 +127,11 @@ export interface NestedCommentProps {
   post: any;
   level?: number;
   onMaxNestingReached?: () => void;
+}
+
+export interface UseBulkFetchProps {
+  ids: string[];
+  key: string;
+  dependantItem?: boolean;
+  url: string;
 }

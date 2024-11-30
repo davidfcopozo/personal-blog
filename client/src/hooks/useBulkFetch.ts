@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { CommentInterface } from "@/typings/interfaces";
+import { CommentInterface, UseBulkFetchProps } from "@/typings/interfaces";
 
 const getBaseURL = () => {
   if (typeof window !== "undefined") {
@@ -8,13 +8,6 @@ const getBaseURL = () => {
   }
   return "http://localhost:3000";
 };
-
-interface UseBulkFetchProps {
-  ids: string[];
-  key: string;
-  dependantItem?: boolean;
-  url: string;
-}
 
 const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
   const baseURL = getBaseURL();
