@@ -57,6 +57,7 @@ export interface CommentInterface {
   _id: ObjectId;
   postedBy: ObjectId;
   post: ObjectId;
+  commentId?: ObjectId;
   content: string;
   replies: string[];
   likes: ObjectId[];

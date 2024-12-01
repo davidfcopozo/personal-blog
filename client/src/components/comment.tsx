@@ -24,8 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import useDeleteRequest from "@/hooks/useDeleteRequest";
 import dynamic from "next/dynamic";
+import useDeleteComment from "@/hooks/useDeleteComment";
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
@@ -33,7 +33,7 @@ const CommentEditor = dynamic(() => import("./comment-editor"), {
 const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
-  const { mutate } = useDeleteRequest();
+  const { mutate } = useDeleteComment();
 
   const { data: postedBy } = useFetchRequest(
     ["commentPostedBy"],
@@ -70,11 +70,23 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   };
 
   const handleDelete = () => {
-    mutate({
-      url: `/api/comments/${post?._id}/${comment?._id}`,
-      itemId: `${comment?._id}`,
-      key: "comments",
-    });
+    if (!post?._id || !comment?._id) return;
+
+    if (!comment.isReply) {
+      mutate({
+        url: `/api/comments/${post?._id}/${comment?._id}`,
+        itemId: `${comment?._id}`,
+        key: "comments",
+      });
+    } else {
+      mutate({
+        url: `/api/replies/${post?._id}/${comment?.commentId}/${comment?._id}`,
+        itemId: `${comment?._id}`,
+        key: "replies",
+        parentId: `${comment?.commentId}`,
+      });
+    }
+
     setIsDeleteDialogOpen(false);
   };
 
