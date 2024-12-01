@@ -483,51 +483,54 @@ export const useInteractions = (
   const createReplyMutation = usePostRequest({
     url: `/api/replies/${postId}`,
     onSuccess: (newReply: ReplyInterface) => {
-    
       if (!newReply || !newReply.commentId || !newReply._id) {
         console.error("Reply data is incomplete:", newReply);
         return;
       }
-    
+
       // Update the replies cache using the correct key
-      queryClient.setQueryData([`replies-${newReply.commentId}`], (oldReplies: ReplyInterface[] | undefined) => {
-        const updatedReplies = oldReplies ? [...oldReplies, newReply] : [newReply];
-        return updatedReplies;
-      });
-    
+      queryClient.setQueryData(
+        [`replies-${newReply.commentId}`],
+        (oldReplies: ReplyInterface[] | undefined) => {
+          const updatedReplies = oldReplies
+            ? [...oldReplies, newReply]
+            : [newReply];
+          return updatedReplies;
+        }
+      );
 
       // Optionally, update the comments list cache
-      queryClient.setQueryData(["comments"], (oldComments: CommentFetchType | undefined) => {
-        if (!oldComments?.data) {
-          console.error("No data found in the 'comments' cache.");
-          return oldComments;
-        }
-    
-        const commentList = Array.isArray(oldComments.data)
-          ? oldComments.data
-          : [oldComments.data];
-    
-        const updatedComments = {
-          ...oldComments,
-          data: commentList.map((existingComment: CommentInterface) => {
-            if (`${existingComment._id}` === `${newReply.commentId}`) {
-              return {
-                ...existingComment,
-                replies: [...(existingComment.replies || []), newReply._id],
-              };
+      queryClient.setQueryData(
+        ["comments"],
+        (oldComments: CommentInterface[] | undefined) => {
+          if (!oldComments) {
+            console.error("No data found in the 'comments' cache.");
+            return oldComments;
+          }
+
+          const updatedComments = oldComments.map(
+            (existingComment: CommentInterface) => {
+              if (
+                existingComment._id.toString() === newReply.commentId.toString()
+              ) {
+                return {
+                  ...existingComment,
+                  replies: [...(existingComment.replies || []), newReply._id],
+                };
+              }
+              return existingComment;
             }
-            return existingComment;
-          }),
-        };
-    
-        return updatedComments;
-      });
-    
+          );
+
+          return updatedComments;
+        }
+      );
+
       toast({
         title: "Success",
         description: "Your reply was successfully added.",
       });
-    },    
+    },
     onMutate: async (replyData: { commentId: string; content: string }) => {
       await queryClient.cancelQueries({ queryKey: ["comments"] });
       await queryClient.cancelQueries({
