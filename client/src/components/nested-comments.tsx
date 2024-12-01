@@ -1,7 +1,6 @@
 import React, { useState, useEffect, FC } from "react";
 import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface, NestedCommentProps } from "@/typings/interfaces";
-import CommentSkeleton from "./comment-skeleton";
 import Comment from "./comment";
 import SingleCommentSkeleton from "./single-comment-skeleton";
 
