@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp, MoreVertical } from "lucide-react";
 import { getFullName, getNameInitials, getRelativeTime } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
-import useBulkFetch from "@/hooks/useBulkFetch";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { useInteractions } from "@/hooks/useInteractions";
 import {
@@ -34,18 +33,7 @@ const CommentEditor = dynamic(() => import("./comment-editor"), {
 const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
-
   const { mutate } = useDeleteRequest();
-
-  const {
-    data: fetchedReplies,
-    isLoading,
-    isFetching,
-  } = useBulkFetch({
-    ids: comment?.replies?.length >= 1 ? comment?.replies : [],
-    key: "replies",
-    url: `/api/replies/${post._id}/${comment?._id}`,
-  });
 
   const { data: postedBy } = useFetchRequest(
     ["commentPostedBy"],
