@@ -20,15 +20,6 @@ const BlogPost = ({ slug }: { slug: string }) => {
     }
   }, [data?.data, hasInitialData]);
 
-  useEffect(() => {
-    if (window && window.location.hash) {
-      const element = document.getElementById(window.location.hash.slice(1));
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-  }, []);
-
   // Get the latest post data from the cache
   const post = queryClient.getQueryData<{ data: PostType }>([
     "post",

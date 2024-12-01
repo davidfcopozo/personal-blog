@@ -3,6 +3,7 @@ import CommentBox from "./comment-box";
 import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface } from "@/typings/interfaces";
 import NestedComment from "./nested-comments";
+import { useEffect } from "react";
 
 export default function CommentSection({
   comments,
@@ -14,6 +15,15 @@ export default function CommentSection({
     key: "comments",
     url: `/api/comments`,
   });
+
+  const hash = window.location.hash;
+  useEffect(() => {
+    if (hash === "#comments-section") {
+      const commentsSection = document.getElementById("comments-section");
+      commentsSection?.scrollIntoView({ behavior: "smooth" });
+      commentsSection?.focus();
+    }
+  }, []);
 
   return (
     <section className="w-full max-w-3xl px-4 mx-auto space-y-6 mb-8 sm:px-6">
