@@ -3,6 +3,7 @@ import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface, NestedCommentProps } from "@/typings/interfaces";
 import CommentSkeleton from "./comment-skeleton";
 import Comment from "./comment";
+import SingleCommentSkeleton from "./single-comment-skeleton";
 
 const NestedComment: FC<NestedCommentProps> = ({
   comment,
@@ -58,24 +59,28 @@ const NestedComment: FC<NestedCommentProps> = ({
       duration-300 
       ease-in-out"
             >
-              {fetchedReplies
-                .filter((reply: CommentInterface) => reply.isReply)
-                .sort(
-                  (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-                )
-                .map((reply: CommentInterface) => (
-                  <NestedComment
-                    key={`${reply._id}`}
-                    comment={reply}
-                    post={post}
-                    level={level + 1}
-                    onMaxNestingReached={() => {
-                      // Optional: Show a toast or provide user feedback
-                    }}
-                  />
-                ))}
+              {isLoading || isFetching ? (
+                <SingleCommentSkeleton />
+              ) : (
+                fetchedReplies
+                  .filter((reply: CommentInterface) => reply.isReply)
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  )
+                  .map((reply: CommentInterface) => (
+                    <NestedComment
+                      key={`${reply._id}`}
+                      comment={reply}
+                      post={post}
+                      level={level + 1}
+                      onMaxNestingReached={() => {
+                        // Optional: Show a toast or provide user feedback
+                      }}
+                    />
+                  ))
+              )}
             </div>
           ) : (
             <button
