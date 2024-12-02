@@ -23,7 +23,6 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     likeInteraction,
     bookmarkInteraction,
     liked,
-    amountOfLikes,
     bookmarked,
     amountOfBookmarks,
   } = useInteractions(`${post._id}`, post);
@@ -164,7 +163,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
                   }`}
                 >
                   <span className="text-sm text-center text-gray-400 pl-[0.1em]">
-                    {amountOfLikes}
+                    {post?.likes?.length}
                   </span>
                 </div>
                 <div
@@ -173,7 +172,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
                   }`}
                 >
                   <span className="text-sm text-center pl-[0.1em] text-pink-500">
-                    {amountOfLikes}
+                    {post?.likes?.length}
                   </span>
                 </div>
               </div>
