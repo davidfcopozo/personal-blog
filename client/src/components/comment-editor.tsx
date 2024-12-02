@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
-import "@/styles/comment-editor.css";
 import { setTitle } from "@/utils/blog-editor";
 import { CommentEditorProps } from "@/typings/interfaces";
 
