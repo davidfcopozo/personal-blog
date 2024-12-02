@@ -216,12 +216,12 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
-        <AlertDialogContent className="bg-foreground border-none">
+        <AlertDialogContent className="bg-background border-none">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-muted">
+            <AlertDialogTitle>
               Are you sure you want to delete this comment?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted">
+            <AlertDialogDescription>
               This action cannot be undone. This will permanently delete your
               comment and remove it from our servers.
             </AlertDialogDescription>
