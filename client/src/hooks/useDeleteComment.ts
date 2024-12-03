@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-
 import axios from "axios";
 import { CommentInterface, ReplyInterface } from "@/typings/interfaces";
 
@@ -28,27 +27,43 @@ const useDeleteComment = () => {
       key: string;
       parentId?: string;
     }) => {
-      // Update main list of comments/replies
-      queryClient.setQueryData([variables.key], (old: any) => {
-        if (!old || !Array.isArray(old)) return old;
-        return old.filter((item: any) => item._id !== variables.itemId);
-      });
+      // Handle comment deletion
+      if (variables.key === "comments") {
+        queryClient.setQueryData(["comments"], (old: CommentInterface[]) => {
+          if (!old || !Array.isArray(old)) return old;
+          // Filter out the comment and any of its replies
+          return old.filter((comment) => {
+            // Remove the comment itself
+            if (comment._id.toString() === variables.itemId) return false;
 
-      // If it's a reply, update the parent comment's replies
+            // Remove any replies associated with this comment
+            return !comment.replies?.includes(variables.itemId);
+          });
+        });
+
+        // Remove replies associated with this comment
+        queryClient.removeQueries({
+          queryKey: [`replies-${variables.itemId}`],
+        });
+      }
+
+      // Handle reply deletion
       if (variables.key === "replies" && variables.parentId) {
+        // Remove the reply from the specific comment's replies list
         queryClient.setQueryData(
           [`replies-${variables.parentId}`],
-          (old: any) => {
+          (old: ReplyInterface[]) => {
             if (!old || !Array.isArray(old)) return old;
-            return old.filter((item: any) => item._id !== variables.itemId);
+            return old.filter(
+              (item) => item._id.toString() !== variables.itemId
+            );
           }
         );
 
-        //remove reply from comment's replies list
+        // Remove the reply ID from the parent comment's replies array
         queryClient.setQueryData(["comments"], (old: CommentInterface[]) => {
           if (!old || !Array.isArray(old)) return old;
 
-          // Map through comments and update the specific comment's replies
           return old.map((comment) => {
             if (comment._id.toString() === variables.parentId) {
               return {
@@ -113,31 +128,37 @@ const useDeleteComment = () => {
         });
       }
 
-      // Snapshot the current data
-      const previousItems = queryClient.getQueryData([variables.key]);
+      const previousComments = queryClient.getQueryData(["comments"]);
       const previousReplies = variables.parentId
-        ? queryClient.getQueryData(["replies", variables.parentId])
+        ? queryClient.getQueryData([`replies-${variables.parentId}`])
         : null;
 
-      // Optimistically update the UI
-      queryClient.setQueryData([variables.key], (old: any) => {
-        if (!old || !Array.isArray(old)) return old;
-        return old.filter((item: any) => item._id !== variables.itemId);
-      });
+      // Optimistically remove the item
+      if (variables.key === "comments") {
+        queryClient.setQueryData(["comments"], (old: CommentInterface[]) => {
+          if (!old || !Array.isArray(old)) return old;
+          return old.filter((comment) => {
+            if (comment._id.toString() === variables.itemId) return false;
+            return !comment.replies?.includes(variables.itemId);
+          });
+        });
+      }
 
-      // If it's a reply, also update the parent comment's replies
       if (variables.key === "replies" && variables.parentId) {
+        // Remove reply from specific replies list
         queryClient.setQueryData(
-          ["replies", variables.parentId],
-          (old: any) => {
+          [`replies-${variables.parentId}`],
+          (old: ReplyInterface[]) => {
             if (!old || !Array.isArray(old)) return old;
-            return old.filter((item: any) => item._id !== variables.itemId);
+            return old.filter(
+              (item) => item._id.toString() !== variables.itemId
+            );
           }
         );
       }
 
       return {
-        previousItems,
+        previousComments,
         previousReplies,
       };
     },
