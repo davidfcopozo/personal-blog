@@ -41,11 +41,6 @@ const NestedComment: FC<NestedCommentProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  // If loading, show skeleton
-  /*   if (isLoading || isFetching) {
-    return <CommentSkeleton />;
-  } */
-
   return (
     <article className={`space-y-4 relative group`}>
       <Comment key={`${comment._id}`} comment={comment} post={post} />
