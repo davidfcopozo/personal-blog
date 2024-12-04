@@ -526,6 +526,7 @@ export const useInteractions = (
         }
       );
 
+      setReplyContent("");
       toast({
         title: "Success",
         description: "Your reply was successfully added.",
