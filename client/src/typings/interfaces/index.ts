@@ -57,7 +57,7 @@ export interface CommentInterface {
   _id: ObjectId;
   postedBy: ObjectId;
   post: ObjectId;
-  commentId?: ObjectId;
+  parentId?: ObjectId;
   content: string;
   replies: string[];
   likes: ObjectId[];
@@ -71,7 +71,7 @@ export interface ReplyInterface {
   postedBy: ObjectId;
   post: ObjectId;
   content: string;
-  commentId: string;
+  parentId: string;
   replies: string[];
   likes: ObjectId[];
   createdAt: Date;

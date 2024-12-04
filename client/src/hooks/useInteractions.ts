@@ -483,14 +483,14 @@ export const useInteractions = (
   const createReplyMutation = usePostRequest({
     url: `/api/replies/${postId}`,
     onSuccess: (newReply: ReplyInterface) => {
-      if (!newReply || !newReply.commentId || !newReply._id) {
+      if (!newReply || !newReply.parentId || !newReply._id) {
         console.error("Reply data is incomplete:", newReply);
         return;
       }
 
       // Update the replies cache using the correct key
       queryClient.setQueryData(
-        [`replies-${newReply.commentId}`],
+        [`replies-${newReply.parentId}`],
         (oldReplies: ReplyInterface[] | undefined) => {
           const updatedReplies = oldReplies
             ? [...oldReplies, newReply]
@@ -511,7 +511,7 @@ export const useInteractions = (
           const updatedComments = oldComments.map(
             (existingComment: CommentInterface) => {
               if (
-                existingComment._id.toString() === newReply.commentId.toString()
+                existingComment._id.toString() === newReply.parentId.toString()
               ) {
                 return {
                   ...existingComment,
