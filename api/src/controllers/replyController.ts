@@ -15,7 +15,7 @@ export const createReply = async (
   const {
     user: { userId },
     params: { id: postId },
-    body: { parentId },
+    body: { commentId },
   } = req;
 
   try {
@@ -25,7 +25,7 @@ export const createReply = async (
       throw new NotFound("The post you're trying to comment on does not exist");
     }
 
-    const comment: CommentType = await Comment.findById(parentId);
+    const comment: CommentType = await Comment.findById(commentId);
 
     const comments = post?.comments;
 
@@ -42,7 +42,7 @@ export const createReply = async (
       postedBy: userId,
       post: postId,
       isReply: true,
-      parentId: parentId,
+      parentId: commentId,
     });
 
     if (!reply) {
