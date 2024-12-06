@@ -56,11 +56,11 @@ export async function POST(
 
   try {
     const body = await req.json();
-    const { commentId, content } = body;
+    const { parentId, content } = body;
 
     const res = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/replies/${id}`,
-      { content, commentId },
+      { content, parentId },
       {
         headers: {
           Authorization: `Bearer ${token.accessToken}`,
