@@ -488,7 +488,7 @@ export const useInteractions = (
         return;
       }
 
-      // Update the replies cache using the correct key
+      // Update the replies cache for the immediate parent's cache
       queryClient.setQueryData(
         [`replies-${newReply.parentId}`],
         (oldReplies: ReplyInterface[] | undefined) => {
@@ -499,101 +499,158 @@ export const useInteractions = (
         }
       );
 
-      // Optionally, update the comments list cache
+      // Update the grandparent's replies cache
+      queryClient.setQueryData(
+        [`replies-${comment?.parentId}`],
+        (oldReplies: ReplyInterface[] | undefined) => {
+          return oldReplies?.map((reply) => {
+            if (`${reply._id}` === `${newReply.parentId}`) {
+              // Remove the temporary ID and add the new reply's ID
+              const filteredReplies = (reply.replies || [])
+                .filter((id) => !id.startsWith("temp-"))
+                .concat(`${newReply._id}`);
+
+              return {
+                ...reply,
+                replies: filteredReplies,
+              };
+            }
+            return reply;
+          });
+        }
+      );
+
+      // Update the comments cache
       queryClient.setQueryData(
         ["comments"],
         (oldComments: CommentInterface[] | undefined) => {
           if (!oldComments) {
-            console.error("No data found in the 'comments' cache.");
+            console.error("No data found.");
             return oldComments;
           }
 
-          const updatedComments = oldComments.map(
-            (existingComment: CommentInterface) => {
-              if (
-                existingComment._id.toString() === newReply.parentId.toString()
-              ) {
-                return {
-                  ...existingComment,
-                  replies: [...(existingComment.replies || []), newReply._id],
-                };
-              }
-              return existingComment;
-            }
-          );
+          return oldComments.map((comment) => {
+            if (comment._id.toString() === newReply.parentId) {
+              // Remove the temporary ID and add the new reply's ID
+              const filteredReplies = (comment.replies || [])
+                .filter((id) => !id.startsWith("temp-"))
+                .concat(`${newReply._id}`);
 
-          return updatedComments;
+              return {
+                ...comment,
+                replies: filteredReplies,
+              };
+            }
+            return comment;
+          });
         }
       );
 
-      setReplyContent("");
+      // Success Toast
       toast({
         title: "Success",
         description: "Your reply was successfully added.",
       });
     },
-    onMutate: async (replyData: { commentId: string; content: string }) => {
+    onMutate: async (replyData: { parentId: string; content: string }) => {
+      const tempReplyId = `temp-${Date.now()}`;
+
+      // Cancel ongoing queries for affected caches
       await queryClient.cancelQueries({ queryKey: ["comments"] });
       await queryClient.cancelQueries({
-        queryKey: ["comment", `${replyData.commentId}`],
+        queryKey: [`replies-${replyData.parentId}`],
+      });
+      await queryClient.cancelQueries({
+        queryKey: [`replies-${comment?.parentId}`],
       });
 
-      const previousComments = queryClient.getQueryData<CommentFetchType>([
+      // Get the previous cache data for rollback
+      const previousReplies = queryClient.getQueryData<ReplyInterface[]>([
+        `replies-${replyData.parentId}`,
+      ]);
+      const previousGrandparentReplies = queryClient.getQueryData<
+        ReplyInterface[]
+      >([`replies-${comment?.parentId}`]);
+      const previousComments = queryClient.getQueryData<CommentInterface[]>([
         "comments",
       ]);
-      const previousComment = queryClient.getQueryData<CommentFetchType>([
-        "comment",
-        replyData.commentId,
-      ]);
 
-      // Optimistic update for comments list
-      const tempReplyId = `temp-${Date.now()}`;
-      await queryClient.setQueryData(
+      // Optimistic update: Add temp reply to immediate parent's replies cache
+      queryClient.setQueryData(
+        [`replies-${replyData.parentId}`],
+        (oldReplies: ReplyInterface[] | undefined) => [
+          ...(oldReplies || []),
+          { ...replyData, _id: tempReplyId },
+        ]
+      );
+
+      // Optimistic update: Add temp reply ID to comments cache
+      queryClient.setQueryData(
         ["comments"],
-        (oldComments: CommentFetchType | undefined) => {
-          if (!oldComments?.data) return oldComments;
+        (oldComments: CommentInterface[] | undefined) => {
+          if (!oldComments) return oldComments;
 
-          const commentList = Array.isArray(oldComments.data)
-            ? oldComments.data
-            : [oldComments.data];
-
-          return {
-            ...oldComments,
-            data: commentList.map((existingComment: CommentInterface) => {
-              if (`${existingComment._id}` === `${replyData.commentId}`) {
-                return {
-                  ...existingComment,
-                  replies: [...(existingComment.replies || []), tempReplyId],
-                };
-              }
-              return existingComment;
-            }),
-          };
+          return oldComments.map((comment) => {
+            if (comment._id.toString() === replyData.parentId) {
+              return {
+                ...comment,
+                replies: [...(comment.replies || []), tempReplyId],
+              };
+            }
+            return comment;
+          });
         }
       );
 
-      return { previousComments, previousComment };
+      // Optimistic update: Add temp reply ID to grandparent's replies cache
+      queryClient.setQueryData(
+        [`replies-${comment?.parentId}`],
+        (oldReplies: ReplyInterface[] | undefined) => {
+          if (!oldReplies) return oldReplies;
+
+          return oldReplies.map((reply) => {
+            if (`${reply._id}` === `${replyData.parentId}`) {
+              return {
+                ...reply,
+                replies: [...(reply.replies || []), tempReplyId],
+              };
+            }
+            return reply;
+          });
+        }
+      );
+
+      // Return rollback data
+      return {
+        previousReplies,
+        previousGrandparentReplies,
+        previousComments,
+      };
     },
-    onError: (error) => {
-      const previousComments = queryClient.getQueryData<CommentFetchType>([
-        "comments",
-      ]);
-      const previousComment = queryClient.getQueryData<CommentFetchType>([
-        "comment",
-        comment?._id,
-      ]);
+    onError: (error, variables, context) => {
+      if (context?.previousReplies) {
+        queryClient.setQueryData(
+          [`replies-${variables.parentId}`],
+          context.previousReplies
+        );
+      }
 
-      queryClient.setQueryData(["comments"], previousComments);
-      queryClient.setQueryData(["comment", comment?._id], previousComment);
+      if (context?.previousGrandparentReplies) {
+        queryClient.setQueryData(
+          [`replies-${comment?.parentId}`],
+          context.previousGrandparentReplies
+        );
+      }
 
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to process the request. Please try again.";
+      if (context?.previousComments) {
+        queryClient.setQueryData(["comments"], context.previousComments);
+      }
+
+      // Error toast
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMessage,
+        description: "Failed to add reply",
       });
     },
   });
@@ -609,7 +666,7 @@ export const useInteractions = (
     }
 
     createReplyMutation.mutate(
-      { commentId: comment._id, content: replyContent.trim() },
+      { parentId: comment._id, content: replyContent.trim() },
       {
         onError: (error) => {
           if (onError) onError();
