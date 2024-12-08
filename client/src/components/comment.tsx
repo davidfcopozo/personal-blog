@@ -42,7 +42,6 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
 
   const {
     createReplyInteraction,
-    setReplyContent,
     replyContent,
     likeCommentInteraction,
     commentLiked,
@@ -80,10 +79,10 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
       });
     } else {
       mutate({
-        url: `/api/replies/${post?._id}/${comment?.commentId}/${comment?._id}`,
+        url: `/api/replies/${post?._id}/${comment?.parentId}/${comment?._id}`,
         itemId: `${comment?._id}`,
         key: "replies",
-        parentId: `${comment?.commentId}`,
+        parentId: `${comment?.parentId}`,
       });
     }
 
@@ -96,13 +95,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
         console.error("Error handling reply interaction");
       },
     });
-
     setShowEditor(false);
-  };
-
-  const handleReplyChange = (content: string) => {
-    console.log(content);
-    setReplyContent(content);
   };
 
   return (
@@ -152,9 +145,9 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   onClick={() => setShowEditor((showEditor) => !showEditor)}
                 >
                   <MessageCircle className="w-4 h-4" />
+                  <span>{comment?.replies.length}</span>
                   <span className="sr-only">Reply</span>
                 </Button>
-
                 <Button
                   variant="ghost"
                   size="icon"
@@ -165,7 +158,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <div className="relative">
                     <ThumbsUp
                       className={`h-4 w-4 transition-colors duration-300 ${
-                        commentLiked ? "stroke-[#49a4ff]" : "stroke-gray-400"
+                        commentLiked ? "stroke-[#49a4ff]" : "stroke-white"
                       }`}
                     />
                     <ThumbsUp
@@ -182,7 +175,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                         commentLiked ? "-translate-y-full" : "translate-y-0"
                       }`}
                     >
-                      <span className="text-sm text-center text-gray-400">
+                      <span className="text-sm text-center">
                         {commentLikesCount}
                       </span>
                     </div>
