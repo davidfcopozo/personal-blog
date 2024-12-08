@@ -4,9 +4,9 @@ import { NextRequest } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string; replyId: string; commentId: string } }
 ) {
-  const { id } = params;
+  const { id, commentId, replyId } = params;
 
   if (!id) {
     return new Response(JSON.stringify({ message: "No slug found" }), {
@@ -17,7 +17,7 @@ export async function GET(
 
   try {
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${id}`
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/replies/${id}/${commentId}/${replyId}`
     );
 
     return new Response(JSON.stringify(res.data), {
@@ -37,15 +37,16 @@ export async function GET(
   }
 }
 
-export async function POST(
+export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string; commentId: string; replyId: string } }
 ) {
-  const { id } = params;
+  const { id: postId, commentId, replyId } = params;
   const token = await getToken({
     req: req,
     secret: process.env.NEXTAUTH_SECRET,
   });
+  console.log("ids===>", postId, commentId, replyId);
 
   if (!token) {
     return new Response(JSON.stringify({ message: "No token found" }), {
@@ -55,60 +56,8 @@ export async function POST(
   }
 
   try {
-    const body = await req.json();
-    const { content } = body;
-
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${id}`,
-      { content },
-      {
-        headers: {
-          Authorization: `Bearer ${token.accessToken}`,
-        },
-      }
-    );
-
-    return new Response(JSON.stringify(res.data), {
-      status: res.status,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error: Error | any) {
-    return new Response(
-      JSON.stringify({
-        message: error.response?.data?.msg || "Internal server error",
-      }),
-      {
-        status: error.response?.status || 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-}
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id: postId } = params;
-  const token = await getToken({
-    req: req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-
-  if (!token) {
-    return new Response(JSON.stringify({ message: "No token found" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  try {
-    const body = await req.json();
-    const { commentId } = body;
-
-    const res = await axios.put(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${postId}`,
-      { commentId },
+    const res = await axios.delete(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/replies/${postId}/${commentId}/${replyId}`,
       {
         headers: {
           Authorization: `Bearer ${token.accessToken}`,

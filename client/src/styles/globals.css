@@ -1,3 +1,6 @@
+@import "react-quill/dist/quill.snow.css";
+@import "@/styles/comment-editor.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,6 +36,8 @@
     --ring: 224 71.4% 4.1%;
 
     --radius: 0.5rem;
+
+    --thread-border: rgb(53, 147, 247, 0.8);
   }
 
   .dark {

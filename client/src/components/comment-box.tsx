@@ -1,25 +1,31 @@
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useInteractions } from "@/hooks/useInteractions";
+import dynamic from "next/dynamic";
+const CommentEditor = dynamic(() => import("./comment-editor"), {
+  ssr: false,
+});
 
 const CommentBox = ({ id }: { id: string }) => {
-  const { createCommentInteraction, setContent, content } = useInteractions(id);
+  const { createCommentInteraction, setCommentContent, commentContent } =
+    useInteractions(id);
+
+  const handleChange = (content: string) => {
+    setCommentContent(content);
+  };
   return (
     <form
-      className="space-y-2"
       onSubmit={(e) => {
         e.preventDefault();
-        createCommentInteraction({ onError: () => {} });
       }}
     >
-      <h3 className="text-xl font-bold">Add a new comment</h3>
-      <Textarea
-        placeholder="Write your comment here..."
-        className="min-h-[100px]"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
+      <h3 className="text-xl font-bold mb-4">Add a new comment</h3>
+      <CommentEditor
+        value={commentContent}
+        onChange={handleChange}
+        onSubmit={createCommentInteraction}
+        onCancel={() => {}}
+        showCancelButton={false}
+        placeholder="Share your thoughts with the community..."
       />
-      <Button>Submit</Button>
     </form>
   );
 };

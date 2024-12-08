@@ -9,10 +9,10 @@ import {
 } from "../controllers/replyController";
 
 router.route("/").get(getReplies);
+router.route("/:id").post(auth, createReply);
 router
-  .route("/:id")
+  .route("/:id/:commentId/:replyId")
   .get(getReplyById)
-  .post(auth, createReply)
   .delete(auth, deleteReplyById);
 
 export default router;

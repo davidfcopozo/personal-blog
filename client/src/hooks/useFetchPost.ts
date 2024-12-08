@@ -2,7 +2,7 @@ import useFetchRequest from "./useFetchRequest";
 
 const useFetchPost = (slug: string) => {
   const { data, error, isLoading, isFetching } = useFetchRequest(
-    "posts",
+    ["post", slug],
     `/api/posts/${slug}`
   );
 

@@ -22,9 +22,9 @@ export type BlogPostCardProps = {
 
 export type UsePostRequestType = {
   url: string;
-  onSuccess: (data: any) => void;
-  onError: (error: any) => void;
-  onMutate: (data: any) => void;
+  onSuccess: (data: any, variables?: any, context?: any) => void;
+  onError: (error: any, variables?: any, context?: any) => void;
+  onMutate: (data: any, variables?: any, context?: any) => void;
 };
 
 export type ExtractImagesFromContentType = (content: string) => string[];
@@ -43,16 +43,19 @@ export type CategoryType = CategoryInterface;
 export type CommentSectionPropsType = {
   comments: string[];
   id: string;
+  post: PostType;
 };
 
 export type CommentProps = {
   key: string | number;
   comment: CommentInterface;
+  post: PostType;
 };
 
 export type ReplyProps = {
   key: string | number;
   reply: CommentInterface;
+  commentId: string;
 };
 
 export type CommentFetchType = {

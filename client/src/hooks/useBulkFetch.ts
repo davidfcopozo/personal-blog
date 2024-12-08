@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { CommentInterface } from "@/typings/interfaces";
+import { CommentInterface, UseBulkFetchProps } from "@/typings/interfaces";
 
 const getBaseURL = () => {
   if (typeof window !== "undefined") {
@@ -9,7 +9,7 @@ const getBaseURL = () => {
   return "http://localhost:3000";
 };
 
-const useCommentFetch = (ids: string[], key: string) => {
+const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
   const baseURL = getBaseURL();
 
   const fetchComments = async (): Promise<CommentInterface[]> => {
@@ -19,7 +19,7 @@ const useCommentFetch = (ids: string[], key: string) => {
       const { data } = await axios.get<{
         success: boolean;
         data: CommentInterface;
-      }>(`${baseURL}/api/comments/${id}`);
+      }>(`${baseURL}/${url}/${id}`);
       return data.data;
     });
 
@@ -34,10 +34,10 @@ const useCommentFetch = (ids: string[], key: string) => {
     refetchOnMount: true,
     gcTime: 0,
     staleTime: 0,
-    enabled: ids?.length > 0,
+    enabled: ids?.length > 0 || dependantItem,
   });
 
   return { data, error, isLoading, isFetching };
 };
 
-export default useCommentFetch;
+export default useBulkFetch;

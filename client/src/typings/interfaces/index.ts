@@ -57,7 +57,21 @@ export interface CommentInterface {
   _id: ObjectId;
   postedBy: ObjectId;
   post: ObjectId;
+  parentId?: ObjectId;
   content: string;
+  replies: string[];
+  likes: ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+  isReply: boolean;
+}
+
+export interface ReplyInterface {
+  _id: ObjectId;
+  postedBy: ObjectId;
+  post: ObjectId;
+  content: string;
+  parentId: string;
   replies: string[];
   likes: ObjectId[];
   createdAt: Date;
@@ -96,4 +110,29 @@ export interface UseMutationRequestProps<TData, TVariables> {
     variables: TVariables,
     context: MutationContext<TData> | undefined
   ) => void;
+}
+
+export interface CommentEditorProps {
+  onSubmit: (newItem: any) => void;
+  onCancel?: () => void;
+
+  onChange: (e: string) => void;
+  placeholder?: string;
+  maxHeight?: number;
+  showCancelButton: boolean;
+  value: string;
+}
+
+export interface NestedCommentProps {
+  comment: CommentInterface;
+  post: any;
+  level?: number;
+  onMaxNestingReached?: () => void;
+}
+
+export interface UseBulkFetchProps {
+  ids: string[];
+  key: string;
+  dependantItem?: boolean;
+  url: string;
 }

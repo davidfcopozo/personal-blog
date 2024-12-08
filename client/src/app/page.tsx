@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryType, PostType } from "@/typings/types";
-import { useRouter } from "next/navigation";
 import CategoriesSkeleton from "@/components/categories-skeleton";
 import { BlogPostCard } from "@/components/blog-post-card";
 import SearchResults from "@/components/search-results";
@@ -18,15 +17,14 @@ export default function Home() {
     data: posts,
     error,
     isFetching,
-  } = useFetchRequest("posts", `/api/posts`);
+  } = useFetchRequest(["posts"], `/api/posts`);
   const {
     data: categories,
     error: categoriesError,
     isFetching: isCategoriesFetching,
-  } = useFetchRequest("categories", `/api/categories`);
+  } = useFetchRequest(["categories"], `/api/categories`);
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     if (error) {
