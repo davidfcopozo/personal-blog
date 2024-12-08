@@ -1,8 +1,8 @@
 import React, { useState, useEffect, FC } from "react";
-import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface, NestedCommentProps } from "@/typings/interfaces";
 import Comment from "./comment";
 import SingleCommentSkeleton from "./single-comment-skeleton";
+import useFetchReplies from "@/hooks/useFetchReplies";
 
 const NestedComment: FC<NestedCommentProps> = ({
   comment,
@@ -14,16 +14,14 @@ const NestedComment: FC<NestedCommentProps> = ({
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
 
-  const {
-    data: fetchedReplies,
-    isLoading,
-    isFetching,
-  } = useBulkFetch({
+  const { fetchedReplies, isLoading, isFetching } = useFetchReplies({
     ids: comment?.replies?.length >= 1 ? comment?.replies : [],
     key: `replies-${comment._id}`,
     url: `/api/replies/${post._id}/${comment?._id}`,
     // Only fetch if expanded or children not yet loaded
-    dependantItem: isExpanded && !childrenLoaded,
+    isExpanded: isExpanded,
+    childrenLoaded: !childrenLoaded,
+    comment: comment,
   });
 
   useEffect(() => {
