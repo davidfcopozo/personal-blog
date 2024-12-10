@@ -31,9 +31,9 @@ const dompurifyConfig = {
   FORBID_ATTR: ["on*", "style"], // Prevent event handler attributes
   ADD_ATTR: ["rel"], // Add rel attribute for links
   /* ADD_TAGS: [], */ // Add custom tags if needed (e.g., embeds)
-  KEEP_CONTENT: false, // Remove the entire tag if forbidden (don't keep inner content)
-  RETURN_DOM: false, // Return HTML string instead of DOM nodes
-  RETURN_DOM_FRAGMENT: false, // Don't use DOMFragment (not necessary for Next.js)
+  RETURN_DOM: false, // Return HTML string
+  RETURN_DOM_FRAGMENT: false, // Return string, not fragment
+  KEEP_CONTENT: true, // Preserve inner content
 };
 
 export const sanitizeContent = (dirtyHtml: string) => {
