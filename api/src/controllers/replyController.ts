@@ -6,6 +6,7 @@ import { RequestWithUserInfo } from "../typings/models/user";
 import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
 import { PostType, CommentType } from "../typings/types";
+import { sanitizeContent } from "../utils/sanitize-content";
 
 export const createReply = async (
   req: RequestWithUserInfo | any,
@@ -15,7 +16,7 @@ export const createReply = async (
   const {
     user: { userId },
     params: { id: postId },
-    body: { parentId },
+    body: { parentId, content },
   } = req;
 
   try {
@@ -37,8 +38,11 @@ export const createReply = async (
       throw new BadRequest("Something went wrong");
     }
 
+    const cleanContent = sanitizeContent(content);
+
     const reply = await Comment.create({
       ...req.body,
+      content: cleanContent,
       postedBy: userId,
       post: postId,
       isReply: true,
