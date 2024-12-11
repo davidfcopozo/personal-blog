@@ -10,7 +10,10 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 import { SingleSkillType, SkillsFormProps } from "@/typings/types";
 
 const SkillsForm = ({ skills, setSkills }: SkillsFormProps) => {
-  const { data: categories } = useFetchRequest("categories", "/api/categories");
+  const { data: categories } = useFetchRequest(
+    ["categories"],
+    "/api/categories"
+  );
   const [availableSkills, setAvailableSkills] = useState<SingleSkillType[]>([]);
   const [skillSearchQuery, setSkillSearchQuery] = useState("");
   const [isSkillsInputFocused, setIsSkillsInputFocused] = useState(false);

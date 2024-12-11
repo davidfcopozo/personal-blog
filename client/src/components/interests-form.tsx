@@ -16,7 +16,7 @@ import { Button } from "./ui/button";
 import { InterestFormProps, SingleInterestType } from "@/typings/types";
 
 const InterestForm = ({ interests, setInterests }: InterestFormProps) => {
-  const { data: topics } = useFetchRequest("topics", "/api/topics");
+  const { data: topics } = useFetchRequest(["topics"], "/api/topics");
   const [newInterest, setNewInterest] = useState<SingleInterestType | null>(
     null
   );
