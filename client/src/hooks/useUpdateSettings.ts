@@ -80,7 +80,7 @@ export const useUpdateSettings = (id: string) => {
           ...oldData,
         })
       );
-      return previousUserData;
+      return { previousData: previousUserData };
     },
   });
 
@@ -128,7 +128,7 @@ export const useUpdateSettings = (id: string) => {
 
     if (Object.keys(fieldsToUpdate).length < 1) return;
 
-    mutate(fieldsToUpdate);
+    mutate(fieldsToUpdate as InputFieldsProps);
   };
 
   return {
