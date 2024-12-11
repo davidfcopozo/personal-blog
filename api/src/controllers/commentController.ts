@@ -7,6 +7,7 @@ import { StatusCodes } from "http-status-codes";
 import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
 import { CommentType, PostMongooseType, PostType } from "../typings/types";
+import { sanitizeContent } from "../utils/sanitize-content";
 
 export const createComment = async (
   req: RequestWithUserInfo | any,
@@ -16,6 +17,7 @@ export const createComment = async (
   const {
     user: { userId },
     params: { id: postId },
+    body: { content },
   } = req;
 
   try {
@@ -25,8 +27,11 @@ export const createComment = async (
       throw new NotFound("The post you're trying to comment on does not exist");
     }
 
+    const cleanContent = sanitizeContent(content);
+
     const comment = await Comment.create({
       ...req.body,
+      content: cleanContent,
       postedBy: userId,
       post: postId,
     });

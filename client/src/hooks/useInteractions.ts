@@ -546,6 +546,8 @@ export const useInteractions = (
         }
       );
 
+      setReplyContent("");
+
       // Success Toast
       toast({
         title: "Success",

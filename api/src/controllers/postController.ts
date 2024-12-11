@@ -7,11 +7,7 @@ import { PostType, UserType } from "../typings/types";
 import { slugValidator } from "../utils/validators";
 import User from "../models/userModel";
 import mongoose from "mongoose";
-import { JSDOM } from "jsdom";
-import createDOMPurify from "dompurify";
-
-const window = new JSDOM("").window;
-const DOMPurify = createDOMPurify(window);
+import { sanitizeContent } from "../utils/sanitize-content";
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -34,7 +30,7 @@ export const createPost = async (
       );
     }
 
-    const sanitizedContent = DOMPurify.sanitize(req.body.content);
+    const sanitizedContent = sanitizeContent(req.body.content);
 
     const existingSlug = await Post.findOne({
       slug,
@@ -159,7 +155,7 @@ export const updatePostById = async (
         "Nothing to update. Please provide the data to be updated"
       );
     }
-    const sanitizedContent = DOMPurify.sanitize(req.body.content);
+    const sanitizedContent = sanitizeContent(req.body.content);
     const oldPostTags = oldPost.tags || [];
     const newTags = req.body.tags || [];
     const oldPostCategories = oldPost.categories || [];
@@ -234,7 +230,7 @@ export const updatePostBySlugOrId = async (
     const setFields: any = {};
 
     if (title !== undefined) setFields.title = title;
-    if (content !== undefined) setFields.content = DOMPurify.sanitize(content);
+    if (content !== undefined) setFields.content = sanitizeContent(content);
     if (slug !== undefined) setFields.slug = slug;
     if (bookmarks !== undefined) setFields.bookmarks = bookmarks;
     if (comments !== undefined) setFields.comments = comments;
