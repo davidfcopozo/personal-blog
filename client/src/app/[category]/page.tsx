@@ -16,7 +16,7 @@ export default function Category({ params }: { params: { category: string } }) {
     data: posts,
     error,
     isFetching,
-  } = useFetchRequest("posts", `/api/posts`);
+  } = useFetchRequest(["posts"], `/api/posts`);
 
   const blogPosts: PostType[] = useMemo(() => {
     if (!posts?.data || !Array.isArray(posts.data)) {
