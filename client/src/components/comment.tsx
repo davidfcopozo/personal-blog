@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import dynamic from "next/dynamic";
 import useDeleteComment from "@/hooks/useDeleteComment";
+import RelativeTime from "./relative-time";
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
@@ -113,7 +114,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
             <div className="flex ml-2 items-center gap-2">
               <div className="font-medium">{getFullName(postedBy?.data)}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {getRelativeTime(comment?.createdAt!)}
+                <RelativeTime createdAt={comment?.createdAt} />
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
