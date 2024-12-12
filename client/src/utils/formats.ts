@@ -6,63 +6,53 @@ export function getRelativeTime(
 ): string {
   const now = new Date();
   const past = date instanceof Date ? date : new Date(date);
-  const diffInSeconds = (now.getTime() - past.getTime()) / 1000;
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
   let unit: "seconds" | "minutes" | "hours" | "days" | "months" | "years" =
     "seconds";
   let diff = diffInSeconds;
 
-  if (diff >= 60) {
-    diff /= 60; // minutes
+  if (diffInSeconds < 60) {
+    unit = "seconds";
+  } else if (diffInSeconds < 3600) {
+    diff = Math.floor(diffInSeconds / 60);
     unit = "minutes";
-  }
-  if (diff >= 60) {
-    diff /= 60; // hours
+  } else if (diffInSeconds < 86400) {
+    diff = Math.floor(diffInSeconds / 3600);
     unit = "hours";
-  }
-  if (diff >= 24) {
-    diff /= 24; // days
+  } else if (diffInSeconds < 2592000) {
+    diff = Math.floor(diffInSeconds / 86400);
     unit = "days";
-  }
-  if (diff >= 30) {
-    diff /= 30; // months
+  } else if (diffInSeconds < 31536000) {
+    diff = Math.floor(diffInSeconds / 2592000);
     unit = "months";
-  }
-  if (diff >= 12) {
-    diff /= 12; // years
+  } else {
+    diff = Math.floor(diffInSeconds / 31536000);
     unit = "years";
   }
 
   const diffRounded = Math.floor(diff);
-  switch (language) {
-    case "en":
-      if (unit === "seconds") return "just now";
-      if (unit === "minutes")
-        return `${diffRounded} minute${diffRounded > 1 ? "s" : ""} ago`;
-      if (unit === "hours")
-        return `${diffRounded} hour${diffRounded > 1 ? "s" : ""} ago`;
-      if (unit === "days")
-        return `${diffRounded} day${diffRounded > 1 ? "s" : ""} ago`;
-      if (unit === "months")
-        return `${diffRounded} month${diffRounded > 1 ? "s" : ""} ago`;
-      if (unit === "years")
-        return `${diffRounded} year${diffRounded > 1 ? "s" : ""} ago`;
-      break;
-    case "es":
-      if (unit === "seconds") return "justo ahora";
-      if (unit === "minutes")
-        return `hace ${diffRounded} minuto${diffRounded > 1 ? "s" : ""}`;
-      if (unit === "hours")
-        return `hace ${diffRounded} hora${diffRounded > 1 ? "s" : ""}`;
-      if (unit === "days")
-        return `hace ${diffRounded} día${diffRounded > 1 ? "s" : ""}`;
-      if (unit === "months")
-        return `hace ${diffRounded} mes${diffRounded > 1 ? "es" : ""}`;
-      if (unit === "years")
-        return `hace ${diffRounded} año${diffRounded > 1 ? "s" : ""}`;
-      break;
-  }
-  return "";
+
+  const translations = {
+    en: {
+      seconds: "just now",
+      minutes: `${diffRounded} minute${diffRounded > 1 ? "s" : ""} ago`,
+      hours: `${diffRounded} hour${diffRounded > 1 ? "s" : ""} ago`,
+      days: `${diffRounded} day${diffRounded > 1 ? "s" : ""} ago`,
+      months: `${diffRounded} month${diffRounded > 1 ? "s" : ""} ago`,
+      years: `${diffRounded} year${diffRounded > 1 ? "s" : ""} ago`,
+    },
+    es: {
+      seconds: "justo ahora",
+      minutes: `hace ${diffRounded} minuto${diffRounded > 1 ? "s" : ""}`,
+      hours: `hace ${diffRounded} hora${diffRounded > 1 ? "s" : ""}`,
+      days: `hace ${diffRounded} día${diffRounded > 1 ? "s" : ""}`,
+      months: `hace ${diffRounded} mes${diffRounded > 1 ? "es" : ""}`,
+      years: `hace ${diffRounded} año${diffRounded > 1 ? "s" : ""}`,
+    },
+  };
+
+  return translations[language][unit];
 }
 
 export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
