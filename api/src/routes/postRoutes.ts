@@ -9,6 +9,7 @@ import {
   toggleLike,
   toggleBookmark,
   getPostBySlugOrId,
+  getPostsByCategory,
 } from "../controllers/postController";
 import { visitsCounter } from "../middleware/visits-counter";
 
@@ -20,5 +21,6 @@ router
   .get(visitsCounter, getPostBySlugOrId)
   .patch(auth, updatePostBySlugOrId);
 router.route("/:id").delete(auth, deletePostById);
+router.route("/category/:category").get(getPostsByCategory);
 
 export default router;
