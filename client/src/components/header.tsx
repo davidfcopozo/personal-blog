@@ -66,7 +66,7 @@ export function Header() {
     }
     return posts?.data
       ?.filter((post: PostType) =>
-        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+        post?.title?.toLowerCase().includes(searchQuery.toLowerCase())
       )
       .slice(0, 5);
   }, [posts, searchQuery]);

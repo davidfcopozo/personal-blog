@@ -49,7 +49,7 @@ export default function Home() {
     }
     return posts?.data
       ?.filter((post: PostType) =>
-        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+        post?.title?.toLowerCase().includes(searchQuery.toLowerCase())
       )
       .slice(0, 2);
   }, [posts, searchQuery]);
