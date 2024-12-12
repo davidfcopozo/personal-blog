@@ -16,15 +16,20 @@ export default function Category({ params }: { params: { category: string } }) {
     data: posts,
     error,
     isFetching,
-  } = useFetchRequest(["posts"], `/api/posts`);
+  } = useFetchRequest(["posts"], `/api/posts/category/${cat}`);
 
   const blogPosts: PostType[] = useMemo(() => {
     if (!posts?.data || !Array.isArray(posts.data)) {
       return [];
     }
-    return posts?.data?.filter((post: PostType) =>
-      post?.categories?.includes(categoryToDisplay)
-    );
+
+    console.log(posts.data);
+
+    return posts?.data; /* ?.filter((post: PostType) =>
+      post?.categories?.some(
+        (category) => category.toString() === categoryToDisplay
+      )
+    ); */
   }, [posts, cat]);
 
   useEffect(() => {
