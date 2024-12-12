@@ -8,6 +8,8 @@ import { slugValidator } from "../utils/validators";
 import User from "../models/userModel";
 import mongoose from "mongoose";
 import { sanitizeContent } from "../utils/sanitize-content";
+import { CategoryInterface } from "../typings/models/category";
+import Category from "../models/categoryModel";
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -102,6 +104,37 @@ export const getPostBySlugOrId = async (
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const getPostsByCategory = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { category } = req.params;
+  try {
+    const cat = (await Category.findOne({
+      slug: category,
+    }).populate("postedBy")) as CategoryInterface | null;
+
+    if (!cat) {
+      throw new NotFound("Category not found");
+    }
+
+    const posts: PostType[] = await Post.find({
+      categories: cat._id,
+    }).populate("postedBy");
+
+    if (posts.length < 1) {
+      throw new NotFound("Posts not found");
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: posts, count: posts.length });
   } catch (err) {
     return next(err);
   }
