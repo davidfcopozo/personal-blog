@@ -23,13 +23,7 @@ export default function Category({ params }: { params: { category: string } }) {
       return [];
     }
 
-    console.log(posts.data);
-
-    return posts?.data; /* ?.filter((post: PostType) =>
-      post?.categories?.some(
-        (category) => category.toString() === categoryToDisplay
-      )
-    ); */
+    return posts?.data;
   }, [posts, cat]);
 
   useEffect(() => {
@@ -44,7 +38,7 @@ export default function Category({ params }: { params: { category: string } }) {
 
   return (
     <div className="container px-4 mt-14 py-8">
-      <h1 className="text-3xl font-bold mb-10">{`Latest ${categoryToDisplay} Blog Posts`}</h1>
+      <h1 className="text-3xl text-center md:text-start font-bold mb-10">{`Latest ${categoryToDisplay} Blog Posts`}</h1>
       <div className="space-y-6 flex justify-center flex-wrap md:justify-normal">
         {isFetching ? (
           <div className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2">
