@@ -60,7 +60,7 @@ export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
 
   const cleanedContent = cleanBlogContent(text);
 
-  const wordCount = cleanedContent.trim().split(/\s+/).length;
+  const wordCount = cleanedContent?.trim()?.split(/\s+/).length;
 
   const readingTimeMinutes = Math.ceil(wordCount / wordsPerMinute);
 
