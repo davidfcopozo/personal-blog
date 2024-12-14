@@ -88,7 +88,7 @@ export function ShareButton({ post }: { post: PostType }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex flex-col items-center justify-center text-gray-300 hover:text-blue-600 p-2 rounded-lg transition-colors duration-200">
+        <button className="flex flex-col items-center justify-center text-gray-300 hover:text-[#1d9bf0] p-2 rounded-lg transition-colors duration-200">
           <Share2 className="h-5 w-5" />
           <span className="text-xs mt-1">Share</span>
         </button>
@@ -101,7 +101,7 @@ export function ShareButton({ post }: { post: PostType }) {
               e.preventDefault();
               option.action();
             }}
-            className="pointer-events-pointer"
+            className="pointer-events-pointer hover:bg-[rgba(29,155,240,0.6)]"
           >
             <option.icon className="mr-2 h-4 w-4" />
             <span>Share on {option.name}</span>
