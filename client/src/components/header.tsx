@@ -72,7 +72,7 @@ export function Header() {
   }, [posts, searchQuery]);
 
   return (
-    <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+    <header className="fixed w-full top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <Link
         href="/"
         className="flex items-center gap-2 text-lg font-semibold md:text-base"
@@ -80,7 +80,7 @@ export function Header() {
         <LogoIcon width="80 " height="80" color={darkTheme} />
         <span className="sr-only">TechyComm logo</span>
       </Link>
-      <form className="ml-auto flex-initial flex-1 relative sm:hidden">
+      <form className="ml-auto flex-1 relative sm:hidden">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
