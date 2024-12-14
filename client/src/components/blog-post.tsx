@@ -52,12 +52,22 @@ const BlogPost = ({ slug }: { slug: string }) => {
           {/* Left Panel - Engagement Tools */}
           <div className="order-2 lg:order-1 lg:w-20">
             <div className="lg:sticky lg:top-16 flex lg:flex-col justify-center gap-2 p-4 rounded-lg shadow-sm">
-              <EngagementButton icon={Heart} count={42} label="Like post" />
-              <EngagementButton icon={Bookmark} label="Save post" />
+              <EngagementButton
+                icon={Heart}
+                count={42}
+                label="Like post"
+                extraClasses="hover:text-pink-500"
+              />
+              <EngagementButton
+                icon={Bookmark}
+                label="Save post"
+                extraClasses="hover:text-indigo-500"
+              />
               <EngagementButton
                 icon={MessageSquare}
                 count={12}
                 label="Comment"
+                extraClasses="hover:text-amber-500"
               />
               <ShareButton post={post} />
             </div>
