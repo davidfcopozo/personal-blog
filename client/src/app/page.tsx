@@ -131,7 +131,7 @@ export default function Home() {
                   <p className="text-sm text-foreground font-semibold mb-4">
                     What do you want to read about?
                   </p>
-                  <div className="flex flex-wrap gap-3 text-middle text-accent font-semibold text-background">
+                  <div className="flex flex-wrap gap-3 text-middle font-semibold text-background">
                     {isCategoriesFetching ? (
                       <CategoriesSkeleton />
                     ) : (
