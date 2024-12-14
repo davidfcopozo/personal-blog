@@ -9,14 +9,8 @@ import CommentSection from "./comment-section";
 import { PostType, UserType } from "@/typings/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { EngagementButton } from "./engagement-button";
-import {
-  Heart,
-  Bookmark,
-  MessageSquare,
-  Share2,
-  Clock,
-  Eye,
-} from "lucide-react";
+import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
+import { ShareButton } from "./share-button";
 
 const BlogPost = ({ slug }: { slug: string }) => {
   const queryClient = useQueryClient();
@@ -65,7 +59,7 @@ const BlogPost = ({ slug }: { slug: string }) => {
                 count={12}
                 label="Comment"
               />
-              <EngagementButton icon={Share2} label="Share post" />
+              <ShareButton post={post} />
             </div>
           </div>
 
