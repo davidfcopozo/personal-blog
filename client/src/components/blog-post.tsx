@@ -68,6 +68,21 @@ const BlogPost = ({ slug }: { slug: string }) => {
                 count={12}
                 label="Comment"
                 extraClasses="hover:text-amber-500"
+                onClick={() => {
+                  const headerHeight =
+                    document.querySelector("header")?.offsetHeight || 0;
+                  const target = document.getElementById("comments-section");
+                  if (target) {
+                    const targetPosition =
+                      target.getBoundingClientRect().top +
+                      window.scrollY -
+                      headerHeight;
+                    window.scrollTo({
+                      top: targetPosition,
+                      behavior: "smooth",
+                    });
+                  }
+                }}
               />
               <ShareButton post={post} />
             </div>
