@@ -14,12 +14,14 @@ export function EngagementButton({
   count,
   label,
   onClick,
-  extraClasses = "",
+  extraClasses,
 }: EngagementButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 p-3 text-gray-300 hover:text-blue-600 transition-colors duration-200 ${extraClasses}`}
+      className={`flex flex-col items-center gap-1 p-3 text-gray-300 transition-colors duration-200 ${
+        extraClasses ? extraClasses : "hover:text-[#1d9bf0]"
+      }`}
       aria-label={label}
     >
       <Icon className="w-6 h-6" />
