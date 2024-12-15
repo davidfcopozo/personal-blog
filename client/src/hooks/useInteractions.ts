@@ -13,8 +13,7 @@ export const useInteractions = (
   post?: PostType,
   comment?: CommentInterface
 ) => {
-  const idFromPost = post?._id;
-  const postId = useRef(idFromPost).current;
+  const postId = useRef(post?._id).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [commentContent, setCommentContent] = useState<string>("");
@@ -432,7 +431,7 @@ export const useInteractions = (
         return {
           ...oldPosts,
           data: postList.map((post: PostInterface) => {
-            if (post._id?.toString() === postId?.toString()) {
+            if (post._id.toString() === postId?.toString()) {
               return {
                 ...post,
                 comments: [...(post.comments || []), comment._id],
@@ -689,7 +688,7 @@ export const useInteractions = (
   };
 
   const likeCommentMutation = usePutRequest({
-    url: `/api/comments/${idFromPost}`,
+    url: `/api/comments/${postId}`,
     onSuccess: (_, variables: { commentId: string }) => {
       queryClient.invalidateQueries({ queryKey: ["comments"] });
       queryClient.invalidateQueries({
@@ -744,7 +743,7 @@ export const useInteractions = (
           return {
             ...oldComments,
             data: commentList.map((existingComment: CommentInterface) => {
-              if (existingComment.post?.toString() === postId?.toString()) {
+              if (existingComment.post.toString() === postId?.toString()) {
                 return {
                   ...existingComment,
                   replies: [...(existingComment.replies || []), newReply._id],
