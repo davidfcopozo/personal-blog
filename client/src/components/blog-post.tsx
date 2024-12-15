@@ -1,38 +1,32 @@
 "use client";
-import useFetchPost from "@/hooks/useFetchPost";
 import { getFullName, showMonthDayYear } from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import SinglePostSkeleton from "./single-post-skeleton";
+import React, { MouseEvent } from "react";
 import CommentSection from "./comment-section";
 import { PostType, UserType } from "@/typings/types";
-import { useQueryClient } from "@tanstack/react-query";
 import { EngagementButton } from "./engagement-button";
 import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
 import { ShareButton } from "./share-button";
 
-const BlogPost = ({ slug }: { slug: string }) => {
-  const queryClient = useQueryClient();
-  const { data, isLoading, isFetching } = useFetchPost(slug);
-  const [hasInitialData, setHasInitialData] = useState(false);
-
-  useEffect(() => {
-    if (data?.data && !hasInitialData) {
-      setHasInitialData(true);
-    }
-  }, [data?.data, hasInitialData]);
-
-  // Get the latest post data from the cache
-  const post = queryClient.getQueryData<{ data: PostType }>([
-    "post",
-    slug,
-  ])?.data;
-
-  if (isLoading || (isFetching && !hasInitialData)) {
-    return <SinglePostSkeleton />;
-  }
-
+const BlogPost = ({
+  handleLikeClick,
+  handleBookmarkClick,
+  amountOfLikes,
+  liked,
+  bookmarked,
+  amountOfBookmarks,
+  post,
+}: {
+  slug?: string;
+  handleLikeClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  handleBookmarkClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  liked?: boolean;
+  bookmarked?: boolean;
+  amountOfBookmarks?: number;
+  amountOfLikes?: number;
+  post?: PostType;
+}) => {
   if (!post) {
     return (
       <div className="w-full h-full bg-background">
@@ -54,18 +48,27 @@ const BlogPost = ({ slug }: { slug: string }) => {
             <div className="lg:sticky lg:top-16 flex lg:flex-col justify-center gap-2 p-4 rounded-lg shadow-sm">
               <EngagementButton
                 icon={Heart}
-                count={42}
+                count={amountOfLikes}
                 label="Like post"
-                extraClasses="hover:text-pink-500"
+                extraClasses={`hover:text-pink-500 ${
+                  liked ? "text-pink-500" : ""
+                }`}
+                onClick={handleLikeClick}
+                iconStyles={liked ? "text-pink-500" : ""}
               />
               <EngagementButton
                 icon={Bookmark}
+                count={amountOfBookmarks}
                 label="Save post"
-                extraClasses="hover:text-indigo-500"
+                extraClasses={`hover:text-indigo-500 ${
+                  bookmarked ? "text-indigo-500" : ""
+                }`}
+                onClick={handleBookmarkClick}
+                iconStyles={bookmarked ? "text-indigo-500" : ""}
               />
               <EngagementButton
                 icon={MessageSquare}
-                count={12}
+                count={post.comments?.length}
                 label="Comment"
                 extraClasses="hover:text-amber-500"
                 onClick={() => {
