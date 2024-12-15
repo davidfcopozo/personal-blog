@@ -13,38 +13,19 @@ import {
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { MouseEvent } from "react";
 
 export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const { title, content, createdAt, comments, featuredImage, postedBy, slug } =
     post;
   const { _id: userID, username } = postedBy;
   const {
-    likeInteraction,
-    bookmarkInteraction,
     liked,
     bookmarked,
     amountOfBookmarks,
+    handleLikeClick,
+    handleBookmarkClick,
   } = useInteractions(`${post._id}`, post);
   let description = extractFirstParagraphText(content as string);
-
-  const handleLikeClick = (e: MouseEvent) => {
-    e.preventDefault();
-    likeInteraction(`${post._id}`, {
-      onError: () => {
-        console.error("Error handling like interaction");
-      },
-    });
-  };
-
-  const handleBookmarkClick = (e: MouseEvent) => {
-    e.preventDefault();
-    bookmarkInteraction(`${post._id}`, {
-      onError: () => {
-        console.error("Error handling bookmark interaction");
-      },
-    });
-  };
 
   return (
     <div className="flex flex-col max-w-sm md:max-h-[250px] md:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]">
