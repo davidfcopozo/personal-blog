@@ -48,7 +48,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     commentLiked,
     commentLikesCount,
     handleReplyContentChange,
-  } = useInteractions(`${post._id}`, post, comment);
+  } = useInteractions(post, comment);
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
