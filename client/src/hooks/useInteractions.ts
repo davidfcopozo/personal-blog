@@ -5,16 +5,16 @@ import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
 import { ObjectId } from "mongoose";
 import { PostInterface } from "../../../api/src/typings/models/post";
 import usePostRequest from "./usePostRequest";
-import { useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import { CommentInterface, ReplyInterface } from "@/typings/interfaces";
 import { getSession } from "next-auth/react";
 
 export const useInteractions = (
-  id?: string,
   post?: PostType,
   comment?: CommentInterface
 ) => {
-  const postId = useRef(id).current;
+  const idFromPost = post?._id;
+  const postId = useRef(idFromPost).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [commentContent, setCommentContent] = useState<string>("");
@@ -351,7 +351,7 @@ export const useInteractions = (
         return {
           ...oldPosts,
           data: postList.map((post: PostInterface) => {
-            if (post._id.toString() === postId) {
+            if (post._id?.toString() === postId?.toString()) {
               return {
                 ...post,
                 comments: [...(post.comments || []), newComment._id],
@@ -432,7 +432,7 @@ export const useInteractions = (
         return {
           ...oldPosts,
           data: postList.map((post: PostInterface) => {
-            if (post._id.toString() === postId) {
+            if (post._id?.toString() === postId?.toString()) {
               return {
                 ...post,
                 comments: [...(post.comments || []), comment._id],
@@ -689,7 +689,7 @@ export const useInteractions = (
   };
 
   const likeCommentMutation = usePutRequest({
-    url: `/api/comments/${id}`,
+    url: `/api/comments/${idFromPost}`,
     onSuccess: (_, variables: { commentId: string }) => {
       queryClient.invalidateQueries({ queryKey: ["comments"] });
       queryClient.invalidateQueries({
@@ -744,7 +744,7 @@ export const useInteractions = (
           return {
             ...oldComments,
             data: commentList.map((existingComment: CommentInterface) => {
-              if (existingComment.post.toString() === postId) {
+              if (existingComment.post?.toString() === postId?.toString()) {
                 return {
                   ...existingComment,
                   replies: [...(existingComment.replies || []), newReply._id],
@@ -787,7 +787,28 @@ export const useInteractions = (
     );
   };
 
+  /* Functions to export */
+  const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    likeInteraction(`${post?._id}`, {
+      onError: () => {
+        console.error("Error handling like interaction");
+      },
+    });
+  };
+
+  const handleBookmarkClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    bookmarkInteraction(`${post?._id}`, {
+      onError: () => {
+        console.error("Error handling bookmark interaction");
+      },
+    });
+  };
+
   return {
+    handleLikeClick,
+    handleBookmarkClick,
     likeInteraction,
     likeStatus: likeMutation.status,
     liked,
