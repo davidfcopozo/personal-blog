@@ -13,18 +13,19 @@ import {
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { MouseEvent } from "react";
 
 export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const { title, content, createdAt, comments, featuredImage, postedBy, slug } =
     post;
   const { _id: userID, username } = postedBy;
   const {
+    handleLikeClick,
+    handleBookmarkClick,
     liked,
     bookmarked,
     amountOfBookmarks,
-    handleLikeClick,
-    handleBookmarkClick,
-  } = useInteractions(`${post._id}`, post);
+  } = useInteractions(post);
   let description = extractFirstParagraphText(content as string);
 
   return (
