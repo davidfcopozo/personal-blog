@@ -1,12 +1,13 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 import { LucideIcon } from "lucide-react";
 
 interface EngagementButtonProps {
   icon: LucideIcon;
   count?: number;
   label: string;
-  onClick?: () => void;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   extraClasses?: string;
+  iconStyles?: string;
 }
 
 export function EngagementButton({
@@ -15,6 +16,7 @@ export function EngagementButton({
   label,
   onClick,
   extraClasses,
+  iconStyles,
 }: EngagementButtonProps) {
   return (
     <button
@@ -24,7 +26,7 @@ export function EngagementButton({
       }`}
       aria-label={label}
     >
-      <Icon className="w-6 h-6" />
+      <Icon className={`"w-6 h-6" ${iconStyles}`} />
       {count !== undefined && (
         <span className="text-sm font-medium">{count}</span>
       )}
