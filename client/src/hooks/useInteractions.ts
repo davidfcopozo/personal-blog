@@ -46,25 +46,18 @@ export const useInteractions = (
     if (currentUser && likes?.length) {
       const userLiked = likes.some((like) => like.toString() === currentUser);
       setLiked(userLiked);
-      setAmountOfLikes(likes.length);
     }
+    setAmountOfLikes(likes.length);
 
     if (currentUser && bookmarks?.length) {
       const userBookmarked = bookmarks.some(
         (bookmark) => bookmark.toString() === currentUser
       );
       setBookmarked(userBookmarked);
-      setAmountOfBookmarks(bookmarks.length);
     }
+    setAmountOfBookmarks(bookmarks.length);
 
     if (comment && currentUser) {
-      const userLikedComment =
-        comment.likes?.some((like) => like.toString() === currentUser) ?? false;
-      setCommentLiked(userLikedComment);
-      setCommentLikesCount(comment.likes?.length ?? 0);
-    }
-
-    if (currentUser && comment) {
       const userLikedComment =
         comment.likes?.some((like) => like.toString() === currentUser) ?? false;
       setCommentLiked(userLikedComment);
