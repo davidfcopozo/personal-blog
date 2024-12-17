@@ -1,6 +1,7 @@
-import { FormEvent, HTMLAttributes, ReactNode } from "react";
+import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { ObjectId } from "mongoose";
 import { AxiosError } from "axios";
+import { LucideIcon } from "lucide-react";
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -135,4 +136,16 @@ export interface UseBulkFetchProps {
   key: string;
   dependantItem?: boolean;
   url: string;
+}
+
+export interface EngagementButtonProps {
+  icon: LucideIcon;
+  count?: number;
+  label: string;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  extraClasses?: string;
+  iconStyles?: string;
+  activeColor?: string;
+  isActivated?: boolean;
+  horizontalCount?: boolean;
 }

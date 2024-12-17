@@ -1,17 +1,5 @@
-import React, { MouseEvent } from "react";
-import { LucideIcon } from "lucide-react";
-
-interface EngagementButtonProps {
-  icon: LucideIcon;
-  count?: number;
-  label: string;
-  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
-  extraClasses?: string;
-  iconStyles?: string;
-  activeColor?: string;
-  isActivated?: boolean;
-  horizontalCount?: boolean;
-}
+import { EngagementButtonProps } from "@/typings/interfaces";
+import React from "react";
 
 export function EngagementButton({
   icon: Icon,
