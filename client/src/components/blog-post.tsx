@@ -117,12 +117,12 @@ const BlogPost = ({
                   5 min read
                 </h4>
               </div>
-              <h1 className="w-[92%] mx-auto text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
+              <h1 className="w-[92%]  text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
                 {post.title}
               </h1>
               <div className="py-6 bg-background">
                 <div
-                  className="md:w-[80%] w-[90%] mx-auto pt-4"
+                  className="md:w-[80%] w-[90%] pt-4"
                   dangerouslySetInnerHTML={{ __html: post.content || "" }}
                 />
               </div>
