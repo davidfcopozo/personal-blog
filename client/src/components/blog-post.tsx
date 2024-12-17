@@ -54,7 +54,8 @@ const BlogPost = ({
                   liked ? "text-pink-500" : ""
                 }`}
                 onClick={handleLikeClick}
-                iconStyles={liked ? "text-pink-500" : ""}
+                iconStyles={liked ? "text-pink-500" : "hover:stroke-pink-500"}
+                isActivated={liked}
               />
               <EngagementButton
                 icon={Bookmark}
@@ -64,13 +65,17 @@ const BlogPost = ({
                   bookmarked ? "text-indigo-500" : ""
                 }`}
                 onClick={handleBookmarkClick}
-                iconStyles={bookmarked ? "text-indigo-500" : ""}
+                iconStyles={
+                  bookmarked ? "stroke-indigo-500" : "hover:stroke-indigo-500"
+                }
+                isActivated={bookmarked}
               />
               <EngagementButton
                 icon={MessageSquare}
                 count={post.comments?.length}
                 label="Comment"
                 extraClasses="hover:text-amber-500"
+                iconStyles="hover:stroke-amber-500"
                 onClick={() => {
                   const headerHeight =
                     document.querySelector("header")?.offsetHeight || 0;
