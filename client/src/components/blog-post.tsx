@@ -8,6 +8,7 @@ import { PostType, UserType } from "@/typings/types";
 import { EngagementButton } from "./engagement-button";
 import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
 import { ShareButton } from "./share-button";
+import scrollToElement from "@/utils/scrollToElement";
 
 const BlogPost = ({
   handleLikeClick,
@@ -71,21 +72,7 @@ const BlogPost = ({
                 count={post.comments?.length}
                 label="Comment"
                 iconStyles="hover:stroke-amber-500"
-                onClick={() => {
-                  const headerHeight =
-                    document.querySelector("header")?.offsetHeight || 0;
-                  const target = document.getElementById("comments-section");
-                  if (target) {
-                    const targetPosition =
-                      target.getBoundingClientRect().top +
-                      window.scrollY -
-                      headerHeight;
-                    window.scrollTo({
-                      top: targetPosition,
-                      behavior: "smooth",
-                    });
-                  }
-                }}
+                onClick={() => scrollToElement("comments-section", "header")}
                 activeColor="text-amber-500"
               />
               <ShareButton post={post} />
