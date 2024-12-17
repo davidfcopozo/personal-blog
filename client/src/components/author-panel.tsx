@@ -3,7 +3,7 @@ import { Github, Twitter, Linkedin, Globe } from "lucide-react";
 
 export function AuthorPanel() {
   return (
-    <aside className="w-full lg:w-72 p-6 bg-muted shadow-sm rounded-lg shadow-sm">
+    <aside className="w-full lg:w-72 p-6 bg-muted shadow-sm rounded-lg">
       <div className="flex flex-col items-center text-center">
         <img
           src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
