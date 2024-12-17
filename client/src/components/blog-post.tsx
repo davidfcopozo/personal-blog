@@ -50,31 +50,26 @@ const BlogPost = ({
                 icon={Heart}
                 count={amountOfLikes}
                 label="Like post"
-                extraClasses={`hover:text-pink-500 ${
-                  liked ? "text-pink-500" : ""
-                }`}
                 onClick={handleLikeClick}
                 iconStyles={liked ? "text-pink-500" : "hover:stroke-pink-500"}
+                activeColor="text-pink-500"
                 isActivated={liked}
               />
               <EngagementButton
                 icon={Bookmark}
                 count={amountOfBookmarks}
                 label="Save post"
-                extraClasses={`hover:text-indigo-500 ${
-                  bookmarked ? "text-indigo-500" : ""
-                }`}
                 onClick={handleBookmarkClick}
                 iconStyles={
                   bookmarked ? "stroke-indigo-500" : "hover:stroke-indigo-500"
                 }
                 isActivated={bookmarked}
+                activeColor="text-indigo-500"
               />
               <EngagementButton
                 icon={MessageSquare}
                 count={post.comments?.length}
                 label="Comment"
-                extraClasses="hover:text-amber-500"
                 iconStyles="hover:stroke-amber-500"
                 onClick={() => {
                   const headerHeight =
@@ -91,6 +86,7 @@ const BlogPost = ({
                     });
                   }
                 }}
+                activeColor="text-amber-500"
               />
               <ShareButton post={post} />
             </div>
