@@ -10,6 +10,7 @@ import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
 import { ShareButton } from "./share-button";
 import scrollToElement from "@/utils/scrollToElement";
 import { BlogPostProps } from "@/typings/interfaces";
+import { AuthorPanel } from "./author-panel";
 
 const BlogPost = ({
   handleLikeClick,
@@ -38,7 +39,7 @@ const BlogPost = ({
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Panel - Engagement Tools */}
           <div className="order-2 lg:order-1 lg:w-20">
-            <div className="lg:sticky lg:top-16 flex lg:flex-col justify-center gap-2 p-4 rounded-lg shadow-sm">
+            <div className="lg:sticky bg-muted lg:top-[5.5rem] flex lg:flex-col justify-center gap-2 p-4 rounded-3xl shadow-sm">
               <EngagementButton
                 icon={Heart}
                 count={amountOfLikes}
@@ -73,8 +74,8 @@ const BlogPost = ({
 
           {/* Main */}
           <main className="order-1 lg:order-2 lg:flex-1">
-            <article className=" rounded-lg shadow-sm overflow-hidden mt-6">
-              <div className="w-full h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
+            <article className=" rounded-lg overflow-hidden mt-6">
+              <div className="w-full rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
                 <Image
                   src={post.featuredImage as string}
                   alt="Blog Cover"
@@ -82,7 +83,7 @@ const BlogPost = ({
                   style={{ objectFit: "cover" }}
                 />
               </div>
-              <div className="w-[90%] mx-auto flex md:gap-4 gap-2 justify-center items-center pt-4">
+              <div className="flex md:gap-4 gap-2 justify-center items-center pt-4">
                 <div className="flex gap-2 items-center">
                   <Link href="/#">
                     <Image
@@ -109,7 +110,7 @@ const BlogPost = ({
                   5 min read
                 </h4>
               </div>
-              <h1 className="w-[92%]  text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
+              <h1 className="text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
                 {post.title}
               </h1>
               <div className="py-6 bg-background">
@@ -125,6 +126,12 @@ const BlogPost = ({
               />
             </article>
           </main>
+          {/* Right Panel - Author Info */}
+          <div className="order-3 lg:w-72">
+            <div className=" lg:mt-6">
+              <AuthorPanel />
+            </div>
+          </div>
         </div>
       </div>
     </div>
