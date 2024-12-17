@@ -2,9 +2,9 @@
 import { getFullName, showMonthDayYear } from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
-import React, { MouseEvent } from "react";
+import React from "react";
 import CommentSection from "./comment-section";
-import { PostType, UserType } from "@/typings/types";
+import { UserType } from "@/typings/types";
 import { EngagementButton } from "./engagement-button";
 import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
 import { ShareButton } from "./share-button";
