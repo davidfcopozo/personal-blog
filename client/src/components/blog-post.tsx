@@ -9,6 +9,7 @@ import { EngagementButton } from "./engagement-button";
 import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
 import { ShareButton } from "./share-button";
 import scrollToElement from "@/utils/scrollToElement";
+import { BlogPostProps } from "@/typings/interfaces";
 
 const BlogPost = ({
   handleLikeClick,
@@ -18,16 +19,7 @@ const BlogPost = ({
   bookmarked,
   amountOfBookmarks,
   post,
-}: {
-  slug?: string;
-  handleLikeClick?: (e: MouseEvent<HTMLButtonElement>) => void;
-  handleBookmarkClick?: (e: MouseEvent<HTMLButtonElement>) => void;
-  liked?: boolean;
-  bookmarked?: boolean;
-  amountOfBookmarks?: number;
-  amountOfLikes?: number;
-  post?: PostType;
-}) => {
+}: BlogPostProps) => {
   if (!post) {
     return (
       <div className="w-full h-full bg-background">

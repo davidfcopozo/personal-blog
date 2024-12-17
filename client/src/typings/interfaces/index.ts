@@ -2,6 +2,7 @@ import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { ObjectId } from "mongoose";
 import { AxiosError } from "axios";
 import { LucideIcon } from "lucide-react";
+import { PostType } from "../types";
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -148,4 +149,15 @@ export interface EngagementButtonProps {
   activeColor?: string;
   isActivated?: boolean;
   horizontalCount?: boolean;
+}
+
+export interface BlogPostProps{
+  slug?: string;
+  handleLikeClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  handleBookmarkClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  liked?: boolean;
+  bookmarked?: boolean;
+  amountOfBookmarks?: number;
+  amountOfLikes?: number;
+  post?: PostType;
 }
