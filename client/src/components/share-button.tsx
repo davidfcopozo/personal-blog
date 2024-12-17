@@ -12,7 +12,6 @@ import { PostType } from "@/typings/types";
 
 export function ShareButton({ post }: { post: PostType }) {
   const { toast } = useToast();
-  //get the url from the  browser
 
   const shareUrl =
     typeof window !== "undefined"
