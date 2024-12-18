@@ -124,7 +124,21 @@ const BlogPost = ({
           {/* Right Panel - Author Info */}
           <div className="order-3 lg:w-72">
             <div className=" lg:mt-6">
-              <AuthorPanel />
+              <AuthorPanel
+                _id={post?.postedBy?._id}
+                firstName={post?.postedBy?.firstName as string}
+                lastName={post?.postedBy?.lastName as string}
+                email={post?.postedBy?.email as string}
+                username={post?.postedBy?.username as string}
+                avatar={post?.postedBy?.avatar as string}
+                bio={post?.postedBy?.bio as string}
+                website={post?.postedBy?.website as string}
+                title={post?.postedBy?.title as string}
+                socialMedia={
+                  post?.postedBy
+                    ?.socialMediaProfiles as UserType["socialMediaProfiles"]
+                }
+              />
             </div>
           </div>
         </div>
