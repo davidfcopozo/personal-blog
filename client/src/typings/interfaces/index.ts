@@ -2,7 +2,7 @@ import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { ObjectId } from "mongoose";
 import { AxiosError } from "axios";
 import { LucideIcon } from "lucide-react";
-import { PostType } from "../types";
+import { PostType, UserType } from "../types";
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -160,4 +160,23 @@ export interface BlogPostProps{
   amountOfBookmarks?: number;
   amountOfLikes?: number;
   post?: PostType;
+}
+
+export interface SocialMediaConfig {
+  icon: LucideIcon;
+  getUrl: (username: string) => string;
+  label: string;
+}
+
+export interface AuthorPanelProps {
+  _id: ObjectId;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  avatar: string;
+  bio: string;
+  website: string;
+  title: string;
+  socialMedia: UserType["socialMediaProfiles"];
 }
