@@ -1,5 +1,5 @@
 import React from "react";
-import { Github, Twitter, Linkedin, Globe } from "lucide-react";
+import { Github, XIcon, Linkedin, Globe } from "lucide-react";
 
 export function AuthorPanel() {
   return (
@@ -20,7 +20,7 @@ export function AuthorPanel() {
         </p>
 
         <div className="flex gap-4 mb-6">
-          {[Twitter, Github, Linkedin, Globe].map((Icon, index) => (
+          {[XIcon, Github, Linkedin, Globe].map((Icon, index) => (
             <a
               key={index}
               href="#"
