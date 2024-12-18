@@ -1,5 +1,9 @@
 "use client";
-import { getFullName, showMonthDayYear } from "@/utils/formats";
+import {
+  calculateReadingTime,
+  getFullName,
+  showMonthDayYear,
+} from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -83,32 +87,23 @@ const BlogPost = ({
                   style={{ objectFit: "cover" }}
                 />
               </div>
-              <div className="flex md:gap-4 gap-2 justify-center items-center pt-4">
-                <div className="flex gap-2 items-center">
-                  <Link href="/#">
-                    <Image
-                      className="w-10 h-10 rounded-full"
-                      src={postedBy?.avatar as string}
-                      alt={`Avatar of ${getFullName(postedBy as UserType)}`}
-                      width={300}
-                      height={200}
-                    />
-                  </Link>
-                  <Link
-                    href="/#"
-                    className="text-sm font-semibold dark:text-white"
-                  >
-                    {getFullName(postedBy as UserType)}
-                  </Link>
+              <div className="flex md:gap-4 gap-2  items-center pt-4">
+                <div className="flex w-full justify-between items-center text-sm text-gray-400 mb-6">
+                  <div className="flex">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {calculateReadingTime(post.content || "")}
+                    </span>
+                    <span className="mx-2">•</span>
+                    <time dateTime={post.createdAt?.toString() || ""}>
+                      {showMonthDayYear(post.createdAt?.toString() || "")}
+                    </time>
+                  </div>
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-4 h-4" />
+                    {post.visits} views
+                  </span>
                 </div>
-                <div className="dark:text-gray-500">|</div>
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                  {showMonthDayYear(post.createdAt?.toString() || "")}
-                </h3>
-                <div className="dark:text-gray-500">|</div>
-                <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                  5 min read
-                </h4>
               </div>
               <h1 className="text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
                 {post.title}
