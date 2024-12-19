@@ -48,6 +48,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     commentLiked,
     commentLikesCount,
     handleReplyContentChange,
+    replyMutationStatus,
   } = useInteractions(post, comment);
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
@@ -204,6 +205,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
           onCancel={() => setShowEditor(false)}
           showCancelButton={true}
           placeholder="Write a reply..."
+          commentMutationStatus={replyMutationStatus}
         />
       )}
       <AlertDialog

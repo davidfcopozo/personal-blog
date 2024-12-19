@@ -817,6 +817,7 @@ export const useInteractions = (
     commentLikesCount,
     handleReplyContentChange,
     createReplyInteraction,
+    replyMutationStatus: createReplyMutation.status,
     setReplyContent,
     replyContent,
   };
