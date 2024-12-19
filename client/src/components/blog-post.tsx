@@ -88,8 +88,9 @@ const BlogPost = ({
                     style={{ objectFit: "cover" }}
                   />
                 </div>
-                <div className="order-1 lg:order-2 flex flex-col gap-4 p-4">
-                  <div className="flex md:gap-4 order-2 lg:order-1 gap-2 items-center pt-4 lg:pt-0">
+                <div className="order-1 mx-auto w-[90%] lg:mx-0 lg:w-full lg:order-2 flex flex-col gap-4 p-4">
+                  {/* METADATA */}
+                  <div className="flex flex-col md:gap-4 order-2 lg:order-1 gap-2 items-center pt-4 lg:pt-0">
                     <div className="flex w-full justify-between items-center text-sm text-gray-400 lg:mb-6">
                       <div className="flex gap-2 items-center">
                         <Link
@@ -137,6 +138,52 @@ const BlogPost = ({
                         <Eye className="w-4 h-4" />
                         {post.visits} views
                       </span>
+                    </div>
+                    {/* Engagement buttons */}
+                    <div className="flex lg:hidden w-[100%] border-y-[1px] mt-2 w-100">
+                      <div className="flex w-[100%] lg:flex-col justify-start rounded-3xl shadow-sm">
+                        <EngagementButton
+                          icon={Heart}
+                          extraClasses="p-0"
+                          count={amountOfLikes}
+                          label="Like post"
+                          onClick={handleLikeClick}
+                          iconStyles={
+                            liked ? "text-pink-500" : "hover:stroke-pink-500"
+                          }
+                          activeColor="text-pink-500"
+                          isActivated={liked}
+                          horizontalCount
+                        />
+                        <EngagementButton
+                          icon={Bookmark}
+                          count={amountOfBookmarks}
+                          label="Save post"
+                          extraClasses="p-0"
+                          onClick={handleBookmarkClick}
+                          iconStyles={
+                            bookmarked
+                              ? "stroke-indigo-500"
+                              : "hover:stroke-indigo-500"
+                          }
+                          isActivated={bookmarked}
+                          activeColor="text-indigo-500"
+                          horizontalCount
+                        />
+                        <EngagementButton
+                          icon={MessageSquare}
+                          extraClasses="p-0"
+                          count={post.comments?.length}
+                          label="Comment"
+                          iconStyles="hover:stroke-amber-500"
+                          onClick={() =>
+                            scrollToElement("comments-section", "header")
+                          }
+                          activeColor="text-amber-500"
+                          horizontalCount
+                        />
+                      </div>
+                      <ShareButton post={post} />
                     </div>
                   </div>
                   <h1 className="order-1 lg:order-2 text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
