@@ -39,7 +39,7 @@ const BlogPost = ({
 
   return (
     <div className="w-full min-h-screen bg-background mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Panel - Engagement Tools */}
           <div className="order-2 lg:order-1 lg:w-20">
@@ -118,7 +118,7 @@ const BlogPost = ({
             </article>
           </main>
           {/* Right Panel - Author Info */}
-          <div className="order-3 md:w-72 md:mx-auto">
+          <div className="order-3 md:w-72 mx-auto">
             <div className=" lg:mt-6">
               <AuthorPanel
                 _id={post?.postedBy?._id}
