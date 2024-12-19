@@ -25,7 +25,7 @@ export default function CommentSection({
   }, []);
 
   return (
-    <section className="comment-section w-full max-w-3xl px-4 space-y-6 mb-8 sm:px-0">
+    <section className="comment-section w-full max-w-7xl px-4 space-y-6 mb-8 sm:px-0">
       <div className="space-y-4">
         <h2 id="comments-section" className="text-2xl font-bold">
           Comments
