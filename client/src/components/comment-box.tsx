@@ -1,12 +1,13 @@
 import { useInteractions } from "@/hooks/useInteractions";
+import { PostType } from "@/typings/types";
 import dynamic from "next/dynamic";
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
 
-const CommentBox = ({ id }: { id: string }) => {
+const CommentBox = ({ post }: { post: PostType }) => {
   const { createCommentInteraction, setCommentContent, commentContent } =
-    useInteractions(id);
+    useInteractions(post);
 
   const handleChange = (content: string) => {
     setCommentContent(content);

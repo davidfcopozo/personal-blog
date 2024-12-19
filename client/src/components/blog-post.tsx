@@ -114,11 +114,7 @@ const BlogPost = ({
                   dangerouslySetInnerHTML={{ __html: post.content || "" }}
                 />
               </div>
-              <CommentSection
-                comments={post.comments || []}
-                id={`${post._id}`}
-                post={post}
-              />
+              <CommentSection comments={post.comments || []} post={post} />
             </article>
           </main>
           {/* Right Panel - Author Info */}
