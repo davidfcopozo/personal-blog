@@ -78,36 +78,40 @@ const BlogPost = ({
 
           {/* Main */}
           <main className="order-1 lg:order-2 lg:flex-1">
-            <article className=" rounded-lg overflow-hidden mt-6">
-              <div className="w-full rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
-                <Image
-                  src={post.featuredImage as string}
-                  alt="Blog Cover"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-              <div className="flex md:gap-4 gap-2  items-center pt-4">
-                <div className="flex w-full justify-between items-center text-sm text-gray-400 mb-6">
-                  <div className="flex">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {calculateReadingTime(post.content || "")}
-                    </span>
-                    <span className="mx-2">•</span>
-                    <time dateTime={post.createdAt?.toString() || ""}>
-                      {showMonthDayYear(post.createdAt?.toString() || "")}
-                    </time>
+            <article className="rounded-lg overflow-hidden mt-6">
+              <div className="flex flex-col">
+                <div className="w-full order-2 lg:order-1 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
+                  <Image
+                    src={post.featuredImage as string}
+                    alt="Blog Cover"
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+                <div className="order-1 lg:order-2 flex flex-col gap-4 p-4">
+                  <div className="flex md:gap-4 order-2 lg:order-1 gap-2 items-center pt-4 lg:pt-0">
+                    <div className="flex w-full justify-between items-center text-sm text-gray-400 lg:mb-6">
+                      <div className="flex">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {calculateReadingTime(post.content || "")}
+                        </span>
+                        <span className="mx-2">•</span>
+                        <time dateTime={post.createdAt?.toString() || ""}>
+                          {showMonthDayYear(post.createdAt?.toString() || "")}
+                        </time>
+                      </div>
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        {post.visits} views
+                      </span>
+                    </div>
                   </div>
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    {post.visits} views
-                  </span>
+                  <h1 className="order-1 lg:order-2 text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
+                    {post.title}
+                  </h1>
                 </div>
               </div>
-              <h1 className="text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
-                {post.title}
-              </h1>
               <div className="py-6 bg-background">
                 <div
                   className="md:w-[80%] w-[90%] pt-4"
