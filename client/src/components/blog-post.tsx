@@ -118,7 +118,7 @@ const BlogPost = ({
             </article>
           </main>
           {/* Right Panel - Author Info */}
-          <div className="order-3 md:w-72 mx-auto">
+          <div className="order-3 w-72 mx-auto">
             <div className=" lg:mt-6">
               <AuthorPanel
                 _id={post?.postedBy?._id}
