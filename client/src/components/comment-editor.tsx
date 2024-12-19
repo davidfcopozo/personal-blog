@@ -92,7 +92,7 @@ export default function CommentEditor({
           />
         </div>
       </Card>
-      <div className="flex justify-start gap-2 mt-4">
+      <div className="flex justify-end gap-2 mt-4">
         {onCancel && showCancelButton && (
           <Button variant="outline" onClick={onCancel} className="py-4">
             Cancel
