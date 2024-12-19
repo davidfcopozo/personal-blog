@@ -36,6 +36,7 @@ export default function CommentEditor({
   showCancelButton,
   value: content,
   onChange,
+  commentMutationStatus,
 }: CommentEditorProps) {
   const textareaRef = useRef<ReactQuill>(null);
 
@@ -98,7 +99,11 @@ export default function CommentEditor({
             Cancel
           </Button>
         )}
-        <Button onClick={handleSubmit} className="gap-2">
+        <Button
+          onClick={handleSubmit}
+          className="gap-2"
+          disabled={commentMutationStatus === "pending"}
+        >
           <Send className="w-4 h-4" />
           Submit
         </Button>

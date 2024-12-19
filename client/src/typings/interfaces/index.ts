@@ -117,12 +117,12 @@ export interface UseMutationRequestProps<TData, TVariables> {
 export interface CommentEditorProps {
   onSubmit: (newItem: any) => void;
   onCancel?: () => void;
-
   onChange: (e: string) => void;
   placeholder?: string;
   maxHeight?: number;
   showCancelButton: boolean;
   value: string;
+  commentMutationStatus: string;
 }
 
 export interface NestedCommentProps {

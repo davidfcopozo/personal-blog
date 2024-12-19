@@ -6,7 +6,7 @@ const CommentEditor = dynamic(() => import("./comment-editor"), {
 });
 
 const CommentBox = ({ post }: { post: PostType }) => {
-  const { createCommentInteraction, setCommentContent, commentContent } =
+  const { createCommentInteraction, setCommentContent, commentContent, commentMutationStatus } =
     useInteractions(post);
 
   const handleChange = (content: string) => {
@@ -25,6 +25,7 @@ const CommentBox = ({ post }: { post: PostType }) => {
         onSubmit={createCommentInteraction}
         onCancel={() => {}}
         showCancelButton={false}
+        commentMutationStatus={commentMutationStatus}
         placeholder="Share your thoughts with the community..."
       />
     </form>

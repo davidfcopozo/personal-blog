@@ -810,6 +810,7 @@ export const useInteractions = (
     amountOfBookmarks,
     createCommentInteraction,
     commentContent,
+    commentMutationStatus: createCommentMutation.status,
     setCommentContent,
     likeCommentInteraction,
     commentLiked,
