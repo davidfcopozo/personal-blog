@@ -42,7 +42,7 @@ const BlogPost = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Panel - Engagement Tools */}
-          <div className="order-2 lg:order-1 lg:w-20">
+          <div className="order-2 lg:order-1 lg:w-20 hidden lg:block">
             <div className="lg:sticky bg-muted lg:top-[5.5rem] flex lg:flex-col justify-center gap-2 p-4 rounded-3xl shadow-sm">
               <EngagementButton
                 icon={Heart}
@@ -91,15 +91,47 @@ const BlogPost = ({
                 <div className="order-1 lg:order-2 flex flex-col gap-4 p-4">
                   <div className="flex md:gap-4 order-2 lg:order-1 gap-2 items-center pt-4 lg:pt-0">
                     <div className="flex w-full justify-between items-center text-sm text-gray-400 lg:mb-6">
-                      <div className="flex">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {calculateReadingTime(post.content || "")}
-                        </span>
-                        <span className="mx-2">•</span>
-                        <time dateTime={post.createdAt?.toString() || ""}>
-                          {showMonthDayYear(post.createdAt?.toString() || "")}
-                        </time>
+                      <div className="flex gap-2 items-center">
+                        <Link
+                          href="/#"
+                          className="flex lg:hidden gap-2 items-center"
+                        >
+                          <Image
+                            className="w-14 h-14 rounded-full"
+                            src={postedBy?.avatar as string}
+                            alt={`Avatar of ${getFullName(
+                              postedBy as UserType
+                            )}`}
+                            width={300}
+                            height={200}
+                          />
+                        </Link>
+                        <div className="flex flex-col gap-1">
+                          <div className="lg:hidden">
+                            <Link
+                              href="/#"
+                              className="text-base font-semibold dark:text-white"
+                            >
+                              {getFullName(postedBy as UserType)}
+                            </Link>
+                            <span className="mx-2">•</span>
+                            <button className="text-[--thread-border]">
+                              Follow
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {calculateReadingTime(post.content || "")}
+                            </span>
+                            <span className="mx-2">•</span>
+                            <time dateTime={post.createdAt?.toString() || ""}>
+                              {showMonthDayYear(
+                                post.createdAt?.toString() || ""
+                              )}
+                            </time>
+                          </div>
+                        </div>
                       </div>
                       <span className="flex items-center gap-1">
                         <Eye className="w-4 h-4" />
@@ -122,7 +154,7 @@ const BlogPost = ({
             </article>
           </main>
           {/* Right Panel - Author Info */}
-          <div className="order-3 w-72 mx-auto">
+          <div className="order-3 w-72 mx-auto hidden lg:block">
             <div className=" lg:mt-6">
               <AuthorPanel
                 _id={post?.postedBy?._id}
