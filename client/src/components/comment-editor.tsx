@@ -75,7 +75,7 @@ export default function CommentEditor({
 
   return (
     <>
-      <Card className="w-full mt-4 max-w-3xl border-[1px] border-muted-foreground rounded-md">
+      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground rounded-md">
         <div>
           <ReactQuill
             theme="snow"
