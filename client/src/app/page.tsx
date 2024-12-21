@@ -73,15 +73,19 @@ export default function Home() {
 
   const blogCards = useMemo(() => {
     if (Array.isArray(posts?.data))
-      return posts?.data?.map(
-        (post: PostType, index: { toString: () => any }) => (
+      return posts?.data
+        ?.sort(
+          (a: PostType, b: PostType) =>
+            new Date(String(b.createdAt ?? new Date())).getTime() -
+            new Date(String(a.createdAt ?? new Date())).getTime()
+        )
+        .map((post: PostType, index: { toString: () => any }) => (
           <BlogPostCard
             key={post?._id.toString() + index.toString()}
             post={post}
             slug={post?.slug as string}
           />
-        )
-      );
+        ));
   }, [posts]);
 
   return (
