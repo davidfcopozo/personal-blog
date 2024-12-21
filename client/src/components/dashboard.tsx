@@ -42,18 +42,17 @@ import {
 import { posts } from "@/lib/testDatabase.json";
 import { showMonthDayYear } from "@/utils/formats";
 import { useState } from "react";
-import { DashboardSkeleton } from "./dashboard-skeleton";
+import currentUserPosts from "@/lib/currentUserPosts";
+import { useSession } from "next-auth/react";
+import { PostType } from "@/typings/types";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
+  const { data: user } = useSession();
 
-  const filteredPosts = posts.filter((post) => {
-    return postStatus === "all"
-      ? true
-      : postStatus === "published"
-      ? post.published === true
-      : post.published === false;
-  });
+  const { blogPosts, arePostsFetching, arePostsLoading } = currentUserPosts(
+    user?.user?.id || ""
+  );
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
@@ -175,68 +174,78 @@ export function Dashboard() {
                       {/* <TableRow>
                         <DashboardSkeleton />
                       </TableRow> */}
-                      {filteredPosts.length > 0 ? (
-                        filteredPosts.map((post, key) => (
-                          <TableRow key={key}>
-                            <TableCell id="title" className="font-medium">
-                              {post.title}
-                            </TableCell>
-                            <TableCell id="status">
-                              <Badge variant="outline">
-                                {post.published ? "Published" : "Draft"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell
-                              id="likes"
-                              className="hidden md:table-cell"
-                            >
-                              {post.likes?.length}
-                            </TableCell>
-                            <TableCell
-                              id="comments"
-                              className="hidden md:table-cell"
-                            >
-                              {post.comments?.length}
-                            </TableCell>
-                            <TableCell
-                              id="categories"
-                              className="hidden md:table-cell"
-                            >
-                              {post.categories?.join(", ").toLocaleLowerCase()}
-                            </TableCell>
-                            <TableCell
-                              id="visits"
-                              className="hidden md:table-cell"
-                            >
-                              {post.visits}
-                            </TableCell>
-                            <TableCell
-                              id="date"
-                              className="hidden md:table-cell"
-                            >
-                              {showMonthDayYear(post.createdAt)}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    aria-haspopup="true"
-                                    size="icon"
-                                    variant="ghost"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                                  <DropdownMenuItem>Delete</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                      {blogPosts.length > 0 ? (
+                        blogPosts.map(
+                          (post: PostType, key: number | string) => (
+                            <TableRow key={key}>
+                              <TableCell id="title" className="font-medium">
+                                {post.title}
+                              </TableCell>
+                              <TableCell id="status">
+                                <Badge variant="outline">
+                                  {post.published ? "Published" : "Draft"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell
+                                id="likes"
+                                className="hidden md:table-cell"
+                              >
+                                {post.likes?.length}
+                              </TableCell>
+                              <TableCell
+                                id="comments"
+                                className="hidden md:table-cell"
+                              >
+                                {post.comments?.length}
+                              </TableCell>
+                              <TableCell
+                                id="categories"
+                                className="hidden md:table-cell"
+                              >
+                                {post.categories
+                                  ?.join(", ")
+                                  .toLocaleLowerCase()}
+                              </TableCell>
+                              <TableCell
+                                id="visits"
+                                className="hidden md:table-cell"
+                              >
+                                {post.visits}
+                              </TableCell>
+                              <TableCell
+                                id="date"
+                                className="hidden md:table-cell"
+                              >
+                                {showMonthDayYear(
+                                  post.createdAt?.toString() || ""
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      aria-haspopup="true"
+                                      size="icon"
+                                      variant="ghost"
+                                    >
+                                      <MoreHorizontal className="h-4 w-4" />
+                                      <span className="sr-only">
+                                        Toggle menu
+                                      </span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>
+                                      Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )
                       ) : (
                         <TableCell className="pt-4 lg:text-md">
                           No posts found
