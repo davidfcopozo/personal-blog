@@ -46,10 +46,13 @@ import userPosts from "@/lib/userPosts";
 import { useSession } from "next-auth/react";
 import { CategoryType, PostType } from "@/typings/types";
 import { DashboardSkeleton } from "./dashboard-skeleton";
+import { useRouter } from "next/navigation";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
   const { data: user } = useSession();
+  //function to route to edit post page with useRouter
+  const router = useRouter();
 
   const { blogPosts, arePostsFetching, arePostsLoading } = userPosts(
     user?.user?.id || ""
@@ -244,7 +247,13 @@ export function Dashboard() {
                                     <DropdownMenuLabel>
                                       Actions
                                     </DropdownMenuLabel>
-                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        router.push(`/edit-post/${post.slug}`)
+                                      }
+                                    >
+                                      Edit
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem>Delete</DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
