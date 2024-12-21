@@ -23,7 +23,8 @@ export function EngagementButton({
         p-3 
         text-gray-300 
         transition-colors 
-        duration-200 
+        duration-200
+        outline-none
         ${extraClasses && extraClasses}
       `}
       aria-label={label}
