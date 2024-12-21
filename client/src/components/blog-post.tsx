@@ -148,9 +148,9 @@ const BlogPost = ({
                           count={amountOfLikes}
                           label="Like post"
                           onClick={handleLikeClick}
-                          iconStyles={
+                          iconStyles={`!h-5 !w-5 ${
                             liked ? "text-pink-500" : "hover:stroke-pink-500"
-                          }
+                          }`}
                           activeColor="text-pink-500"
                           isActivated={liked}
                           horizontalCount
@@ -161,11 +161,11 @@ const BlogPost = ({
                           label="Save post"
                           extraClasses="p-0"
                           onClick={handleBookmarkClick}
-                          iconStyles={
+                          iconStyles={`!h-5 !w-5 ${
                             bookmarked
                               ? "stroke-indigo-500"
                               : "hover:stroke-indigo-500"
-                          }
+                          }`}
                           isActivated={bookmarked}
                           activeColor="text-indigo-500"
                           horizontalCount
@@ -175,7 +175,7 @@ const BlogPost = ({
                           extraClasses="p-0"
                           count={post.comments?.length}
                           label="Comment"
-                          iconStyles="hover:stroke-amber-500"
+                          iconStyles={`!h-5 !w-5 ${"hover:stroke-amber-500"}`}
                           onClick={() =>
                             scrollToElement("comments-section", "header")
                           }
