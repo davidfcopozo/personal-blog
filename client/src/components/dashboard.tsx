@@ -42,7 +42,7 @@ import {
 import { posts } from "@/lib/testDatabase.json";
 import { showMonthDayYear } from "@/utils/formats";
 import { useState } from "react";
-import currentUserPosts from "@/lib/currentUserPosts";
+import userPosts from "@/lib/userPosts";
 import { useSession } from "next-auth/react";
 import { PostType } from "@/typings/types";
 
@@ -50,7 +50,7 @@ export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
   const { data: user } = useSession();
 
-  const { blogPosts, arePostsFetching, arePostsLoading } = currentUserPosts(
+  const { blogPosts, arePostsFetching, arePostsLoading } = userPosts(
     user?.user?.id || ""
   );
 
