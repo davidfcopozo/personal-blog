@@ -45,6 +45,7 @@ import { useState } from "react";
 import userPosts from "@/lib/userPosts";
 import { useSession } from "next-auth/react";
 import { PostType } from "@/typings/types";
+import { DashboardSkeleton } from "./dashboard-skeleton";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
@@ -246,6 +247,12 @@ export function Dashboard() {
                             </TableRow>
                           )
                         )
+                      ) : arePostsFetching || arePostsLoading ? (
+                        Array.from({ length: 5 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <DashboardSkeleton />
+                          </TableRow>
+                        ))
                       ) : (
                         <TableCell className="pt-4 lg:text-md">
                           No posts found
