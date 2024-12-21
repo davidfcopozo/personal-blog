@@ -35,6 +35,12 @@ const postSchema = new Schema<PostInterface>(
   { timestamps: true }
 );
 
+//prefetch categories
+postSchema.pre("find", function (next) {
+  this.populate("categories");
+  next();
+});
+
 const Post = model("Post", postSchema);
 
 export default Post;
