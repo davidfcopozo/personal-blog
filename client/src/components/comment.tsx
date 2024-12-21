@@ -3,7 +3,13 @@
 import React, { MouseEvent, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, ThumbsUp, MoreVertical } from "lucide-react";
+import {
+  MessageCircle,
+  ThumbsUp,
+  MoreVertical,
+  Heart,
+  MessageSquare,
+} from "lucide-react";
 import { getFullName, getNameInitials, getRelativeTime } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
 import useFetchRequest from "@/hooks/useFetchRequest";
@@ -27,6 +33,7 @@ import {
 import dynamic from "next/dynamic";
 import useDeleteComment from "@/hooks/useDeleteComment";
 import RelativeTime from "./relative-time";
+import { EngagementButton } from "./engagement-button";
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
@@ -141,16 +148,28 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
             />
             <div className="h-content">
               <div className="flex items-center justify-end mr-4 gap-2 relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <EngagementButton
+                  icon={MessageSquare}
+                  count={comment?.replies.length}
+                  iconStyles="hover:stroke-amber-500"
+                  label="Reply"
                   onClick={() => setShowEditor((showEditor) => !showEditor)}
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{comment?.replies.length}</span>
-                  <span className="sr-only">Reply</span>
-                </Button>
-                <Button
+                  extraClasses="!p"
+                  horizontalCount
+                />
+                <EngagementButton
+                  icon={Heart}
+                  count={commentLikesCount}
+                  label="Like post"
+                  onClick={handleLikeClick}
+                  iconStyles={`${
+                    commentLiked ? "text-pink-500" : "hover:stroke-pink-500"
+                  }`}
+                  activeColor="text-pink-500"
+                  isActivated={commentLiked}
+                  horizontalCount
+                />
+                {/* <Button
                   variant="ghost"
                   size="icon"
                   type="button"
@@ -191,7 +210,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                       </span>
                     </div>
                   </div>
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
