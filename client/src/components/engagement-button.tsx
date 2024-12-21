@@ -49,7 +49,7 @@ export function EngagementButton({
             relative 
             ${
               horizontalCount
-                ? "w-[50px] flex items-center justify-start"
+                ? "flex items-center justify-start"
                 : "w-full h-5 mt-1"
             }
           `}
