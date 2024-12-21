@@ -109,12 +109,18 @@ const UserProfile = ({ user }: { user: UserType }) => {
             <CardContent>
               <div className="space-y-4">
                 {blogPosts &&
-                  blogPosts.map((post: PostType, index: number) => (
-                    <ProfileBlogCard
-                      post={post}
-                      key={post?._id.toString() + index}
-                    />
-                  ))}
+                  blogPosts
+                    .sort(
+                      (a: PostType, b: PostType) =>
+                        new Date(String(b.createdAt ?? new Date())).getTime() -
+                        new Date(String(a.createdAt ?? new Date())).getTime()
+                    )
+                    .map((post: PostType, index: number) => (
+                      <ProfileBlogCard
+                        post={post}
+                        key={post?._id.toString() + index}
+                      />
+                    ))}
               </div>
             </CardContent>
           </Card>
