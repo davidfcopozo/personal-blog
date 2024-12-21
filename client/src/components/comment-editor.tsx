@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,6 +36,7 @@ export default function CommentEditor({
   showCancelButton,
   value: content,
   onChange,
+  commentMutationStatus,
 }: CommentEditorProps) {
   const textareaRef = useRef<ReactQuill>(null);
 
@@ -74,7 +75,7 @@ export default function CommentEditor({
 
   return (
     <>
-      <Card className="w-full mt-4 max-w-3xl border-[1px] border-muted-foreground rounded-md">
+      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground rounded-md">
         <div>
           <ReactQuill
             theme="snow"
@@ -92,13 +93,17 @@ export default function CommentEditor({
           />
         </div>
       </Card>
-      <div className="flex justify-start gap-2 mt-4">
+      <div className="flex justify-end gap-2 mt-4">
         {onCancel && showCancelButton && (
           <Button variant="outline" onClick={onCancel} className="py-4">
             Cancel
           </Button>
         )}
-        <Button onClick={handleSubmit} className="gap-2">
+        <Button
+          onClick={handleSubmit}
+          className="gap-2"
+          disabled={commentMutationStatus === "pending"}
+        >
           <Send className="w-4 h-4" />
           Submit
         </Button>

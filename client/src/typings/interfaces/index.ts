@@ -1,6 +1,8 @@
-import { FormEvent, HTMLAttributes, ReactNode } from "react";
+import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { ObjectId } from "mongoose";
 import { AxiosError } from "axios";
+import { LucideIcon } from "lucide-react";
+import { PostType, UserType } from "../types";
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -115,12 +117,12 @@ export interface UseMutationRequestProps<TData, TVariables> {
 export interface CommentEditorProps {
   onSubmit: (newItem: any) => void;
   onCancel?: () => void;
-
   onChange: (e: string) => void;
   placeholder?: string;
   maxHeight?: number;
   showCancelButton: boolean;
   value: string;
+  commentMutationStatus: string;
 }
 
 export interface NestedCommentProps {
@@ -135,4 +137,46 @@ export interface UseBulkFetchProps {
   key: string;
   dependantItem?: boolean;
   url: string;
+}
+
+export interface EngagementButtonProps {
+  icon: LucideIcon;
+  count?: number;
+  label: string;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  extraClasses?: string;
+  iconStyles?: string;
+  activeColor?: string;
+  isActivated?: boolean;
+  horizontalCount?: boolean;
+}
+
+export interface BlogPostProps{
+  slug?: string;
+  handleLikeClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  handleBookmarkClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  liked?: boolean;
+  bookmarked?: boolean;
+  amountOfBookmarks?: number;
+  amountOfLikes?: number;
+  post?: PostType;
+}
+
+export interface SocialMediaConfig {
+  icon: LucideIcon;
+  getUrl: (username: string) => string;
+  label: string;
+}
+
+export interface AuthorPanelProps {
+  _id: ObjectId;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  avatar: string;
+  bio: string;
+  website: string;
+  title: string;
+  socialMedia: UserType["socialMediaProfiles"];
 }

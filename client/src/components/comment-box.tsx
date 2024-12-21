@@ -1,12 +1,13 @@
 import { useInteractions } from "@/hooks/useInteractions";
+import { PostType } from "@/typings/types";
 import dynamic from "next/dynamic";
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
 
-const CommentBox = ({ id }: { id: string }) => {
-  const { createCommentInteraction, setCommentContent, commentContent } =
-    useInteractions(id);
+const CommentBox = ({ post }: { post: PostType }) => {
+  const { createCommentInteraction, setCommentContent, commentContent, commentMutationStatus } =
+    useInteractions(post);
 
   const handleChange = (content: string) => {
     setCommentContent(content);
@@ -24,6 +25,7 @@ const CommentBox = ({ id }: { id: string }) => {
         onSubmit={createCommentInteraction}
         onCancel={() => {}}
         showCancelButton={false}
+        commentMutationStatus={commentMutationStatus}
         placeholder="Share your thoughts with the community..."
       />
     </form>

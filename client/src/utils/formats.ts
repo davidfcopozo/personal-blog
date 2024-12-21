@@ -73,9 +73,9 @@ export function calculateReadingTime(text: string, locale: "en" | "es" = "en") {
   } else {
     // English output (default)
     if (readingTimeMinutes === 1) {
-      return `1 minute read`;
+      return `1 min read`;
     } else {
-      return `${readingTimeMinutes} minute read`;
+      return `${readingTimeMinutes} min read`;
     }
   }
 }

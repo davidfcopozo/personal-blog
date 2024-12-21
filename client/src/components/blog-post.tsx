@@ -1,35 +1,30 @@
 "use client";
-import useFetchPost from "@/hooks/useFetchPost";
-import { getFullName, showMonthDayYear } from "@/utils/formats";
+import {
+  calculateReadingTime,
+  getFullName,
+  showMonthDayYear,
+} from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import SinglePostSkeleton from "./single-post-skeleton";
+import React from "react";
 import CommentSection from "./comment-section";
-import { PostType, UserType } from "@/typings/types";
-import { useQueryClient } from "@tanstack/react-query";
+import { UserType } from "@/typings/types";
+import { EngagementButton } from "./engagement-button";
+import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
+import { ShareButton } from "./share-button";
+import scrollToElement from "@/utils/scrollToElement";
+import { BlogPostProps } from "@/typings/interfaces";
+import { AuthorPanel } from "./author-panel";
 
-const BlogPost = ({ slug }: { slug: string }) => {
-  const queryClient = useQueryClient();
-  const { data, isLoading, isFetching } = useFetchPost(slug);
-  const [hasInitialData, setHasInitialData] = useState(false);
-
-  useEffect(() => {
-    if (data?.data && !hasInitialData) {
-      setHasInitialData(true);
-    }
-  }, [data?.data, hasInitialData]);
-
-  // Get the latest post data from the cache
-  const post = queryClient.getQueryData<{ data: PostType }>([
-    "post",
-    slug,
-  ])?.data;
-
-  if (isLoading || (isFetching && !hasInitialData)) {
-    return <SinglePostSkeleton />;
-  }
-
+const BlogPost = ({
+  handleLikeClick,
+  handleBookmarkClick,
+  amountOfLikes,
+  liked,
+  bookmarked,
+  amountOfBookmarks,
+  post,
+}: BlogPostProps) => {
   if (!post) {
     return (
       <div className="w-full h-full bg-background">
@@ -43,56 +38,189 @@ const BlogPost = ({ slug }: { slug: string }) => {
   const postedBy = post.postedBy;
 
   return (
-    <div className="w-full h-full bg-background">
-      <div className="w-full mx-auto mt-10 bg-background">
-        <h1 className="w-[92%] mx-auto text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
-          {post.title}
-        </h1>
-        <div className="flex items-center justify-center xl:w-[80%] w-[96%] mx-auto lg:h-[560px] md:h-[480px]">
-          <Image
-            src={post.featuredImage as string}
-            alt="Blog Cover"
-            className="rounded-lg overflow-hidden aspect-square"
-            width={500}
-            height={250}
-            style={{ objectFit: "contain" }}
-          />
-        </div>
-        <div className="w-[90%] mx-auto flex md:gap-4 gap-2 justify-center items-center pt-4">
-          <div className="flex gap-2 items-center">
-            <Link href="/#">
-              <Image
-                className="w-10 h-10 rounded-full"
-                src={postedBy?.avatar as string}
-                alt={`Avatar of ${getFullName(postedBy as UserType)}`}
-                width={300}
-                height={200}
+    <div className="w-full min-h-screen bg-background mt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Panel - Engagement Tools */}
+          <div className="order-2 lg:order-1 lg:w-20 hidden lg:block">
+            <div className="lg:sticky bg-muted lg:top-[5.5rem] flex lg:flex-col justify-center gap-2 p-4 rounded-3xl shadow-sm">
+              <EngagementButton
+                icon={Heart}
+                count={amountOfLikes}
+                label="Like post"
+                onClick={handleLikeClick}
+                iconStyles={liked ? "text-pink-500" : "hover:stroke-pink-500"}
+                activeColor="text-pink-500"
+                isActivated={liked}
               />
-            </Link>
-            <Link href="/#" className="text-sm font-semibold dark:text-white">
-              {getFullName(postedBy as UserType)}
-            </Link>
+              <EngagementButton
+                icon={Bookmark}
+                count={amountOfBookmarks}
+                label="Save post"
+                onClick={handleBookmarkClick}
+                iconStyles={
+                  bookmarked ? "stroke-indigo-500" : "hover:stroke-indigo-500"
+                }
+                isActivated={bookmarked}
+                activeColor="text-indigo-500"
+              />
+              <EngagementButton
+                icon={MessageSquare}
+                count={post.comments?.length}
+                label="Comment"
+                iconStyles="hover:stroke-amber-500"
+                onClick={() => scrollToElement("comments-section", "header")}
+                activeColor="text-amber-500"
+              />
+              <ShareButton post={post} />
+            </div>
           </div>
-          <div className="dark:text-gray-500">|</div>
-          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-            {showMonthDayYear(post.createdAt?.toString() || "")}
-          </h3>
-          <div className="dark:text-gray-500">|</div>
-          <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-            5 min read
-          </h4>
+
+          {/* Main */}
+          <main className="order-1 lg:order-2 lg:flex-1">
+            <article className="rounded-lg overflow-hidden mt-6">
+              <div className="flex flex-col">
+                <div className="w-full order-2 lg:order-1 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
+                  <Image
+                    src={post.featuredImage as string}
+                    alt="Blog Cover"
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+                <div className="order-1 mx-auto w-[90%] lg:mx-0 lg:w-full lg:order-2 flex flex-col gap-4 p-4">
+                  {/* METADATA */}
+                  <div className="flex flex-col md:gap-4 order-2 lg:order-1 gap-2 items-center pt-4 lg:pt-0">
+                    <div className="flex w-full justify-between items-center text-sm text-gray-400 lg:mb-6">
+                      <div className="flex gap-2 items-center">
+                        <Link
+                          href="/#"
+                          className="flex lg:hidden gap-2 items-center"
+                        >
+                          <Image
+                            className="w-14 h-14 rounded-full"
+                            src={postedBy?.avatar as string}
+                            alt={`Avatar of ${getFullName(
+                              postedBy as UserType
+                            )}`}
+                            width={300}
+                            height={200}
+                          />
+                        </Link>
+                        <div className="flex flex-col gap-1">
+                          <div className="lg:hidden">
+                            <Link
+                              href="/#"
+                              className="text-base font-semibold dark:text-white"
+                            >
+                              {getFullName(postedBy as UserType)}
+                            </Link>
+                            <span className="mx-2">•</span>
+                            <button className="text-[--thread-border]">
+                              Follow
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {calculateReadingTime(post.content || "")}
+                            </span>
+                            <span className="mx-2">•</span>
+                            <time dateTime={post.createdAt?.toString() || ""}>
+                              {showMonthDayYear(
+                                post.createdAt?.toString() || ""
+                              )}
+                            </time>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        {post.visits} views
+                      </span>
+                    </div>
+                    {/* Engagement buttons */}
+                    <div className="flex lg:hidden w-[100%] border-y-[1px] mt-2 w-100">
+                      <div className="flex w-[100%] lg:flex-col justify-start rounded-3xl shadow-sm">
+                        <EngagementButton
+                          icon={Heart}
+                          extraClasses="p-0"
+                          count={amountOfLikes}
+                          label="Like post"
+                          onClick={handleLikeClick}
+                          iconStyles={`!h-5 !w-5 ${
+                            liked ? "text-pink-500" : "hover:stroke-pink-500"
+                          }`}
+                          activeColor="text-pink-500"
+                          isActivated={liked}
+                          horizontalCount
+                        />
+                        <EngagementButton
+                          icon={Bookmark}
+                          count={amountOfBookmarks}
+                          label="Save post"
+                          extraClasses="p-0"
+                          onClick={handleBookmarkClick}
+                          iconStyles={`!h-5 !w-5 ${
+                            bookmarked
+                              ? "stroke-indigo-500"
+                              : "hover:stroke-indigo-500"
+                          }`}
+                          isActivated={bookmarked}
+                          activeColor="text-indigo-500"
+                          horizontalCount
+                        />
+                        <EngagementButton
+                          icon={MessageSquare}
+                          extraClasses="p-0"
+                          count={post.comments?.length}
+                          label="Comment"
+                          iconStyles={`!h-5 !w-5 ${"hover:stroke-amber-500"}`}
+                          onClick={() =>
+                            scrollToElement("comments-section", "header")
+                          }
+                          activeColor="text-amber-500"
+                          horizontalCount
+                        />
+                      </div>
+                      <ShareButton post={post} />
+                    </div>
+                  </div>
+                  <h1 className="order-1 lg:order-2 text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
+                    {post.title}
+                  </h1>
+                </div>
+              </div>
+              <div className="py-6 bg-background">
+                <div
+                  className="md:w-[80%] w-[90%] pt-4"
+                  dangerouslySetInnerHTML={{ __html: post.content || "" }}
+                />
+              </div>
+              <CommentSection comments={post.comments || []} post={post} />
+            </article>
+          </main>
+          {/* Right Panel - Author Info */}
+          <div className="order-3 w-72 mx-auto hidden lg:block">
+            <div className=" lg:mt-6">
+              <AuthorPanel
+                _id={post?.postedBy?._id}
+                firstName={post?.postedBy?.firstName as string}
+                lastName={post?.postedBy?.lastName as string}
+                email={post?.postedBy?.email as string}
+                username={post?.postedBy?.username as string}
+                avatar={post?.postedBy?.avatar as string}
+                bio={post?.postedBy?.bio as string}
+                website={post?.postedBy?.website as string}
+                title={post?.postedBy?.title as string}
+                socialMedia={
+                  post?.postedBy
+                    ?.socialMediaProfiles as UserType["socialMediaProfiles"]
+                }
+              />
+            </div>
+          </div>
         </div>
-        <div className="py-6 bg-background">
-          <div
-            className="md:w-[80%] w-[90%] mx-auto pt-4"
-            dangerouslySetInnerHTML={{ __html: post.content || "" }}
-          />
-        </div>
-        <CommentSection
-          comments={post.comments || []}
-          id={`${post._id}`}
-          post={post}
-        />
       </div>
     </div>
   );

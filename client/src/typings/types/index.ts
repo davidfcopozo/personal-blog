@@ -42,7 +42,6 @@ export type CategoryType = CategoryInterface;
 
 export type CommentSectionPropsType = {
   comments: string[];
-  id: string;
   post: PostType;
 };
 
