@@ -44,7 +44,7 @@ import { showMonthDayYear } from "@/utils/formats";
 import { useState } from "react";
 import userPosts from "@/lib/userPosts";
 import { useSession } from "next-auth/react";
-import { PostType } from "@/typings/types";
+import { CategoryType, PostType } from "@/typings/types";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 
 export function Dashboard() {
@@ -199,9 +199,17 @@ export function Dashboard() {
                                 id="categories"
                                 className="hidden md:table-cell"
                               >
-                                {post.categories
-                                  ?.join(", ")
-                                  .toLocaleLowerCase()}
+                                {post.categories?.map(
+                                  (category: CategoryType) => (
+                                    <span key={category._id.toString()}>
+                                      {category.name}
+                                      {(post.categories?.length ?? 0) - 1 !==
+                                      post.categories?.indexOf(category)
+                                        ? ", "
+                                        : ""}
+                                    </span>
+                                  )
+                                )}
                               </TableCell>
                               <TableCell
                                 id="visits"
@@ -224,6 +232,7 @@ export function Dashboard() {
                                       aria-haspopup="true"
                                       size="icon"
                                       variant="ghost"
+                                      className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                                     >
                                       <MoreHorizontal className="h-4 w-4" />
                                       <span className="sr-only">
