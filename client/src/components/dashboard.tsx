@@ -171,10 +171,6 @@ export function Dashboard() {
                     </TableHeader>
 
                     <TableBody>
-                      {/* Skeleton to render when fetch status is pending */}
-                      {/* <TableRow>
-                        <DashboardSkeleton />
-                      </TableRow> */}
                       {blogPosts.length > 0 ? (
                         blogPosts.map(
                           (post: PostType, key: number | string) => (
