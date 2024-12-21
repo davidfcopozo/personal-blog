@@ -26,7 +26,7 @@ const UserProfile = ({ user }: { user: UserType }) => {
     data: posts,
     error: postsError,
     isFetching: arePostsFetching,
-  } = useFetchRequest("posts", `/api/posts`);
+  } = useFetchRequest(["posts"], `/api/posts`);
 
   const blogPosts = Array.isArray(posts?.data)
     ? posts.data.filter(
