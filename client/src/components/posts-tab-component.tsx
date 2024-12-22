@@ -29,6 +29,7 @@ import { memo } from "react";
 import { CategoryType, PostType } from "@/typings/types";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import { showMonthDayYear } from "@/utils/formats";
+import React, { useState, useMemo } from "react";
 
 const PostsTabContent = memo(
   ({
@@ -46,6 +47,39 @@ const PostsTabContent = memo(
     onDeletePost: (post: PostType) => void;
     status: string;
   }) => {
+    const [sortConfig, setSortConfig] = useState<{
+      key: string;
+      direction: "asc" | "desc";
+    } | null>(null);
+
+    const sortedPosts = useMemo(() => {
+      if (!sortConfig) return filteredPosts;
+
+      return [...filteredPosts].sort((a, b) => {
+        const aValue = a[sortConfig.key as keyof PostType];
+        const bValue = b[sortConfig.key as keyof PostType];
+
+        if (aValue === bValue) return 0;
+
+        if (aValue === undefined || bValue === undefined) return 0;
+        const comparison = aValue > bValue ? 1 : -1;
+
+        return sortConfig.direction === "asc" ? comparison : -comparison;
+      });
+    }, [filteredPosts, sortConfig]);
+
+    const handleSort = (key: string) => {
+      setSortConfig((prevSort) => {
+        if (prevSort?.key === key) {
+          return {
+            key,
+            direction: prevSort.direction === "asc" ? "desc" : "asc",
+          };
+        }
+        return { key, direction: "asc" };
+      });
+    };
+
     return (
       <Card>
         <CardHeader>
@@ -58,23 +92,65 @@ const PostsTabContent = memo(
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Likes</TableHead>
-                <TableHead className="hidden md:table-cell">Comments</TableHead>
+                <TableHead
+                  onClick={() => handleSort("title")}
+                  className="cursor-pointer"
+                >
+                  Title{" "}
+                  {sortConfig?.key === "title" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("status")}
+                  className="cursor-pointer"
+                >
+                  Status{" "}
+                  {sortConfig?.key === "status" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("likes")}
+                  className="hidden md:table-cell cursor-pointer"
+                >
+                  Likes{" "}
+                  {sortConfig?.key === "likes" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("comments")}
+                  className="hidden md:table-cell cursor-pointer"
+                >
+                  Comments{" "}
+                  {sortConfig?.key === "comments" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
                 <TableHead className="hidden md:table-cell">
                   Categories
                 </TableHead>
-                <TableHead className="hidden md:table-cell">Vistis</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
+                <TableHead
+                  onClick={() => handleSort("visits")}
+                  className="hidden md:table-cell cursor-pointer"
+                >
+                  Visits{" "}
+                  {sortConfig?.key === "visits" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("createdAt")}
+                  className="hidden md:table-cell cursor-pointer"
+                >
+                  Date{" "}
+                  {sortConfig?.key === "createdAt" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPosts.length > 0 ? (
-                filteredPosts.map((post: PostType, key: number | string) => (
+              {sortedPosts.length > 0 ? (
+                sortedPosts.map((post: PostType, key: number | string) => (
                   <>
                     <TableRow key={key}>
                       <TableCell id="title" className="font-medium">
