@@ -65,6 +65,10 @@ export function Dashboard() {
     [router]
   );
 
+  function handleNewPost() {
+    router.push("/new");
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
       <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -136,7 +140,7 @@ export function Dashboard() {
                 </TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1">
+                <Button size="sm" className="h-8 gap-1" onClick={handleNewPost}>
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Add New Post
