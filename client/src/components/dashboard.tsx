@@ -134,6 +134,12 @@ export function Dashboard() {
                   Published
                 </TabsTrigger>
                 <TabsTrigger
+                  value="unpublished"
+                  onClick={() => setPostStatus("unpublished")}
+                >
+                  Unpublished
+                </TabsTrigger>
+                <TabsTrigger
                   value="draft"
                   onClick={() => setPostStatus("draft")}
                 >
@@ -160,6 +166,16 @@ export function Dashboard() {
               />
             </TabsContent>
             <TabsContent value="published">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
+            </TabsContent>
+            <TabsContent value="unpublished">
               <PostsTabContent
                 filteredPosts={filteredPosts}
                 arePostsFetching={arePostsFetching}
