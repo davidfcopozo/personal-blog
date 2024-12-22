@@ -40,7 +40,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { showMonthDayYear } from "@/utils/formats";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import userPosts from "@/lib/userPosts";
 import { useSession } from "next-auth/react";
 import { CategoryType, PostType } from "@/typings/types";
@@ -62,12 +62,6 @@ export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<PostType | null>(null);
-
-  function handleDeletePost(post: PostType) {
-    setPostToDelete(post);
-    setIsDeleteDialogOpen(true);
-  }
-
   const { data: user } = useSession();
   const { deletePost, status } = useDeletePost();
   const router = useRouter();
@@ -75,6 +69,18 @@ export function Dashboard() {
   const { blogPosts, arePostsFetching, arePostsLoading } = userPosts(
     user?.user?.id || ""
   );
+
+  function handleDeletePost(post: PostType) {
+    setPostToDelete(post);
+    setIsDeleteDialogOpen(true);
+  }
+
+  const filteredPosts =
+    postStatus === "all"
+      ? blogPosts
+      : postStatus === "published"
+      ? blogPosts.filter((post: PostType) => post.published === true)
+      : blogPosts.filter((post: PostType) => post.published === false);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
@@ -192,8 +198,8 @@ export function Dashboard() {
                     </TableHeader>
 
                     <TableBody>
-                      {blogPosts.length > 0 ? (
-                        blogPosts.map(
+                      {filteredPosts.length > 0 ? (
+                        filteredPosts.map(
                           (post: PostType, key: number | string) => (
                             <>
                               <TableRow key={key}>
@@ -306,7 +312,7 @@ export function Dashboard() {
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
                     Showing <strong>1-10</strong> of{" "}
-                    <strong>{blogPosts?.length}</strong> posts
+                    <strong>{filteredPosts?.length}</strong> posts
                   </div>
                 </CardFooter>
               </Card>
