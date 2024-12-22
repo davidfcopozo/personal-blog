@@ -47,11 +47,30 @@ import { useSession } from "next-auth/react";
 import { CategoryType, PostType } from "@/typings/types";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import { useRouter } from "next/navigation";
+import useDeletePost from "@/hooks/useDeletePost";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<PostType | null>(null);
+
+  function handleDeletePost(post: PostType) {
+    setPostToDelete(post);
+    setIsDeleteDialogOpen(true);
+  }
+
   const { data: user } = useSession();
-  //function to route to edit post page with useRouter
+  const { deletePost, status } = useDeletePost();
   const router = useRouter();
 
   const { blogPosts, arePostsFetching, arePostsLoading } = userPosts(
@@ -177,88 +196,97 @@ export function Dashboard() {
                       {blogPosts.length > 0 ? (
                         blogPosts.map(
                           (post: PostType, key: number | string) => (
-                            <TableRow key={key}>
-                              <TableCell id="title" className="font-medium">
-                                {post.title}
-                              </TableCell>
-                              <TableCell id="status">
-                                <Badge variant="outline">
-                                  {post.published ? "Published" : "Draft"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell
-                                id="likes"
-                                className="hidden md:table-cell"
-                              >
-                                {post.likes?.length}
-                              </TableCell>
-                              <TableCell
-                                id="comments"
-                                className="hidden md:table-cell"
-                              >
-                                {post.comments?.length}
-                              </TableCell>
-                              <TableCell
-                                id="categories"
-                                className="hidden md:table-cell"
-                              >
-                                {post.categories?.map(
-                                  (category: CategoryType) => (
-                                    <span key={category._id.toString()}>
-                                      {category.name}
-                                      {(post.categories?.length ?? 0) - 1 !==
-                                      post.categories?.indexOf(category)
-                                        ? ", "
-                                        : ""}
-                                    </span>
-                                  )
-                                )}
-                              </TableCell>
-                              <TableCell
-                                id="visits"
-                                className="hidden md:table-cell"
-                              >
-                                {post.visits}
-                              </TableCell>
-                              <TableCell
-                                id="date"
-                                className="hidden md:table-cell"
-                              >
-                                {showMonthDayYear(
-                                  post.createdAt?.toString() || ""
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      aria-haspopup="true"
-                                      size="icon"
-                                      variant="ghost"
-                                      className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                    >
-                                      <MoreHorizontal className="h-4 w-4" />
-                                      <span className="sr-only">
-                                        Toggle menu
+                            <>
+                              <TableRow key={key}>
+                                <TableCell id="title" className="font-medium">
+                                  {post?.title}
+                                </TableCell>
+                                <TableCell id="status">
+                                  <Badge variant="outline">
+                                    {post?.published ? "Published" : "Draft"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell
+                                  id="likes"
+                                  className="hidden md:table-cell"
+                                >
+                                  {post?.likes?.length}
+                                </TableCell>
+                                <TableCell
+                                  id="comments"
+                                  className="hidden md:table-cell"
+                                >
+                                  {post?.comments?.length}
+                                </TableCell>
+                                <TableCell
+                                  id="categories"
+                                  className="hidden md:table-cell"
+                                >
+                                  {post?.categories?.map(
+                                    (category: CategoryType) => (
+                                      <span key={category._id.toString()}>
+                                        {category.name}
+                                        {(post?.categories?.length ?? 0) - 1 !==
+                                        post?.categories?.indexOf(category)
+                                          ? ", "
+                                          : ""}
                                       </span>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>
-                                      Actions
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        router.push(`/edit-post/${post.slug}`)
-                                      }
-                                    >
-                                      Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>Delete</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
+                                    )
+                                  )}
+                                </TableCell>
+                                <TableCell
+                                  id="visits"
+                                  className="hidden md:table-cell"
+                                >
+                                  {post?.visits}
+                                </TableCell>
+                                <TableCell
+                                  id="date"
+                                  className="hidden md:table-cell"
+                                >
+                                  {showMonthDayYear(
+                                    post?.createdAt?.toString() || ""
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        aria-haspopup="true"
+                                        size="icon"
+                                        variant="ghost"
+                                        className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                      >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">
+                                          Toggle menu
+                                        </span>
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuLabel>
+                                        Actions
+                                      </DropdownMenuLabel>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          router.push(
+                                            `/edit-post/${post?.slug}`
+                                          )
+                                        }
+                                      >
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        disabled={status === "pending"}
+                                        onClick={() => handleDeletePost(post)}
+                                      >
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            </>
                           )
                         )
                       ) : arePostsFetching || arePostsLoading ? (
@@ -287,6 +315,31 @@ export function Dashboard() {
           </Tabs>
         </main>
       </div>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent className="bg-background border-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this comment?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              comment and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => postToDelete && deletePost(postToDelete)}
+              className="bg-destructive text-foreground hover:bg-destructive hover:opacity-90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
