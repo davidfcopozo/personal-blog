@@ -127,7 +127,9 @@ const PostsTabContent = memo(
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => onEditPost}>
+                            <DropdownMenuItem
+                              onClick={() => onEditPost(post.slug)}
+                            >
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
