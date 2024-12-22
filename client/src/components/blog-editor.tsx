@@ -4,7 +4,7 @@ import "react-quill/dist/quill.snow.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
-import Layout from "@/app/new-post/layout";
+import Layout from "@/app/new/layout";
 import Categories from "./categories";
 import Tags from "./tags";
 import { BouncingCircles } from "./icons";
