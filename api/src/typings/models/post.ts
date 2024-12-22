@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { CategoryInterface } from "./category";
 
 export interface PostInterface {
   _id: mongoose.Types.ObjectId;
@@ -10,8 +11,8 @@ export interface PostInterface {
   likes?: mongoose.Schema.Types.ObjectId[];
   bookmarks?: mongoose.Schema.Types.ObjectId[];
   tags?: string[];
-  categories?: mongoose.Schema.Types.ObjectId[];
+  categories?: CategoryInterface[];
   visits?: number;
   comments?: mongoose.Schema.Types.ObjectId[];
-  published: boolean;
+  status: "draft" | "published" | "unpublished";
 }

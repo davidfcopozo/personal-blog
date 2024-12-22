@@ -5,7 +5,7 @@ import {
   createPost,
   getAllPosts,
   updatePostBySlugOrId,
-  deletePostById,
+  deletePostBySlugOrId,
   toggleLike,
   toggleBookmark,
   getPostBySlugOrId,
@@ -19,8 +19,8 @@ router.route("/bookmark").put(auth, toggleBookmark);
 router
   .route("/:slugOrId")
   .get(visitsCounter, getPostBySlugOrId)
-  .patch(auth, updatePostBySlugOrId);
-router.route("/:id").delete(auth, deletePostById);
+  .patch(auth, updatePostBySlugOrId)
+  .delete(auth, deletePostBySlugOrId);
 router.route("/category/:category").get(getPostsByCategory);
 
 export default router;

@@ -3,35 +3,10 @@ import Link from "next/link";
 import {
   CircleUser,
   LayoutDashboard,
-  MoreHorizontal,
   PlusCircle,
   Settings,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -39,21 +14,61 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { posts } from "@/lib/testDatabase.json";
-import { showMonthDayYear } from "@/utils/formats";
-import { useState } from "react";
-import { DashboardSkeleton } from "./dashboard-skeleton";
+import { useCallback, useMemo, useState } from "react";
+import userPosts from "@/lib/userPosts";
+import { useSession } from "next-auth/react";
+import { PostType } from "@/typings/types";
+import { useRouter } from "next/navigation";
+import useDeletePost from "@/hooks/useDeletePost";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import PostsTabContent from "./posts-tab-component";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<PostType | null>(null);
+  const { data: user } = useSession();
+  const { deletePost, status } = useDeletePost();
+  const router = useRouter();
 
-  const filteredPosts = posts.filter((post) => {
-    return postStatus === "all"
-      ? true
-      : postStatus === "published"
-      ? post.published === true
-      : post.published === false;
-  });
+  const { blogPosts, arePostsFetching, arePostsLoading } = userPosts(
+    user?.user?.id || ""
+  );
+
+  function handleDeletePost(post: PostType) {
+    setPostToDelete(post);
+    setIsDeleteDialogOpen(true);
+  }
+
+  const filteredPosts = useMemo(() => {
+    return blogPosts.filter((post: PostType) => {
+      if (postStatus === "all") return true;
+      if (postStatus === "published") return post.status === "published";
+      if (postStatus === "unpublished") return post.status === "unpublished";
+      if (postStatus === "draft") return post.status === "draft";
+      return true;
+    });
+  }, [blogPosts, postStatus]);
+
+  const handleEditPost = useCallback(
+    (slug: string) => {
+      router.push(`/edit-post/${slug}`);
+    },
+    [router]
+  );
+
+  function handleNewPost() {
+    router.push("/new");
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
@@ -119,6 +134,12 @@ export function Dashboard() {
                   Published
                 </TabsTrigger>
                 <TabsTrigger
+                  value="unpublished"
+                  onClick={() => setPostStatus("unpublished")}
+                >
+                  Unpublished
+                </TabsTrigger>
+                <TabsTrigger
                   value="draft"
                   onClick={() => setPostStatus("draft")}
                 >
@@ -126,7 +147,7 @@ export function Dashboard() {
                 </TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1">
+                <Button size="sm" className="h-8 gap-1" onClick={handleNewPost}>
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Add New Post
@@ -134,129 +155,74 @@ export function Dashboard() {
                 </Button>
               </div>
             </div>
-            <TabsContent value={postStatus}>
-              <Card x-chunk="dashboard-06-chunk-0">
-                <CardHeader>
-                  <CardTitle>Posts</CardTitle>
-                  <CardDescription>
-                    Manage your blog posts and view their interaction
-                    performance.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Likes
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Comments
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Categories
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Vistis
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Date
-                        </TableHead>
-                        <TableHead>
-                          <span className="sr-only">Actions</span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-
-                    <TableBody>
-                      {/* Skeleton to render when fetch status is pending */}
-                      {/* <TableRow>
-                        <DashboardSkeleton />
-                      </TableRow> */}
-                      {filteredPosts.length > 0 ? (
-                        filteredPosts.map((post, key) => (
-                          <TableRow key={key}>
-                            <TableCell id="title" className="font-medium">
-                              {post.title}
-                            </TableCell>
-                            <TableCell id="status">
-                              <Badge variant="outline">
-                                {post.published ? "Published" : "Draft"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell
-                              id="likes"
-                              className="hidden md:table-cell"
-                            >
-                              {post.likes?.length}
-                            </TableCell>
-                            <TableCell
-                              id="comments"
-                              className="hidden md:table-cell"
-                            >
-                              {post.comments?.length}
-                            </TableCell>
-                            <TableCell
-                              id="categories"
-                              className="hidden md:table-cell"
-                            >
-                              {post.categories?.join(", ").toLocaleLowerCase()}
-                            </TableCell>
-                            <TableCell
-                              id="visits"
-                              className="hidden md:table-cell"
-                            >
-                              {post.visits}
-                            </TableCell>
-                            <TableCell
-                              id="date"
-                              className="hidden md:table-cell"
-                            >
-                              {showMonthDayYear(post.createdAt)}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    aria-haspopup="true"
-                                    size="icon"
-                                    variant="ghost"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                                  <DropdownMenuItem>Delete</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableCell className="pt-4 lg:text-md">
-                          No posts found
-                        </TableCell>
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of{" "}
-                    <strong>{posts?.length}</strong> posts
-                  </div>
-                </CardFooter>
-              </Card>
+            <TabsContent value="all">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
+            </TabsContent>
+            <TabsContent value="published">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
+            </TabsContent>
+            <TabsContent value="unpublished">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
+            </TabsContent>
+            <TabsContent value="draft">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
             </TabsContent>
           </Tabs>
         </main>
       </div>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent className="bg-background border-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this comment?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              comment and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => postToDelete && deletePost(postToDelete)}
+              className="bg-destructive text-foreground hover:bg-destructive hover:opacity-90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
