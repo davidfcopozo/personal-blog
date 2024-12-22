@@ -3,35 +3,10 @@ import Link from "next/link";
 import {
   CircleUser,
   LayoutDashboard,
-  MoreHorizontal,
   PlusCircle,
   Settings,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -39,12 +14,10 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { showMonthDayYear } from "@/utils/formats";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import userPosts from "@/lib/userPosts";
 import { useSession } from "next-auth/react";
-import { CategoryType, PostType } from "@/typings/types";
-import { DashboardSkeleton } from "./dashboard-skeleton";
+import { PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
 import useDeletePost from "@/hooks/useDeletePost";
 import {
@@ -57,6 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PostsTabContent from "./posts-tab-component";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
@@ -75,12 +49,21 @@ export function Dashboard() {
     setIsDeleteDialogOpen(true);
   }
 
-  const filteredPosts =
-    postStatus === "all"
-      ? blogPosts
-      : postStatus === "published"
-      ? blogPosts.filter((post: PostType) => post.published === true)
-      : blogPosts.filter((post: PostType) => post.published === false);
+  const filteredPosts = useMemo(() => {
+    return blogPosts.filter((post: PostType) => {
+      if (postStatus === "all") return true;
+      if (postStatus === "published") return post.published;
+      if (postStatus === "draft") return !post.published;
+      return true;
+    });
+  }, [blogPosts, postStatus]);
+
+  const handleEditPost = useCallback(
+    (slug: string) => {
+      router.push(`/edit-post/${slug}`);
+    },
+    [router]
+  );
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
@@ -161,161 +144,35 @@ export function Dashboard() {
                 </Button>
               </div>
             </div>
-            <TabsContent value={postStatus}>
-              <Card x-chunk="dashboard-06-chunk-0">
-                <CardHeader>
-                  <CardTitle>Posts</CardTitle>
-                  <CardDescription>
-                    Manage your blog posts and view their interaction
-                    performance.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Likes
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Comments
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Categories
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Vistis
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Date
-                        </TableHead>
-                        <TableHead>
-                          <span className="sr-only">Actions</span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-
-                    <TableBody>
-                      {filteredPosts.length > 0 ? (
-                        filteredPosts.map(
-                          (post: PostType, key: number | string) => (
-                            <>
-                              <TableRow key={key}>
-                                <TableCell id="title" className="font-medium">
-                                  {post?.title}
-                                </TableCell>
-                                <TableCell id="status">
-                                  <Badge variant="outline">
-                                    {post?.published ? "Published" : "Draft"}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell
-                                  id="likes"
-                                  className="hidden md:table-cell"
-                                >
-                                  {post?.likes?.length}
-                                </TableCell>
-                                <TableCell
-                                  id="comments"
-                                  className="hidden md:table-cell"
-                                >
-                                  {post?.comments?.length}
-                                </TableCell>
-                                <TableCell
-                                  id="categories"
-                                  className="hidden md:table-cell"
-                                >
-                                  {post?.categories?.map(
-                                    (category: CategoryType) => (
-                                      <span key={category._id.toString()}>
-                                        {category.name}
-                                        {(post?.categories?.length ?? 0) - 1 !==
-                                        post?.categories?.indexOf(category)
-                                          ? ", "
-                                          : ""}
-                                      </span>
-                                    )
-                                  )}
-                                </TableCell>
-                                <TableCell
-                                  id="visits"
-                                  className="hidden md:table-cell"
-                                >
-                                  {post?.visits}
-                                </TableCell>
-                                <TableCell
-                                  id="date"
-                                  className="hidden md:table-cell"
-                                >
-                                  {showMonthDayYear(
-                                    post?.createdAt?.toString() || ""
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        aria-haspopup="true"
-                                        size="icon"
-                                        variant="ghost"
-                                        className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                      >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">
-                                          Toggle menu
-                                        </span>
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuLabel>
-                                        Actions
-                                      </DropdownMenuLabel>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          router.push(
-                                            `/edit-post/${post?.slug}`
-                                          )
-                                        }
-                                      >
-                                        Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        disabled={status === "pending"}
-                                        onClick={() => handleDeletePost(post)}
-                                      >
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </TableCell>
-                              </TableRow>
-                            </>
-                          )
-                        )
-                      ) : arePostsFetching || arePostsLoading ? (
-                        Array.from({ length: 5 }).map((_, index) => (
-                          <TableRow key={index}>
-                            <DashboardSkeleton />
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableCell className="pt-4 lg:text-md">
-                          No posts found
-                        </TableCell>
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of{" "}
-                    <strong>{filteredPosts?.length}</strong> posts
-                  </div>
-                </CardFooter>
-              </Card>
+            <TabsContent value="all">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
+            </TabsContent>
+            <TabsContent value="published">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
+            </TabsContent>
+            <TabsContent value="draft">
+              <PostsTabContent
+                filteredPosts={filteredPosts}
+                arePostsFetching={arePostsFetching}
+                arePostsLoading={arePostsLoading}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                status={status}
+              />
             </TabsContent>
           </Tabs>
         </main>
