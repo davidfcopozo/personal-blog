@@ -313,29 +313,31 @@ export const updatePostBySlugOrId = async (
   }
 };
 
-export const deletePostById = async (
+export const deletePostBySlugOrId = async (
   req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
   const {
     user: { userId },
-    params: { id: postId },
+    params: { slugOrId },
   } = req;
 
   try {
-    const post: PostType = await Post.findById(postId);
+    const post = await Post.findOne({
+      $or: [{ slug: slugOrId }, { _id: slugOrId }],
+    });
 
     if (!post) {
-      throw new NotFound(`No post found with id ${postId}`);
+      throw new NotFound(`No post found with slug or id ${slugOrId}`);
     }
 
-    if (post && post?.postedBy?.toString() !== userId) {
-      throw new Unauthenticated("Unauthorized: No token provided");
+    if (post.postedBy.toString() !== userId) {
+      throw new Unauthenticated("You are not authorized to delete this post");
     }
 
     await Post.findOneAndRemove({
-      _id: postId,
+      _id: post._id,
       postedBy: userId,
     });
 
