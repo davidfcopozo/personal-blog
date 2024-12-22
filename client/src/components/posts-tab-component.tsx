@@ -1,5 +1,5 @@
 "use client";
-import { MoreHorizontal } from "lucide-react";
+import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,7 @@ import { CategoryType, PostType } from "@/typings/types";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import { showMonthDayYear } from "@/utils/formats";
 import React, { useState, useMemo } from "react";
+import SortIndicator from "./ui/sort-indicator";
 
 const PostsTabContent = memo(
   ({
@@ -96,33 +97,49 @@ const PostsTabContent = memo(
                   onClick={() => handleSort("title")}
                   className="cursor-pointer"
                 >
-                  Title{" "}
-                  {sortConfig?.key === "title" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  <SortIndicator
+                    title="Title"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "status"}
+                  />
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("status")}
                   className="cursor-pointer"
                 >
-                  Status{" "}
-                  {sortConfig?.key === "status" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  <SortIndicator
+                    title="Status"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "status"}
+                  />
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("likes")}
                   className="hidden md:table-cell cursor-pointer"
                 >
-                  Likes{" "}
-                  {sortConfig?.key === "likes" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  <SortIndicator
+                    title="Likes"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "likes"}
+                  />
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("comments")}
                   className="hidden md:table-cell cursor-pointer"
                 >
-                  Comments{" "}
-                  {sortConfig?.key === "comments" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  <SortIndicator
+                    title="Comments"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "comments"}
+                  />
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
                   Categories
@@ -131,17 +148,25 @@ const PostsTabContent = memo(
                   onClick={() => handleSort("visits")}
                   className="hidden md:table-cell cursor-pointer"
                 >
-                  Visits{" "}
-                  {sortConfig?.key === "visits" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  <SortIndicator
+                    title="Visits"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "visits"}
+                  />
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("createdAt")}
                   className="hidden md:table-cell cursor-pointer"
                 >
-                  Date{" "}
-                  {sortConfig?.key === "createdAt" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  <SortIndicator
+                    title="Date"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "date"}
+                  />
                 </TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
