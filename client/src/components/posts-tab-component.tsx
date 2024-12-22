@@ -228,15 +228,19 @@ const PostsTabContent = memo(
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel className="border-b-[1px]">
+                              Actions
+                            </DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={() => onEditPost(post.slug)}
+                              className="cursor-pointer"
                             >
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={status === "pending"}
                               onClick={() => onDeletePost(post)}
+                              className="cursor-pointer"
                             >
                               Delete
                             </DropdownMenuItem>
