@@ -14,5 +14,5 @@ export interface PostInterface {
   categories?: CategoryInterface[];
   visits?: number;
   comments?: mongoose.Schema.Types.ObjectId[];
-  published: boolean;
+  status: "draft" | "published" | "unpublished";
 }

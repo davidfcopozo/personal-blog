@@ -28,7 +28,11 @@ const postSchema = new Schema<PostInterface>(
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     tags: [{ type: String }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
-    published: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["draft", "published", "unpublished"],
+      default: "draft",
+    },
     visits: { type: Number, default: 0 },
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   },
