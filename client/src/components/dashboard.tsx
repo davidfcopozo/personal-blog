@@ -52,8 +52,9 @@ export function Dashboard() {
   const filteredPosts = useMemo(() => {
     return blogPosts.filter((post: PostType) => {
       if (postStatus === "all") return true;
-      if (postStatus === "published") return post.published;
-      if (postStatus === "draft") return !post.published;
+      if (postStatus === "published") return post.status === "published";
+      if (postStatus === "unpublished") return post.status === "unpublished";
+      if (postStatus === "draft") return post.status === "draft";
       return true;
     });
   }, [blogPosts, postStatus]);
