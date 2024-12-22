@@ -39,7 +39,6 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { posts } from "@/lib/testDatabase.json";
 import { showMonthDayYear } from "@/utils/formats";
 import { useState } from "react";
 import userPosts from "@/lib/userPosts";
@@ -307,7 +306,7 @@ export function Dashboard() {
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
                     Showing <strong>1-10</strong> of{" "}
-                    <strong>{posts?.length}</strong> posts
+                    <strong>{blogPosts?.length}</strong> posts
                   </div>
                 </CardFooter>
               </Card>
