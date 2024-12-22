@@ -29,6 +29,7 @@ const SortIndicator = ({
             direction === "asc" &&
             `stroke-[${activeColor ? activeColor : "--thread-border"}]`
           }`}
+          aria-label="Sort ascending arrow"
         />
 
         <ChevronDown
@@ -39,6 +40,7 @@ const SortIndicator = ({
             direction === "desc" &&
             `stroke-[${activeColor ? activeColor : "--thread-border"}]`
           }`}
+          aria-label="Sort descending arrow"
         />
       </span>
     </div>
