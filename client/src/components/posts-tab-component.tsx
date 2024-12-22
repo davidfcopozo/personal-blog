@@ -63,6 +63,7 @@ const PostsTabContent = memo(
         if (aValue === bValue) return 0;
 
         if (aValue === undefined || bValue === undefined) return 0;
+
         const comparison = aValue > bValue ? 1 : -1;
 
         return sortConfig.direction === "asc" ? comparison : -comparison;
@@ -102,7 +103,7 @@ const PostsTabContent = memo(
                     direction={sortConfig?.direction}
                     size={12}
                     strokeWidth={3}
-                    isActive={sortConfig?.key === "status"}
+                    isActive={sortConfig?.key === "title"}
                   />
                 </TableHead>
                 <TableHead
@@ -182,8 +183,8 @@ const PostsTabContent = memo(
                         {post?.title}
                       </TableCell>
                       <TableCell id="status">
-                        <Badge variant="outline">
-                          {post?.published ? "Published" : "Draft"}
+                        <Badge variant="outline" className="capitalize">
+                          {post?.status}
                         </Badge>
                       </TableCell>
 
