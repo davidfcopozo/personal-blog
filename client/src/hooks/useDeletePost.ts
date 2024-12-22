@@ -6,80 +6,51 @@ import axios from "axios";
 const useDeletePost = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const deletePostMutation = useMutation({
     mutationFn: async (variables: { post: PostType }) => {
       const res = await axios.delete(`/api/posts/${variables.post._id}`);
       return res.data.data;
     },
-    onSuccess: (variables: { post: PostType }) => {
-      queryClient.setQueryData(["posts"], (old: PostType[]) => {
-        if (!old || !Array.isArray(old)) return old;
+    onMutate: async (variables: { post: PostType }) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
 
-        return old.filter(
-          (post) => post._id.toString() !== variables.post._id.toString()
-        );
+      const previousPosts = queryClient.getQueryData<PostType[]>(["posts"]);
+
+      queryClient.setQueryData(["posts"], (old: any) => {
+        const newData =
+          old?.data?.filter(
+            (post: PostType) => post._id !== variables.post._id
+          ) || [];
+        return { data: newData };
       });
 
-      queryClient.removeQueries({ queryKey: ["posts", variables.post.slug] });
-
+      return { previousPosts };
+    },
+    onSuccess: () => {
       toast({
         title: "Success",
-        description: "Successfully deleted",
+        description: "Post deleted successfully",
       });
     },
-    onError: (
-      error: any,
-      variables: { post: PostType },
-      context?: {
-        previousPosts: PostType[] | undefined;
-        previousPost: PostType | undefined;
+    onError: (error, variables, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData(["posts"], context.previousPosts);
       }
-    ) => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({
-        queryKey: ["posts", variables.post.slug],
-      });
-
-      const errorMsg =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to process the request. Please try again.";
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMsg,
+        description: "Failed to delete post",
       });
     },
-    onMutate: (variables: { post: PostType }) => {
-      queryClient.cancelQueries({ queryKey: ["posts"] });
-      queryClient.cancelQueries({ queryKey: ["posts", variables.post.slug] });
-
-      const previousPosts = queryClient.getQueryData<PostType[]>(["posts"]);
-      const previousPost = queryClient.getQueryData<PostType>([
-        "posts",
-        variables.post.slug,
-      ]);
-
-      queryClient.setQueryData(["posts"], (old: PostType[]) => {
-        if (!old || !Array.isArray(old)) return old;
-
-        return old.filter(
-          (post) => post._id.toString() !== previousPost?._id.toString()
-        );
-      });
-
-      queryClient.removeQueries({ queryKey: ["posts", previousPost?.slug] });
-
-      return { previousPosts, previousPost };
+    // Disable automatic refetch on success
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
-  const deletePost = (post: PostType) => {
-    deletePostMutation.mutate({ post });
-  };
-
   return {
-    deletePost,
+    deletePost: (post: PostType) => deletePostMutation.mutate({ post }),
     status: deletePostMutation.status,
     error: deletePostMutation.error,
   };
