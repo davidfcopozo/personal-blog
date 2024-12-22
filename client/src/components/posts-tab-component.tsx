@@ -31,6 +31,7 @@ import { DashboardSkeleton } from "./dashboard-skeleton";
 import { showMonthDayYear } from "@/utils/formats";
 import React, { useState, useMemo } from "react";
 import SortIndicator from "./ui/sort-indicator";
+import Link from "next/link";
 
 const PostsTabContent = memo(
   ({
@@ -180,7 +181,12 @@ const PostsTabContent = memo(
                   <>
                     <TableRow key={key}>
                       <TableCell id="title" className="font-medium">
-                        {post?.title}
+                        <Link
+                          href={`/${post.postedBy.username}/${post.slug}`}
+                          className="hover:underline"
+                        >
+                          {post?.title}
+                        </Link>
                       </TableCell>
                       <TableCell id="status">
                         <Badge variant="outline" className="capitalize">
