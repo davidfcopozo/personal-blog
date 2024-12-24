@@ -38,6 +38,8 @@ export interface UserInterface extends Document, ModelMethods {
     dribble?: String;
   };
   isOnboarded: Boolean;
+  following?: ObjectId[];
+  followers?: ObjectId[];
 }
 
 export interface RequestWithUserInfo extends Request {

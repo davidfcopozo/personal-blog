@@ -181,6 +181,57 @@ export const updateUserById = async (
   }
 };
 
+export const toggleFollowUser = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.user;
+    const userToFollowId = req.params.id;
+
+    if (userId === userToFollowId) {
+      throw new BadRequest("You can't follow/unfollow yourself");
+    }
+
+    const [user, userToFollow] = await Promise.all([
+      User.findById(userId),
+      User.findById(userToFollowId),
+    ]);
+
+    if (!user) {
+      throw new Unauthenticated("You need to be logged in");
+    }
+
+    if (!userToFollow) {
+      throw new NotFound("User not found");
+    }
+
+    const isFollowing =
+      user.following?.some((id) => id.toString() === userToFollowId) || false;
+    const operation = isFollowing ? "$pull" : "$addToSet";
+    const status = isFollowing ? StatusCodes.OK : StatusCodes.CREATED;
+    const message = isFollowing
+      ? "You've unfollowed this user"
+      : "You're now following this user";
+
+    await Promise.all([
+      User.updateOne(
+        { _id: userId },
+        { [operation]: { following: userToFollowId } }
+      ),
+      User.updateOne(
+        { _id: userToFollowId },
+        { [operation]: { followers: userId } }
+      ),
+    ]);
+
+    res.status(status).json({ success: true, msg: message });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteUserById = async (
   req: RequestWithUserInfo | any,
   res: Response,
