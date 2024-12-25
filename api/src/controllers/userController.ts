@@ -5,6 +5,7 @@ import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { isValidUsername, websiteValidator } from "../utils/validators";
 import { SocialMediaProfiles, UserType } from "../typings/types";
+import mongoose from "mongoose";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -186,6 +187,9 @@ export const toggleFollowUser = async (
   res: Response,
   next: NextFunction
 ) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { userId } = req.user;
     const userToFollowId = req.params.id;
@@ -195,17 +199,12 @@ export const toggleFollowUser = async (
     }
 
     const [user, userToFollow] = await Promise.all([
-      User.findById(userId),
-      User.findById(userToFollowId),
+      User.findById(userId).session(session),
+      User.findById(userToFollowId).session(session),
     ]);
 
-    if (!user) {
-      throw new Unauthenticated("You need to be logged in");
-    }
-
-    if (!userToFollow) {
-      throw new NotFound("User not found");
-    }
+    if (!user) throw new Unauthenticated("You need to be logged in");
+    if (!userToFollow) throw new NotFound("User not found");
 
     const isFollowing =
       user.following?.some((id) => id.toString() === userToFollowId) || false;
@@ -215,20 +214,33 @@ export const toggleFollowUser = async (
       ? "You've unfollowed this user"
       : "You're now following this user";
 
-    await Promise.all([
+    const [updateFollowing, updateFollowers] = await Promise.all([
       User.updateOne(
         { _id: userId },
-        { [operation]: { following: userToFollowId } }
+        { [operation]: { following: userToFollowId } },
+        { session }
       ),
       User.updateOne(
         { _id: userToFollowId },
-        { [operation]: { followers: userId } }
+        { [operation]: { followers: userId } },
+        { session }
       ),
     ]);
 
+    if (
+      updateFollowing.modifiedCount !== 1 ||
+      updateFollowers.modifiedCount !== 1
+    ) {
+      throw new BadRequest("Failed to update following status");
+    }
+
+    await session.commitTransaction();
     res.status(status).json({ success: true, msg: message });
   } catch (error) {
+    await session.abortTransaction();
     next(error);
+  } finally {
+    await session.endSession();
   }
 };
 
