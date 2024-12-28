@@ -15,8 +15,8 @@ router
   .route("/:id")
   .get(getUserById)
   .patch(auth, updateUserById)
+  .put(auth, toggleFollowUser)
   .delete(auth, deleteUserById);
 router.route("/username/:username").get(getUserByUsername);
-router.route("/username/:usernameOrId/follow").put(auth, toggleFollowUser);
 
 export default router;
