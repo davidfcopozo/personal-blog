@@ -67,6 +67,7 @@ export type AuthContextType = {
   isLoading: boolean;
   isUserFetching: boolean;
   isUserLoading: boolean;
+  isUserPending: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   socialLogin: (provider: "github" | "google") => Promise<void>;
   logout: () => Promise<void>;
