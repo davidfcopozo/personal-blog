@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,7 @@ const UserProfile = ({ user }: { user: UserType }) => {
   const blogPosts = Array.isArray(posts?.data)
     ? posts.data.filter(
         (post: PostType) =>
-          post?.postedBy?._id.toString() === user._id?.toString()
+          post?.postedBy?._id.toString() === user?._id?.toString()
       )
     : [];
   return (
@@ -66,7 +67,7 @@ const UserProfile = ({ user }: { user: UserType }) => {
         <div className="md:col-span-1">
           <Card>
             <CardContent className="pt-6">
-              <div className="flex flex-col">
+              <div className="flex flex-col ">
                 {isOwner && (
                   <div className="w-full flex justify-end mb-4">
                     <Link href="/settings" passHref>
@@ -94,13 +95,43 @@ const UserProfile = ({ user }: { user: UserType }) => {
                 </div>
                 <p className="text-muted-foreground mb-4">{user?.bio}</p>
                 {/* followers and follow button */}
-                <div className="flex items-center mb-4 ">
-                  <span className="text-xs text-muted-foreground mr-1">
-                    {currentUser?.data?.followers?.length}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    Followers
-                  </span>
+                <div className="flex items-center mb-4 gap-2">
+                  <div className="flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground mr-1">
+                      {user?.followers?.length}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      Followers
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    {!isOwner && (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-xs">♦</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`outline-none px-0 text-xs  hover:bg-transparent hover:text-amber-500 ${
+                            user?.followers?.some(
+                              (id: any) =>
+                                id.toString() ===
+                                currentUser?.data?._id.toString()
+                            )
+                              ? "text-amber-500"
+                              : ""
+                          }`}
+                        >
+                          {user?.followers?.some(
+                            (id: any) =>
+                              id.toString() ===
+                              currentUser?.data?._id.toString()
+                          )
+                            ? "Following"
+                            : "Follow"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {/* Social media */}
                 <div className="flex space-x-4 mb-4">
@@ -135,6 +166,9 @@ const UserProfile = ({ user }: { user: UserType }) => {
                   <Badge>TypeScript</Badge>
                   <Badge>Node.js</Badge>
                   <Badge>Tailwind CSS</Badge>
+                </div>
+                <div className="flex items-center gap-4">
+                  {/* {isOwner && <Button className="outline-none">Follow</Button>} */}
                 </div>
               </div>
             </CardContent>
