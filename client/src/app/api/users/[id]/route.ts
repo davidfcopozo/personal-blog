@@ -11,7 +11,7 @@ export async function GET(
   if (!id) {
     return new Response(
       JSON.stringify({
-        message: "User does't exist, has been deleted or ID is incorrect",
+        message: "User does't exist, has been deleted or id is incorrect",
       }),
       {
         status: 400,
