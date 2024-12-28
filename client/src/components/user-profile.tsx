@@ -11,8 +11,15 @@ import { PostType, UserType } from "@/typings/types";
 import ProfileBlogCard from "./profile-blog-post-card";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import ProfilePageSkeleton from "./profile-page-skeleton";
 
-const UserProfile = ({ user }: { user: UserType }) => {
+const UserProfile = ({
+  user,
+  isUserPending,
+}: {
+  user: UserType;
+  isUserPending?: boolean;
+}) => {
   const [isOwner, setIsOwner] = useState(false);
   const { currentUser } = useAuth();
   useEffect(() => {
@@ -23,11 +30,10 @@ const UserProfile = ({ user }: { user: UserType }) => {
     }
   }, [currentUser]);
 
-  const {
-    data: posts,
-    error: postsError,
-    isFetching: arePostsFetching,
-  } = useFetchRequest(["posts"], `/api/posts`);
+  const { data: posts, isPending: arePostsPending } = useFetchRequest(
+    ["posts"],
+    `/api/posts`
+  );
 
   const blogPosts = Array.isArray(posts?.data)
     ? posts.data.filter(
@@ -35,6 +41,9 @@ const UserProfile = ({ user }: { user: UserType }) => {
           post?.postedBy?._id.toString() === user?._id?.toString()
       )
     : [];
+
+  if (arePostsPending || isUserPending) return <ProfilePageSkeleton />;
+
   return (
     <div className="container mx-auto px-8 py-8 mt-14">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
