@@ -7,7 +7,7 @@ import {
   updateUserById,
   deleteUserById,
   toggleFollowUser,
-  getUserByUsernameOrId,
+  getUserByUsername,
 } from "../controllers/userController";
 
 router.route("/").get(getUsers);
@@ -16,7 +16,7 @@ router
   .get(getUserById)
   .patch(auth, updateUserById)
   .delete(auth, deleteUserById);
-router.route("/username/:usernameOrId").get(getUserByUsernameOrId);
+router.route("/username/:username").get(getUserByUsername);
 router.route("/username/:usernameOrId/follow").put(auth, toggleFollowUser);
 
 export default router;

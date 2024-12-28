@@ -56,26 +56,21 @@ export const getUserById = async (
   }
 };
 
-export const getUserByUsernameOrId = async (
+export const getUserByUsername = async (
   req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
   const {
-    params: { usernameOrId },
+    params: { username },
   } = req;
 
   try {
-    const user: UserType = await User.findOne({
-      $or: [
-        {
-          _id: mongoose.Types.ObjectId.isValid(usernameOrId)
-            ? usernameOrId
-            : null,
-        },
-        { username: usernameOrId },
-      ],
-    })
+    if (!isValidUsername(username)) {
+      throw new BadRequest("Invalid username");
+    }
+
+    const user: UserType = await User.findOne({ username })
       .select(sensitiveDataToExclude)
       .lean();
 
