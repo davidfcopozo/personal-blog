@@ -23,7 +23,7 @@ const UserProfile = ({
 }) => {
   const [isOwner, setIsOwner] = useState(false);
   const { currentUser } = useAuth();
-  const { handleFollowToggle, isPending } = useFollowUser(user);
+  const { handleFollowToggle, isPending, isFollowed } = useFollowUser(user);
 
   useEffect(() => {
     if (currentUser?.data?._id.toString() === user?._id?.toString()) {
@@ -135,13 +135,7 @@ const UserProfile = ({
                           onClick={handleFollowToggle}
                           disabled={isPending}
                         >
-                          {user?.followers?.some(
-                            (id: any) =>
-                              id.toString() ===
-                              currentUser?.data?._id.toString()
-                          )
-                            ? "Following"
-                            : "Follow"}
+                          {isFollowed ? "Following" : "Follow"}
                         </Button>
                       </div>
                     )}
