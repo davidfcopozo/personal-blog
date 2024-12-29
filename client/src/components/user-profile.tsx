@@ -45,7 +45,12 @@ const UserProfile = ({
       )
     : [];
 
-  if (arePostsPending || isUserPending) return <ProfilePageSkeleton />;
+  if (arePostsPending || isUserPending)
+    return (
+      <div className="container mx-auto px-8 py-8 mt-14">
+        <ProfilePageSkeleton />
+      </div>
+    );
 
   return (
     <div className="container mx-auto px-8 py-8 mt-14">
