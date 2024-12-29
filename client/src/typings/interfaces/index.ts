@@ -151,7 +151,7 @@ export interface EngagementButtonProps {
   horizontalCount?: boolean;
 }
 
-export interface BlogPostProps{
+export interface BlogPostProps {
   slug?: string;
   handleLikeClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   handleBookmarkClick?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -179,4 +179,7 @@ export interface AuthorPanelProps {
   website: string;
   title: string;
   socialMedia: UserType["socialMediaProfiles"];
+  handleFollowToggle: () => void;
+  isFollowed: boolean;
+  isPending: boolean;
 }
