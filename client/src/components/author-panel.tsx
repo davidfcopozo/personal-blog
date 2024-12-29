@@ -2,6 +2,8 @@ import React from "react";
 import { Github, XIcon, Linkedin, Globe } from "lucide-react";
 import Image from "next/image";
 import { AuthorPanelProps, SocialMediaConfig } from "@/typings/interfaces";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 const socialMediaConfig: Record<string, SocialMediaConfig> = {
   x: {
@@ -29,11 +31,15 @@ const socialMediaConfig: Record<string, SocialMediaConfig> = {
 export function AuthorPanel({
   firstName,
   lastName,
+  username,
   avatar,
   bio,
   website,
   title,
   socialMedia,
+  handleFollowToggle,
+  isFollowed,
+  isPending,
 }: AuthorPanelProps) {
   const fullName = `${firstName} ${lastName}`;
 
@@ -65,9 +71,14 @@ export function AuthorPanel({
             style={{ objectFit: "cover" }}
           />
         </figure>
-        <h1 id="author-name" className="text-xl font-semibold text-foreground">
-          {fullName}
-        </h1>
+        <Link href={`/${username}`} passHref>
+          <h1
+            id="author-name"
+            className="text-xl font-semibold text-foreground hover:text-[--thread-border] transition-all duration-300"
+          >
+            {fullName}
+          </h1>
+        </Link>
         {title && (
           <p
             className="text-sm text-muted-foreground mt-1"
@@ -111,12 +122,19 @@ export function AuthorPanel({
       )}
 
       <footer>
-        <button
-          className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        <Button
+          onClick={handleFollowToggle}
+          disabled={isPending}
+          className={`${
+            isFollowed
+              ? "dark:text-amber-500 text-foreground dark:border-amber-500 border-foreground border-[1px] hover:bg-foreground hover:dark:text-background hover:text-background transition-all duration-300"
+              : "text-background hover:dark:bg-transparent hover:dark:text-amber-500 hover:bg-transparent hover:border-foreground hover:text-foreground transition-all duration-300 hover:dark:border-amber-500 hover:border-[1px]"
+          } w-full py-2 px-4 `}
           aria-label={`Follow ${fullName}`}
+          variant={isFollowed ? "secondary" : "default"}
         >
-          Follow
-        </button>
+          {isFollowed ? "Following" : "Follow"}
+        </Button>
       </footer>
     </article>
   );
