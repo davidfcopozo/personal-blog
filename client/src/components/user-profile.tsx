@@ -12,6 +12,7 @@ import ProfileBlogCard from "./profile-blog-post-card";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import ProfilePageSkeleton from "./profile-page-skeleton";
+import { useFollowUser } from "@/hooks/useFollowUser";
 
 const UserProfile = ({
   user,
@@ -22,6 +23,8 @@ const UserProfile = ({
 }) => {
   const [isOwner, setIsOwner] = useState(false);
   const { currentUser } = useAuth();
+  const { handleFollowToggle, isPending } = useFollowUser(user);
+
   useEffect(() => {
     if (currentUser?.data?._id.toString() === user?._id?.toString()) {
       setIsOwner(true);
@@ -129,6 +132,8 @@ const UserProfile = ({
                               ? "text-amber-500"
                               : ""
                           }`}
+                          onClick={handleFollowToggle}
+                          disabled={isPending}
                         >
                           {user?.followers?.some(
                             (id: any) =>
@@ -175,9 +180,6 @@ const UserProfile = ({
                   <Badge>TypeScript</Badge>
                   <Badge>Node.js</Badge>
                   <Badge>Tailwind CSS</Badge>
-                </div>
-                <div className="flex items-center gap-4">
-                  {/* {isOwner && <Button className="outline-none">Follow</Button>} */}
                 </div>
               </div>
             </CardContent>
