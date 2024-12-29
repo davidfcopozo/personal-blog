@@ -25,6 +25,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
     refetch: refetchUser,
     isFetching: isUserFetching,
     isLoading: isUserLoading,
+    isPending: isUserPending,
   } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
@@ -100,6 +101,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
         logout,
         isUserFetching,
         isUserLoading,
+        isUserPending,
         refetchUser,
       }}
     >

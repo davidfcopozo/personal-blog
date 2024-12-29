@@ -56,6 +56,34 @@ export const getUserById = async (
   }
 };
 
+export const getUserByUsername = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { username },
+  } = req;
+
+  try {
+    if (!isValidUsername(username)) {
+      throw new BadRequest("Invalid username");
+    }
+
+    const user: UserType = await User.findOne({ username })
+      .select(sensitiveDataToExclude)
+      .lean();
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: user });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 export const updateUserById = async (
   req: RequestWithUserInfo | any,
   res: Response,
@@ -192,19 +220,22 @@ export const toggleFollowUser = async (
 
   try {
     const { userId } = req.user;
-    const userToFollowId = req.params.id;
+    const { id: userToFollowId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userToFollowId)) {
+      throw new BadRequest("Invalid user ID");
+    }
+
+    const userToFollow = await User.findById(userToFollowId).session(session);
+
+    if (!userToFollow) throw new NotFound("User not found");
 
     if (userId === userToFollowId) {
       throw new BadRequest("You can't follow/unfollow yourself");
     }
 
-    const [user, userToFollow] = await Promise.all([
-      User.findById(userId).session(session),
-      User.findById(userToFollowId).session(session),
-    ]);
-
+    const user = await User.findById(userId).session(session);
     if (!user) throw new Unauthenticated("You need to be logged in");
-    if (!userToFollow) throw new NotFound("User not found");
 
     const isFollowing =
       user.following?.some((id) => id.toString() === userToFollowId) || false;

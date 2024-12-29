@@ -17,7 +17,7 @@ function useFetchRequest(queryKey: string[], url: string) {
       return data;
     };
 
-    const { data, error, isLoading, isFetching, refetch } = useQuery({
+    const { data, error, isLoading, isFetching, refetch, isPending } = useQuery({
       queryKey,
       queryFn: fetchData,
       refetchOnWindowFocus: false,
@@ -26,7 +26,7 @@ function useFetchRequest(queryKey: string[], url: string) {
       staleTime: 0,
     });
 
-    return { data, error, isLoading, isFetching, refetch };
+    return { data, error, isLoading, isFetching, isPending, refetch };
   } catch (error: Error | any) {
     throw new Error(error);
   }

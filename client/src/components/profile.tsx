@@ -4,15 +4,11 @@ import UserProfile from "./user-profile";
 import ProfilePageSkeleton from "./profile-page-skeleton";
 
 const Profile = () => {
-  const { currentUser, isUserFetching, isUserLoading } = useAuth();
+  const { currentUser, isUserPending } = useAuth();
 
   return (
     <div className="min-h-screen mt-14">
-      {isUserFetching || isUserLoading ? (
-        <ProfilePageSkeleton />
-      ) : (
-        <UserProfile user={currentUser?.data} />
-      )}
+      <UserProfile user={currentUser?.data} isUserPending={isUserPending} />
     </div>
   );
 };
