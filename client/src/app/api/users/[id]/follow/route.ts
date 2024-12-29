@@ -25,10 +25,9 @@ export async function PUT(
   }
 
   try {
-    const body = await req.json();
     const res = await axios.put(
       `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/users/${id}`,
-      body,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token?.accessToken}`,
