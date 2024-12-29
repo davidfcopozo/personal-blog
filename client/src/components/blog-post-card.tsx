@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useInteractions } from "@/hooks/useInteractions";
 import { BlogPostCardProps } from "@/typings/types";
 import {
@@ -10,10 +9,10 @@ import {
   showMonthDay,
   truncateText,
 } from "@/utils/formats";
-import { Bookmark, Heart, MessageCircle } from "lucide-react";
+import { Bookmark, Heart, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { MouseEvent } from "react";
+import { EngagementButton } from "./engagement-button";
 
 export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const { title, content, createdAt, comments, featuredImage, postedBy, slug } =
@@ -25,6 +24,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
     liked,
     bookmarked,
     amountOfBookmarks,
+    amountOfLikes,
   } = useInteractions(post);
   let description = extractFirstParagraphText(content as string);
 
@@ -79,94 +79,45 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
             </div>
           </div>
           <div className="flex space-x-1 sm:mr-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
+            <EngagementButton
+              icon={Bookmark}
+              count={amountOfBookmarks}
+              label="Save post"
               onClick={handleBookmarkClick}
-              className="group flex items-center focus:outline-none transition-colors duration-300 hover:bg-transparent hover:shadow-[inset_0px_0px_40px_0px_rgba(29,161,242,0.2)] "
-            >
-              <div className="relative">
-                <Bookmark
-                  className={`h-4 w-4 transition-colors duration-300 ${
-                    bookmarked ? "stroke-[#1d9bf0]" : "stroke-gray-400"
-                  }`}
-                />
-                <Bookmark
-                  className={`absolute inset-0 h-4 w-4 text-[#1d9bf0]  transition-all duration-300 ${
-                    bookmarked ? "scale-100 opacity-100" : "scale-0 opacity-0"
-                  }`}
-                />
-              </div>
-              <div className="relative w-4 h-4 overflow-hidden">
-                <div
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                    bookmarked ? "-translate-y-full" : "translate-y-0"
-                  }`}
-                >
-                  <span className="text-sm text-center text-gray-400 pl-[0.1em]">
-                    {amountOfBookmarks}
-                  </span>
-                </div>
-                <div
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                    bookmarked ? "translate-y-0" : "translate-y-full"
-                  }`}
-                >
-                  <span className="text-sm text-center pl-[0.1em] text-[#1d9bf0]">
-                    {amountOfBookmarks}
-                  </span>
-                </div>
-              </div>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
+              iconStyles={`${
+                bookmarked
+                  ? "stroke-indigo-500"
+                  : "stroke-gray-400 hover:stroke-indigo-500"
+              } !h-4 !w-4`}
+              activeColor="text-indigo-500"
+              isActivated={bookmarked}
+              horizontalCount
+            />
+
+            <EngagementButton
+              icon={Heart}
+              count={amountOfLikes}
+              label="Like post"
               onClick={handleLikeClick}
-              className="group flex items-center focus:outline-none transition-colors duration-300 hover:bg-transparent hover:shadow-[inset_0px_0px_40px_0px_rgba(236,72,153,0.2)] "
-            >
-              <div className="relative">
-                <Heart
-                  className={`h-4 w-4 transition-colors duration-300 ${
-                    liked ? "stroke-pink-500" : "stroke-gray-400"
-                  }`}
-                />
-                <Heart
-                  className={`absolute inset-0 h-4 w-4 text-pink-500 transition-all duration-300 ${
-                    liked ? "scale-100 opacity-100" : "scale-0 opacity-0"
-                  }`}
-                />
-              </div>
-              <div className="relative w-4 h-4 overflow-hidden">
-                <div
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                    liked ? "-translate-y-full" : "translate-y-0"
-                  }`}
-                >
-                  <span className="text-sm text-center text-gray-400 pl-[0.1em]">
-                    {post?.likes?.length}
-                  </span>
-                </div>
-                <div
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                    liked ? "translate-y-0" : "translate-y-full"
-                  }`}
-                >
-                  <span className="text-sm text-center pl-[0.1em] text-pink-500">
-                    {post?.likes?.length}
-                  </span>
-                </div>
-              </div>
-            </Button>
+              iconStyles={`${
+                liked
+                  ? "stroke-pink-500"
+                  : "stroke-gray-400 hover:stroke-pink-500"
+              } !h-4 !w-4`}
+              activeColor="text-pink-500"
+              isActivated={liked}
+              horizontalCount
+            />
+
             <Link href={`/${username}/${post.slug}#comments-section`} passHref>
-              <Button variant="ghost" size="icon">
-                <MessageCircle className="h-4 w-4 stroke-gray-400" />
-                <span className="text-sm text-center text-gray-400 pl-[0.2em]">
-                  {comments?.length}
-                </span>
-                <span className="sr-only">Comment</span>
-              </Button>
+              <EngagementButton
+                icon={MessageSquare}
+                count={post.comments?.length}
+                label="Comment"
+                iconStyles="hover:stroke-amber-500 !h-4 !w-4"
+                activeColor="text-amber-500"
+                horizontalCount
+              />
             </Link>
           </div>
         </div>
