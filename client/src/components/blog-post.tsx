@@ -15,6 +15,7 @@ import { ShareButton } from "./share-button";
 import scrollToElement from "@/utils/scrollToElement";
 import { BlogPostProps } from "@/typings/interfaces";
 import { AuthorPanel } from "./author-panel";
+import { useFollowUser } from "@/hooks/useFollowUser";
 
 const BlogPost = ({
   handleLikeClick,
@@ -25,6 +26,10 @@ const BlogPost = ({
   amountOfBookmarks,
   post,
 }: BlogPostProps) => {
+  const { handleFollowToggle, isPending, isFollowed } = useFollowUser(
+    post?.postedBy as UserType
+  );
+
   if (!post) {
     return (
       <div className="w-full h-full bg-background">
@@ -116,8 +121,16 @@ const BlogPost = ({
                               {getFullName(postedBy as UserType)}
                             </Link>
                             <span className="mx-2">•</span>
-                            <button className="text-[--thread-border]">
-                              Follow
+                            <button
+                              className={`${
+                                isFollowed
+                                  ? "text-amber-500 hover:text-[--thread-border]"
+                                  : "text-[--thread-border] hover:text-amber-500"
+                              }`}
+                              disabled={isPending}
+                              onClick={handleFollowToggle}
+                            >
+                              {isFollowed ? "Following" : "Follow"}
                             </button>
                           </div>
                           <div className="flex items-center gap-1">
@@ -217,6 +230,9 @@ const BlogPost = ({
                   post?.postedBy
                     ?.socialMediaProfiles as UserType["socialMediaProfiles"]
                 }
+                handleFollowToggle={handleFollowToggle}
+                isPending={isPending}
+                isFollowed={isFollowed}
               />
             </div>
           </div>
