@@ -3,6 +3,7 @@ import { Github, XIcon, Linkedin, Globe } from "lucide-react";
 import Image from "next/image";
 import { AuthorPanelProps, SocialMediaConfig } from "@/typings/interfaces";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const socialMediaConfig: Record<string, SocialMediaConfig> = {
   x: {
@@ -30,6 +31,7 @@ const socialMediaConfig: Record<string, SocialMediaConfig> = {
 export function AuthorPanel({
   firstName,
   lastName,
+  username,
   avatar,
   bio,
   website,
@@ -69,9 +71,14 @@ export function AuthorPanel({
             style={{ objectFit: "cover" }}
           />
         </figure>
-        <h1 id="author-name" className="text-xl font-semibold text-foreground">
-          {fullName}
-        </h1>
+        <Link href={`/${username}`} passHref>
+          <h1
+            id="author-name"
+            className="text-xl font-semibold text-foreground hover:text-[--thread-border] transition-all duration-300"
+          >
+            {fullName}
+          </h1>
+        </Link>
         {title && (
           <p
             className="text-sm text-muted-foreground mt-1"
