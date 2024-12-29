@@ -152,3 +152,8 @@ export type PostFetchType = {
   success: boolean;
   count: number;
 };
+
+export type UserFetchType = {
+  data: UserType;
+  success: boolean;
+};
