@@ -161,8 +161,8 @@ export const useFollowUser = (user: UserType) => {
     },
   });
 
-  const handleFollowToggle = (userId: string) => {
-    toggleFollow.mutate(userId);
+  const handleFollowToggle = () => {
+    toggleFollow.mutate(`${user._id}`);
   };
 
   return { handleFollowToggle, isPending: toggleFollow.status === "pending" };
