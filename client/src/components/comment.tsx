@@ -151,10 +151,9 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                 <EngagementButton
                   icon={MessageSquare}
                   count={comment?.replies.length}
-                  iconStyles="hover:stroke-amber-500"
+                  iconStyles="hover:stroke-amber-500 !h-5 !w-5"
                   label="Reply"
                   onClick={() => setShowEditor((showEditor) => !showEditor)}
-                  extraClasses="!p"
                   horizontalCount
                 />
                 <EngagementButton
@@ -162,7 +161,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   count={commentLikesCount}
                   label="Like post"
                   onClick={handleLikeClick}
-                  iconStyles={`${
+                  iconStyles={`!h-5 !w-5 ${
                     commentLiked ? "text-pink-500" : "hover:stroke-pink-500"
                   }`}
                   activeColor="text-pink-500"
