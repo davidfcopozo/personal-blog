@@ -3,14 +3,8 @@
 import React, { MouseEvent, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  MessageCircle,
-  ThumbsUp,
-  MoreVertical,
-  Heart,
-  MessageSquare,
-} from "lucide-react";
-import { getFullName, getNameInitials, getRelativeTime } from "@/utils/formats";
+import { MoreVertical, Heart, MessageSquare } from "lucide-react";
+import { getFullName, getNameInitials } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { useInteractions } from "@/hooks/useInteractions";
