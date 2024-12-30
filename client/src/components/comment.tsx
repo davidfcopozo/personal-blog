@@ -41,7 +41,7 @@ const CommentEditor = dynamic(() => import("./comment-editor"), {
 const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
-  const { mutate } = useDeleteComment();
+  const { mutate } = useDeleteComment(post);
 
   const { data: postedBy } = useFetchRequest(
     ["commentPostedBy"],
