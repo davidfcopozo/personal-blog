@@ -332,54 +332,64 @@ export const useInteractions = (
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
-      // Update the posts list cache
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!oldPosts?.data) return oldPosts;
-
         const postList = Array.isArray(oldPosts.data)
           ? oldPosts.data
           : [oldPosts.data];
-
         return {
           ...oldPosts,
           data: postList.map((post: PostInterface) => {
             if (post._id?.toString() === postId?.toString()) {
-              return {
-                ...post,
-                comments: [...(post.comments || []), newComment._id],
-              };
+              // Only add the new comment's ID
+              const existingComments = post.comments || [];
+              if (!existingComments.includes(newComment._id)) {
+                return {
+                  ...post,
+                  comments: [...existingComments, newComment._id],
+                };
+              }
             }
             return post;
           }),
         };
       });
 
-      // Update the individual post cache
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        return {
-          ...oldPost,
-          data: {
-            ...oldPost.data,
-            comments: [...(oldPost.data.comments || []), newComment._id],
-          },
-        };
+        const existingComments = oldPost.data.comments || [];
+        // Filter out the post ID from existing comments
+        const cleanedComments = existingComments.filter(
+          (id: string) => id !== postId?.toString()
+        );
+
+        if (!cleanedComments.includes(newComment._id)) {
+          return {
+            ...oldPost,
+            data: {
+              ...oldPost.data,
+              comments: [...cleanedComments, newComment._id],
+            },
+          };
+        }
+
+        return oldPost;
       });
 
-      // Add the new full comment object to the comments cache
       queryClient.setQueryData<CommentInterface[]>(
         ["comments"],
         (oldComments) => {
-          return oldComments ? [...oldComments, newComment] : [newComment];
+          if (!oldComments) return [newComment];
+          // Avoid duplicate comments
+          if (!oldComments.find((comment) => comment._id === newComment._id)) {
+            return [...oldComments, newComment];
+          }
+          return oldComments;
         }
       );
 
       setCommentContent("");
-      toast({
-        title: "Success",
-        description: "Your comment was successfully added.",
-      });
     },
     onError: (error) => {
       const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
@@ -387,10 +397,8 @@ export const useInteractions = (
         "post",
         post?.slug,
       ]);
-
       queryClient.setQueryData(["posts"], previousPosts);
       queryClient.setQueryData(["post", post?.slug], previousPost);
-
       const errorMessage =
         error &&
         typeof error === "object" &&
@@ -404,7 +412,6 @@ export const useInteractions = (
     onMutate: async (comment: CommentInterface) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
       await queryClient.cancelQueries({ queryKey: ["post", post?.slug] });
-
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
       ]);
@@ -413,22 +420,22 @@ export const useInteractions = (
         post?.slug,
       ]);
 
-      // Optimistically update both caches...
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!oldPosts?.data) return oldPosts;
-
         const postList = Array.isArray(oldPosts.data)
           ? oldPosts.data
           : [oldPosts.data];
-
         return {
           ...oldPosts,
           data: postList.map((post: PostInterface) => {
             if (post._id.toString() === postId?.toString()) {
-              return {
-                ...post,
-                comments: [...(post.comments || []), comment._id],
-              };
+              const existingComments = post.comments || [];
+              if (!existingComments.includes(comment._id)) {
+                return {
+                  ...post,
+                  comments: [...existingComments, comment._id],
+                };
+              }
             }
             return post;
           }),
@@ -437,14 +444,17 @@ export const useInteractions = (
 
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
-
-        return {
-          ...oldPost,
-          data: {
-            ...oldPost.data,
-            comments: [...(oldPost.data.comments || []), comment._id],
-          },
-        };
+        const existingComments = oldPost.data.comments || [];
+        if (!existingComments.includes(comment._id)) {
+          return {
+            ...oldPost,
+            data: {
+              ...oldPost.data,
+              comments: [...existingComments, comment._id],
+            },
+          };
+        }
+        return oldPost;
       });
 
       return { previousPostsData, previousPostData };
