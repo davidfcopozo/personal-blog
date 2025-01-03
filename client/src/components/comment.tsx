@@ -82,7 +82,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
       });
     } else {
       mutate({
-        url: `/api/replies/${post?._id}/${comment?.parentId}/${comment?._id}`,
+        url: "",
         itemId: `${comment?._id}`,
         key: "replies",
         parentId: `${comment?.parentId}`,
