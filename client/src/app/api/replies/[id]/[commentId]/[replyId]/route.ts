@@ -46,7 +46,6 @@ export async function DELETE(
     req: req,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  console.log("ids===>", postId, commentId, replyId);
 
   if (!token) {
     return new Response(JSON.stringify({ message: "No token found" }), {
