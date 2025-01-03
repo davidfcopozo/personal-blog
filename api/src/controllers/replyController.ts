@@ -173,8 +173,8 @@ export const deleteReplyById = async (
     const post: PostType = await Post.findById(postId);
     const comment: CommentType = await Comment.findOne({
       _id: commentId,
-      postedBy: userId,
     });
+    const reply = await Comment.findById(replyId);
 
     if (!commentId || !replyId) {
       throw new BadRequest("Please provide a comment and reply id");
@@ -182,6 +182,14 @@ export const deleteReplyById = async (
 
     if (!comment) {
       throw new NotFound("This comment doesn't exist or has been deleted");
+    }
+
+    if (!reply) {
+      throw new NotFound("This reply doesn't exist or has been deleted");
+    }
+
+    if (!reply.postedBy.equals(userId)) {
+      throw new BadRequest("You can only delete your own replies");
     }
 
     // Recursively collect all nested reply IDs to delete
