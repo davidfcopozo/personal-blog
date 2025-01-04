@@ -34,6 +34,7 @@ export interface BlogEditorProps {
     tags?: string[];
   } | null;
   slug?: string;
+  isPostLoading?: boolean;
 }
 
 export interface InitialPost {
