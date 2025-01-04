@@ -13,7 +13,11 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { InitialPost, UseBlogEditorProps } from "@/typings/interfaces";
+import {
+  CategoryInterface,
+  InitialPost,
+  UseBlogEditorProps,
+} from "@/typings/interfaces";
 import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
@@ -28,7 +32,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [temporaryFeatureImage, setTemporaryFeatureImage] =
     useState<File | null>(null);
-  const [categories, setCategories] = useState<ObjectId[]>([]);
+  const [categories, setCategories] = useState<CategoryInterface[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
