@@ -18,7 +18,7 @@ const Categories = ({
     isLoading,
     isFetching,
     error,
-  } = useFetchRequest("categories", "/api/categories");
+  } = useFetchRequest(["categories"], "/api/categories");
   const [availableCategories, setAvailableCategories] = useState<
     CategoryInterface[]
   >([]);
