@@ -83,7 +83,7 @@ const Categories = ({
     });
 
     setCategories((prevCategories) =>
-      prevCategories.filter((c) => c !== category._id)
+      prevCategories.filter((c) => c.toString() !== category._id.toString())
     );
   };
 
@@ -101,7 +101,7 @@ const Categories = ({
         (availableCategory) => availableCategory._id !== category._id
       )
     );
-    setCategories((prevCategories) => [...prevCategories, category._id]);
+    setCategories((prevCategories) => [...prevCategories, category]);
   };
 
   const showMoreCategories = () => {
