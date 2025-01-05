@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Github, Linkedin, Mail, X } from "lucide-react";
+import { Edit, Github, Linkedin, Mail, X, Dribbble } from "lucide-react";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useFetchRequest from "@/hooks/useFetchRequest";
@@ -147,7 +147,7 @@ const UserProfile = ({
                   </div>
                 </div>
                 {/* Social media */}
-                <div className="flex space-x-4 mb-4">
+                <div className="flex gap-x-2 gap-y-2 lg:gap-y-0 mb-4 flex-wrap">
                   {user?.socialMediaProfiles?.x &&
                     user?.socialMediaProfiles?.x?.length > 0 && (
                       <Link
@@ -185,6 +185,19 @@ const UserProfile = ({
                         <Button variant="outline" size="icon">
                           <Linkedin className="h-4 w-4" />
                           <span className="sr-only">LinkedIn</span>
+                        </Button>
+                      </Link>
+                    )}
+                  {user?.socialMediaProfiles?.dribble &&
+                    user?.socialMediaProfiles?.dribble?.length > 0 && (
+                      <Link
+                        href={`https://dribbble.com/${user?.socialMediaProfiles?.dribble}`}
+                        target="_blank"
+                        passHref
+                      >
+                        <Button variant="outline" size="icon">
+                          <Dribbble className="h-4 w-4" />
+                          <span className="sr-only">Dribble</span>
                         </Button>
                       </Link>
                     )}
