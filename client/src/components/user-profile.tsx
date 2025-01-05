@@ -148,29 +148,53 @@ const UserProfile = ({
                 </div>
                 {/* Social media */}
                 <div className="flex space-x-4 mb-4">
-                  <Link href="#" passHref>
-                    <Button variant="outline" size="icon">
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">X</span>
-                    </Button>
-                  </Link>
-                  <Link href="#" passHref>
-                    <Button variant="outline" size="icon">
-                      <Github className="h-4 w-4" />
-                      <span className="sr-only">GitHub</span>
-                    </Button>
-                  </Link>
-                  <Link href="#" passHref>
-                    <Button variant="outline" size="icon">
-                      <Linkedin className="h-4 w-4" />
-                      <span className="sr-only">LinkedIn</span>
-                    </Button>
-                  </Link>
-                  <Link href={`mailto:${user?.email}`} passHref>
-                    <Button variant="outline" size="icon">
-                      <Mail className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                  {user?.socialMediaProfiles?.x &&
+                    user?.socialMediaProfiles?.x?.length > 0 && (
+                      <Link
+                        href={`https://x.com/${user?.socialMediaProfiles?.x}`}
+                        target="_blank"
+                        passHref
+                      >
+                        <Button variant="outline" size="icon">
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">X</span>
+                        </Button>
+                      </Link>
+                    )}
+
+                  {user?.socialMediaProfiles?.github &&
+                    user?.socialMediaProfiles?.github?.length > 0 && (
+                      <Link
+                        href={`https://github.com/${user?.socialMediaProfiles?.github}`}
+                        target="_blank"
+                        passHref
+                      >
+                        <Button variant="outline" size="icon">
+                          <Github className="h-4 w-4" />
+                          <span className="sr-only">GitHub</span>
+                        </Button>
+                      </Link>
+                    )}
+                  {user?.socialMediaProfiles?.linkedIn &&
+                    user?.socialMediaProfiles?.linkedIn?.length > 0 && (
+                      <Link
+                        href={`https://www.linkedin.com/in/${user?.socialMediaProfiles?.linkedIn}`}
+                        target="_blank"
+                        passHref
+                      >
+                        <Button variant="outline" size="icon">
+                          <Linkedin className="h-4 w-4" />
+                          <span className="sr-only">LinkedIn</span>
+                        </Button>
+                      </Link>
+                    )}
+                  {user?.email && user?.email.length > 0 && (
+                    <Link href={`mailto:${user?.email}`} passHref>
+                      <Button variant="outline" size="icon">
+                        <Mail className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
                 </div>
                 {/* Skills */}
                 <div className="flex flex-wrap gap-2 mb-4">
