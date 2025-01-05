@@ -30,7 +30,7 @@ export interface BlogEditorProps {
     title: string;
     content: string;
     featuredImage: string | null;
-    categories?: ObjectId[];
+    categories?: CategoryInterface[];
     tags?: string[];
   } | null;
   slug?: string;
@@ -42,7 +42,7 @@ export interface InitialPost {
   title: string;
   content: string;
   featuredImage: string | null;
-  categories?: ObjectId[];
+  categories?: CategoryInterface[];
   tags?: string[];
 }
 export interface UseBlogEditorProps {
