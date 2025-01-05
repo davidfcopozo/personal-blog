@@ -211,11 +211,9 @@ const UserProfile = ({
                 </div>
                 {/* Skills */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge>React</Badge>
-                  <Badge>Next.js</Badge>
-                  <Badge>TypeScript</Badge>
-                  <Badge>Node.js</Badge>
-                  <Badge>Tailwind CSS</Badge>
+                  {user?.technologies?.map((tech: any) => (
+                    <Badge key={tech._id}>{tech.name}</Badge>
+                  ))}
                 </div>
               </div>
             </CardContent>
