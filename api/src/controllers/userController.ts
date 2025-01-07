@@ -8,6 +8,8 @@ import { UserType } from "../typings/types";
 import mongoose from "mongoose";
 import { CategoryInterface } from "../typings/models/category";
 import { TopicInterface } from "../typings/models/topic";
+import Topic from "../models/topicModel";
+import Category from "../models/categoryModel";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -119,10 +121,55 @@ export const updateUserById = async (
       throw new Unauthenticated("You're not authorized to perform this action");
     }
 
+    // Extract IDs
     let interestsIds = interests?.map(
-      (interest: CategoryInterface) => interest._id
+      (interest: TopicInterface) => interest._id
     );
-    let skillsIds = skills?.map((skill: TopicInterface) => skill._id);
+    let skillsIds = skills?.map((skill: CategoryInterface) => skill._id);
+
+    // Validate interests if provided
+    if (interestsIds?.length > 0) {
+      const validInterests = await Topic.find({
+        _id: { $in: interestsIds },
+      }).select("_id");
+
+      const foundInterestIds = validInterests.map((interest) =>
+        interest._id.toString()
+      );
+      interface MongooseId {
+        _id: string | mongoose.Types.ObjectId;
+        toString(): string;
+      }
+
+      const invalidInterestIds: MongooseId[] = interestsIds.filter(
+        (id: MongooseId): boolean => !foundInterestIds.includes(id.toString())
+      );
+
+      if (invalidInterestIds.length > 0) {
+        throw new BadRequest(
+          `Invalid interest categories: ${invalidInterestIds.join(", ")}`
+        );
+      }
+    }
+
+    // Validate skills if provided
+    if (skillsIds?.length > 0) {
+      const validSkills = await Category.find({
+        _id: { $in: skillsIds },
+      }).select("_id");
+
+      const foundSkillIds = validSkills.map((skill) => skill._id.toString());
+      const invalidSkillIds = skillsIds.filter(
+        (id: string | mongoose.Types.ObjectId) =>
+          !foundSkillIds.includes(id.toString())
+      );
+
+      if (invalidSkillIds.length > 0) {
+        throw new BadRequest(
+          `Invalid skill topics: ${invalidSkillIds.join(", ")}`
+        );
+      }
+    }
 
     // Construct fields to update
     let fieldsToUpdate: Partial<UserType> = {
