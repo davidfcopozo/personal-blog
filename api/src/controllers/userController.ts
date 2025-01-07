@@ -3,9 +3,13 @@ import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
-import { isValidUsername, websiteValidator } from "../utils/validators";
-import { SocialMediaProfiles, UserType } from "../typings/types";
+import { isValidUsername } from "../utils/validators";
+import { UserType } from "../typings/types";
 import mongoose from "mongoose";
+import { CategoryInterface } from "../typings/models/category";
+import { TopicInterface } from "../typings/models/topic";
+import Topic from "../models/topicModel";
+import Category from "../models/categoryModel";
 
 const sensitiveDataToExclude =
   "-password -verificationToken -passwordVerificationToken";
@@ -101,6 +105,8 @@ export const updateUserById = async (
       username,
       website,
       socialMediaProfiles,
+      skills,
+      interests,
     },
   } = req;
 
@@ -115,42 +121,58 @@ export const updateUserById = async (
       throw new Unauthenticated("You're not authorized to perform this action");
     }
 
-    // Deep merge function for social media profiles with handle validation
-    const deepMergeSocialMediaProfiles = (
-      existing: SocialMediaProfiles,
-      updates: SocialMediaProfiles
-    ) => {
-      const merged = { ...existing };
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === null) {
-          delete merged[key as keyof SocialMediaProfiles];
-        } else if (typeof value === "object" && !Array.isArray(value)) {
-          merged[key as keyof SocialMediaProfiles] = value as string;
-        } else {
-          // Validate the handle using isValidUsername
-          if (!isValidUsername(value as string)) {
-            throw new BadRequest(`Invalid social media handle for ${key}`);
-          }
-          merged[key as keyof SocialMediaProfiles] = value as string;
-        }
-      }
-      return merged;
-    };
+    // Extract IDs
+    let interestsIds = interests?.map(
+      (interest: TopicInterface) => interest._id
+    );
+    let skillsIds = skills?.map((skill: CategoryInterface) => skill._id);
 
-    let updatedSocialMediaProfiles;
-    try {
-      updatedSocialMediaProfiles = deepMergeSocialMediaProfiles(
-        (user.socialMediaProfiles as SocialMediaProfiles) || {},
-        socialMediaProfiles || {}
+    // Validate interests if provided
+    if (interestsIds?.length > 0) {
+      const validInterests = await Topic.find({
+        _id: { $in: interestsIds },
+      }).select("_id");
+
+      const foundInterestIds = validInterests.map((interest) =>
+        interest._id.toString()
       );
-    } catch (error) {
-      if (error instanceof BadRequest) {
-        throw error;
+      interface MongooseId {
+        _id: string | mongoose.Types.ObjectId;
+        toString(): string;
       }
-      throw new BadRequest("Invalid social media profiles");
+
+      const invalidInterestIds: MongooseId[] = interestsIds.filter(
+        (id: MongooseId): boolean => !foundInterestIds.includes(id.toString())
+      );
+
+      if (invalidInterestIds.length > 0) {
+        throw new BadRequest(
+          `Invalid interest categories: ${invalidInterestIds.join(", ")}`
+        );
+      }
     }
 
-    let fields: Partial<UserType> = {
+    // Validate skills if provided
+    if (skillsIds?.length > 0) {
+      const validSkills = await Category.find({
+        _id: { $in: skillsIds },
+      }).select("_id");
+
+      const foundSkillIds = validSkills.map((skill) => skill._id.toString());
+      const invalidSkillIds = skillsIds.filter(
+        (id: string | mongoose.Types.ObjectId) =>
+          !foundSkillIds.includes(id.toString())
+      );
+
+      if (invalidSkillIds.length > 0) {
+        throw new BadRequest(
+          `Invalid skill topics: ${invalidSkillIds.join(", ")}`
+        );
+      }
+    }
+
+    // Construct fields to update
+    let fieldsToUpdate: Partial<UserType> = {
       firstName,
       lastName,
       avatar,
@@ -158,55 +180,26 @@ export const updateUserById = async (
       title,
       username,
       website,
-      socialMediaProfiles: updatedSocialMediaProfiles,
+      socialMediaProfiles,
+      technologies: skillsIds,
+      topicsOfInterest: interestsIds,
     };
-    let fieldsToUpdate: Partial<UserType> = {};
-
-    // Add key-value pair to the fieldsToUpdate object only if they have a value
-    for (const key in fields) {
-      if (fields.hasOwnProperty(key)) {
-        const typedKey = key as keyof UserType;
-        if (fields[typedKey] !== undefined) {
-          fieldsToUpdate[typedKey] = fields[
-            typedKey
-          ] as UserType[keyof UserType];
-        }
-      }
-    }
-
-    if (Object.keys(fieldsToUpdate).length < 1) {
-      throw new BadRequest("Please provide the fields to update");
-    }
-
-    if (
-      fieldsToUpdate.username &&
-      !isValidUsername(fieldsToUpdate.username as string)
-    ) {
-      throw new BadRequest("Invalid username, please provide a valid one");
-    }
-
-    if (
-      fieldsToUpdate.website &&
-      !websiteValidator(fieldsToUpdate.website as string)
-    ) {
-      throw new BadRequest("Invalid URL, please provide a valid one");
-    }
 
     const updatedUser: UserType = await User.findOneAndUpdate(
       { _id: user.role === "admin" ? userIdParam : userId },
       fieldsToUpdate,
       { new: true, runValidators: true }
     )
-      .select(sensitiveDataToExclude)
+      .select("-password -verificationToken")
       .lean();
 
-    if (!updatedUser?._id) {
-      throw new Error("Something went wrong, please try again later");
+    if (!updatedUser) {
+      throw new Error("Failed to update user profile.");
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: updatedUser });
-  } catch (err) {
-    return next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
