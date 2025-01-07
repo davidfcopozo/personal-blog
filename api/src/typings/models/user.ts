@@ -1,5 +1,7 @@
 import { Request } from "express";
 import { Document, ObjectId } from "mongoose";
+import { CategoryInterface } from "./category";
+import { TopicInterface } from "./topic";
 
 interface ModelMethods {
   comparePassword: (password: String) => Promise<boolean>;
@@ -27,8 +29,8 @@ export interface UserInterface extends Document, ModelMethods {
   likes?: ObjectId[];
   avatar?: String;
   provider: String;
-  topicsOfInterest?: ObjectId[];
-  technologies?: ObjectId[];
+  topicsOfInterest?: TopicInterface[];
+  technologies?: CategoryInterface[];
   socialMediaProfiles?: {
     x?: String;
     linkedIn?: String;
