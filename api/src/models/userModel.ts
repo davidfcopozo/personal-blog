@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
 import { UserInterface } from "../typings/models/user";
-import Topic from "./topicModel";
-import Category from "./categoryModel";
 const { Schema } = mongoose;
 
 const userSchema = new Schema<UserInterface>(
@@ -39,38 +37,10 @@ const userSchema = new Schema<UserInterface>(
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     topicsOfInterest: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Topic" }],
-      validate: {
-        validator: async function (topics: String[]) {
-          const allowedTopics = await Topic.find({
-            name: { $in: topics },
-          }).select("name");
-          const allowedTopicsList = allowedTopics.map((topic) => topic.name);
-
-          return topics.every((topic) =>
-            allowedTopicsList.includes(topic as string)
-          );
-        },
-        message: "One or more selected topics are invalid.",
-      },
+      type: [{ type: mongoose.Types.ObjectId, ref: "Topic" }],
     },
     technologies: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
-      validate: {
-        validator: async function (techs: String[]) {
-          const allowedTechnologies = await Category.find({
-            name: { $in: techs },
-          }).select("name");
-          const allowedTechnologiesList = allowedTechnologies.map(
-            (tech) => tech.name
-          );
-
-          return techs.every((tech) =>
-            allowedTechnologiesList.includes(tech as string)
-          );
-        },
-        message: "One or more selected technologies are invalid.",
-      },
+      type: [{ type: mongoose.Types.ObjectId, ref: "Category" }],
     },
     socialMediaProfiles: {
       x: String,
