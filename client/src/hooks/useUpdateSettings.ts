@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import usePatchRequest from "./usePatchRequest";
@@ -10,6 +10,8 @@ import {
 } from "@/typings/types";
 
 export const useUpdateSettings = (id: string) => {
+  const { refetchUser, currentUser } = useAuth();
+
   /* Personal info */
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
@@ -27,9 +29,15 @@ export const useUpdateSettings = (id: string) => {
   const [skills, setSkills] = useState<SingleSkillType[]>([]);
   const [interests, setInterests] = useState<SingleInterestType[]>([]);
 
+  useEffect(() => {
+    if (currentUser && currentUser.data) {
+      setSkills(currentUser.data.technologies);
+      setInterests(currentUser.data.topicsOfInterest);
+    }
+  }, [currentUser]);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { refetchUser } = useAuth();
 
   const { mutate, data, status, error } = usePatchRequest({
     url: `/api/users/${id}`,
