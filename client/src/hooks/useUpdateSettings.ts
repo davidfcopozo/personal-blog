@@ -9,8 +9,9 @@ import {
   SingleSkillType,
 } from "@/typings/types";
 
-export const useUpdateSettings = (id: string) => {
+export const useUpdateSettings = () => {
   const { refetchUser, currentUser } = useAuth();
+  const id = currentUser && currentUser.data._id.toString();
 
   /* Personal info */
   const [firstName, setFirstName] = useState<string>("");

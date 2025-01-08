@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -13,7 +12,6 @@ import PersonalInfoForm from "./personal-info-form";
 import { useUpdateSettings } from "@/hooks/useUpdateSettings";
 
 export const Settings = () => {
-  const router = useRouter();
   const { currentUser } = useAuth();
 
   const {
@@ -44,7 +42,7 @@ export const Settings = () => {
     setSkills,
     interests,
     setInterests,
-  } = useUpdateSettings(currentUser?.data?._id.toString());
+  } = useUpdateSettings();
 
   return (
     <div className="flex flex-col mt-16 md:mt-12 min-h-[100dvh]">
