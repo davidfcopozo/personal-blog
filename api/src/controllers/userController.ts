@@ -47,6 +47,8 @@ export const getUserById = async (
 
   try {
     const user: UserType = await User.findById(userId)
+      .populate("technologies")
+      .populate("topicsOfInterest")
       .select(sensitiveDataToExclude)
       .lean();
 
@@ -75,6 +77,8 @@ export const getUserByUsername = async (
     }
 
     const user: UserType = await User.findOne({ username })
+      .populate("technologies")
+      .populate("topicsOfInterest")
       .select(sensitiveDataToExclude)
       .lean();
 
