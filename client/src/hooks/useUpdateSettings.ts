@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { InputFieldsProps, UserType } from "@/typings/types";
 
 export const useUpdateSettings = () => {
-  const { refetchUser, currentUser } = useAuth();
+  const { refetchUser, currentUser, isUserPending } = useAuth();
   const id = currentUser?.data?._id;
   const userData = currentUser?.data;
 
@@ -165,5 +165,6 @@ export const useUpdateSettings = () => {
     handleSubmit,
     userData,
     status,
+    isUserPending,
   };
 };
