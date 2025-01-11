@@ -4,23 +4,14 @@ import { Input } from "@/components/ui/input";
 import { SocialsFormProps } from "@/typings/types";
 
 const SocialsForm = ({
-  currentUser,
-  website,
-  setWebsite,
-  twitterHandle,
-  setTwitterHandle,
-  instagramHandle,
-  setInstagramHandle,
-  githubHandle,
-  setGithubHandle,
-  linkedinHandle,
-  setLinkedinHandle,
-  dribbleHandle,
-  setDribbleHandle,
+  formData,
+  handleSocialMediaChange,
+  handleFieldChange,
 }: SocialsFormProps) => {
-  const { website: currentWebsite } = currentUser;
-  const { socialMediaProfiles } = currentUser;
+  const { website } = formData;
+  const { socialMediaProfiles } = formData;
   const { x, instagram, github, linkedIn, dribble } = socialMediaProfiles || {};
+
   return (
     <div className="space-y-4">
       <div>
@@ -30,8 +21,8 @@ const SocialsForm = ({
         <Input
           id="website"
           type="text"
-          onChange={(e) => setWebsite(e.target.value)}
-          value={website || (currentWebsite as string) || ""}
+          onChange={(e) => handleFieldChange("website", e.target.value)}
+          value={website as string}
         />
       </div>
       <div>
@@ -44,8 +35,8 @@ const SocialsForm = ({
           </span>
           <Input
             id="twitter"
-            value={twitterHandle || (x as string) || ""}
-            onChange={(e) => setTwitterHandle(e.target.value)}
+            value={x as string}
+            onChange={(e) => handleSocialMediaChange("x", e.target.value)}
             className="rounded-l-none"
           />
         </div>
@@ -60,8 +51,10 @@ const SocialsForm = ({
           </span>
           <Input
             id="instagram"
-            value={instagramHandle || (instagram as string) || ""}
-            onChange={(e) => setInstagramHandle(e.target.value)}
+            value={instagram as string}
+            onChange={(e) =>
+              handleSocialMediaChange("instagram", e.target.value)
+            }
             className="rounded-l-none"
           />
         </div>
@@ -72,18 +65,18 @@ const SocialsForm = ({
         </Label>
         <Input
           id="github"
-          value={githubHandle || (github as string) || ""}
-          onChange={(e) => setGithubHandle(e.target.value)}
+          value={github as string}
+          onChange={(e) => handleSocialMediaChange("github", e.target.value)}
         />
       </div>
       <div>
-        <Label htmlFor="linkedin" className="font-bold">
+        <Label htmlFor="linkedIn" className="font-bold">
           LinkedIn Handle
         </Label>
         <Input
-          id="linkedin"
-          value={linkedinHandle || (linkedIn as string) || ""}
-          onChange={(e) => setLinkedinHandle(e.target.value)}
+          id="linkedIn"
+          value={linkedIn as string}
+          onChange={(e) => handleSocialMediaChange("linkedIn", e.target.value)}
         />
       </div>
       <div>
@@ -92,8 +85,8 @@ const SocialsForm = ({
         </Label>
         <Input
           id="dribble"
-          value={dribbleHandle || (dribble as string) || ""}
-          onChange={(e) => setDribbleHandle(e.target.value)}
+          value={dribble as string}
+          onChange={(e) => handleSocialMediaChange("dribble", e.target.value)}
         />
       </div>
     </div>

@@ -30,7 +30,17 @@ export type UsePostRequestType = {
 export type ExtractImagesFromContentType = (content: string) => string[];
 export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
 
-export type UserType = UserInterface;
+export interface SocialMediaProfiles {
+  x?: string;
+  instagram?: string;
+  github?: string;
+  linkedIn?: string;
+  dribble?: string;
+}
+
+export type UserType = Omit<UserInterface, "socialMediaProfiles"> & {
+  socialMediaProfiles: SocialMediaProfiles;
+};
 
 export type PostType = Omit<PostInterface, "postedBy" | "comments"> & {
   postedBy: UserType;
@@ -77,43 +87,26 @@ export type AuthContextType = {
 };
 
 export type PersonalInfoFormProps = {
-  currentUser: UserType;
-  firstName: string;
-  setFirstName: (value: string) => void;
-  lastName: string;
-  setLastName: (value: string) => void;
-  email: string;
-  setEmail: (value: string) => void;
-  username: string;
-  setUsername: (value: string) => void;
-  bio: string;
-  setBio: (value: string) => void;
+  formData: InputFieldsProps;
+  handleFieldChange: (field: keyof InputFieldsProps, value: any) => void;
+  isPending: boolean;
 };
 
 export type SocialsFormProps = {
-  currentUser: UserType;
-  website: string;
-  setWebsite: (value: string) => void;
-  twitterHandle: string;
-  setTwitterHandle: (value: string) => void;
-  instagramHandle: string;
-  setInstagramHandle: (value: string) => void;
-  githubHandle: string;
-  setGithubHandle: (value: string) => void;
-  linkedinHandle: string;
-  setLinkedinHandle: (value: string) => void;
-  dribbleHandle: string;
-  setDribbleHandle: (value: string) => void;
+  formData: InputFieldsProps;
+  handleSocialMediaChange: (
+    platform: keyof UserType["socialMediaProfiles"],
+    value: string
+  ) => void;
+  handleFieldChange: (field: keyof InputFieldsProps, value: any) => void;
 };
 
-export type InterestFormProps = {
-  interests: SingleInterestType[];
-  setInterests: Dispatch<SetStateAction<SingleInterestType[]>>;
-};
-
-export type SkillsFormProps = {
-  skills: SingleSkillType[];
-  setSkills: Dispatch<SetStateAction<CategoryInterface[]>>;
+export type SkillsInterestsProps<T> = {
+  items: T[];
+  setItems: Dispatch<SetStateAction<T[]>>;
+  label: string;
+  placeholder: string;
+  fetchUrl: string;
 };
 
 export type SingleInterestType = TopicInterface;
@@ -123,8 +116,8 @@ export type InputFieldsProps = Omit<
   Partial<UserType>,
   "technologies" | "topicsOfInterest"
 > & {
-  interests: SingleInterestType[];
   skills: SingleSkillType[];
+  interests: SingleInterestType[];
 };
 
 export type IconProps = {
