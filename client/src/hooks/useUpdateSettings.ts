@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import usePatchRequest from "./usePatchRequest";
 import { useAuth } from "@/context/AuthContext";
-import { InputFieldsProps } from "@/typings/types";
+import { InputFieldsProps, UserType } from "@/typings/types";
 
 export const useUpdateSettings = () => {
   const { refetchUser, currentUser } = useAuth();
@@ -106,7 +106,10 @@ export const useUpdateSettings = () => {
     }));
   };
 
-  const handleSocialMediaChange = (platform: string, value: string) => {
+  const handleSocialMediaChange = (
+    platform: keyof UserType["socialMediaProfiles"],
+    value: string
+  ) => {
     setFormData((prev) => ({
       ...prev,
       socialMediaProfiles: {
