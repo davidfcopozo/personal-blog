@@ -73,39 +73,10 @@ export const Settings = () => {
                   {/* Social Media Tab */}
                   <TabsContent value="social">
                     <SocialsForm
-                      currentUser={userData}
-                      website={formData.website as string}
-                      setWebsite={(value) =>
-                        handleFieldChange("website", value)
-                      }
-                      twitterHandle={formData.socialMediaProfiles?.x as string}
-                      setTwitterHandle={(value) =>
-                        handleSocialMediaChange("x", value)
-                      }
-                      instagramHandle={
-                        formData.socialMediaProfiles?.instagram as string
-                      }
-                      setInstagramHandle={(value) =>
-                        handleSocialMediaChange("instagram", value)
-                      }
-                      githubHandle={
-                        formData.socialMediaProfiles?.github as string
-                      }
-                      setGithubHandle={(value) =>
-                        handleSocialMediaChange("github", value)
-                      }
-                      linkedinHandle={
-                        formData.socialMediaProfiles?.linkedIn as string
-                      }
-                      setLinkedinHandle={(value) =>
-                        handleSocialMediaChange("linkedIn", value)
-                      }
-                      dribbleHandle={
-                        formData.socialMediaProfiles?.dribble as string
-                      }
-                      setDribbleHandle={(value) =>
-                        handleSocialMediaChange("dribble", value)
-                      }
+                      formData={formData}
+                      handleSocialMediaChange={handleSocialMediaChange}
+                      handleFieldChange={handleFieldChange}
+                      isPending={status === "pending"}
                     />
                   </TabsContent>
                   {/* Custom Experience Tab */}
