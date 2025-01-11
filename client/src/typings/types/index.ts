@@ -106,14 +106,12 @@ export type SocialsFormProps = {
   setDribbleHandle: (value: string) => void;
 };
 
-export type InterestFormProps = {
-  interests: SingleInterestType[];
-  setInterests: Dispatch<SetStateAction<SingleInterestType[]>>;
-};
-
-export type SkillsFormProps = {
-  skills: SingleSkillType[];
-  setSkills: Dispatch<SetStateAction<CategoryInterface[]>>;
+export type SkillsInterestsProps<T> = {
+  items: T[];
+  setItems: Dispatch<SetStateAction<T[]>>;
+  label: string;
+  placeholder: string;
+  fetchUrl: string;
 };
 
 export type SingleInterestType = TopicInterface;
@@ -123,8 +121,8 @@ export type InputFieldsProps = Omit<
   Partial<UserType>,
   "technologies" | "topicsOfInterest"
 > & {
-  interests: SingleInterestType[];
   skills: SingleSkillType[];
+  interests: SingleInterestType[];
 };
 
 export type IconProps = {
