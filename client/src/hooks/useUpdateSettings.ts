@@ -3,131 +3,145 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import usePatchRequest from "./usePatchRequest";
 import { useAuth } from "@/context/AuthContext";
-import {
-  InputFieldsProps,
-  SingleInterestType,
-  SingleSkillType,
-} from "@/typings/types";
+import { InputFieldsProps } from "@/typings/types";
 
 export const useUpdateSettings = () => {
   const { refetchUser, currentUser } = useAuth();
-  const id = currentUser && currentUser.data._id.toString();
+  const id = currentUser?.data?._id;
+  const userData = currentUser?.data;
 
-  /* Personal info */
-  const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
-  const [bio, setBio] = useState<string>("");
-  /* Social */
-  const [website, setWebsite] = useState("");
-  const [twitterHandle, setTwitterHandle] = useState("");
-  const [instagramHandle, setInstagramHandle] = useState("");
-  const [githubHandle, setGithubHandle] = useState("");
-  const [linkedinHandle, setLinkedinHandle] = useState("");
-  const [dribbleHandle, setDribbleHandle] = useState("");
-  /* Custom */
-  const [skills, setSkills] = useState<SingleSkillType[]>([]);
-  const [interests, setInterests] = useState<SingleInterestType[]>([]);
+  const [formData, setFormData] = useState<InputFieldsProps>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    username: "",
+    bio: "",
+    website: "",
+    socialMediaProfiles: {
+      x: "",
+      instagram: "",
+      github: "",
+      linkedIn: "",
+      dribble: "",
+    },
+    skills: [],
+    interests: [],
+  });
 
   useEffect(() => {
-    if (currentUser && currentUser.data) {
-      setSkills(currentUser.data.technologies);
-      setInterests(currentUser.data.topicsOfInterest);
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        email: userData.email || "",
+        username: userData.username || "",
+        bio: userData.bio || "",
+        website: userData.website || "",
+        socialMediaProfiles: {
+          x: userData.socialMediaProfiles?.x || "",
+          instagram: userData.socialMediaProfiles?.instagram || "",
+          github: userData.socialMediaProfiles?.github || "",
+          linkedIn: userData.socialMediaProfiles?.linkedIn || "",
+          dribble: userData.socialMediaProfiles?.dribble || "",
+        },
+        skills: userData.technologies || [],
+        interests: userData.topicsOfInterest || [],
+      });
     }
-  }, [currentUser]);
+  }, [userData]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { mutate, data, status, error } = usePatchRequest({
+  const { mutate, status, error } = usePatchRequest({
     url: `/api/users/${id}`,
     onSuccess: () => {
       toast({
         variant: "default",
         title: "User updated successfully",
       });
-      queryClient.invalidateQueries({
-        queryKey: ["currentUser"],
-        exact: true,
-      });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       refetchUser();
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setUsername("");
-      setBio("");
-      setWebsite("");
-      setTwitterHandle("");
-      setInstagramHandle("");
-      setGithubHandle("");
-      setLinkedinHandle("");
-      setDribbleHandle("");
-      setSkills([]);
-      setInterests([]);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        username: "",
+        bio: "",
+        website: "",
+        socialMediaProfiles: {
+          x: "",
+          instagram: "",
+          github: "",
+          linkedIn: "",
+          dribble: "",
+        },
+        skills: [],
+        interests: [],
+      });
     },
     onError: () => {
       toast({
         variant: "destructive",
-        title: "Something went wrong",
+        title: "Update failed",
         description: error?.message || "Please try again",
       });
-      const previousPosts = queryClient.getQueryData(["currentUser"]);
-      queryClient.setQueryData(["currentUser"], previousPosts);
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     },
-    onMutate: async (user: InputFieldsProps) => {
-      await queryClient.cancelQueries({
-        queryKey: ["currentUser"],
-        exact: true,
-      });
-      const previousUserData = queryClient.getQueryData(["currentUser"]);
-
-      queryClient.setQueryData(
-        ["currentUser"],
-        (oldData: InputFieldsProps | undefined) => ({
-          ...user,
-          ...oldData,
-        })
-      );
-      return { previousData: previousUserData };
+    onMutate: async (updatedData: InputFieldsProps) => {
+      await queryClient.cancelQueries({ queryKey: ["currentUser"] });
+      const previousData = queryClient.getQueryData(["currentUser"]);
+      queryClient.setQueryData(["currentUser"], (oldData: any) => ({
+        ...(oldData as object),
+        ...updatedData,
+      }));
+      return { previousData };
     },
   });
 
-  const handleSubmit = (e: FormEvent, inputFields: InputFieldsProps) => {
+  const handleFieldChange = (field: keyof InputFieldsProps, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSocialMediaChange = (platform: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      socialMediaProfiles: {
+        ...prev.socialMediaProfiles,
+        [platform]: value,
+      },
+    }));
+  };
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // Filter out empty or undefined values from socialMediaProfiles
-    let filteredSocialMediaProfiles =
-      inputFields?.socialMediaProfiles &&
-      typeof inputFields.socialMediaProfiles === "object"
+    // Filter socialMediaProfiles to remove empty or whitespace-only values
+    const filteredSocialMediaProfiles =
+      formData.socialMediaProfiles &&
+      typeof formData.socialMediaProfiles === "object"
         ? Object.fromEntries(
-            Object.entries(inputFields.socialMediaProfiles).filter(
+            Object.entries(formData.socialMediaProfiles).filter(
               ([_, value]) =>
-                value &&
-                typeof value === "string" &&
-                value.trim() !== "" &&
-                value.length > 0
+                value && typeof value === "string" && value.trim() !== ""
             )
           )
         : {};
 
-    let fieldsToUpdate: Partial<InputFieldsProps> = {};
+    const fieldsToUpdate: InputFieldsProps = {
+      ...formData,
+      skills: formData?.skills,
+      interests: formData?.interests,
+    };
 
-    for (const key in inputFields) {
-      if (key === "skills" || key === "interests") {
-        // Handle skills and interests (arrays)
-        if (Array.isArray(inputFields[key]) && inputFields[key].length > 0) {
-          fieldsToUpdate[key as keyof InputFieldsProps] =
-            inputFields[key as keyof InputFieldsProps];
-        }
-      } else if (
-        // Avoid handling socialMediaProfiles here since it's already filtered
-        key !== "socialMediaProfiles" &&
-        inputFields[key as keyof InputFieldsProps]
-      ) {
-        // Handle other fields except for socialMediaProfiles
-        fieldsToUpdate[key as keyof InputFieldsProps] =
-          inputFields[key as keyof InputFieldsProps];
+    for (const key in formData) {
+      if (key === "socialMediaProfiles") {
+      } else if (!formData[key as keyof InputFieldsProps]) {
+        // Remove empty values
+        delete fieldsToUpdate[key as keyof InputFieldsProps];
       }
     }
 
@@ -135,38 +149,18 @@ export const useUpdateSettings = () => {
       fieldsToUpdate.socialMediaProfiles = filteredSocialMediaProfiles;
     }
 
-    if (Object.keys(fieldsToUpdate).length < 1) return;
-
-    mutate(fieldsToUpdate as InputFieldsProps);
+    // Only submit if there are fields to update
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      mutate(fieldsToUpdate);
+    }
   };
 
   return {
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    email,
-    setEmail,
-    username,
-    setUsername,
-    bio,
-    setBio,
-    website,
-    setWebsite,
-    twitterHandle,
-    setTwitterHandle,
-    instagramHandle,
-    setInstagramHandle,
-    githubHandle,
-    setGithubHandle,
-    linkedinHandle,
-    setLinkedinHandle,
-    dribbleHandle,
-    setDribbleHandle,
-    skills,
-    setSkills,
-    interests,
-    setInterests,
+    formData,
+    handleFieldChange,
+    handleSocialMediaChange,
     handleSubmit,
+    userData,
+    status,
   };
 };
