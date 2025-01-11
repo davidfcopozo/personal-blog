@@ -4,17 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName, getNameInitials } from "@/utils/formats";
-/* import { useAuth } from "@/context/AuthContext"; */
-import SkillsForm from "./skills-form";
-import InterestForm from "./interests-form";
 import SocialsForm from "./socials-form";
 import PersonalInfoForm from "./personal-info-form";
 import { useUpdateSettings } from "@/hooks/useUpdateSettings";
 import SkillsInterestsManager from "./SkillsInterestsManager";
 
 export const Settings = () => {
-  /*  const { currentUser } = useAuth(); */
-
   const {
     formData,
     handleFieldChange,
