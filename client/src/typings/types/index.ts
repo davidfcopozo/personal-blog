@@ -30,7 +30,17 @@ export type UsePostRequestType = {
 export type ExtractImagesFromContentType = (content: string) => string[];
 export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
 
-export type UserType = UserInterface;
+export interface SocialMediaProfiles {
+  x?: string;
+  instagram?: string;
+  github?: string;
+  linkedIn?: string;
+  dribble?: string;
+}
+
+export type UserType = Omit<UserInterface, "socialMediaProfiles"> & {
+  socialMediaProfiles: SocialMediaProfiles;
+};
 
 export type PostType = Omit<PostInterface, "postedBy" | "comments"> & {
   postedBy: UserType;
@@ -78,24 +88,17 @@ export type AuthContextType = {
 
 export type PersonalInfoFormProps = {
   formData: InputFieldsProps;
-  handleFieldChange: (field: keyof InputFieldsProps, value: string) => void;
+  handleFieldChange: (field: keyof InputFieldsProps, value: any) => void;
   isPending: boolean;
 };
 
 export type SocialsFormProps = {
-  currentUser: UserType;
-  website: string;
-  setWebsite: (value: string) => void;
-  twitterHandle: string;
-  setTwitterHandle: (value: string) => void;
-  instagramHandle: string;
-  setInstagramHandle: (value: string) => void;
-  githubHandle: string;
-  setGithubHandle: (value: string) => void;
-  linkedinHandle: string;
-  setLinkedinHandle: (value: string) => void;
-  dribbleHandle: string;
-  setDribbleHandle: (value: string) => void;
+  formData: InputFieldsProps;
+  handleSocialMediaChange: (
+    platform: keyof UserType["socialMediaProfiles"],
+    value: string
+  ) => void;
+  handleFieldChange: (field: keyof InputFieldsProps, value: any) => void;
 };
 
 export type SkillsInterestsProps<T> = {
