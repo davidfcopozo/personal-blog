@@ -77,17 +77,9 @@ export type AuthContextType = {
 };
 
 export type PersonalInfoFormProps = {
-  currentUser: UserType;
-  firstName: string;
-  setFirstName: (value: string) => void;
-  lastName: string;
-  setLastName: (value: string) => void;
-  email: string;
-  setEmail: (value: string) => void;
-  username: string;
-  setUsername: (value: string) => void;
-  bio: string;
-  setBio: (value: string) => void;
+  formData: InputFieldsProps;
+  handleFieldChange: (field: keyof InputFieldsProps, value: string) => void;
+  isPending: boolean;
 };
 
 export type SocialsFormProps = {
