@@ -76,7 +76,6 @@ export const Settings = () => {
                       formData={formData}
                       handleSocialMediaChange={handleSocialMediaChange}
                       handleFieldChange={handleFieldChange}
-                      isPending={status === "pending"}
                     />
                   </TabsContent>
                   {/* Custom Experience Tab */}
