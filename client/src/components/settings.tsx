@@ -16,6 +16,7 @@ export const Settings = () => {
     handleSocialMediaChange,
     handleSubmit,
     userData,
+    status,
   } = useUpdateSettings();
 
   return (
@@ -64,23 +65,9 @@ export const Settings = () => {
                   {/* Personal Info Tab */}
                   <TabsContent value="personal">
                     <PersonalInfoForm
-                      currentUser={userData}
-                      firstName={formData.firstName as string}
-                      setFirstName={(value) =>
-                        handleFieldChange("firstName", value)
-                      }
-                      lastName={formData.lastName as string}
-                      setLastName={(value) =>
-                        handleFieldChange("lastName", value)
-                      }
-                      email={formData.email as string}
-                      setEmail={(value) => handleFieldChange("email", value)}
-                      username={formData.username as string}
-                      setUsername={(value) =>
-                        handleFieldChange("username", value)
-                      }
-                      bio={formData.bio as string}
-                      setBio={(value) => handleFieldChange("bio", value)}
+                      formData={formData}
+                      handleFieldChange={handleFieldChange}
+                      isPending={status === "pending"}
                     />
                   </TabsContent>
                   {/* Social Media Tab */}
