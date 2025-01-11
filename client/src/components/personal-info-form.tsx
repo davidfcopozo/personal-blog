@@ -5,30 +5,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { PersonalInfoFormProps } from "@/typings/types";
 
 const PersonalInfoForm = ({
-  currentUser,
-  firstName,
-  setFirstName,
-  lastName,
-  setLastName,
-  email,
-  setEmail,
-  username,
-  setUsername,
-  bio,
-  setBio,
+  formData,
+  handleFieldChange,
+  isPending,
 }: PersonalInfoFormProps) => {
-  if (!currentUser) {
+  if (isPending) {
     return (
       <div className="space-y-4 text-center">Loading user information...</div>
     );
   }
-  const {
-    firstName: currentFirstName,
-    lastName: currentLastName,
-    email: currentEmail,
-    username: currentUsername,
-    bio: currentBio,
-  } = currentUser;
+  const { firstName, lastName, email, username, bio } = formData;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -39,8 +25,8 @@ const PersonalInfoForm = ({
           <Input
             id="firstName"
             type="text"
-            value={firstName || (currentFirstName as string) || ""}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={firstName as string}
+            onChange={(e) => handleFieldChange("firstName", e.target.value)}
           />
         </div>
         <div>
@@ -50,8 +36,8 @@ const PersonalInfoForm = ({
           <Input
             id="lastName"
             type="text"
-            value={lastName || (currentLastName as string) || ""}
-            onChange={(e) => setLastName(e.target.value)}
+            value={lastName as string}
+            onChange={(e) => handleFieldChange("lastName", e.target.value)}
           />
         </div>
       </div>
@@ -62,8 +48,8 @@ const PersonalInfoForm = ({
         <Input
           id="email"
           type="email"
-          value={email || (currentEmail as string) || ""}
-          onChange={(e) => setEmail(e.target.value)}
+          value={email as string}
+          onChange={(e) => handleFieldChange("email", e.target.value)}
         />
       </div>
       <div>
@@ -73,8 +59,8 @@ const PersonalInfoForm = ({
         <Input
           id="username"
           type="text"
-          value={username || (currentUsername as string) || ""}
-          onChange={(e) => setUsername(e.target.value)}
+          value={username as string}
+          onChange={(e) => handleFieldChange("username", e.target.value)}
         />
       </div>
       <div>
@@ -84,8 +70,8 @@ const PersonalInfoForm = ({
         <Textarea
           id="bio"
           rows={4}
-          value={bio || (currentBio as string) || ""}
-          onChange={(e) => setBio(e.target.value)}
+          value={bio as string}
+          onChange={(e) => handleFieldChange("bio", e.target.value)}
         />
       </div>
     </div>
