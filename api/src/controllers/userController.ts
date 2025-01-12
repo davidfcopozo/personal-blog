@@ -11,8 +11,7 @@ import { TopicInterface } from "../typings/models/topic";
 import Topic from "../models/topicModel";
 import Category from "../models/categoryModel";
 
-const sensitiveDataToExclude =
-  "-password -verificationToken -passwordVerificationToken";
+const sensitiveDataToExclude = process.env.SENSITIVE_DATA_TO_EXCLUDE;
 
 export const getUsers = async (
   _req: RequestWithUserInfo | any,
@@ -21,7 +20,7 @@ export const getUsers = async (
 ) => {
   try {
     const users: UserType[] = await User.find()
-      .select(sensitiveDataToExclude)
+      .select(sensitiveDataToExclude as string)
       .lean();
 
     if (!users) {
@@ -49,7 +48,7 @@ export const getUserById = async (
     const user: UserType = await User.findById(userId)
       .populate("technologies")
       .populate("topicsOfInterest")
-      .select(sensitiveDataToExclude)
+      .select(sensitiveDataToExclude as string)
       .lean();
 
     if (!user) {
@@ -79,7 +78,7 @@ export const getUserByUsername = async (
     const user: UserType = await User.findOne({ username })
       .populate("technologies")
       .populate("topicsOfInterest")
-      .select(sensitiveDataToExclude)
+      .select(sensitiveDataToExclude as string)
       .lean();
 
     if (!user) {
@@ -194,7 +193,7 @@ export const updateUserById = async (
       fieldsToUpdate,
       { new: true, runValidators: true }
     )
-      .select("-password -verificationToken")
+      .select(sensitiveDataToExclude as string)
       .lean();
 
     if (!updatedUser) {
