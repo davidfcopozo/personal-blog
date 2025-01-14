@@ -2,8 +2,8 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
-import { BadRequest } from "../../../api/src/errors/bad-request";
 import axios from "axios";
+import { ApiError } from "./errors/ApiError";
 const baseUrl = `${process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT}/api`;
 
 export const authOptions: NextAuthOptions = {
@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            throw new BadRequest("Email and password are required");
+            throw ApiError.BadRequest("Email and password are required");
           }
           const res = await axios.post(`${baseUrl}/auth/login`, {
             email: credentials.email,
