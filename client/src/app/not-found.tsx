@@ -8,7 +8,7 @@ export default function NotFound() {
       <FileQuestion className="w-16 h-16 text-muted-foreground mb-4" />
       <h1 className="text-4xl font-bold mb-2">Post Not Found</h1>
       <p className="text-xl text-muted-foreground mb-8">
-        Oops! The post you're looking for doesn't seem to exist.
+        Oops! The post you&apos;re looking for doesn&apos;t seem to exist.
       </p>
       <Button asChild>
         <Link href="/">Go to Home Page</Link>
