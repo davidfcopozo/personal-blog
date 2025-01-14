@@ -1,3 +1,4 @@
+"use client";
 import { BouncingCircles } from "./icons";
 
 export default function BouncingCirclesLoader() {

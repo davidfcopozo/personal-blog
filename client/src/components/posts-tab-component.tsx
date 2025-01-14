@@ -281,4 +281,6 @@ const PostsTabContent = memo(
   }
 );
 
+PostsTabContent.displayName = "PostsTabContent";
+
 export default PostsTabContent;

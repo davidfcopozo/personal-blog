@@ -1,9 +1,9 @@
 import BlogPost from "@/components/blog-post";
 
-const Blog = ({ slug }: { slug: string }) => {
+const Blog = () => {
   return (
     <div>
-      <BlogPost slug={slug} />
+      <BlogPost />
     </div>
   );
 };

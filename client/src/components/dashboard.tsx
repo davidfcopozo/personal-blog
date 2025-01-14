@@ -15,7 +15,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useCallback, useMemo, useState } from "react";
-import userPosts from "@/lib/userPosts";
+import userPosts from "@/hooks/useUserPosts";
 import { useSession } from "next-auth/react";
 import { PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";

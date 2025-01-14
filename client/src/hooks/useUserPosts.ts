@@ -1,7 +1,7 @@
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { PostType } from "@/typings/types";
 
-const userPosts = (userId: string) => {
+const useUserPosts = (userId: string) => {
   const {
     data: posts,
     error: postsError,
@@ -21,4 +21,4 @@ const userPosts = (userId: string) => {
   return { blogPosts, arePostsFetching, arePostsLoading, postsError };
 };
 
-export default userPosts;
+export default useUserPosts;
