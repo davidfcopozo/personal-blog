@@ -7,7 +7,6 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 import { Skeleton } from "./ui/skeleton";
 import { XIcon } from "./icons";
 import { CategoriesProps } from "@/typings/types";
-import { ObjectId } from "mongoose";
 
 const Categories = ({
   setCategories,
@@ -51,7 +50,7 @@ const Categories = ({
         .map((category) => {
           return fetchedCategories.data.find(
             (cat: CategoryInterface) =>
-              cat._id === (category as unknown as ObjectId)
+              cat._id.toString() === category.toString()
           );
         })
         .filter(Boolean) as CategoryInterface[];
