@@ -2,11 +2,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
 import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
-import { ObjectId } from "mongoose";
-import { PostInterface } from "../../../api/src/typings/models/post";
 import usePostRequest from "./usePostRequest";
 import { MouseEvent, useEffect, useRef, useState } from "react";
-import { CommentInterface, ReplyInterface } from "@/typings/interfaces";
+import {
+  CommentInterface,
+  PostInterface,
+  ReplyInterface,
+} from "@/typings/interfaces";
 import { getSession } from "next-auth/react";
 
 export const useInteractions = (
@@ -81,7 +83,7 @@ export const useInteractions = (
           data: postsData.data.map((post: PostInterface) => {
             if (post._id.toString() === variables.postId.toString()) {
               const userId = queryClient.getQueryData<{
-                data: { _id: ObjectId };
+                data: { _id: string };
               }>(["currentUser"])?.data._id;
               const userIdString = userId?.toString();
               const isLiked = post.likes?.some(
@@ -147,7 +149,7 @@ export const useInteractions = (
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id.toString() === postId.toString()) {
               const userId = queryClient.getQueryData<{
-                data: { _id: ObjectId };
+                data: { _id: string };
               }>(["currentUser"])?.data._id;
               const userIdString = userId?.toString();
               const isLiked = post.likes?.some(
@@ -211,7 +213,7 @@ export const useInteractions = (
           data: postsData.data.map((post: PostInterface) => {
             if (post._id.toString() === variables.postId.toString()) {
               const userId = queryClient.getQueryData<{
-                data: { _id: ObjectId };
+                data: { _id: string };
               }>(["currentUser"])?.data._id;
               const userIdString = userId?.toString();
               const isBookmarked = post.bookmarks?.some(
@@ -277,7 +279,7 @@ export const useInteractions = (
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id.toString() === postId.toString()) {
               const userId = queryClient.getQueryData<{
-                data: { _id: ObjectId };
+                data: { _id: string };
               }>(["currentUser"])?.data._id;
               const userIdString = userId?.toString();
               const isBookmarked = post.likes?.some(
