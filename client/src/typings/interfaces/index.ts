@@ -1,8 +1,79 @@
 import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
-import { ObjectId } from "mongoose";
 import { AxiosError } from "axios";
 import { LucideIcon } from "lucide-react";
 import { PostType, UserType } from "../types";
+
+export interface BaseDocument {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryInterface extends BaseDocument {
+  name: String;
+  postedBy: string;
+  slug: String;
+  topic: string;
+  usageCount: Number;
+}
+
+export interface SocialMediaProfilesInterface {
+  x?: string;
+  instagram?: string;
+  github?: string;
+  linkedIn?: string;
+  dribble?: string;
+}
+
+export interface PostInterface extends BaseDocument {
+  _id: string;
+  title: string;
+  content: string;
+  slug: string;
+  postedBy: string;
+  featuredImage?: string;
+  likes?: string[];
+  bookmarks?: string[];
+  tags?: string[];
+  categories?: CategoryInterface[];
+  visits?: number;
+  comments?: string[];
+  status: "draft" | "published" | "unpublished";
+}
+
+export interface TopicInterface extends BaseDocument {
+  name: String;
+  postedBy: string;
+  description: String;
+}
+
+export interface UserInterface extends BaseDocument {
+  firstName: String;
+  lastName: String;
+  email: String;
+  password: String;
+  username: String;
+  website?: String;
+  bio?: String;
+  title?: String;
+  role: String;
+  verificationToken?: String;
+  verified?: Boolean;
+  verifiedAt?: Date;
+  accessToken: String | null;
+  passwordVerificationToken: String | null;
+  passwordTokenExpirationDate: Date | null;
+  bookmarks?: string[];
+  likes?: string[];
+  avatar?: String;
+  provider: String;
+  topicsOfInterest?: TopicInterface[];
+  technologies?: CategoryInterface[];
+  socialMediaProfiles?: SocialMediaProfilesInterface;
+  isOnboarded: Boolean;
+  following?: string[];
+  followers?: string[];
+}
 
 export interface CustomBadgeProps extends HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -38,7 +109,7 @@ export interface BlogEditorProps {
 }
 
 export interface InitialPost {
-  _id?: ObjectId;
+  _id?: string;
   title: string;
   content: string;
   featuredImage: string | null;
@@ -57,40 +128,29 @@ export interface FeatureImageProps {
 }
 
 export interface CommentInterface {
-  _id: ObjectId;
-  postedBy: ObjectId;
-  post: ObjectId;
-  parentId?: ObjectId;
+  _id: string;
+  postedBy: string;
+  post: string;
+  parentId?: string;
   content: string;
   replies: string[];
-  likes: ObjectId[];
+  likes: string[];
   createdAt: Date;
   updatedAt: Date;
   isReply: boolean;
 }
 
 export interface ReplyInterface {
-  _id: ObjectId;
-  postedBy: ObjectId;
-  post: ObjectId;
+  _id: string;
+  postedBy: string;
+  post: string;
   content: string;
   parentId: string;
   replies: string[];
-  likes: ObjectId[];
+  likes: string[];
   createdAt: Date;
   updatedAt: Date;
   isReply: boolean;
-}
-
-export interface CategoryInterface {
-  _id: ObjectId;
-  name: String;
-  postedBy: ObjectId;
-  slug: String;
-  topic: ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-  usageCount: Number;
 }
 
 export interface MutationContext<TData> {
@@ -170,7 +230,7 @@ export interface SocialMediaConfig {
 }
 
 export interface AuthorPanelProps {
-  _id: ObjectId;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;

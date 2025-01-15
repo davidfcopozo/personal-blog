@@ -1,11 +1,12 @@
 import { BuiltInProviderType } from "next-auth/providers/index";
 import { ClientSafeProvider, LiteralUnion } from "next-auth/react";
-import { PostInterface } from "../../../../api/src/typings/models/post";
-import { UserInterface } from "../../../../api/src/typings/models/user";
-import { TopicInterface } from "../../../../api/src/typings/models/topic";
-import { CategoryInterface } from "../../../../api/src/typings/models/category";
-import { Date } from "mongoose";
-import { CommentInterface } from "../interfaces";
+import {
+  CategoryInterface,
+  PostInterface,
+  TopicInterface,
+  UserInterface,
+} from "../interfaces";
+import { CommentInterface, SocialMediaProfilesInterface } from "../interfaces";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Dispatch, SetStateAction } from "react";
 
@@ -30,16 +31,8 @@ export type UsePostRequestType = {
 export type ExtractImagesFromContentType = (content: string) => string[];
 export type DeleteImageFromFirebaseType = (imageUrl: string) => Promise<void>;
 
-export interface SocialMediaProfiles {
-  x?: string;
-  instagram?: string;
-  github?: string;
-  linkedIn?: string;
-  dribble?: string;
-}
-
 export type UserType = Omit<UserInterface, "socialMediaProfiles"> & {
-  socialMediaProfiles: SocialMediaProfiles;
+  socialMediaProfiles: SocialMediaProfilesInterface;
 };
 
 export type PostType = Omit<PostInterface, "postedBy" | "comments"> & {

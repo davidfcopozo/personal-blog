@@ -1,9 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
-import { CommentInterface, ReplyInterface } from "@/typings/interfaces";
+import {
+  CommentInterface,
+  PostInterface,
+  ReplyInterface,
+} from "@/typings/interfaces";
 import { PostFetchType, PostType } from "@/typings/types";
-import { PostInterface } from "../../../api/src/typings/models/post";
 
 const useDeleteComment = (post?: PostType) => {
   const { toast } = useToast();

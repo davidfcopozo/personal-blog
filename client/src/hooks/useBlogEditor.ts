@@ -22,7 +22,6 @@ import usePostRequest from "./usePostRequest";
 import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
 import { UpdatePostPayload, UserType } from "@/typings/types";
-import mongoose, { ObjectId } from "mongoose";
 import usePatchRequest from "./usePatchRequest";
 import { arraysEqual } from "@/utils/formats";
 
@@ -306,7 +305,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         if (Object.keys(changes).length > 0) {
           updatePostMutate({
             ...changes,
-            _id: initialPost._id as unknown as mongoose.Types.ObjectId,
+            _id: initialPost?._id?.toString(),
           });
         } else {
           toast({
