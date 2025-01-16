@@ -10,6 +10,8 @@ import { CategoryInterface } from "../typings/models/category";
 import { TopicInterface } from "../typings/models/topic";
 import Topic from "../models/topicModel";
 import Category from "../models/categoryModel";
+import Image from "../models/imageModel";
+import { DuplicatedResource } from "../errors/duplicated-resource";
 
 const sensitiveDataToExclude = process.env.SENSITIVE_DATA_TO_EXCLUDE;
 
@@ -268,6 +270,46 @@ export const toggleFollowUser = async (
     next(error);
   } finally {
     await session.endSession();
+  }
+};
+
+export const uploadImage = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { url, metadata },
+    params: { id },
+  } = req;
+
+  try {
+    const user: UserType = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    if (user._id.toString() !== id) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const image = await Image.findOne({ hash: metadata.hash });
+
+    if (image) {
+      throw new DuplicatedResource("The image could not be uploaded");
+    }
+
+    const newImage = await Image.create({
+      url,
+      hash: metadata.hash,
+      ...metadata,
+    });
+
+    res.status(StatusCodes.OK).json({ success: true, data: newImage });
+  } catch (err) {
+    return next(err);
   }
 };
 
