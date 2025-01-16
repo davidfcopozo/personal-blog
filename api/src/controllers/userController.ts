@@ -313,6 +313,49 @@ export const uploadImage = async (
   }
 };
 
+export const deleteImage = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { url, postedBy, hash },
+    params: { id },
+  } = req;
+
+  try {
+    const user: UserType = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    if (user._id.toString() !== id) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    if (user._id.toString() !== postedBy) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const image = await Image.findOne({ hash: hash, url: url });
+    console.log("image", image);
+
+    if (!image) {
+      throw new DuplicatedResource("The image could not be deleted");
+    }
+
+    await image.deleteOne();
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: "Image deleted successfully" });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 export const deleteUserById = async (
   req: RequestWithUserInfo | any,
   res: Response,
