@@ -37,3 +37,27 @@ export const topicDescriptionValidator = (description: StringProp) => {
 export const categoryValidator = (name: StringProp) => {
   return categoryNameRegex.test(name);
 };
+
+export const validateImageUrl = (url: string): boolean => {
+  try {
+    const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+
+    if (!bucketName) {
+      throw new Error(
+        "FIREBASE_STORAGE_BUCKET environment variable is not defined."
+      );
+    }
+
+    const firebaseUrlPattern = new RegExp(
+      `^https://firebasestorage\\.googleapis\\.com/v0/b/${bucketName.replace(
+        /\./g,
+        "\\."
+      )}/o/.+\\?alt=media&token=[a-zA-Z0-9-]+$`
+    );
+
+    return firebaseUrlPattern.test(url);
+  } catch (error: any) {
+    console.error(error.message);
+    return false;
+  }
+};

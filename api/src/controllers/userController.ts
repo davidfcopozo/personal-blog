@@ -3,13 +3,15 @@ import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
-import { isValidUsername } from "../utils/validators";
+import { isValidUsername, validateImageUrl } from "../utils/validators";
 import { UserType } from "../typings/types";
 import mongoose from "mongoose";
 import { CategoryInterface } from "../typings/models/category";
 import { TopicInterface } from "../typings/models/topic";
 import Topic from "../models/topicModel";
 import Category from "../models/categoryModel";
+import Image from "../models/imageModel";
+import { DuplicatedResource } from "../errors/duplicated-resource";
 
 const sensitiveDataToExclude = process.env.SENSITIVE_DATA_TO_EXCLUDE;
 
@@ -268,6 +270,215 @@ export const toggleFollowUser = async (
     next(error);
   } finally {
     await session.endSession();
+  }
+};
+
+export const getImagesByUserId = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { id },
+    user: { userId },
+  } = req;
+
+  try {
+    if (id !== userId.toString()) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    const images = await Image.find({ postedBy: id });
+
+    if (!images) {
+      throw new NotFound("No images found");
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: images, count: images.length });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const uploadImages = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { images },
+    params: { id },
+  } = req;
+
+  try {
+    const user: UserType = await User.findById(userId);
+    const imagesArray = Array.isArray(images) ? images : [images];
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    if (user._id.toString() !== id) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const newImages = [];
+
+    for (const image of imagesArray) {
+      const validUrl = validateImageUrl(image.url);
+
+      if (!validUrl) {
+        throw new BadRequest("Invalid image URL");
+      }
+
+      const existingImage = await Image.findOne({
+        postedBy: user._id,
+        hash: image.hash,
+      });
+
+      if (existingImage) {
+        throw new DuplicatedResource(`Duplicate image detected: ${image.name}`);
+      }
+
+      const newImage = await Image.create({
+        name: image.url,
+        title: image.title || "",
+        url: image.url,
+        altText: image.altText || "",
+        tags: image.tags || [],
+        hash: image.hash,
+        postedBy: user._id,
+      });
+
+      newImages.push(newImage);
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: newImages,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const updateImage = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { image },
+    params: { id },
+  } = req;
+
+  try {
+    const { _id: imageId, title, altText, tags } = image;
+
+    if (!title && !altText && !tags) {
+      throw new BadRequest("No fields to update were provided");
+    }
+
+    const user: UserType = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    if (user._id.toString() !== id) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const existingImage = await Image.findOne({
+      postedBy: user._id,
+      _id: imageId,
+    });
+
+    if (!existingImage) {
+      throw new NotFound("Image not found");
+    }
+
+    if (existingImage.postedBy.toString() !== user._id.toString()) {
+      throw new Unauthenticated("You're not authorized to update this image");
+    }
+
+    const updatedImage = await Image.findOneAndUpdate(
+      { _id: imageId },
+      { title, altText, tags },
+      { new: true }
+    );
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: updatedImage,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const deleteImages = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { images },
+    params: { id },
+  } = req;
+
+  try {
+    const user: UserType = await User.findById(userId);
+    const imagesArray = Array.isArray(images) ? images : [images];
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    if (user._id.toString() !== id) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const imageHashes = imagesArray.map((image: any) => image.hash);
+    const imageUrls = imagesArray.map((image: any) => image.url);
+
+    const imagesToDelete = await Image.find({
+      hash: { $in: imageHashes },
+      url: { $in: imageUrls },
+    });
+
+    if (imagesToDelete.length !== images.length) {
+      throw new NotFound("One or more images could not be found");
+    }
+
+    for (const image of imagesToDelete) {
+      if (image.postedBy.toString() !== user._id.toString()) {
+        throw new Unauthenticated("You're not authorized to delete this image");
+      }
+    }
+
+    await Image.deleteMany({
+      hash: { $in: imageHashes },
+      url: { $in: imageUrls },
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: `${images.length} image(s) deleted successfully`,
+    });
+  } catch (err) {
+    return next(err);
   }
 };
 
