@@ -383,9 +383,9 @@ export const updateImage = async (
   } = req;
 
   try {
-    const { _id: imageId, name, altText, tags } = image;
+    const { _id: imageId, title, altText, tags } = image;
 
-    if (!name && !altText && !tags) {
+    if (!title && !altText && !tags) {
       throw new BadRequest("No fields to update were provided");
     }
 
@@ -414,7 +414,7 @@ export const updateImage = async (
 
     const updatedImage = await Image.findOneAndUpdate(
       { _id: imageId },
-      { name, altText, tags },
+      { title, altText, tags },
       { new: true }
     );
 
