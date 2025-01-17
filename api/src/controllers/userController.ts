@@ -329,19 +329,20 @@ export const uploadImages = async (
   }
 };
 
-export const deleteImage = async (
+export const deleteImages = async (
   req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
   const {
     user: { userId },
-    body: { url, postedBy, hash },
+    body: { images },
     params: { id },
   } = req;
 
   try {
     const user: UserType = await User.findById(userId);
+    const imagesArray = Array.isArray(images) ? images : [images];
 
     if (!user) {
       throw new NotFound("User not found");
@@ -351,22 +352,34 @@ export const deleteImage = async (
       throw new Unauthenticated("You're not authorized to perform this action");
     }
 
-    if (user._id.toString() !== postedBy) {
-      throw new Unauthenticated("You're not authorized to perform this action");
+    const imageHashes = imagesArray.map((image: any) => image.hash);
+    const imageUrls = imagesArray.map((image: any) => image.url);
+
+    const imagesToDelete = await Image.find({
+      hash: { $in: imageHashes },
+      url: { $in: imageUrls },
+    });
+
+    if (imagesToDelete.length !== images.length) {
+      throw new NotFound("One or more images could not be found");
     }
 
-    const image = await Image.findOne({ hash: hash, url: url });
-    console.log("image", image);
-
-    if (!image) {
-      throw new DuplicatedResource("The image could not be deleted");
+    for (const image of imagesToDelete) {
+      if (image.postedBy.toString() !== user._id.toString()) {
+        throw new Unauthenticated("You're not authorized to delete this image");
+      }
     }
 
-    await image.deleteOne();
+    // Delete images in bulk
+    await Image.deleteMany({
+      hash: { $in: imageHashes },
+      url: { $in: imageUrls },
+    });
 
-    res
-      .status(StatusCodes.OK)
-      .json({ success: true, data: "Image deleted successfully" });
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: `${images.length} image(s) deleted successfully`,
+    });
   } catch (err) {
     return next(err);
   }
