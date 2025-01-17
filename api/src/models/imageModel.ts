@@ -5,17 +5,25 @@ const imageSchema: Schema = new Schema<ImageInterface>(
   {
     url: { type: String, required: true },
     name: { type: String, required: true },
-    alt: { type: String },
+    altText: { type: String },
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    hash: { type: String, unique: true },
+    hash: { type: String, required: true },
     tags: [{ type: String }],
   },
   {
     timestamps: true,
+  }
+);
+
+imageSchema.index(
+  { hash: 1, postedBy: 1 },
+  {
+    unique: true,
+    name: "hash_postedBy_unique",
   }
 );
 
