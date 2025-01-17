@@ -3,7 +3,7 @@ import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
-import { isValidUsername } from "../utils/validators";
+import { isValidUsername, validateImageUrl } from "../utils/validators";
 import { UserType } from "../typings/types";
 import mongoose from "mongoose";
 import { CategoryInterface } from "../typings/models/category";
@@ -334,6 +334,12 @@ export const uploadImages = async (
     const newImages = [];
 
     for (const image of imagesArray) {
+      const validUrl = validateImageUrl(image.url);
+
+      if (!validUrl) {
+        throw new BadRequest("Invalid image URL");
+      }
+
       const existingImage = await Image.findOne({
         postedBy: user._id,
         hash: image.hash,
@@ -345,6 +351,7 @@ export const uploadImages = async (
 
       const newImage = await Image.create({
         name: image.url,
+        title: image.title || "",
         url: image.url,
         altText: image.altText || "",
         tags: image.tags || [],
