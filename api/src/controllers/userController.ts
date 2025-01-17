@@ -370,7 +370,6 @@ export const deleteImages = async (
       }
     }
 
-    // Delete images in bulk
     await Image.deleteMany({
       hash: { $in: imageHashes },
       url: { $in: imageUrls },
