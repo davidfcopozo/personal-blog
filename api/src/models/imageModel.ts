@@ -5,6 +5,7 @@ const imageSchema: Schema = new Schema<ImageInterface>(
   {
     url: { type: String, required: true },
     name: { type: String, required: true },
+    title: { type: String },
     altText: { type: String },
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
