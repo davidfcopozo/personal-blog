@@ -10,6 +10,8 @@ import {
   getUserByUsername,
   uploadImages,
   deleteImages,
+  getImagesByUserId,
+  updateImage,
 } from "../controllers/userController";
 
 router.route("/").get(getUsers);
@@ -20,7 +22,12 @@ router
   .put(auth, toggleFollowUser)
   .delete(auth, deleteUserById);
 router;
-router.route("/:id/images").post(auth, uploadImages).delete(auth, deleteImages);
+router
+  .route("/:id/images")
+  .get(auth, getImagesByUserId)
+  .post(auth, uploadImages)
+  .patch(auth, updateImage)
+  .delete(auth, deleteImages);
 router.route("/username/:username").get(getUserByUsername);
 
 export default router;
