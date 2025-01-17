@@ -273,19 +273,20 @@ export const toggleFollowUser = async (
   }
 };
 
-export const uploadImage = async (
+export const uploadImages = async (
   req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
   const {
     user: { userId },
-    body: { url, metadata },
+    body: { images },
     params: { id },
   } = req;
 
   try {
     const user: UserType = await User.findById(userId);
+    const imagesArray = Array.isArray(images) ? images : [images];
 
     if (!user) {
       throw new NotFound("User not found");
@@ -295,19 +296,34 @@ export const uploadImage = async (
       throw new Unauthenticated("You're not authorized to perform this action");
     }
 
-    const image = await Image.findOne({ hash: metadata.hash });
+    const newImages = [];
 
-    if (image) {
-      throw new DuplicatedResource("The image could not be uploaded");
+    for (const image of imagesArray) {
+      const existingImage = await Image.findOne({
+        postedBy: user._id,
+        hash: image.hash,
+      });
+
+      if (existingImage) {
+        throw new DuplicatedResource(`Duplicate image detected: ${image.name}`);
+      }
+
+      const newImage = await Image.create({
+        name: image.url,
+        url: image.url,
+        altText: image.altText || "",
+        tags: image.tags || [],
+        hash: image.hash,
+        postedBy: user._id,
+      });
+
+      newImages.push(newImage);
     }
 
-    const newImage = await Image.create({
-      url,
-      hash: metadata.hash,
-      ...metadata,
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: newImages,
     });
-
-    res.status(StatusCodes.OK).json({ success: true, data: newImage });
   } catch (err) {
     return next(err);
   }
