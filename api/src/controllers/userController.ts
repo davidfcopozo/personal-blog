@@ -273,6 +273,41 @@ export const toggleFollowUser = async (
   }
 };
 
+export const getImagesByUserId = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { id },
+    user: { userId },
+  } = req;
+
+  try {
+    if (id !== userId.toString()) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    const images = await Image.find({ postedBy: id });
+
+    if (!images) {
+      throw new NotFound("No images found");
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: images, count: images.length });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const uploadImages = async (
   req: RequestWithUserInfo | any,
   res: Response,
