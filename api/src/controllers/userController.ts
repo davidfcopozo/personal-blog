@@ -364,6 +364,62 @@ export const uploadImages = async (
   }
 };
 
+export const updateImage = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { image },
+    params: { id },
+  } = req;
+
+  try {
+    const { _id: imageId, name, altText, tags } = image;
+
+    if (!name && !altText && !tags) {
+      throw new BadRequest("No fields to update were provided");
+    }
+
+    const user: UserType = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    if (user._id.toString() !== id) {
+      throw new Unauthenticated("You're not authorized to perform this action");
+    }
+
+    const existingImage = await Image.findOne({
+      postedBy: user._id,
+      _id: imageId,
+    });
+
+    if (!existingImage) {
+      throw new NotFound("Image not found");
+    }
+
+    if (existingImage.postedBy.toString() !== user._id.toString()) {
+      throw new Unauthenticated("You're not authorized to update this image");
+    }
+
+    const updatedImage = await Image.findOneAndUpdate(
+      { _id: imageId },
+      { name, altText, tags },
+      { new: true }
+    );
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: updatedImage,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 export const deleteImages = async (
   req: RequestWithUserInfo | any,
   res: Response,
