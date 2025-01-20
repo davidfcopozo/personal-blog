@@ -61,7 +61,6 @@ const BlogEditor: FC<BlogEditorProps> = ({
                   <Input
                     id="title"
                     value={title}
-                    /* onChange={handleTitleChange} */
                     onChange={(e) => updatePostState("title", e.target.value)}
                     placeholder="Enter blog title"
                   />

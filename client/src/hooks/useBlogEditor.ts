@@ -64,13 +64,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     url: "/api/posts",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
-      /*  
-     setTitle("");
-      setContent("");
-      setFeaturedImage(null);
-      setCategories([]);
-      setTags([]);
-      */
       setPostData({
         title: "",
         content: "",
@@ -224,11 +217,11 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
   const handleImageUpload = useCallback(
     async (file: File) => {
-      const currentUser = await queryClient.getQueryData<{ data: UserType }>([
+      const currentUser = queryClient.getQueryData<{ data: UserType }>([
         "currentUser",
       ]);
 
-      let currentUserId = await `${currentUser?.data._id}`;
+      let currentUserId = `${currentUser?.data._id}`;
       try {
         const id = `${file.name.split(".")[0]}-${Date.now()}`;
         let idWithoutSpaces = id.replace(/\s+/g, "-");
