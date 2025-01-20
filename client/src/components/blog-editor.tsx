@@ -26,33 +26,26 @@ const BlogEditor: FC<BlogEditorProps> = ({
   };
 
   const {
-    title,
-    content,
-    featuredImage,
     temporaryFeatureImage,
-    tags,
-    categories,
-    handleTitleChange,
-    handleContentChange,
+    postData,
+    updatePostState,
     handleSubmit,
+    handleContentChange,
     handleImageUpload,
     handleFeatureImagePick,
-    setCategories,
-    setTags,
-    setTitle,
-    setContent,
-    setFeaturedImage,
   } = useBlogEditor({ initialPost, slug });
+
+  const { title, content, featuredImage, tags, categories } = postData;
 
   useEffect(() => {
     if (initialPost) {
-      setTitle(initialPost.title || "");
-      setContent(initialPost.content || "");
-      setFeaturedImage(initialPost.featuredImage || null);
-      setCategories(initialPost.categories || []);
-      setTags(initialPost.tags || []);
+      updatePostState("title", initialPost.title || "");
+      updatePostState("content", initialPost.content || "");
+      updatePostState("featuredImage", initialPost.featuredImage || null);
+      updatePostState("categories", initialPost.categories || []);
+      updatePostState("tags", initialPost.tags || []);
     }
-  }, [initialPost]);
+  }, [initialPost, updatePostState]);
 
   return (
     <div className="outer-container">
@@ -68,7 +61,8 @@ const BlogEditor: FC<BlogEditorProps> = ({
                   <Input
                     id="title"
                     value={title}
-                    onChange={handleTitleChange}
+                    /* onChange={handleTitleChange} */
+                    onChange={(e) => updatePostState("title", e.target.value)}
                     placeholder="Enter blog title"
                   />
                 )}
@@ -88,8 +82,24 @@ const BlogEditor: FC<BlogEditorProps> = ({
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
-            <Categories categories={categories} setCategories={setCategories} />
-            <Tags tags={tags} setTags={setTags} />
+            <Categories
+              categories={categories}
+              setCategories={(value) =>
+                updatePostState(
+                  "categories",
+                  typeof value === "function" ? value(categories) : value
+                )
+              }
+            />
+            <Tags
+              tags={tags}
+              setTags={(value: string[] | ((prevTags: string[]) => string[])) =>
+                updatePostState(
+                  "tags",
+                  typeof value === "function" ? value(tags) : value
+                )
+              }
+            />
           </div>
         </div>
       </main>
