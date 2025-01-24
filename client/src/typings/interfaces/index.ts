@@ -86,6 +86,8 @@ export interface EditorProps {
   value: string;
   onChange: (content: string) => void;
   handleImageUpload: (file: File) => Promise<string>;
+  /* 
+  openImageUploadModal: () => void; */
 }
 
 export interface NewPostLayoutProps {
@@ -96,6 +98,7 @@ export interface NewPostLayoutProps {
 export interface NewPostHeaderProps {
   onSave: (e: FormEvent) => void;
 }
+
 export interface BlogEditorProps {
   initialPost?: {
     title: string;
@@ -116,6 +119,7 @@ export interface InitialPost {
   categories?: CategoryInterface[];
   tags?: string[];
 }
+
 export interface UseBlogEditorProps {
   initialPost?: InitialPost | null;
   slug?: string | null;
@@ -243,4 +247,80 @@ export interface AuthorPanelProps {
   handleFollowToggle: () => void;
   isFollowed: boolean;
   isPending: boolean;
+}
+
+export interface ImageFile {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  dimensions: {
+    width: number;
+    height: number;
+  };
+  uploadedAt: Date;
+  title: string;
+  altText: string;
+  tags: string[];
+}
+
+export interface UploadProgress {
+  id: string;
+  progress: number;
+  status: "uploading" | "success" | "error";
+  error?: string;
+}
+export interface ImageInterface {
+  id: string;
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+  dimensions: string;
+  uploadDate: Date;
+  title?: string;
+  altText?: string;
+  tags?: string[];
+}
+
+export interface ImageFile {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  dimensions: {
+    width: number;
+    height: number;
+  };
+  uploadedAt: Date;
+  title: string;
+  altText: string;
+  tags: string[];
+}
+
+export interface UploadProgress {
+  id: string;
+  progress: number;
+  status: "uploading" | "success" | "error";
+  error?: string;
+}
+
+export interface ImageCardPropsInterface {
+  image: ImageInterface;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+export interface ImageGalleryPropsInterface {
+  images: ImageInterface[];
+  selectedImage: ImageInterface | null;
+  onSelect: (image: ImageInterface) => void;
+}
+
+export interface ImageInfoPanelPropsInterface {
+  image: ImageInterface | null;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<ImageInterface>) => void;
 }
