@@ -20,13 +20,22 @@ const MONGO_DB: string = process.env.MONGO_DB as string;
 
 const app = express();
 
+const allowedOrigins = ["http://localhost:3000"];
+if (process.env.ALLOWED_ORIGINS) {
+  allowedOrigins.push(
+    ...process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  );
+}
+
+app.options("*", cors({ origin: allowedOrigins }));
+
 //Middlewares
 app.use(express.json()); //transforms req.body into json
 app.use(express.urlencoded({ limit: "5mb", extended: true })); //transforms req.body into urlencoded
 app.use(cookieParser(process.env.JWT_SECRET)); //parses cookies
 app.use(morgan("dev")); //logs requests
 app.use(bodyParser.json({ limit: "5mb" })); //parses json
-app.use(cors()); //allows cross origin requests
+app.use(cors({ origin: allowedOrigins }));
 app.use(helmet()); //sets various http headers for security
 app.use(hpp()); //prevents http parameter pollution
 app.use(mongoSanitize()); //prevents nosql injections
