@@ -52,9 +52,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     []
   );
 
-  console.log("Categories from useBlogEditor", categories);
-  console.log("Post data from useBlogEditor", postData);
-
   const {
     mutate: newPostMutate,
     data: newPostData,
@@ -183,24 +180,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const handleContentChange = useCallback(
     (value: string) => {
       updatePostState("content", value);
-      const contentImages = extractImagesFromContent(value);
-
-      const firebaseImages = contentImages.filter((url) =>
-        url.includes("firebasestorage.googleapis.com")
-      );
-
-      const removedImages = currentImages.filter(
-        (img) =>
-          !firebaseImages.includes(img) &&
-          img.includes("firebasestorage.googleapis.com")
-      );
-
-      if (removedImages.length > 0) {
-        removedImages.forEach(deleteImageFromFirebase);
-        setCurrentImages(contentImages);
-      }
     },
-    [currentImages, setCurrentImages, deleteImageFromFirebase, updatePostState]
+    [updatePostState]
   );
 
   const handleFeatureImagePick = useCallback(
