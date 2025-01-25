@@ -12,6 +12,25 @@ const nextConfig = {
     ],
   },
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "personal-blog-zy4i.vercel.app",
+          },
+        ],
+        destination: "https://personal-blog-zy4i.vercel.app/:path*",
+        permanent: true,
+      },
+    ];
+  },
+  swcMinify: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

@@ -1,13 +1,7 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { CommentInterface, UseBulkFetchProps } from "@/typings/interfaces";
-
-const getBaseURL = () => {
-  if (typeof window !== "undefined") {
-    return `http://${window.location.hostname}:3000`;
-  }
-  return "http://localhost:3000";
-};
+import getBaseURL from "@/utils/get-base-url";
 
 const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
   const baseURL = getBaseURL();

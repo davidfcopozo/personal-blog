@@ -20,14 +20,41 @@ const MONGO_DB: string = process.env.MONGO_DB as string;
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000"];
-if (process.env.ALLOWED_ORIGINS) {
-  allowedOrigins.push(
-    ...process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
-  );
-}
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
 
-app.options("*", cors({ origin: allowedOrigins }));
+const developmentOrigins = ["https://localhost:3000", "http://localhost:3000"];
+
+const productionOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  : [];
+
+const corsOptions = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    // In development, allow localhost
+    if (isDevelopment && origin && developmentOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // In production, only allow specified origins
+    if (isProduction) {
+      if (!origin || productionOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    }
+
+    // Fallback for other environments
+    callback(null, false);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+app.options("*", cors(corsOptions));
 
 //Middlewares
 app.use(express.json()); //transforms req.body into json
@@ -35,7 +62,7 @@ app.use(express.urlencoded({ limit: "5mb", extended: true })); //transforms req.
 app.use(cookieParser(process.env.JWT_SECRET)); //parses cookies
 app.use(morgan("dev")); //logs requests
 app.use(bodyParser.json({ limit: "5mb" })); //parses json
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors(corsOptions));
 app.use(helmet()); //sets various http headers for security
 app.use(hpp()); //prevents http parameter pollution
 app.use(mongoSanitize()); //prevents nosql injections
@@ -48,7 +75,6 @@ const limiter = rateLimit({
 });
 
 app.use(limiter); //limits requests
-
 app.use("/", routes);
 
 app.use(notFound);
