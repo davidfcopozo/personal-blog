@@ -317,6 +317,7 @@ export interface ImageGalleryPropsInterface {
   images: ImageInterface[];
   selectedImage: ImageInterface | null;
   onSelect: (image: ImageInterface) => void;
+  onDoubleClick?: (image: ImageInterface) => void;
 }
 
 export interface ImageInfoPanelPropsInterface {
