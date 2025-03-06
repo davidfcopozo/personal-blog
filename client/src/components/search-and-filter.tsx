@@ -2,22 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Search, SortAsc } from "lucide-react";
-import { ImageGallery } from "./image-gallery";
-import { useImageSelection } from "@/hooks/useImageSelection";
 import { ImageInterface } from "@/typings/interfaces";
 
 interface SearchAndFilterProps {
   images: ImageInterface[];
+  onSearch?: (query: string) => void;
 }
 
-export function SearchAndFilter({ images }: SearchAndFilterProps) {
+export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [filteredImages, setFilteredImages] =
-    useState<ImageInterface[]>(images);
-  const { selectedImage, selectImage } = useImageSelection(filteredImages);
 
   const availableTags = useMemo(() => {
     const tags = new Set<string>();
@@ -27,40 +23,12 @@ export function SearchAndFilter({ images }: SearchAndFilterProps) {
     return Array.from(tags).sort();
   }, [images]);
 
-  // Combined filter and sort function
-  const applyFiltersAndSorting = useCallback(() => {
-    let results = images.filter((image) => {
-      const matchesSearch = image.title
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesTags =
-        selectedTags.length === 0 ||
-        selectedTags.every((tag) => image.tags?.includes(tag));
-      return matchesSearch && matchesTags;
-    });
-
-    results.sort((a, b) => {
-      if (sortBy === "date") {
-        return sortOrder === "asc"
-          ? a.uploadDate.getTime() - b.uploadDate.getTime()
-          : b.uploadDate.getTime() - a.uploadDate.getTime();
-      } else {
-        return sortOrder === "asc"
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-      }
-    });
-
-    setFilteredImages(results);
-  }, [images, searchQuery, selectedTags, sortBy, sortOrder]);
-
-  useEffect(() => {
-    applyFiltersAndSorting();
-  }, [applyFiltersAndSorting]);
-
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newSearchQuery = e.target.value;
     setSearchQuery(newSearchQuery);
+    if (onSearch) {
+      onSearch(newSearchQuery);
+    }
   }
 
   const toggleTag = (tag: string) => {
@@ -97,7 +65,6 @@ export function SearchAndFilter({ images }: SearchAndFilterProps) {
         <div className="flex flex-wrap gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              {/* <Filter className="w-4 h-4 text-gray-500" /> */}
               <div className="flex-1 min-w-[20%] ">
                 <Label htmlFor="tag-filter" className="pl-2">
                   Filter by tag
@@ -165,11 +132,6 @@ export function SearchAndFilter({ images }: SearchAndFilterProps) {
           </div>
         </div>
       </div>
-      <ImageGallery
-        images={filteredImages}
-        selectedImage={selectedImage}
-        onSelect={selectImage}
-      />
     </div>
   );
 }
