@@ -9,9 +9,11 @@ export function ImageGallery({
 }: ImageGalleryPropsInterface & { onDoubleClick: (image: any) => void }) {
   if (!images || images.length === 0) {
     return (
-      <div className="text-center p-8 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">No images available</p>
-        <p className="text-sm text-gray-400">Upload images to see them here</p>
+      <div className="text-center p-8 bg-muted rounded-lg">
+        <p className="text-muted-foreground">No images available</p>
+        <p className="text-sm text-muted-foreground opacity-70">
+          Upload images to see them here
+        </p>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Search, SortAsc } from "lucide-react";
 import { ImageInterface } from "@/typings/interfaces";
 
@@ -51,13 +52,13 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
       <div className="mb-4 space-y-4">
         {/* Search bar */}
         <div className="relative">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
+          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Input
             type="text"
             placeholder="Search by title..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4"
           />
         </div>
 
@@ -73,7 +74,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
                   id="tag-filter"
                   value={selectedTags.join(",")}
                   onChange={(e) => setSelectedTags(e.target.value.split(","))}
-                  className="w-full p-2 border rounded-md"
+                  className="w-full p-2 border border-input rounded-md bg-background"
                 >
                   <option value="">All tags</option>
                   {availableTags.map((tag) => (
@@ -87,11 +88,9 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
                 <Button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                    selectedTags.includes(tag)
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  variant={selectedTags.includes(tag) ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-full text-sm"
                 >
                   {tag}
                 </Button>
@@ -101,11 +100,9 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
           <div className="flex gap-2 items-end">
             <Button
               onClick={() => toggleSort("date")}
-              className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1 ${
-                sortBy === "date"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
+              variant={sortBy === "date" ? "default" : "outline"}
+              size="sm"
+              className="flex items-center gap-1"
             >
               <SortAsc
                 className={`w-4 h-4 ${
@@ -116,11 +113,9 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
             </Button>
             <Button
               onClick={() => toggleSort("name")}
-              className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1 ${
-                sortBy === "name"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
+              variant={sortBy === "name" ? "default" : "outline"}
+              size="sm"
+              className="flex items-center gap-1"
             >
               <SortAsc
                 className={`w-4 h-4 ${

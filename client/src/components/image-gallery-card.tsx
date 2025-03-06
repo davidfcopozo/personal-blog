@@ -1,5 +1,6 @@
 import { ImageCardPropsInterface } from "@/typings/interfaces";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export function ImageCard({
   image,
@@ -8,9 +9,10 @@ export function ImageCard({
 }: ImageCardPropsInterface) {
   return (
     <div
-      className={`relative aspect-square overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ease-in-out ${
-        isSelected ? "ring-2 ring-blue-500" : "hover:opacity-80"
-      }`}
+      className={cn(
+        "relative aspect-square overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ease-in-out",
+        isSelected ? "ring-2 ring-primary" : "hover:opacity-80"
+      )}
       onClick={onSelect}
     >
       <Image
@@ -21,9 +23,9 @@ export function ImageCard({
         height={500}
       />
       {isSelected && (
-        <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
+        <div className="absolute inset-0 bg-primary bg-opacity-20 flex items-center justify-center">
           <svg
-            className="w-6 h-6 text-white"
+            className="w-6 h-6 text-primary-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

@@ -12,8 +12,8 @@ export function ImageInfoPanel({
 }: ImageInfoPanelPropsInterface) {
   if (!image) {
     return (
-      <div className="bg-gray-100 rounded-lg p-4">
-        <p className="text-gray-500">Select an image to view details</p>
+      <div className="bg-muted rounded-lg p-4">
+        <p className="text-muted-foreground">Select an image to view details</p>
       </div>
     );
   }
@@ -23,26 +23,28 @@ export function ImageInfoPanel({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-4">
+    <div className="bg-background rounded-lg shadow-sm border p-4 space-y-4">
       <Image
         src={image.url || "/placeholder.svg"}
         alt={image.name}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover rounded-md"
         width={500}
         height={500}
       />
 
       <div className="space-y-2">
         <h3 className="font-bold text-lg">Image Information</h3>
-        <p className="text-sm text-gray-600">File name: {image.name}</p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">File name: {image.name}</p>
+        <p className="text-sm text-muted-foreground">
           Uploaded on: {showMonthDayYear(image.uploadDate.toISOString())}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Size: {formatFileSize(image.size)}
         </p>
-        <p className="text-sm text-gray-600">Dimensions: {image.dimensions}</p>
-        <p className="text-sm text-gray-600">Type: {image.type}</p>
+        <p className="text-sm text-muted-foreground">
+          Dimensions: {image.dimensions}
+        </p>
+        <p className="text-sm text-muted-foreground">Type: {image.type}</p>
       </div>
 
       <Separator />
