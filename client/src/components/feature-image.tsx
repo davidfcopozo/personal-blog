@@ -31,7 +31,7 @@ const FeatureImage = ({
       <CardHeader>
         <CardTitle>Feature Image</CardTitle>
       </CardHeader>
-      <CardContent className="px-0 py-4 px-2">
+      <CardContent className="py-4 px-2">
         <div className="grid gap-2 w-full">
           <Button
             variant="outline"
