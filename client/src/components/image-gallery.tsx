@@ -5,24 +5,27 @@ export function ImageGallery({
   images,
   selectedImage,
   onSelect,
-}: ImageGalleryPropsInterface) {
-  if (images.length === 0) {
+  onDoubleClick,
+}: ImageGalleryPropsInterface & { onDoubleClick: (image: any) => void }) {
+  if (!images || images.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
-        <p className="text-gray-500">No images found</p>
+      <div className="text-center p-8 bg-gray-50 rounded-lg">
+        <p className="text-gray-500">No images available</p>
+        <p className="text-sm text-gray-400">Upload images to see them here</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
       {images.map((image) => (
-        <ImageCard
-          key={image.id}
-          image={image}
-          isSelected={selectedImage?.id === image.id}
-          onSelect={() => onSelect(image)}
-        />
+        <div key={image.id} onDoubleClick={() => onDoubleClick(image)}>
+          <ImageCard
+            image={image}
+            isSelected={selectedImage?.id === image.id}
+            onSelect={() => onSelect(image)}
+          />
+        </div>
       ))}
     </div>
   );
