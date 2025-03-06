@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ImageInfoPanel } from "./Image-info-panel";
+import { ImageInfoPanel } from "./image-info-panel";
 import { UploadButton } from "./image-upload-button";
 import { ImageUploader } from "./image-uploader";
 import { SearchAndFilter } from "./search-and-filter";
