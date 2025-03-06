@@ -50,7 +50,7 @@ const Categories = ({
         .map((category) => {
           return fetchedCategories?.data?.find(
             (cat: CategoryInterface) =>
-              cat._id.toString() === category?._id.toString()
+              cat?._id?.toString() === category?._id?.toString()
           );
         })
         .filter(Boolean) as CategoryInterface[];
