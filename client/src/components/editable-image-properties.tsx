@@ -36,6 +36,13 @@ export function EditableImageProperties({
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h3 className="font-bold text-lg">Editable Properties</h3>
@@ -71,7 +78,7 @@ export function EditableImageProperties({
             >
               {tag}
               <X
-                className="h-3 w-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer hover:text-destructive"
                 onClick={() => removeTag(tag)}
               />
             </Badge>
@@ -82,16 +89,19 @@ export function EditableImageProperties({
             id="tags"
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Add a tag"
             className="flex-grow"
           />
-          <Button type="button" onClick={addTag} variant="outline">
+          <Button type="button" onClick={addTag} variant="outline" size="sm">
             Add
           </Button>
         </div>
       </div>
 
-      <Button type="submit">Save Changes</Button>
+      <Button type="submit" className="w-full">
+        Save Changes
+      </Button>
     </form>
   );
 }
