@@ -8,21 +8,53 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
   const [isImageUploadModalOpen, setImageUploadModalOpen] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<ImageInterface[]>([]);
+  const [cursorPosition, setCursorPosition] = useState<{
+    index: number;
+    length: number;
+  } | null>(null);
 
   const openImageUploadModal = useCallback(() => {
-    setImageUploadModalOpen((prev) => !prev);
+    // Save current cursor position before opening modal
+    if (editorRef.current) {
+      const quill = editorRef.current.getEditor();
+      const selection = quill.getSelection();
+      if (selection) {
+        setCursorPosition(selection);
+      }
+    }
+    setImageUploadModalOpen(true);
+  }, []);
+
+  const closeImageUploadModal = useCallback(() => {
+    setImageUploadModalOpen(false);
   }, []);
 
   const handleInsertImage = useCallback(
     (url: string) => {
       if (editorRef.current) {
         const quill = editorRef.current.getEditor();
-        const range = quill.getSelection(true);
-        quill.insertEmbed(range.index, "image", url);
-        quill.setSelection(range.index + 1, 1);
+
+        let insertPosition = cursorPosition ? cursorPosition.index : 0;
+
+        // If no saved position, try to get current selection
+        if (!cursorPosition) {
+          const currentSelection = quill.getSelection();
+          if (currentSelection) {
+            insertPosition = currentSelection.index;
+          }
+        }
+
+        quill.focus();
+
+        quill.insertEmbed(insertPosition, "image", url);
+
+        // Move cursor after the image
+        quill.setSelection(insertPosition + 1, 0);
+
+        setCursorPosition(null);
       }
     },
-    [editorRef]
+    [cursorPosition]
   );
 
   const handleDirectImageUpload = useCallback(() => {
@@ -69,7 +101,7 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
       const toolbar = editorRef.current.getEditor().getModule("toolbar");
       toolbar.addHandler("image", openImageUploadModal);
       toolbar.addHandler("undo", undoHandler);
-      toolbar.addHandler("redu", redoHandler);
+      toolbar.addHandler("redo", redoHandler);
     }
   }, [openImageUploadModal, undoHandler, redoHandler]);
 
@@ -96,7 +128,7 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
       />
       <ImageUploadModal
         isImageUploadModalOpen={isImageUploadModalOpen}
-        openImageUploadModal={openImageUploadModal}
+        openImageUploadModal={closeImageUploadModal}
         onInsertImage={handleInsertImage}
         handleImageUpload={handleImageUpload}
         images={uploadedImages}
