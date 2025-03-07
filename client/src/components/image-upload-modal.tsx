@@ -14,6 +14,7 @@ import { UploadButton } from "./image-upload-button";
 import { SearchAndFilter } from "./search-and-filter";
 import { ImageInterface } from "@/typings/interfaces";
 import { ImageGallery } from "./image-gallery";
+import { Loader2 } from "lucide-react";
 
 export function ImageUploadModal({
   isImageUploadModalOpen,
@@ -21,19 +22,22 @@ export function ImageUploadModal({
   onInsertImage,
   handleImageUpload,
   images,
-  setImages,
+  onDeleteImage,
+  isLoadingImages,
 }: {
   isImageUploadModalOpen: boolean;
   openImageUploadModal: () => void;
   onInsertImage: (url: string) => void;
   handleImageUpload: (file: File) => Promise<string>;
   images: ImageInterface[];
-  setImages: React.Dispatch<React.SetStateAction<ImageInterface[]>>;
+  onDeleteImage: (id: string) => Promise<boolean>;
+  isLoadingImages: boolean;
 }) {
   const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(
     null
   );
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const filteredImages = searchQuery
     ? images.filter(
@@ -49,21 +53,14 @@ export function ImageUploadModal({
     : images;
 
   const handleFileUpload = async (files: File[]) => {
-    const uploaded = await Promise.all(
-      files.map(async (file) => {
-        const url = await handleImageUpload(file);
-        return {
-          id: url,
-          name: file.name,
-          url,
-          size: file.size,
-          type: file.type,
-          dimensions: "0x0",
-          uploadDate: new Date(),
-        };
-      })
-    );
-    setImages((prev) => [...prev, ...uploaded]);
+    setIsProcessing(true);
+    try {
+      await Promise.all(files.map((file) => handleImageUpload(file)));
+      setIsProcessing(false);
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      setIsProcessing(false);
+    }
   };
 
   const handleInsert = () => {
@@ -82,21 +79,25 @@ export function ImageUploadModal({
     openImageUploadModal();
   };
 
-  const handleDelete = (id: string) => {
-    setImages((prev) => prev.filter((img) => img.id !== id));
-    if (selectedImage?.id === id) {
-      setSelectedImage(null);
+  const handleDelete = async (id: string) => {
+    setIsProcessing(true);
+    try {
+      await onDeleteImage(id);
+
+      if (selectedImage?.id === id) {
+        setSelectedImage(null);
+      }
+
+      setIsProcessing(false);
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      setIsProcessing(false);
     }
   };
 
   const handleUpdate = (id: string, updates: Partial<ImageInterface>) => {
-    setImages((prev) =>
-      prev.map((img) => (img.id === id ? { ...img, ...updates } : img))
-    );
-
-    if (selectedImage?.id === id) {
-      setSelectedImage((prev) => (prev ? { ...prev, ...updates } : prev));
-    }
+    // This will be implemented in the future with the updateImageMetadata function
+    console.log("Update image:", id, updates);
   };
 
   return (
@@ -106,6 +107,14 @@ export function ImageUploadModal({
           <DialogHeader>
             <DialogTitle>Image Gallery</DialogTitle>
           </DialogHeader>
+          {(isLoadingImages || isProcessing) && (
+            <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-50">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-lg">
+                {isProcessing ? "Processing..." : "Loading images..."}
+              </span>
+            </div>
+          )}
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 max-h-[60vh] lg:max-h-[70vh] overflow-y-auto">
               <UploadButton onUpload={handleFileUpload} />
@@ -132,7 +141,10 @@ export function ImageUploadModal({
             <Button variant="outline" onClick={closeModal}>
               Cancel
             </Button>
-            <Button onClick={handleInsert} disabled={!selectedImage}>
+            <Button
+              onClick={handleInsert}
+              disabled={!selectedImage || isProcessing}
+            >
               Insert Image
             </Button>
           </DialogFooter>
