@@ -271,40 +271,20 @@ export interface UploadProgress {
   status: "uploading" | "success" | "error";
   error?: string;
 }
+
 export interface ImageInterface {
   id: string;
-  name: string;
-  url: string;
-  size: number;
-  type: string;
-  dimensions: string;
-  createdAt: Date;
-  title?: string;
-  altText?: string;
-  tags?: string[];
-}
-
-export interface ImageFile {
-  id: string;
   url: string;
   name: string;
-  size: number;
-  type: string;
-  dimensions: {
-    width: number;
-    height: number;
-  };
-  uploadedAt: Date;
   title: string;
   altText: string;
   tags: string[];
-}
-
-export interface UploadProgress {
-  id: string;
-  progress: number;
-  status: "uploading" | "success" | "error";
-  error?: string;
+  hash: string;
+  postedBy?: string;
+  createdAt: Date;
+  size: number;
+  type: string;
+  dimensions: string;
 }
 
 export interface ImageCardPropsInterface {
