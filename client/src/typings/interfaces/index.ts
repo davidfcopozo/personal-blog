@@ -278,7 +278,7 @@ export interface ImageInterface {
   size: number;
   type: string;
   dimensions: string;
-  uploadDate: Date;
+  createdAt: Date;
   title?: string;
   altText?: string;
   tags?: string[];
