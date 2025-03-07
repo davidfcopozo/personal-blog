@@ -92,7 +92,7 @@ export async function DELETE(
   }
 
   try {
-    const { imageId }: ImageDeletePayload = await req.json();
+    const body: ImageDeletePayload = await req.json();
 
     const response = await axios.delete<ImageDeleteResponse>(
       `${BASE_URL}/users/${id}/images`,
@@ -101,6 +101,7 @@ export async function DELETE(
           Authorization: `Bearer ${token?.accessToken}`,
           "Content-Type": "application/json",
         },
+        data: { images: body.imageId }, // Include request body in data property
       }
     );
 
@@ -130,7 +131,12 @@ export async function PATCH(
 
     const response = await axios.patch<ImageUpdateResponse>(
       `${BASE_URL}/users/${id}/images`,
-      updates,
+      {
+        image: {
+          _id: imageId,
+          ...updates,
+        },
+      },
       {
         headers: {
           Authorization: `Bearer ${token?.accessToken}`,
