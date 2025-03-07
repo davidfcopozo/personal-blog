@@ -1,65 +1,60 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import axios, { AxiosError } from "axios";
 
-import axios from "axios";
+interface UseDeleteRequestOptions {
+  url: string;
+  onSuccess?: () => void;
+  onError?: (err: AxiosError) => void;
+}
 
-const useDeleteRequest = () => {
+interface DeleteVariables {
+  itemId: string;
+  key: string;
+}
+
+const useDeleteRequest = ({
+  url,
+  onSuccess,
+  onError,
+}: UseDeleteRequestOptions) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const { mutate, data, status, error } = useMutation({
-    mutationFn: async ({
-      url,
-      itemId,
-      key,
-    }: {
-      url: string;
-      itemId: string;
-      key: string;
-    }) => {
-      const res = await axios.delete(url);
-      return { url: res.data.data, itemId, key };
+    mutationFn: async ({ itemId }: DeleteVariables) => {
+      // e.g. final URL =>  "/api/images/12345"
+      const response = await axios.delete(`${url}/${itemId}`);
+      return response.data; // or important fields from response
     },
-    onSuccess: (variables: { url: string; itemId: string; key: string }) => {
-      queryClient.setQueryData([variables.key], (old: any) => {
-        if (!old) return old;
-        return old.filter((item: any) => item._id !== variables.itemId);
-      });
 
-      queryClient.removeQueries({
-        queryKey: [variables.key, variables.itemId],
-      });
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["user-images"] });
 
-      toast({
-        title: "Success",
-        description: "Successfully deleted",
-      });
+      onSuccess?.();
     },
-    onError: (variables: { url: string; itemId: string; key: string }) => {
-      queryClient.invalidateQueries({ queryKey: [variables.key] });
-      queryClient.invalidateQueries({
-        queryKey: [variables.key, variables.itemId],
-      });
 
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "Failed to process the request. Please try again.";
+    onError: (err: AxiosError, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["user-images"] });
 
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
-      });
+      onError?.(err);
+
+      if (!onError) {
+        toast({
+          variant: "destructive",
+          title: "Delete Error",
+          description: err.message || "Failed to delete item",
+        });
+      }
     },
-    onMutate: (variables: { url: string; itemId: string; key: string }) => {
-      queryClient.cancelQueries({ queryKey: [variables.key] });
-      const previousItems = queryClient.getQueryData([variables.key]);
-      queryClient.setQueryData([variables.key], (old: any) => {
-        return old.filter((item: any) => item._id !== variables.itemId);
-      });
-      return { previousItems };
+
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["user-images"] });
+      const previousData = queryClient.getQueryData(["user-images"]);
+      return { previousData };
     },
   });
+
   return { mutate, data, status, error };
 };
 
