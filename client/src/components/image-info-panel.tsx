@@ -36,7 +36,7 @@ export function ImageInfoPanel({
         <h3 className="font-bold text-lg">Image Information</h3>
         <p className="text-sm text-muted-foreground">File name: {image.name}</p>
         <p className="text-sm text-muted-foreground">
-          Uploaded on: {showMonthDayYear(image.uploadDate.toISOString())}
+          Uploaded on: {showMonthDayYear(`${image.createdAt}`)}
         </p>
         <p className="text-sm text-muted-foreground">
           Size: {formatFileSize(image.size)}
