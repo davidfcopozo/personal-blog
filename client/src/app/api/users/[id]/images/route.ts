@@ -72,7 +72,6 @@ export async function POST(
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
-    console.error("Image upload error:", error.response?.data || error.message);
     return NextResponse.json(
       {
         error: error.response?.data?.msg || "Failed to store image metadata",
