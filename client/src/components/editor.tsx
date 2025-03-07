@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactQuill, { Quill } from "react-quill";
 import { formats, modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
-import { EditorProps, ImageInterface } from "@/typings/interfaces";
+import { EditorProps } from "@/typings/interfaces";
 import { ImageUploadModal } from "./image-upload-modal";
+import { useImageManager } from "@/hooks/useImageManager";
 
 const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
+  const { uploadImage, userImages, isLoadingImages, deleteImage } =
+    useImageManager();
   const [isImageUploadModalOpen, setImageUploadModalOpen] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<ImageInterface[]>([]);
   const [cursorPosition, setCursorPosition] = useState<{
     index: number;
     length: number;
@@ -57,24 +59,26 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
     [cursorPosition]
   );
 
-  const handleDirectImageUpload = useCallback(() => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
+  // This function now uses both the blog editor's handleImageUpload and our new uploadImage
+  // to ensure images get stored in both Firebase and DB
+  const handleEditorImageUpload = useCallback(
+    async (file: File) => {
+      try {
+        // Upload to Firebase using the existing function
+        const url = await handleImageUpload(file);
 
-    input.onchange = async () => {
-      if (input.files && input.files.length > 0) {
-        const file = input.files[0];
-        try {
-          const url = await handleImageUpload(file);
-          handleInsertImage(url);
-        } catch (error) {
-          console.error("Error uploading image:", error);
-        }
+        // Also upload metadata to MongoDB
+        // (the uploadImage function in useImageManager will handle this)
+        await uploadImage(file);
+
+        return url;
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
       }
-    };
-  }, [handleImageUpload, handleInsertImage]);
+    },
+    [handleImageUpload, uploadImage]
+  );
 
   let icons = Quill.import("ui/icons");
   icons["undo"] = UNDO_ICON;
@@ -130,9 +134,10 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
         isImageUploadModalOpen={isImageUploadModalOpen}
         openImageUploadModal={closeImageUploadModal}
         onInsertImage={handleInsertImage}
-        handleImageUpload={handleImageUpload}
-        images={uploadedImages}
-        setImages={setUploadedImages}
+        handleImageUpload={handleEditorImageUpload}
+        images={userImages}
+        onDeleteImage={deleteImage}
+        isLoadingImages={isLoadingImages}
       />
     </>
   );
