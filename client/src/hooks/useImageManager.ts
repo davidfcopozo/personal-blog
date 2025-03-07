@@ -148,6 +148,22 @@ export const useImageManager = () => {
       let downloadURL = "";
 
       try {
+        const hash = await getImageHash(file);
+
+        const existingImages = userImagesData?.data || [];
+        const duplicateImage = existingImages.find(
+          (image: ImageInterface) => image.hash === hash
+        );
+
+        if (duplicateImage) {
+          setUploading(false);
+          toast({
+            title: "Duplicate image",
+            description: `An image with the same content already exists: ${duplicateImage.name}`,
+          });
+          return duplicateImage.url; // Return the URL of the existing image
+        }
+
         // Generate a unique filename
         const id = `${file.name.split(".")[0]}-${Date.now()}`;
         const idWithoutSpaces = id.replace(/\\s+/g, "-");
@@ -158,8 +174,6 @@ export const useImageManager = () => {
         downloadURL = await getDownloadURL(snapshot.ref);
 
         const dimensions = await getImageDimensions(file);
-
-        const hash = await getImageHash(file);
 
         const imageMetadata: ImageMetadata = {
           url: downloadURL,
@@ -205,15 +219,21 @@ export const useImageManager = () => {
 
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error occurred";
+
+        const isDuplicateError =
+          typeof errorMessage === "string" &&
+          (errorMessage.toLowerCase().includes("duplicate") ||
+            errorMessage.toLowerCase().includes("duplicated"));
+
         toast({
-          variant: "destructive",
-          title: "Error uploading image",
-          description: `Failed to upload image: ${errorMessage}`,
+          title: isDuplicateError ? "Duplicate image" : "Error uploading image",
+          description: `${errorMessage}`,
         });
+
         throw error;
       }
     },
-    [queryClient, toast, storeImageMetadata]
+    [queryClient, toast, storeImageMetadata, userImagesData]
   );
 
   const deleteImage = useCallback(
