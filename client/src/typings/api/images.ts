@@ -22,7 +22,7 @@ export interface ImagesListResponse {
 }
 
 export interface ImageUploadPayload {
-  image: Omit<ImageInterface, "id"> & { hash: string };
+  images: Omit<ImageInterface, "id"> & { hash: string };
 }
 
 export interface ImageDeletePayload {
