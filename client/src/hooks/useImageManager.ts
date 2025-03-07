@@ -16,6 +16,7 @@ import useFetchRequest from "./useFetchRequest";
 import usePutRequest from "./usePutRequest";
 import { AxiosError } from "axios";
 import { getSession } from "next-auth/react";
+import getImageHash from "@/utils/getImageHash";
 
 interface ImageMetadata extends Omit<ImageInterface, "id"> {
   hash: string;
@@ -158,7 +159,7 @@ export const useImageManager = () => {
 
         const dimensions = await getImageDimensions(file);
 
-        const hash = btoa(downloadURL).slice(0, 10);
+        const hash = await getImageHash(file);
 
         const imageMetadata: ImageMetadata = {
           url: downloadURL,
