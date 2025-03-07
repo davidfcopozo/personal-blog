@@ -7,4 +7,7 @@ export interface ImageInterface extends Document {
   postedBy: mongoose.Types.ObjectId;
   hash: string;
   tags: string[];
+  size: number;
+  type: string;
+  dimensions: string;
 }
