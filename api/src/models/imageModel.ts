@@ -14,6 +14,15 @@ const imageSchema: Schema = new Schema<ImageInterface>(
     },
     hash: { type: String, required: true },
     tags: [{ type: String }],
+    size: {
+      type: Number,
+    },
+    type: {
+      type: String,
+    },
+    dimensions: {
+      type: String,
+    },
   },
   {
     timestamps: true,
