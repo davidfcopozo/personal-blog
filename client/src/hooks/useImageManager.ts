@@ -144,6 +144,7 @@ export const useImageManager = () => {
       }
 
       const currentUserId = `${currentUser.data._id}`;
+      let downloadURL = "";
 
       try {
         // Generate a unique filename
@@ -153,7 +154,7 @@ export const useImageManager = () => {
 
         const storageRef = ref(storage, `images/${currentUserId}/${fileName}`);
         const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        downloadURL = await getDownloadURL(snapshot.ref);
 
         const dimensions = await getImageDimensions(file);
 
@@ -172,12 +173,35 @@ export const useImageManager = () => {
           hash,
         };
 
-        storeImageMetadata({ image: imageMetadata });
+        await storeImageMetadata({ images: imageMetadata });
 
         setUploading(false);
         return downloadURL;
       } catch (error) {
         setUploading(false);
+        // If metadata storage fails but Firebase upload succeeded, clean up the uploaded file
+        if (downloadURL) {
+          try {
+            const imageUrl = downloadURL;
+            const imagePath = imageUrl
+              .split(`${currentUserId}%2F`)[1]
+              ?.split("?")[0];
+
+            if (imagePath) {
+              const imageRef = ref(
+                storage,
+                `images/${currentUserId}/${imagePath}`
+              );
+              await deleteObject(imageRef);
+            }
+          } catch (cleanupError) {
+            console.error(
+              "Failed to clean up orphaned Firebase image:",
+              cleanupError
+            );
+          }
+        }
+
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error occurred";
         toast({
