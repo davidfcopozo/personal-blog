@@ -357,13 +357,17 @@ export const uploadImages = async (
       }
 
       const newImage = await Image.create({
-        name: image.name || image.url,
-        title: image.title || "",
+        name: image.name,
+        title: image.title || image.name?.split(".")[0] || "",
         url: image.url,
         altText: image.altText || "",
         tags: image.tags || [],
         hash: image.hash,
         postedBy: user._id,
+        size: image.size,
+        type: image.type,
+        dimensions: image.dimensions,
+        createdAt: image.createdAt || new Date(),
       });
 
       newImages.push(newImage);
