@@ -315,13 +315,12 @@ export const uploadImages = async (
 ) => {
   const {
     user: { userId },
-    body: { images },
+    body,
     params: { id },
   } = req;
 
   try {
     const user: UserType = await User.findById(userId);
-    const imagesArray = Array.isArray(images) ? images : [images];
 
     if (!user) {
       throw new NotFound("User not found");
@@ -330,6 +329,14 @@ export const uploadImages = async (
     if (user._id.toString() !== id) {
       throw new Unauthenticated("You're not authorized to perform this action");
     }
+
+    const imageData = body.images || body.image;
+
+    if (!imageData) {
+      throw new BadRequest("No image data provided");
+    }
+
+    const imagesArray = Array.isArray(imageData) ? imageData : [imageData];
 
     const newImages = [];
 
@@ -350,7 +357,7 @@ export const uploadImages = async (
       }
 
       const newImage = await Image.create({
-        name: image.url,
+        name: image.name || image.url,
         title: image.title || "",
         url: image.url,
         altText: image.altText || "",
@@ -364,7 +371,7 @@ export const uploadImages = async (
 
     res.status(StatusCodes.OK).json({
       success: true,
-      data: newImages,
+      data: newImages.length === 1 ? newImages[0] : newImages,
     });
   } catch (err) {
     return next(err);
