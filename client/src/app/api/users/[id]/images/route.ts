@@ -58,7 +58,6 @@ export async function POST(
 
   try {
     const body: ImageUploadPayload = await req.json();
-
     const response = await axios.post<ImageUploadResponse>(
       `${BASE_URL}/users/${id}/images`,
       body,
@@ -72,6 +71,19 @@ export async function POST(
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
+    const isDuplicateError =
+      error.response?.status === 409 ||
+      error.response?.data?.msg?.toLowerCase().includes("duplicate");
+
+    if (isDuplicateError) {
+      return NextResponse.json(
+        {
+          error: error.response?.data?.msg || "Duplicate image detected",
+          isDuplicate: true,
+        },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       {
         error: error.response?.data?.msg || "Failed to store image metadata",
