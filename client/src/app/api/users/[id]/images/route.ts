@@ -105,24 +105,39 @@ export async function DELETE(
   }
 
   try {
-    const body: ImageDeletePayload = await req.json();
+    const { searchParams } = new URL(req.url);
+    const imageIds = searchParams.get("ids");
+
+    if (!imageIds) {
+      return NextResponse.json(
+        { error: "No image ID provided" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Deleting image with ID: ${imageIds} for user ${id}`);
 
     const response = await axios.delete<ImageDeleteResponse>(
-      `${BASE_URL}/users/${id}/images`,
+      `${BASE_URL}/users/${id}/images?ids=${imageIds}`,
       {
         headers: {
           Authorization: `Bearer ${token?.accessToken}`,
           "Content-Type": "application/json",
         },
-        data: { images: body.imageId }, // Include request body in data property
       }
     );
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
+    console.error(
+      "Error deleting image:",
+      error.response?.data || error.message
+    );
+
     return NextResponse.json(
       {
         error: error.response?.data?.msg || "Failed to delete image",
+        details: error.response?.data,
       },
       { status: error.response?.status || 500 }
     );
