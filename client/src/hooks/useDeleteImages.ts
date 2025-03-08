@@ -7,9 +7,14 @@ interface DeleteImageProps {
   key?: string;
 }
 
-const useDeleteImages = ({ url, onSuccess, onError, onMutate }: UseMutationRequestProps<any, any>) => {
+const useDeleteImages = ({
+  url,
+  onSuccess,
+  onError,
+  onMutate,
+}: UseMutationRequestProps<any, any>) => {
   const deleteImage = async ({ itemId }: DeleteImageProps) => {
-    const response = await axios.delete(`${url}?ids=${itemId}`);
+    const response = await axios.delete(`${url}/${itemId}`);
     return response.data;
   };
 
