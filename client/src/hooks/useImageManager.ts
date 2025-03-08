@@ -18,7 +18,7 @@ import { AxiosError } from "axios";
 import { getSession } from "next-auth/react";
 import getImageHash from "@/utils/getImageHash";
 
-interface ImageMetadata extends Omit<ImageInterface, "id"> {
+interface ImageMetadata extends Omit<ImageInterface, "_id"> {
   hash: string;
 }
 
@@ -154,6 +154,11 @@ export const useImageManager = () => {
       }
 
       const currentUserId = `${currentUser.data._id}`;
+
+      if (!currentUserId) {
+        setUploading(false);
+        throw new Error("User not authenticated");
+      }
       let downloadURL = "";
 
       try {
@@ -272,8 +277,11 @@ export const useImageManager = () => {
       try {
         // Find image in stored images
         const images = userImagesData?.data || [];
+
+        console.log("Deleting image imageId===>:", imageId);
+
         const imageToDelete = images.find(
-          (img: ImageInterface) => img.id === imageId
+          (img: ImageInterface) => img._id?.toString() === imageId
         );
 
         if (!imageToDelete) {
