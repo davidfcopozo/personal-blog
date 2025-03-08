@@ -21,10 +21,10 @@ export function ImageGallery({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
       {images.map((image) => (
-        <div key={image.id} onDoubleClick={() => onDoubleClick(image)}>
+        <div key={image._id} onDoubleClick={() => onDoubleClick(image)}>
           <ImageCard
             image={image}
-            isSelected={selectedImage?.id === image.id}
+            isSelected={selectedImage?._id === image._id}
             onSelect={() => onSelect(image)}
           />
         </div>

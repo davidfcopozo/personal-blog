@@ -273,7 +273,7 @@ export interface UploadProgress {
 }
 
 export interface ImageInterface {
-  id: string;
+  _id: string;
   url: string;
   name: string;
   title: string;

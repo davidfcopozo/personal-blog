@@ -55,7 +55,7 @@ export function ImageInfoPanel({
 
       <div className="flex flex-col gap-2">
         <Button onClick={handleCopyUrl}>Copy URL</Button>
-        <Button variant="destructive" onClick={() => onDelete(image.id)}>
+        <Button variant="destructive" onClick={() => onDelete(image._id)}>
           Delete Image
         </Button>
       </div>

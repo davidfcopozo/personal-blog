@@ -84,7 +84,7 @@ export function ImageUploadModal({
     try {
       await onDeleteImage(id);
 
-      if (selectedImage?.id === id) {
+      if (selectedImage?._id === id) {
         setSelectedImage(null);
       }
 
