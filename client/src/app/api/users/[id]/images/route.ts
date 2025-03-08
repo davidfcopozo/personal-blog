@@ -99,6 +99,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  console.log("From Next.Js API===>", id);
+
   const token = await getToken({ req, secret: SECRET });
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -106,19 +108,19 @@ export async function DELETE(
 
   try {
     const { searchParams } = new URL(req.url);
-    const imageIds = searchParams.get("ids");
+    const imageId = searchParams.get("id");
 
-    if (!imageIds) {
+    if (!imageId) {
       return NextResponse.json(
         { error: "No image ID provided" },
         { status: 400 }
       );
     }
 
-    console.log(`Deleting image with ID: ${imageIds} for user ${id}`);
+    console.log(`Deleting image with ID: ${imageId} for user ${id}`);
 
     const response = await axios.delete<ImageDeleteResponse>(
-      `${BASE_URL}/users/${id}/images?ids=${imageIds}`,
+      `${BASE_URL}/users/${id}/images/${imageId}`,
       {
         headers: {
           Authorization: `Bearer ${token?.accessToken}`,
