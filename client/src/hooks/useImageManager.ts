@@ -11,7 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ImageInterface } from "@/typings/interfaces";
 import { UserType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import useDeleteRequest from "./useDeleteRequest";
+import useDeleteImages from "./useDeleteImages";
 import useFetchRequest from "./useFetchRequest";
 import usePutRequest from "./usePutRequest";
 import { AxiosError } from "axios";
@@ -75,7 +75,7 @@ export const useImageManager = () => {
     },
   });
 
-  const { mutate: deleteImageMetadata } = useDeleteRequest({
+  const { mutate: deleteImageMetadata } = useDeleteImages({
     url: `/api/users/${currentUserId}/images`,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-images"] });
@@ -134,6 +134,15 @@ export const useImageManager = () => {
 
   const uploadImage = useCallback(
     async (file: File): Promise<string> => {
+      // Stop if already uploading
+      if (uploading) {
+        toast({
+          title: "Upload in progress",
+          description: "Please wait for the current upload to finish.",
+        });
+        throw new Error("Upload in progress");
+      }
+
       setUploading(true);
       const currentUser = queryClient.getQueryData<{ data: UserType }>([
         "currentUser",
@@ -149,6 +158,19 @@ export const useImageManager = () => {
 
       try {
         const hash = await getImageHash(file);
+
+        // Check if there's a matching ongoing or completed upload
+        const uploadingOrExists = userImagesData?.data.some(
+          (img: ImageInterface) => img.hash === hash
+        );
+        if (uploadingOrExists) {
+          setUploading(false);
+          toast({
+            title: "Duplicate or existing upload",
+            description: "This image is already being uploaded or exists.",
+          });
+          throw new Error("Duplicate or existing upload");
+        }
 
         const existingImages = userImagesData?.data || [];
         const duplicateImage = existingImages.find(
@@ -188,7 +210,7 @@ export const useImageManager = () => {
           hash,
         };
 
-        await storeImageMetadata({ images: imageMetadata });
+        storeImageMetadata({ images: imageMetadata });
 
         setUploading(false);
         return downloadURL;
@@ -233,7 +255,7 @@ export const useImageManager = () => {
         throw error;
       }
     },
-    [queryClient, toast, storeImageMetadata, userImagesData]
+    [queryClient, toast, storeImageMetadata, userImagesData, uploading]
   );
 
   const deleteImage = useCallback(
@@ -259,18 +281,37 @@ export const useImageManager = () => {
           throw new Error("Image not found");
         }
 
-        const currentUserId = `${currentUser.data._id}`;
-        const imageUrl = imageToDelete.url;
-        const imagePath = imageUrl
-          .split(`${currentUserId}%2F`)[1]
-          ?.split("?")[0];
-
-        if (imagePath) {
-          const imageRef = ref(storage, `images/${currentUserId}/${imagePath}`);
-          await deleteObject(imageRef);
+        // Delete from MongoDB first
+        try {
+          await deleteImageMetadata({ itemId: imageId });
+        } catch (dbError) {
+          setDeleting(false);
+          throw dbError;
         }
 
-        deleteImageMetadata({ itemId: imageId, key: "image" });
+        // Then try to delete from Firebase
+        try {
+          const imageUrl = imageToDelete.url;
+          const pathPart = imageUrl.split("/o/")[1];
+
+          if (pathPart) {
+            const encodedPath = pathPart.split("?")[0];
+            const decodedPath = decodeURIComponent(encodedPath);
+            console.log(`Attempting to delete from Firebase: ${decodedPath}`);
+
+            const imageRef = ref(storage, decodedPath);
+            await deleteObject(imageRef);
+            console.log(`Successfully deleted from Firebase: ${decodedPath}`);
+          } else {
+            console.warn("Could not parse image path from URL:", imageUrl);
+          }
+        } catch (firebaseError: any) {
+          if (firebaseError.code === "storage/object-not-found") {
+            console.warn("Firebase object not found:", firebaseError);
+          } else {
+            console.error("Firebase image deletion failed:", firebaseError);
+          }
+        }
 
         setDeleting(false);
         return true;
