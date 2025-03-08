@@ -75,23 +75,24 @@ export const useImageManager = () => {
     },
   });
 
-  const { mutate: deleteImageMetadata } = useDeleteImages({
-    url: `/api/users/${currentUserId}/images`,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-images"] });
-      toast({
-        title: "Success",
-        description: "Image deleted successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to delete image: ${error?.message}`,
-      });
-    },
-  });
+  const { mutate: deleteImageMetadata, error: deleteImageError } =
+    useDeleteImages({
+      url: `/api/users/${currentUserId}/images`,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["user-images"] });
+        toast({
+          title: "Success",
+          description: "Image deleted successfully",
+        });
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: `Failed to delete image: ${error?.message}`,
+        });
+      },
+    });
 
   const { mutate: updateImageMutation } = usePutRequest({
     url: `/api/users/${currentUserId}/images`,
@@ -274,68 +275,49 @@ export const useImageManager = () => {
         throw new Error("User not authenticated");
       }
 
+      // Find image in stored images
+      const images = userImagesData?.data || [];
+
+      const imageToDelete = images.find(
+        (img: ImageInterface) => img._id?.toString() === imageId
+      );
+
       try {
-        // Find image in stored images
-        const images = userImagesData?.data || [];
-
-        console.log("Deleting image imageId===>:", imageId);
-
-        const imageToDelete = images.find(
-          (img: ImageInterface) => img._id?.toString() === imageId
-        );
-
         if (!imageToDelete) {
           setDeleting(false);
           throw new Error("Image not found");
         }
 
-        // Delete from MongoDB first
-        try {
-          await deleteImageMetadata({ itemId: imageId });
-        } catch (dbError) {
+        deleteImageMetadata({ itemId: imageId });
+
+        if (deleteImageError) {
           setDeleting(false);
-          throw dbError;
+          throw new Error("Failed to delete image");
         }
 
-        // Then try to delete from Firebase
-        try {
-          const imageUrl = imageToDelete.url;
-          const pathPart = imageUrl.split("/o/")[1];
+        // Only proceed with Firebase deletion if MongoDB deletion succeeded
+        const imageUrl = imageToDelete.url;
+        const pathPart = imageUrl.split("/o/")[1];
 
-          if (pathPart) {
-            const encodedPath = pathPart.split("?")[0];
-            const decodedPath = decodeURIComponent(encodedPath);
-            console.log(`Attempting to delete from Firebase: ${decodedPath}`);
+        if (pathPart) {
+          const encodedPath = pathPart.split("?")[0];
+          const decodedPath = decodeURIComponent(encodedPath);
+          console.log(`Attempting to delete from Firebase: ${decodedPath}`);
 
-            const imageRef = ref(storage, decodedPath);
-            await deleteObject(imageRef);
-            console.log(`Successfully deleted from Firebase: ${decodedPath}`);
-          } else {
-            console.warn("Could not parse image path from URL:", imageUrl);
-          }
-        } catch (firebaseError: any) {
-          if (firebaseError.code === "storage/object-not-found") {
-            console.warn("Firebase object not found:", firebaseError);
-          } else {
-            console.error("Firebase image deletion failed:", firebaseError);
-          }
+          const imageRef = ref(storage, decodedPath);
+          await deleteObject(imageRef);
+        } else {
+          console.warn("Could not parse image path from URL:", imageUrl);
         }
-
-        setDeleting(false);
-        return true;
-      } catch (error) {
-        setDeleting(false);
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error occurred";
-        toast({
-          variant: "destructive",
-          title: "Error deleting image",
-          description: `Failed to delete image: ${errorMessage}`,
-        });
-        throw error;
+      } catch (firebaseError: any) {
+        if (firebaseError.code === "storage/object-not-found") {
+          console.warn("Firebase object not found:", firebaseError);
+        } else {
+          console.error("Firebase image deletion failed:", firebaseError);
+        }
       }
     },
-    [queryClient, toast, deleteImageMetadata, userImagesData]
+    [queryClient, deleteImageMetadata, userImagesData, deleteImageError]
   );
 
   const getImageDimensions = (
