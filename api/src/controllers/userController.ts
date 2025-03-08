@@ -445,13 +445,11 @@ export const deleteImages = async (
 ) => {
   const {
     user: { userId },
-    body: { images },
-    params: { id },
+    params: { id, imageId },
   } = req;
 
   try {
     const user: UserType = await User.findById(userId);
-    const imagesArray = Array.isArray(images) ? images : [images];
 
     if (!user) {
       throw new NotFound("User not found");
@@ -461,33 +459,21 @@ export const deleteImages = async (
       throw new Unauthenticated("You're not authorized to perform this action");
     }
 
-    const imageHashes = imagesArray.map((image: any) => image.hash);
-    const imageUrls = imagesArray.map((image: any) => image.url);
+    const imageToDelete = await Image.findById(`${imageId}`);
 
-    const imagesToDelete = await Image.find({
-      hash: { $in: imageHashes },
-      url: { $in: imageUrls },
-    });
-
-    if (imagesToDelete.length !== images.length) {
-      throw new NotFound("One or more images could not be found");
+    if (!imageToDelete) {
+      throw new NotFound("Image not found");
     }
 
-    for (const image of imagesToDelete) {
-      if (image.postedBy.toString() !== user._id.toString()) {
-        throw new Unauthenticated("You're not authorized to delete this image");
-      }
+    if (imageToDelete.postedBy.toString() !== user._id.toString()) {
+      throw new Unauthenticated("You're not authorized to delete this image");
     }
 
-    await Image.deleteMany({
-      hash: { $in: imageHashes },
-      url: { $in: imageUrls },
-    });
+    await Image.deleteOne({ _id: imageId });
 
-    res.status(StatusCodes.OK).json({
-      success: true,
-      data: `${images.length} image(s) deleted successfully`,
-    });
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: "Image deleted successfully" });
   } catch (err) {
     return next(err);
   }
