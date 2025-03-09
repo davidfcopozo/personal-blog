@@ -58,14 +58,14 @@ export const useImageManager = () => {
       queryClient.invalidateQueries({ queryKey: ["user-images"] });
       toast({
         title: "Success",
-        description: "Image metadata stored successfully",
+        description: "Image uploaded successfully",
       });
     },
     onError: (error: AxiosError) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: `Failed to store image metadata: ${error.message}`,
+        description: `Failed to upload image: ${error.message}`,
       });
     },
     onMutate: async (data) => {
@@ -100,7 +100,7 @@ export const useImageManager = () => {
       queryClient.invalidateQueries({ queryKey: ["user-images"] });
       toast({
         title: "Success",
-        description: "Image metadata updated successfully",
+        description: "Image updated successfully",
       });
     },
     onError: (error: AxiosError) => {
