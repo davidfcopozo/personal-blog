@@ -19,7 +19,7 @@ export function ImageGallery({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4 px-1">
       {images.map((image) => (
         <div key={image._id} onDoubleClick={() => onDoubleClick(image)}>
           <ImageCard
