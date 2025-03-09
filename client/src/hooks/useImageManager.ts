@@ -28,6 +28,8 @@ export const useImageManager = () => {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Get current user ID from session
   useEffect(() => {
     async function getUserId() {
       const session = await getSession();
@@ -43,19 +45,23 @@ export const useImageManager = () => {
     "currentUser",
   ]);
 
+  const userId = currentUser?.data?._id || currentUserId;
+  
   const {
     data: userImagesData,
     isLoading: isLoadingImages,
     refetch: refetchImages,
   } = useFetchRequest(
-    ["user-images"],
-    `/api/users/${currentUser?.data._id}/images`
+    ["user-images", userId],
+    userId ? `/api/users/${userId}/images` : null
   );
 
   const { mutate: storeImageMetadata } = usePostRequest({
-    url: `/api/users/${currentUserId}/images`,
+    url: currentUserId ? `/api/users/${currentUserId}/images` : "",
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-images"] });
+      if (currentUserId) {
+        queryClient.invalidateQueries({ queryKey: ["user-images", currentUserId] });
+      }
       toast({
         title: "Success",
         description: "Image uploaded successfully",
@@ -77,9 +83,11 @@ export const useImageManager = () => {
 
   const { mutate: deleteImageMetadata, error: deleteImageError } =
     useDeleteImages({
-      url: `/api/users/${currentUserId}/images`,
+      url: currentUserId ? `/api/users/${currentUserId}/images` : "",
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["user-images"] });
+        if (currentUserId) {
+          queryClient.invalidateQueries({ queryKey: ["user-images", currentUserId] });
+        }
         toast({
           title: "Success",
           description: "Image deleted successfully",
@@ -342,5 +350,6 @@ export const useImageManager = () => {
     uploading,
     deleting,
     refetchImages,
+    isUserLoaded: !!userId,
   };
 };
