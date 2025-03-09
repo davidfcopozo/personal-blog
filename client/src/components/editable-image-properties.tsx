@@ -22,7 +22,7 @@ export function EditableImageProperties({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(image.id, { title, altText, tags });
+    onUpdate(image._id, { title, altText, tags });
   };
 
   const addTag = () => {
