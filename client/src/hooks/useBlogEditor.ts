@@ -26,16 +26,31 @@ import usePatchRequest from "./usePatchRequest";
 import { arraysEqual } from "@/utils/formats";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [temporaryFeatureImage, setTemporaryFeatureImage] =
     useState<File | null>(null);
-  const [categories, setCategories] = useState<CategoryInterface[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [postData, setPostData] = useState({
+    title: "",
+    content: "",
+    featuredImage: null as string | null,
+    categories: [] as CategoryInterface[],
+    tags: [] as string[],
+  });
+
+  const { title, content, featuredImage, categories, tags } = postData;
+
+  const updatePostState = useCallback(
+    <T extends keyof typeof postData>(key: T, value: (typeof postData)[T]) => {
+      setPostData((prevState) => ({
+        ...prevState,
+        [key]: value,
+      }));
+    },
+    []
+  );
 
   const {
     mutate: newPostMutate,
@@ -46,11 +61,13 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     url: "/api/posts",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
-      setTitle("");
-      setContent("");
-      setFeaturedImage(null);
-      setCategories([]);
-      setTags([]);
+      setPostData({
+        title: "",
+        content: "",
+        featuredImage: null,
+        categories: [],
+        tags: [],
+      });
       setTemporaryFeatureImage(null);
     },
     onError: () => {
@@ -121,28 +138,36 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     },
   });
 
-  const deleteImageFromFirebase = useCallback(async (imageUrl: string) => {
-    const currentUser = await queryClient.getQueryData<{ data: UserType }>([
-      "currentUser",
-    ]);
-    if (!currentUser) {
-      throw new Error("Current user data not found");
-    }
-    let currentUserId: string = `${currentUser.data._id}`;
-    try {
-      const imagePath = imageUrl.split(`${currentUserId}%2F`)[1]?.split("?")[0];
-      if (imagePath) {
-        const imageRef = ref(storage, `images/${currentUserId}/${imagePath}`);
-        await deleteObject(imageRef);
+  const deleteImageFromFirebase = useCallback(
+    async (imageUrl: string) => {
+      const currentUser = await queryClient.getQueryData<{ data: UserType }>([
+        "currentUser",
+      ]);
+      if (!currentUser) {
+        throw new Error("Current user data not found");
       }
-    } catch (error) {
-      throw error;
-    }
-  }, []);
+      let currentUserId: string = `${currentUser.data._id}`;
+      try {
+        const imagePath = imageUrl
+          .split(`${currentUserId}%2F`)[1]
+          ?.split("?")[0];
+        if (imagePath) {
+          const imageRef = ref(storage, `images/${currentUserId}/${imagePath}`);
+          await deleteObject(imageRef);
+        }
+      } catch (error) {
+        throw error;
+      }
+    },
+    [queryClient]
+  );
 
-  const handleTitleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-  }, []);
+  const handleTitleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      updatePostState("title", e.target.value);
+    },
+    [updatePostState]
+  );
 
   const extractImagesFromContent = (content: string) => {
     const parser = new DOMParser();
@@ -154,69 +179,67 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
 
   const handleContentChange = useCallback(
     (value: string) => {
-      setContent(value);
-      const contentImages = extractImagesFromContent(value);
-
-      const firebaseImages = contentImages.filter((url) =>
-        url.includes("firebasestorage.googleapis.com")
-      );
-
-      const removedImages = currentImages.filter(
-        (img) =>
-          !firebaseImages.includes(img) &&
-          img.includes("firebasestorage.googleapis.com")
-      );
-
-      if (removedImages.length > 0) {
-        removedImages.forEach(deleteImageFromFirebase);
-        setCurrentImages(contentImages);
-      }
+      updatePostState("content", value);
     },
-    [currentImages, setCurrentImages]
+    [updatePostState]
   );
 
-  const handleFeatureImagePick = useCallback((file: File | null) => {
-    if (file) {
-      setTemporaryFeatureImage(file);
-    } else {
-      setTemporaryFeatureImage(null);
-      setFeaturedImage(null);
-    }
-  }, []);
+  const handleFeatureImagePick = useCallback(
+    (fileOrUrl: File | { url: string; isDirectUrl: boolean } | null) => {
+      if (!fileOrUrl) {
+        setTemporaryFeatureImage(null);
+        updatePostState("featuredImage", null);
+        return;
+      }
 
-  const handleImageUpload = useCallback(async (file: File) => {
-    const currentUser = await queryClient.getQueryData<{ data: UserType }>([
-      "currentUser",
-    ]);
+      // Handle direct URL from gallery selection
+      if ("isDirectUrl" in fileOrUrl && fileOrUrl.isDirectUrl) {
+        updatePostState("featuredImage", fileOrUrl.url);
+        setTemporaryFeatureImage(null);
+        return;
+      }
 
-    let currentUserId = await `${currentUser?.data._id}`;
-    try {
-      const id = `${file.name.split(".")[0]}-${Date.now()}`;
-      let idWithoutSpaces = id.replace(/\s+/g, "-");
-      const fileName = encodeURIComponent(idWithoutSpaces);
-      const storageRef = ref(storage, `images/${currentUserId}/${fileName}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      const newImages = [...currentImages, downloadURL];
-      setCurrentImages(newImages);
-      return downloadURL;
-    } catch (error: Error | any) {
-      toast({
-        variant: "destructive",
-        title: "Error uploading image",
-        description: `Failed to upload image: ${error?.message}`,
-      });
-      throw error;
-    }
-  }, []);
+      setTemporaryFeatureImage(fileOrUrl as File);
+    },
+    [updatePostState]
+  );
+
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      const currentUser = queryClient.getQueryData<{ data: UserType }>([
+        "currentUser",
+      ]);
+
+      let currentUserId = `${currentUser?.data._id}`;
+      try {
+        const id = `${file.name.split(".")[0]}-${Date.now()}`;
+        let idWithoutSpaces = id.replace(/\s+/g, "-");
+        const fileName = encodeURIComponent(idWithoutSpaces);
+        const storageRef = ref(storage, `images/${currentUserId}/${fileName}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        const newImages = [...currentImages, downloadURL];
+        setCurrentImages(newImages);
+        return downloadURL;
+      } catch (error: Error | any) {
+        toast({
+          variant: "destructive",
+          title: "Error uploading image",
+          description: `Failed to upload image: ${error?.message}`,
+        });
+        throw error;
+      }
+    },
+    [currentImages, queryClient, toast]
+  );
 
   const handleFeatureImageUpload = useCallback(async () => {
     if (temporaryFeatureImage) {
       const uploadedUrl = await handleImageUpload(temporaryFeatureImage);
-      setFeaturedImage(uploadedUrl);
+      updatePostState("featuredImage", uploadedUrl);
       setTemporaryFeatureImage(null);
     }
-  }, [temporaryFeatureImage, handleImageUpload]);
+  }, [temporaryFeatureImage, handleImageUpload, updatePostState]);
 
   useEffect(() => {
     if (temporaryFeatureImage) {
@@ -340,25 +363,19 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       newPostMutate,
       handleImageUpload,
       toast,
+      slug,
+      updatePostMutate,
     ]
   );
 
   return {
-    title,
-    content,
-    featuredImage,
     temporaryFeatureImage,
-    tags,
-    categories,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
     handleImageUpload,
     handleFeatureImagePick,
-    setTags,
-    setCategories,
-    setTitle,
-    setContent,
-    setFeaturedImage,
+    updatePostState,
+    postData,
   };
 };

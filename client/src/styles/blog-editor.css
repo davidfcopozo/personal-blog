@@ -1,0 +1,7 @@
+.quill .ql-toolbar {
+  @apply !rounded-t-md !border !border-input;
+}
+
+.quill .ql-container {
+  @apply !rounded-b-md !border !border-input;
+}

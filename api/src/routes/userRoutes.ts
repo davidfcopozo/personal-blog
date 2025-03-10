@@ -26,8 +26,9 @@ router
   .route("/:id/images")
   .get(auth, getImagesByUserId)
   .post(auth, uploadImages)
-  .patch(auth, updateImage)
-  .delete(auth, deleteImages);
+  .patch(auth, updateImage);
+
+router.route("/:id/images/:imageId").delete(auth, deleteImages);
 router.route("/username/:username").get(getUserByUsername);
 
 export default router;

@@ -2,12 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function QuillLoadingSkeleton() {
   return (
-    <div className="w-full h-screen rounded-lg bg-background px-4">
-      {/* Header/Title area */}
-      <div className="border p-2 rounded-md mb-4 w-full">
-        <Skeleton className="h-6 w-3/4" />
-      </div>
-      <div className="border py-2 px-4  rounded-md">
+    <div className="w-full h-screen rounded-lg bg-background">
+      <div className="border py-2 px-4 rounded-md">
         {/* Toolbar */}
         <div className="flex items-center border-b py-2 md:space-x-1 flex-wrap gap-y-2 gap-x-1 ">
           <Skeleton className="h-8 w-8" /> {/* Undo */}
