@@ -3,9 +3,10 @@ import { UploadIcon, XIcon } from "./icons";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { FeatureImageProps } from "@/typings/interfaces";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useImageManager } from "@/hooks/useImageManager";
 import { ImageUploadModal } from "./image-upload-modal";
+import { Loader2 } from "lucide-react";
 
 const FeatureImage = ({
   imageUrl,
@@ -20,6 +21,14 @@ const FeatureImage = ({
   const [selectedGalleryUrl, setSelectedGalleryUrl] = useState<string | null>(
     null
   );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Clear preview when temporary image changes
+  useEffect(() => {
+    if (temporaryFeatureImage === null) {
+      setPreviewUrl(null);
+    }
+  }, [temporaryFeatureImage]);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -37,22 +46,25 @@ const FeatureImage = ({
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
 
+      setPreviewUrl(URL.createObjectURL(file));
+      setSelectedGalleryUrl(null);
+
       try {
         setIsUploading(true);
-        // Store in DB as well for future reuse
         await uploadImage(file);
         setIsUploading(false);
 
-        // Pass the file to the parent component for immediate use
         onUpload(file);
       } catch (error) {
         console.error("Error uploading feature image:", error);
         setIsUploading(false);
+        setPreviewUrl(null);
       }
     }
   };
 
   const handleImageSelect = (url: string) => {
+    setPreviewUrl(null);
     setSelectedGalleryUrl(url);
     onUpload({
       url,
@@ -61,10 +73,19 @@ const FeatureImage = ({
   };
 
   const displayImage =
+    previewUrl ||
     selectedGalleryUrl ||
     (temporaryFeatureImage
       ? URL.createObjectURL(temporaryFeatureImage)
       : imageUrl);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   return (
     <Card className="text-center">
@@ -142,6 +163,7 @@ const FeatureImage = ({
                   onClick={() => {
                     onUpload(null);
                     setSelectedGalleryUrl(null);
+                    setPreviewUrl(null);
                   }}
                 >
                   <XIcon classes="h-3 w-3 mr-1" />
