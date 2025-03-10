@@ -1,6 +1,7 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { UseMutationRequestProps } from "@/typings/interfaces";
+import apiClient from "@/utils/axiosIntance";
 
 interface DeleteImageProps {
   itemId: string;
@@ -21,7 +22,7 @@ const useDeleteImages = ({
 
       console.log("Deleting image with URL:", deleteUrl);
 
-      const response = await axios.delete(deleteUrl);
+      const response = await apiClient.delete(deleteUrl);
       return response.data;
     } catch (error: unknown) {
       console.error("Delete image error:", error);

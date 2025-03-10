@@ -1,5 +1,6 @@
+import apiClient from "@/utils/axiosIntance";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+/* import axios from "axios";
 
 const getBaseURL = () => {
   if (typeof window !== "undefined") {
@@ -11,21 +12,21 @@ const getBaseURL = () => {
     }
   }
   return "http://localhost:3000";
-};
+}; */
 
 const useFetchRequest = (queryKey: any[], url: string | null, options = {}) => {
-  const baseURL = getBaseURL();
-  const fullUrl = url ? `${baseURL}${url}` : null;
+  /*  const baseURL = getBaseURL();
+  const fullUrl = url ? `${baseURL}${url}` : null; */
 
   return useQuery({
     queryKey,
     queryFn: async () => {
-      if (!fullUrl) return null;
+      if (!url) return null;
 
-      const response = await axios.get(fullUrl);
+      const response = await apiClient.get(url);
       return response.data;
     },
-    enabled: !!fullUrl,
+    enabled: !!url,
     ...options,
   });
 };
