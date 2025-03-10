@@ -17,6 +17,9 @@ const FeatureImage = ({
     useImageManager();
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedGalleryUrl, setSelectedGalleryUrl] = useState<string | null>(
+    null
+  );
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -50,22 +53,18 @@ const FeatureImage = ({
   };
 
   const handleImageSelect = (url: string) => {
-    // Convert the remote URL to a file for the blog editor
-    fetch(url)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const fileName = url.split("/").pop() || "featured-image.jpg";
-        const file = new File([blob], fileName, { type: blob.type });
-        onUpload(file);
-      })
-      .catch((error) => {
-        console.error("Error fetching image:", error);
-      });
+    setSelectedGalleryUrl(url);
+    onUpload({
+      url,
+      isDirectUrl: true,
+    } as any);
   };
 
-  const displayImage = temporaryFeatureImage
-    ? URL.createObjectURL(temporaryFeatureImage)
-    : imageUrl;
+  const displayImage =
+    selectedGalleryUrl ||
+    (temporaryFeatureImage
+      ? URL.createObjectURL(temporaryFeatureImage)
+      : imageUrl);
 
   return (
     <Card className="text-center">
@@ -140,7 +139,10 @@ const FeatureImage = ({
                   variant="ghost"
                   size="icon"
                   className="w-[50%] my-2 mx-auto text-center"
-                  onClick={() => onUpload(null)}
+                  onClick={() => {
+                    onUpload(null);
+                    setSelectedGalleryUrl(null);
+                  }}
                 >
                   <XIcon classes="h-3 w-3 mr-1" />
                   Remove
