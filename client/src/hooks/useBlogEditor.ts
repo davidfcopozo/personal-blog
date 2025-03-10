@@ -185,13 +185,21 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   );
 
   const handleFeatureImagePick = useCallback(
-    (file: File | null) => {
-      if (file) {
-        setTemporaryFeatureImage(file);
-      } else {
+    (fileOrUrl: File | { url: string; isDirectUrl: boolean } | null) => {
+      if (!fileOrUrl) {
         setTemporaryFeatureImage(null);
         updatePostState("featuredImage", null);
+        return;
       }
+
+      // Handle direct URL from gallery selection
+      if ("isDirectUrl" in fileOrUrl && fileOrUrl.isDirectUrl) {
+        updatePostState("featuredImage", fileOrUrl.url);
+        setTemporaryFeatureImage(null);
+        return;
+      }
+
+      setTemporaryFeatureImage(fileOrUrl as File);
     },
     [updatePostState]
   );
