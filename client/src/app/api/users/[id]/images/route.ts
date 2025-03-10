@@ -106,8 +106,21 @@ export async function DELETE(
   }
 
   try {
-    const { searchParams } = new URL(req.url);
-    const imageId = searchParams.get("id");
+    let imageId;
+
+    const url = new URL(req.url);
+    imageId = url.searchParams.get("id");
+
+    if (!imageId) {
+      const customHeader = req.headers.get("x-image-id");
+      if (customHeader) {
+        imageId = customHeader;
+      }
+    }
+
+    if (!imageId && req.nextUrl) {
+      imageId = req.nextUrl.searchParams.get("id");
+    }
 
     if (!imageId) {
       return NextResponse.json(
@@ -116,24 +129,18 @@ export async function DELETE(
       );
     }
 
-    console.log(`Deleting image with ID: ${imageId} for user ${id}`);
+    // Log the complete URL being sent to the backend
+    const backendUrl = `${BASE_URL}/users/${id}/images/${imageId}`;
 
-    const response = await axios.delete<ImageDeleteResponse>(
-      `${BASE_URL}/users/${id}/images/${imageId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token?.accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await axios.delete<ImageDeleteResponse>(backendUrl, {
+      headers: {
+        Authorization: `Bearer ${token?.accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
-    console.error(
-      "Error deleting image:",
-      error.response?.data || error.message
-    );
 
     return NextResponse.json(
       {

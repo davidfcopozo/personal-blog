@@ -1,6 +1,7 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { UseMutationRequestProps } from "@/typings/interfaces";
+import apiClient from "@/utils/axiosIntance";
 
 interface DeleteImageProps {
   itemId: string;
@@ -15,7 +16,19 @@ const useDeleteImages = ({
 }: UseMutationRequestProps<any, any>) => {
   const deleteImage = async ({ itemId }: DeleteImageProps) => {
     try {
-      const response = await axios.delete(`${url}?id=${itemId}`);
+      // Ensure we have a valid itemId
+      if (!itemId) {
+        throw new Error("No image ID provided");
+      }
+
+      const encodedItemId = encodeURIComponent(itemId);
+      const deleteUrl = `${url}?id=${encodedItemId}`;
+
+      const headers = {
+        "x-image-id": itemId, // Add the ID as a header as well
+      };
+
+      const response = await apiClient.delete(deleteUrl, { headers });
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ msg?: string }>;
