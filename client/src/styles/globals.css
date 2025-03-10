@@ -1,5 +1,6 @@
 @import "react-quill/dist/quill.snow.css";
 @import "@/styles/comment-editor.css";
+@import "@/styles/blog-editor.css";
 
 @tailwind base;
 @tailwind components;
