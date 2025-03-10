@@ -155,12 +155,13 @@ const FeatureImage = ({
       {/* Image Gallery Modal */}
       <ImageUploadModal
         isImageUploadModalOpen={isImageGalleryOpen}
-        openImageUploadModal={handleCloseGallery}
+        openImageUploadModal={() => setIsImageGalleryOpen(!isImageGalleryOpen)}
         onInsertImage={handleImageSelect}
         handleImageUpload={uploadImage}
         images={userImages}
         onDeleteImage={deleteImage}
         isLoadingImages={isLoadingImages}
+        buttonText="Select Image"
       />
     </Card>
   );

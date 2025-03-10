@@ -24,14 +24,16 @@ export function ImageUploadModal({
   images,
   onDeleteImage,
   isLoadingImages,
+  buttonText = "Insert Image",
 }: {
   isImageUploadModalOpen: boolean;
   openImageUploadModal: () => void;
   onInsertImage: (url: string) => void;
   handleImageUpload: (file: File) => Promise<string>;
   images: ImageInterface[];
-  onDeleteImage: (id: string) => Promise<boolean>;
+  onDeleteImage: (id: string) => Promise<void>;
   isLoadingImages: boolean;
+  buttonText?: string; // Add this prop for customizing the button text
 }) {
   const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(
     null
@@ -145,7 +147,7 @@ export function ImageUploadModal({
               onClick={handleInsert}
               disabled={!selectedImage || isProcessing}
             >
-              Insert Image
+              {buttonText}
             </Button>
           </DialogFooter>
         </DialogContent>
