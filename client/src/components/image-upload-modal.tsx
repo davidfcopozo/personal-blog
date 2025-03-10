@@ -34,11 +34,13 @@ export function ImageUploadModal({
   handleImageUpload: (file: File) => Promise<string>;
   images: ImageInterface[];
   onDeleteImage: (id: string) => Promise<void>;
-  onUpdate?: (id: string, updates: Partial<ImageInterface>) => Promise<void>; // Make it optional with proper return type
+  onUpdate?: (id: string, updates: Partial<ImageInterface>) => Promise<void>;
   isLoadingImages: boolean;
   buttonText?: string;
 }) {
-  const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(null);
+  const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(
+    null
+  );
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const { toast } = useToast();
@@ -104,7 +106,7 @@ export function ImageUploadModal({
       console.warn("Update function not provided to ImageUploadModal");
       return;
     }
-    
+
     setIsProcessing(true);
     try {
       await onUpdate(id, updates);
