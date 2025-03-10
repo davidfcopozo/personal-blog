@@ -99,7 +99,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
-  console.log("From Next.Js API===>", id);
 
   const token = await getToken({ req, secret: SECRET });
   if (!token) {
