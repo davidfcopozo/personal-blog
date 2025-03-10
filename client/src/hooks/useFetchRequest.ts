@@ -10,28 +10,19 @@ const getBaseURL = () => {
 
 function useFetchRequest(queryKey: string[], url: string) {
   const baseULR = getBaseURL();
+  const fullUrl = url ? `${baseULR}${url}` : null;
 
-  try {
-    const fetchData = async () => {
-      const { data } = await axios.get(`${baseULR}${url}`);
-      return data;
-    };
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!fullUrl) return null;
 
-    const { data, error, isLoading, isFetching, refetch, isPending } = useQuery(
-      {
-        queryKey,
-        queryFn: fetchData,
-        refetchOnWindowFocus: false,
-        refetchOnMount: true,
-        gcTime: 0,
-        staleTime: 0,
-      }
-    );
-
-    return { data, error, isLoading, isFetching, isPending, refetch };
-  } catch (error: Error | any) {
-    throw new Error(error);
-  }
+      const response = await axios.get(fullUrl);
+      return response.data;
+    },
+    enabled: !!fullUrl,
+    ...options,
+  });
 }
 
 export default useFetchRequest;
