@@ -13,7 +13,7 @@ import { UserType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
 import useDeleteImages from "./useDeleteImages";
 import useFetchRequest from "./useFetchRequest";
-import usePutRequest from "./usePutRequest";
+import usePatchRequest from "./usePatchRequest";
 import { AxiosError } from "axios";
 import { getSession } from "next-auth/react";
 import getImageHash from "@/utils/getImageHash";
@@ -28,7 +28,7 @@ export const useImageManager = () => {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Get current user ID from session
   useEffect(() => {
     async function getUserId() {
@@ -46,7 +46,7 @@ export const useImageManager = () => {
   ]);
 
   const userId = currentUser?.data?._id || currentUserId;
-  
+
   const {
     data: userImagesData,
     isLoading: isLoadingImages,
@@ -60,7 +60,9 @@ export const useImageManager = () => {
     url: currentUserId ? `/api/users/${currentUserId}/images` : "",
     onSuccess: () => {
       if (currentUserId) {
-        queryClient.invalidateQueries({ queryKey: ["user-images", currentUserId] });
+        queryClient.invalidateQueries({
+          queryKey: ["user-images", currentUserId],
+        });
       }
       toast({
         title: "Success",
@@ -86,7 +88,9 @@ export const useImageManager = () => {
       url: currentUserId ? `/api/users/${currentUserId}/images` : "",
       onSuccess: () => {
         if (currentUserId) {
-          queryClient.invalidateQueries({ queryKey: ["user-images", currentUserId] });
+          queryClient.invalidateQueries({
+            queryKey: ["user-images", currentUserId],
+          });
         }
         toast({
           title: "Success",
@@ -102,7 +106,7 @@ export const useImageManager = () => {
       },
     });
 
-  const { mutate: updateImageMutation } = usePutRequest({
+  const { mutate: updateImageMutation } = usePatchRequest({
     url: `/api/users/${currentUserId}/images`,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-images"] });
@@ -124,9 +128,16 @@ export const useImageManager = () => {
     async (imageId: string, updates: Partial<ImageInterface>) => {
       try {
         await updateImageMutation({
-          url: `/api/images/${imageId}`,
-          data: updates,
+          imageId,
+          updates,
         });
+
+        // Refresh the image data after update
+        if (currentUserId) {
+          queryClient.invalidateQueries({
+            queryKey: ["user-images", currentUserId],
+          });
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error occurred";
@@ -138,7 +149,7 @@ export const useImageManager = () => {
         throw error;
       }
     },
-    [updateImageMutation, toast]
+    [updateImageMutation, toast, currentUserId, queryClient]
   );
 
   const uploadImage = useCallback(
