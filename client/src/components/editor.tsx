@@ -5,7 +5,12 @@ import { EditorProps } from "@/typings/interfaces";
 import { ImageUploadModal } from "./image-upload-modal";
 import { useImageManager } from "@/hooks/useImageManager";
 
-const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
+const Editor = ({
+  value,
+  onChange,
+  handleImageUpload,
+  onEditorReady,
+}: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
   const { uploadImage, userImages, isLoadingImages, deleteImage } =
     useImageManager();
@@ -14,6 +19,17 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
     index: number;
     length: number;
   } | null>(null);
+  const [editorLoaded, setEditorLoaded] = useState(false);
+
+  // Notify parent when editor is ready
+  useEffect(() => {
+    if (editorRef.current && !editorLoaded) {
+      setEditorLoaded(true);
+      if (onEditorReady) {
+        onEditorReady();
+      }
+    }
+  }, [editorLoaded, onEditorReady]);
 
   const openImageUploadModal = useCallback(() => {
     // Save current cursor position before opening modal
@@ -59,7 +75,6 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
     [cursorPosition]
   );
 
-  // This function now uses both the blog editor's handleImageUpload and our new uploadImage
   // to ensure images get stored in both Firebase and DB
   const handleEditorImageUpload = useCallback(
     async (file: File) => {
@@ -67,8 +82,7 @@ const Editor = ({ value, onChange, handleImageUpload }: EditorProps) => {
         // Upload to Firebase using the existing function
         const url = await handleImageUpload(file);
 
-        // Also upload metadata to MongoDB
-        // (the uploadImage function in useImageManager will handle this)
+        // Also upload metadata to the DB
         await uploadImage(file);
 
         return url;
