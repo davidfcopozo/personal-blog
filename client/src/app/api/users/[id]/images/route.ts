@@ -106,8 +106,24 @@ export async function DELETE(
   }
 
   try {
-    const { searchParams } = new URL(req.url);
-    const imageId = searchParams.get("id");
+    // More robust URL parsing for Vercel environment
+    let imageId;
+    
+    // Try multiple methods to get the imageId
+    try {
+      // Method 1: Using URL API
+      const { searchParams } = new URL(req.url);
+      imageId = searchParams.get("id");
+    } catch (e) {
+      console.error("Error parsing URL:", e);
+      
+      // Method 2: Try to get from request directly
+      imageId = req.nextUrl?.searchParams?.get("id");
+    }
+
+    // Additional logging for debugging
+    console.log("Request URL:", req.url);
+    console.log("Image ID from params:", imageId);
 
     if (!imageId) {
       return NextResponse.json(
@@ -116,8 +132,12 @@ export async function DELETE(
       );
     }
 
+    // Log the complete URL being sent to the backend
+    const backendUrl = `${BASE_URL}/users/${id}/images/${imageId}`;
+    console.log(`Calling backend API: ${backendUrl}`);
+
     const response = await axios.delete<ImageDeleteResponse>(
-      `${BASE_URL}/users/${id}/images/${imageId}`,
+      backendUrl,
       {
         headers: {
           Authorization: `Bearer ${token?.accessToken}`,
