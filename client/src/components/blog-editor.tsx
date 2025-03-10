@@ -1,5 +1,5 @@
 "use client";
-import React, { FC, FormEvent, useEffect } from "react";
+import React, { FC, FormEvent, useEffect, useState } from "react";
 import "react-quill/dist/quill.snow.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import { BlogEditorProps } from "@/typings/interfaces";
 import QuillLoadingSkeleton from "./quill-loading-skeleton";
 import { NewPostHeader } from "./new-post-header";
+import { Skeleton } from "./ui/skeleton";
 
 const Editor = dynamic(() => import("./editor"), {
   ssr: false,
@@ -21,38 +22,41 @@ const BlogEditor: FC<BlogEditorProps> = ({
   slug = null,
   isPostLoading = false,
 }) => {
+  const [isEditorLoaded, setIsEditorLoaded] = useState(false);
+
   const handleSave = (e: FormEvent) => {
     handleSubmit(e);
   };
 
   const {
-    title,
-    content,
-    featuredImage,
     temporaryFeatureImage,
-    tags,
-    categories,
-    handleTitleChange,
-    handleContentChange,
+    postData,
+    updatePostState,
     handleSubmit,
+    handleContentChange,
     handleImageUpload,
     handleFeatureImagePick,
-    setCategories,
-    setTags,
-    setTitle,
-    setContent,
-    setFeaturedImage,
   } = useBlogEditor({ initialPost, slug });
+
+  const { title, content, featuredImage, tags, categories } = postData;
 
   useEffect(() => {
     if (initialPost) {
-      setTitle(initialPost.title || "");
-      setContent(initialPost.content || "");
-      setFeaturedImage(initialPost.featuredImage || null);
-      setCategories(initialPost.categories || []);
-      setTags(initialPost.tags || []);
+      updatePostState("title", initialPost.title || "");
+      updatePostState("content", initialPost.content || "");
+      updatePostState("featuredImage", initialPost.featuredImage || null);
+      updatePostState("categories", initialPost.categories || []);
+      updatePostState("tags", initialPost.tags || []);
     }
-  }, [initialPost]);
+  }, [initialPost, updatePostState]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsEditorLoaded(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="outer-container">
@@ -63,21 +67,26 @@ const BlogEditor: FC<BlogEditorProps> = ({
             className={`mb-20 ${!isPostLoading && "p-4"} xs:mb-4 md:w-3/4  `}
           >
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                {!isPostLoading && (
+              {isEditorLoaded && !isPostLoading ? (
+                <div className="mb-4">
                   <Input
                     id="title"
                     value={title}
-                    onChange={handleTitleChange}
+                    onChange={(e) => updatePostState("title", e.target.value)}
                     placeholder="Enter blog title"
                   />
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="border p-2 rounded-md mb-4 w-full">
+                  <Skeleton className="h-6 w-3/4" />
+                </div>
+              )}
               <div className="mb-4">
                 <Editor
                   value={content || (initialPost?.content as string)}
                   onChange={handleContentChange}
                   handleImageUpload={handleImageUpload}
+                  onEditorReady={() => setIsEditorLoaded(true)}
                 />
               </div>
             </form>
@@ -88,8 +97,24 @@ const BlogEditor: FC<BlogEditorProps> = ({
               temporaryFeatureImage={temporaryFeatureImage}
               onUpload={handleFeatureImagePick}
             />
-            <Categories categories={categories} setCategories={setCategories} />
-            <Tags tags={tags} setTags={setTags} />
+            <Categories
+              categories={categories}
+              setCategories={(value) =>
+                updatePostState(
+                  "categories",
+                  typeof value === "function" ? value(categories) : value
+                )
+              }
+            />
+            <Tags
+              tags={tags}
+              setTags={(value: string[] | ((prevTags: string[]) => string[])) =>
+                updatePostState(
+                  "tags",
+                  typeof value === "function" ? value(tags) : value
+                )
+              }
+            />
           </div>
         </div>
       </main>

@@ -48,14 +48,14 @@ const Categories = ({
     if (passedCategories.length > 0 && isInitialSetup.current === false) {
       const selected = passedCategories
         .map((category) => {
-          return fetchedCategories.data.find(
+          return fetchedCategories?.data?.find(
             (cat: CategoryInterface) =>
-              cat._id.toString() === category.toString()
+              cat?._id?.toString() === category?._id?.toString()
           );
         })
         .filter(Boolean) as CategoryInterface[];
 
-      const availableCats = fetchedCategories.data.filter(
+      const availableCats = fetchedCategories?.data?.filter(
         (category: CategoryInterface) =>
           !selected.find((selectedCat) => selectedCat._id === category._id)
       );
@@ -63,7 +63,7 @@ const Categories = ({
       setSelectedCategories(selected);
       setAvailableCategories(availableCats);
     }
-  }, [isInitialSetup.current, passedCategories]);
+  }, [passedCategories, fetchedCategories?.data]);
 
   const handleRemoveCategory = (category: CategoryInterface) => {
     setSelectedCategories((prevSelectedCategories) =>
@@ -81,8 +81,10 @@ const Categories = ({
       );
     });
 
-    setCategories((prevCategories) =>
-      prevCategories.filter((c) => c.toString() !== category._id.toString())
+    setCategories((prevCategories: CategoryInterface[]) =>
+      prevCategories.filter(
+        (c: CategoryInterface) => c._id.toString() !== category._id.toString()
+      )
     );
   };
 
@@ -100,7 +102,10 @@ const Categories = ({
         (availableCategory) => availableCategory._id !== category._id
       )
     );
-    setCategories((prevCategories) => [...prevCategories, category]);
+    setCategories((prevCategories: CategoryInterface[]) => [
+      ...prevCategories,
+      category,
+    ]);
   };
 
   const showMoreCategories = () => {

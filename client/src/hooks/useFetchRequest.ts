@@ -2,7 +2,14 @@ import getBaseURL from "@/utils/get-base-url";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-function useFetchRequest(queryKey: string[], url: string) {
+const getBaseURL = () => {
+  if (typeof window !== "undefined") {
+    return `http://${window.location.hostname}:3000`;
+  }
+  return "http://localhost:3000";
+};
+
+const useFetchRequest = (queryKey: any[], url: string | null, options = {}) => {
   const baseULR = getBaseURL();
 
   try {
@@ -26,6 +33,6 @@ function useFetchRequest(queryKey: string[], url: string) {
   } catch (error: Error | any) {
     throw new Error(error);
   }
-}
+};
 
 export default useFetchRequest;
