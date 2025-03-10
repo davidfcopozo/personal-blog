@@ -12,7 +12,7 @@ const Editor = ({
   onEditorReady,
 }: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
-  const { uploadImage, userImages, isLoadingImages, deleteImage } =
+  const { uploadImage, userImages, isLoadingImages, deleteImage, updateImageMetadata } =
     useImageManager();
   const [isImageUploadModalOpen, setImageUploadModalOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState<{
@@ -151,6 +151,7 @@ const Editor = ({
         handleImageUpload={handleEditorImageUpload}
         images={userImages}
         onDeleteImage={deleteImage}
+        onUpdate={updateImageMetadata}
         isLoadingImages={isLoadingImages}
       />
     </>
