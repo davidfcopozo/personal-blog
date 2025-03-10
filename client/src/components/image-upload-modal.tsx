@@ -33,7 +33,7 @@ export function ImageUploadModal({
   images: ImageInterface[];
   onDeleteImage: (id: string) => Promise<void>;
   isLoadingImages: boolean;
-  buttonText?: string; // Add this prop for customizing the button text
+  buttonText?: string;
 }) {
   const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(
     null
