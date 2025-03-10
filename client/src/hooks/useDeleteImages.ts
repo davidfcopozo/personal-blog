@@ -16,7 +16,6 @@ const useDeleteImages = ({
 }: UseMutationRequestProps<any, any>) => {
   const deleteImage = async ({ itemId }: DeleteImageProps) => {
     try {
-      // Ensure itemId is properly encoded and the URL is well-formed
       const encodedItemId = encodeURIComponent(itemId);
       const deleteUrl = `${url}?id=${encodedItemId}`;
 
