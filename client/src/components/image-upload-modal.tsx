@@ -15,6 +15,7 @@ import { SearchAndFilter } from "./search-and-filter";
 import { ImageInterface } from "@/typings/interfaces";
 import { ImageGallery } from "./image-gallery";
 import { Loader2 } from "lucide-react";
+import { useToast } from "./ui/use-toast";
 
 export function ImageUploadModal({
   isImageUploadModalOpen,
@@ -23,6 +24,7 @@ export function ImageUploadModal({
   handleImageUpload,
   images,
   onDeleteImage,
+  onUpdate, // Use this prop consistently
   isLoadingImages,
   buttonText = "Insert Image",
 }: {
@@ -32,14 +34,14 @@ export function ImageUploadModal({
   handleImageUpload: (file: File) => Promise<string>;
   images: ImageInterface[];
   onDeleteImage: (id: string) => Promise<void>;
+  onUpdate?: (id: string, updates: Partial<ImageInterface>) => Promise<void>; // Make it optional with proper return type
   isLoadingImages: boolean;
   buttonText?: string;
 }) {
-  const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(
-    null
-  );
+  const [selectedImage, setSelectedImage] = useState<ImageInterface | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const { toast } = useToast();
 
   const filteredImages = searchQuery
     ? images.filter(
@@ -97,9 +99,29 @@ export function ImageUploadModal({
     }
   };
 
-  const handleUpdate = (id: string, updates: Partial<ImageInterface>) => {
-    // This will be implemented in the future with the updateImageMetadata function
-    console.log("Update image:", id, updates);
+  const handleUpdate = async (id: string, updates: Partial<ImageInterface>) => {
+    if (!onUpdate) {
+      console.warn("Update function not provided to ImageUploadModal");
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      await onUpdate(id, updates);
+      toast({
+        title: "Success",
+        description: "Image information updated successfully",
+      });
+      setIsProcessing(false);
+    } catch (error) {
+      console.error("Error updating image:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update image information",
+      });
+      setIsProcessing(false);
+    }
   };
 
   return (
