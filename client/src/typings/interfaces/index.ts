@@ -86,8 +86,7 @@ export interface EditorProps {
   value: string;
   onChange: (content: string) => void;
   handleImageUpload: (file: File) => Promise<string>;
-  /* 
-  openImageUploadModal: () => void; */
+  onEditorReady?: () => void;
 }
 
 export interface NewPostLayoutProps {
