@@ -14,8 +14,13 @@ const FeatureImage = ({
   temporaryFeatureImage,
 }: FeatureImageProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadImage, userImages, isLoadingImages, deleteImage } =
-    useImageManager();
+  const {
+    uploadImage,
+    userImages,
+    isLoadingImages,
+    deleteImage,
+    updateImageMetadata,
+  } = useImageManager();
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedGalleryUrl, setSelectedGalleryUrl] = useState<string | null>(
@@ -184,6 +189,7 @@ const FeatureImage = ({
         handleImageUpload={uploadImage}
         images={userImages}
         onDeleteImage={deleteImage}
+        onUpdate={updateImageMetadata}
         isLoadingImages={isLoadingImages}
         buttonText="Select Image"
       />
