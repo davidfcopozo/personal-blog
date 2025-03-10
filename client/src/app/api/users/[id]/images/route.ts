@@ -116,8 +116,6 @@ export async function DELETE(
       );
     }
 
-    console.log(`Deleting image with ID: ${imageId} for user ${id}`);
-
     const response = await axios.delete<ImageDeleteResponse>(
       `${BASE_URL}/users/${id}/images/${imageId}`,
       {
