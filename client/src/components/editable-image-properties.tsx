@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,12 @@ export function EditableImageProperties({
   const [altText, setAltText] = useState(image.altText || "");
   const [tags, setTags] = useState<string[]>(image.tags || []);
   const [newTag, setNewTag] = useState("");
+
+  useEffect(() => {
+    setTitle(image.title || "");
+    setAltText(image.altText || "");
+    setTags(image.tags || []);
+  }, [image.title, image.altText, image.tags, image._id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
