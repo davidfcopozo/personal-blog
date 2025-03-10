@@ -3,14 +3,19 @@ import axios from "axios";
 
 const getBaseURL = () => {
   if (typeof window !== "undefined") {
-    return `http://${window.location.hostname}:3000`;
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return `http://${hostname}:3000`;
+    } else {
+      return `https://${hostname}`;
+    }
   }
   return "http://localhost:3000";
 };
 
 const useFetchRequest = (queryKey: any[], url: string | null, options = {}) => {
-  const baseULR = getBaseURL();
-  const fullUrl = url ? `${baseULR}${url}` : null;
+  const baseURL = getBaseURL();
+  const fullUrl = url ? `${baseURL}${url}` : null;
 
   return useQuery({
     queryKey,
