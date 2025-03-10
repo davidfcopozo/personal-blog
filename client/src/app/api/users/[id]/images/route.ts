@@ -106,15 +106,11 @@ export async function DELETE(
   }
 
   try {
-    // In Vercel, URL parsing might work differently, so we need to be more robust
     let imageId;
 
-    // Try multiple methods to get the imageId
-    // Method 1: Check if it's in the query string
     const url = new URL(req.url);
     imageId = url.searchParams.get("id");
 
-    // Method 2: Check the request headers in case it was passed that way
     if (!imageId) {
       const customHeader = req.headers.get("x-image-id");
       if (customHeader) {
@@ -122,18 +118,9 @@ export async function DELETE(
       }
     }
 
-    // Method 3: Check for nextUrl property which might be available in Vercel
     if (!imageId && req.nextUrl) {
       imageId = req.nextUrl.searchParams.get("id");
     }
-
-    // Debug logging
-    console.log("[DELETE] Request URL:", req.url);
-    console.log(
-      "[DELETE] Search params:",
-      Object.fromEntries(url.searchParams.entries())
-    );
-    console.log("[DELETE] Image ID extracted:", imageId);
 
     if (!imageId) {
       return NextResponse.json(
@@ -144,7 +131,6 @@ export async function DELETE(
 
     // Log the complete URL being sent to the backend
     const backendUrl = `${BASE_URL}/users/${id}/images/${imageId}`;
-    console.log(`[DELETE] Calling backend API: ${backendUrl}`);
 
     const response = await axios.delete<ImageDeleteResponse>(backendUrl, {
       headers: {
@@ -155,10 +141,6 @@ export async function DELETE(
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
-    console.error(
-      "[DELETE] Error deleting image:",
-      error.response?.data || error.message
-    );
 
     return NextResponse.json(
       {

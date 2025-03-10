@@ -310,12 +310,7 @@ export const useImageManager = () => {
         return;
       }
 
-      // Find image in stored images
       const images = userImagesData?.data || [];
-      console.log(
-        `Looking for image with ID: ${imageId} in ${images.length} images`
-      );
-
       const imageToDelete = images.find(
         (img: ImageInterface) => img._id?.toString() === imageId
       );
@@ -331,8 +326,6 @@ export const useImageManager = () => {
       }
 
       try {
-        console.log(`Deleting image with ID: ${imageId}`);
-
         // Call the API to delete the metadata
         await deleteImageMetadata({ itemId: imageId });
 
@@ -344,7 +337,6 @@ export const useImageManager = () => {
           if (pathPart) {
             const encodedPath = pathPart.split("?")[0];
             const decodedPath = decodeURIComponent(encodedPath);
-            console.log(`Attempting to delete from Firebase: ${decodedPath}`);
 
             const imageRef = ref(storage, decodedPath);
             await deleteObject(imageRef);
@@ -356,7 +348,6 @@ export const useImageManager = () => {
             "Firebase deletion issue (non-critical):",
             firebaseError.message
           );
-          // Don't rethrow Firebase errors as the metadata was successfully deleted
         }
 
         setDeleting(false);

@@ -24,7 +24,6 @@ const useDeleteImages = ({
       const encodedItemId = encodeURIComponent(itemId);
       const deleteUrl = `${url}?id=${encodedItemId}`;
 
-      console.log("Deleting image with URL:", deleteUrl);
       const headers = {
         "x-image-id": itemId, // Add the ID as a header as well
       };
@@ -32,7 +31,6 @@ const useDeleteImages = ({
       const response = await apiClient.delete(deleteUrl, { headers });
       return response.data;
     } catch (error: unknown) {
-      console.error("Delete image error:", error);
       const axiosError = error as AxiosError<{ msg?: string }>;
       throw new Error(
         axiosError.response?.data?.msg || "Failed to delete image"
