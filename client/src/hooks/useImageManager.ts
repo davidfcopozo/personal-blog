@@ -285,58 +285,92 @@ export const useImageManager = () => {
 
   const deleteImage = useCallback(
     async (imageId: string) => {
+      if (!imageId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No image ID provided for deletion",
+        });
+        return;
+      }
+
       setDeleting(true);
+
       const currentUser = queryClient.getQueryData<{ data: UserType }>([
         "currentUser",
       ]);
+
       if (!currentUser) {
         setDeleting(false);
-        throw new Error("User not authenticated");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "User not authenticated",
+        });
+        return;
       }
 
       // Find image in stored images
       const images = userImagesData?.data || [];
+      console.log(
+        `Looking for image with ID: ${imageId} in ${images.length} images`
+      );
 
       const imageToDelete = images.find(
         (img: ImageInterface) => img._id?.toString() === imageId
       );
 
+      if (!imageToDelete) {
+        setDeleting(false);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Image not found",
+        });
+        return;
+      }
+
       try {
-        if (!imageToDelete) {
-          setDeleting(false);
-          throw new Error("Image not found");
-        }
+        console.log(`Deleting image with ID: ${imageId}`);
 
-        deleteImageMetadata({ itemId: imageId });
-
-        if (deleteImageError) {
-          setDeleting(false);
-          throw new Error("Failed to delete image");
-        }
+        // Call the API to delete the metadata
+        await deleteImageMetadata({ itemId: imageId });
 
         // Only proceed with Firebase deletion if MongoDB deletion succeeded
-        const imageUrl = imageToDelete.url;
-        const pathPart = imageUrl.split("/o/")[1];
+        try {
+          const imageUrl = imageToDelete.url;
+          const pathPart = imageUrl.split("/o/")[1];
 
-        if (pathPart) {
-          const encodedPath = pathPart.split("?")[0];
-          const decodedPath = decodeURIComponent(encodedPath);
-          console.log(`Attempting to delete from Firebase: ${decodedPath}`);
+          if (pathPart) {
+            const encodedPath = pathPart.split("?")[0];
+            const decodedPath = decodeURIComponent(encodedPath);
+            console.log(`Attempting to delete from Firebase: ${decodedPath}`);
 
-          const imageRef = ref(storage, decodedPath);
-          await deleteObject(imageRef);
-        } else {
-          console.warn("Could not parse image path from URL:", imageUrl);
+            const imageRef = ref(storage, decodedPath);
+            await deleteObject(imageRef);
+          } else {
+            console.warn("Could not parse image path from URL:", imageUrl);
+          }
+        } catch (firebaseError: any) {
+          console.warn(
+            "Firebase deletion issue (non-critical):",
+            firebaseError.message
+          );
+          // Don't rethrow Firebase errors as the metadata was successfully deleted
         }
-      } catch (firebaseError: any) {
-        if (firebaseError.code === "storage/object-not-found") {
-          console.warn("Firebase object not found:", firebaseError);
-        } else {
-          console.error("Firebase image deletion failed:", firebaseError);
-        }
+
+        setDeleting(false);
+      } catch (error: any) {
+        setDeleting(false);
+        toast({
+          variant: "destructive",
+          title: "Error deleting image",
+          description: error?.message || "Unknown error occurred",
+        });
+        console.error("Image deletion error:", error);
       }
     },
-    [queryClient, deleteImageMetadata, userImagesData, deleteImageError]
+    [queryClient, deleteImageMetadata, userImagesData, toast]
   );
 
   const getImageDimensions = (

@@ -16,12 +16,20 @@ const useDeleteImages = ({
 }: UseMutationRequestProps<any, any>) => {
   const deleteImage = async ({ itemId }: DeleteImageProps) => {
     try {
+      // Ensure we have a valid itemId
+      if (!itemId) {
+        throw new Error("No image ID provided");
+      }
+
       const encodedItemId = encodeURIComponent(itemId);
       const deleteUrl = `${url}?id=${encodedItemId}`;
 
       console.log("Deleting image with URL:", deleteUrl);
+      const headers = {
+        "x-image-id": itemId, // Add the ID as a header as well
+      };
 
-      const response = await apiClient.delete(deleteUrl);
+      const response = await apiClient.delete(deleteUrl, { headers });
       return response.data;
     } catch (error: unknown) {
       console.error("Delete image error:", error);
