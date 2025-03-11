@@ -60,8 +60,8 @@ const emailVerified = `<!DOCTYPE html>
                 "
               >
                 <img
-                  src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/check-circle.svg"
-                  alt="Company Logo"
+                  src="https://personal-blog-8s3j.onrender.com/check.svg"
+                  alt="TechyComm Logo"
                   style="width: 40px; height: 40px"
                   width="40"
                   height="40"
