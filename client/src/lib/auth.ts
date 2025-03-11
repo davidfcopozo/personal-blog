@@ -61,6 +61,10 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       try {
         if (account && account.provider !== "credentials") {
+          if (!user.email) {
+            return false;
+          }
+
           const res = await axios.post(`${baseUrl}/auth/oauth`, {
             provider: account.provider,
             email: user.email,
@@ -76,9 +80,9 @@ export const authOptions: NextAuthOptions = {
           }
         }
         return true;
-      } catch (error: Error | any) {
+      } catch (error: any) {
         return `/login?error=${encodeURIComponent(
-          error.response?.data?.message || "Sign-in failed"
+          error.response?.data?.msg || "Sign-in failed"
         )}`;
       }
     },
@@ -103,4 +107,5 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 };
