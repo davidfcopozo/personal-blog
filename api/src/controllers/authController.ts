@@ -11,6 +11,7 @@ import { isValidEmail, isValidUsername } from "../utils/validators";
 import { UserType } from "../typings/types";
 import dotenv from "dotenv";
 import { generateUniqueUsername } from "../utils/generateUniqueUsername";
+import { sendEmailVerifiedConfirmation } from "../utils/sendEmailVerifiedConfirmation";
 dotenv.config();
 
 let baseUrl = "http://localhost:8000";
@@ -177,6 +178,8 @@ export const verifyEmail = async (
       (user.verified = true);
 
     await user.save();
+
+    await sendEmailVerifiedConfirmation({ email: user.email, baseUrl });
 
     res
       .status(StatusCodes.OK)
