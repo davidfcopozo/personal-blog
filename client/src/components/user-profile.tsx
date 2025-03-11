@@ -31,7 +31,7 @@ const UserProfile = ({
     } else {
       setIsOwner(false);
     }
-  }, [currentUser]);
+  }, [currentUser, user?._id]);
 
   const { data: posts, isPending: arePostsPending } = useFetchRequest(
     ["posts"],
