@@ -4,6 +4,8 @@ import JWT from "jsonwebtoken";
 import { UserInterface } from "../typings/models/user";
 const { Schema } = mongoose;
 
+const DEFAULT_AVATAR = process.env.DEFAULT_AVATAR;
+
 const userSchema = new Schema<UserInterface>(
   {
     firstName: { type: String, required: true, minlength: 2, maxlength: 128 },
@@ -25,6 +27,17 @@ const userSchema = new Schema<UserInterface>(
       unique: true,
       minlength: 3,
       maxlength: 256,
+    },
+    avatar: {
+      type: String,
+      public_id: String,
+      default: DEFAULT_AVATAR,
+      set: (value: string | null | undefined) => {
+        if (!value || value.trim() === "") {
+          return DEFAULT_AVATAR;
+        }
+        return value;
+      },
     },
     verificationToken: { type: String },
     website: { type: String },
