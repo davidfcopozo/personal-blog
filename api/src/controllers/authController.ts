@@ -24,9 +24,11 @@ export const register = async (
     const { firstName, lastName, username, email, password } = req.body;
     let usernameFromEmail;
     const userExist: UserType = await User.findOne({ email });
-    const usernameExist: UserType = await User.findOne({
-      username: username.toLowerCase(),
-    });
+    const usernameExist: UserType =
+      username &&
+      (await User.findOne({
+        username: username.toLowerCase(),
+      }));
 
     //Check if email already exists
     if (userExist) {
@@ -44,7 +46,7 @@ export const register = async (
       usernameFromEmail = emailSplit;
       //Check if username already exists
       const usernameExist: UserType = await User.findOne({
-        username: usernameFromEmail.toLowerCase(),
+        username: usernameFromEmail?.toLowerCase(),
       });
 
       if (usernameExist) {
@@ -62,7 +64,7 @@ export const register = async (
 
     //Generate verification token for email verification
     const verificationToken = Crypto.randomBytes(40).toString("hex");
-    const lowercasedUsername = username.toLowerCase();
+    const lowercasedUsername = username?.toLowerCase();
 
     if (!isValidEmail(email)) {
       throw new BadRequest("Invalid email address, please provide a valid one");
