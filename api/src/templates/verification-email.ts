@@ -54,8 +54,8 @@ const verificationEmailTemplate = `
           <tr>
             <td style="padding: 40px 40px 20px 40px; text-align: center">
               <img
-                src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/mail-check.svg"
-                alt="Verify Email Icon"
+                src="https://personal-blog-8s3j.onrender.com/Black-TechyComm-Logo.svg"
+                alt="TechyComm Logo"
                 style="width: 40px; height: 40px; margin-bottom: 20px"
                 width="40"
                 height="40"
