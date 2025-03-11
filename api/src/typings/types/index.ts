@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { CommentInterface } from "../models/comment";
 import { PostInterface } from "../models/post";
 import { UserInterface } from "../models/user";
+import { SendVerificationEmailProps } from "../utils";
 
 export type UserType = UserInterface | null;
 export type PostType = PostInterface | null;
@@ -18,3 +19,8 @@ export type SocialMediaProfiles = {
 export type PostMongooseType = Omit<PostType, "_id"> & {
   _id: mongoose.Types.ObjectId;
 };
+
+export type sendEmailVerifiedConfirmationProps = Omit<
+  SendVerificationEmailProps,
+  "firstName" | "verificationToken"
+>;

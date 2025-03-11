@@ -11,9 +11,11 @@ import { isValidEmail, isValidUsername } from "../utils/validators";
 import { UserType } from "../typings/types";
 import dotenv from "dotenv";
 import { generateUniqueUsername } from "../utils/generateUniqueUsername";
+import { sendEmailVerifiedConfirmation } from "../utils/sendEmailVerifiedConfirmation";
+import { getBaseUrl } from "../utils/getBaseURL";
 dotenv.config();
 
-let baseUrl = "http://localhost:8000";
+let baseUrl = getBaseUrl();
 
 export const register = async (
   req: Request,
@@ -24,9 +26,11 @@ export const register = async (
     const { firstName, lastName, username, email, password } = req.body;
     let usernameFromEmail;
     const userExist: UserType = await User.findOne({ email });
-    const usernameExist: UserType = await User.findOne({
-      username: username.toLowerCase(),
-    });
+    const usernameExist: UserType =
+      username &&
+      (await User.findOne({
+        username: username.toLowerCase(),
+      }));
 
     //Check if email already exists
     if (userExist) {
@@ -44,7 +48,7 @@ export const register = async (
       usernameFromEmail = emailSplit;
       //Check if username already exists
       const usernameExist: UserType = await User.findOne({
-        username: usernameFromEmail.toLowerCase(),
+        username: usernameFromEmail?.toLowerCase(),
       });
 
       if (usernameExist) {
@@ -62,7 +66,7 @@ export const register = async (
 
     //Generate verification token for email verification
     const verificationToken = Crypto.randomBytes(40).toString("hex");
-    const lowercasedUsername = username.toLowerCase();
+    const lowercasedUsername = username?.toLowerCase();
 
     if (!isValidEmail(email)) {
       throw new BadRequest("Invalid email address, please provide a valid one");
@@ -175,6 +179,8 @@ export const verifyEmail = async (
       (user.verified = true);
 
     await user.save();
+
+    await sendEmailVerifiedConfirmation({ email: user.email, baseUrl });
 
     res
       .status(StatusCodes.OK)
