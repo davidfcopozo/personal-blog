@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     const { firstName, lastName, email, password, username } = data;
 
-    // Basic validation
     if (!firstName || !lastName || !email || !password || !username) {
       return NextResponse.json(
         { error: "All fields are required" },
@@ -16,7 +15,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Forward registration request to the MongoDB backend
     const response = await axios.post(`${BASE_URL}/auth/register`, {
       firstName,
       lastName,
@@ -29,7 +27,6 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Registration error:", error.response?.data || error.message);
 
-    // Handle specific error cases
     if (error.response?.status === 409) {
       return NextResponse.json(
         { error: error.response.data.msg || "Email already exists" },
