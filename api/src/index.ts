@@ -31,7 +31,7 @@ app.use(cors()); //allows cross origin requests
 app.use(helmet()); //sets various http headers for security
 app.use(hpp()); //prevents http parameter pollution
 app.use(mongoSanitize()); //prevents nosql injections
-app.use(express.static(path.join(__dirname, "public"))); //serves static files
+app.use(express.static(path.join(__dirname, "../public"))); //serves static files
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
