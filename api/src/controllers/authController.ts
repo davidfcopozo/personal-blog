@@ -12,9 +12,10 @@ import { UserType } from "../typings/types";
 import dotenv from "dotenv";
 import { generateUniqueUsername } from "../utils/generateUniqueUsername";
 import { sendEmailVerifiedConfirmation } from "../utils/sendEmailVerifiedConfirmation";
+import { getBaseUrl } from "../utils/getBaseURL";
 dotenv.config();
 
-let baseUrl = "http://localhost:8000";
+let baseUrl = getBaseUrl();
 
 export const register = async (
   req: Request,
