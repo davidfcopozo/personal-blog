@@ -1,7 +1,6 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import UserProfile from "./user-profile";
-import ProfilePageSkeleton from "./profile-page-skeleton";
 
 const Profile = () => {
   const { currentUser, isUserPending } = useAuth();

@@ -10,6 +10,8 @@ const protectedRoutes = [
   "/edit-post",
 ];
 
+const authRoutes = ["/login", "/register"];
+
 export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
@@ -22,12 +24,14 @@ export async function middleware(request: NextRequest) {
     protectedRoutes.some((route) => pathname.startsWith(route)) ||
     pathname.startsWith("/edit-post/");
 
+  const isAuthRoute = authRoutes.some((route) => pathname === route);
+
   if (isProtectedRoute && !token) {
     const absoluteUrl = new URL("/login", request.nextUrl.origin);
     return NextResponse.redirect(absoluteUrl.toString());
   }
 
-  if (pathname === "/login" && token) {
+  if (isAuthRoute && token) {
     const absoluteUrl = new URL("/dashboard", request.nextUrl.origin);
     return NextResponse.redirect(absoluteUrl.toString());
   }
