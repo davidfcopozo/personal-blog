@@ -8,8 +8,8 @@ import { PostSkeletonCard } from "@/components/post-skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryType, PostType } from "@/typings/types";
 import CategoriesSkeleton from "@/components/categories-skeleton";
-import { BlogPostCard } from "@/components/blog-post-card";
 import SearchResults from "@/components/search-results";
+import { BlogPostCard } from "@/components/blog-post-card";
 
 export default function Home() {
   const { toast } = useToast();
@@ -84,20 +84,18 @@ export default function Home() {
             key={post?._id.toString() + index.toString()}
             post={post}
             slug={post?.slug as string}
+            className={index === 0 ? "mt-8" : ""}
           />
         ));
   }, [posts]);
 
   return (
     <div className="container p-2 mx-auto">
-      <div className="flex flex-row flex-wrap p-2 sm:p-4">
-        <main
-          role="main"
-          className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 pt-1 px-2"
-        >
+      <div className="flex flex-col lg:flex-row gap-6 p-2 sm:p-4">
+        <main className="py-6 lg:py-12 w-full lg:w-4/5">
           {isFetching ? (
-            <div className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2">
-              <PostSkeletonCard />
+            <div className=" gap-8 md:grid-cols-2 lg:grid-cols-1">
+              <PostSkeletonCard className="mt-8" />
               <PostSkeletonCard />
               <PostSkeletonCard />
             </div>
@@ -105,8 +103,9 @@ export default function Home() {
             blogCards
           )}
         </main>
-        <aside className="w-full hidden pt-12 sm:flex sm:flex-column sm:w-1/3 md:w-1/4 px-2 border-l-2 border-secondary">
-          <div className="sticky top-16 p-4 bg-background rounded-xl w-full h-[84vh]">
+
+        <aside className="hidden lg:inline py-6 lg:py-12 lg:w-2/5 px-2 lg:border-l-2 lg:border-secondary">
+          <div className="lg:sticky lg:top-16 p-4 bg-background rounded-xl w-full ">
             <div>
               <div className="flex ml-auto flex-col gap-8">
                 <form className="ml-auto flex-1 sm:flex-start">
@@ -115,7 +114,7 @@ export default function Home() {
                     <Input
                       type="search"
                       placeholder="Search posts..."
-                      className="rounded-full pl-10 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                      className="rounded-full pl-10 w-full sm:w-[300px] md:w-[200px] lg:w-[300px]"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setIsFocused(true)}

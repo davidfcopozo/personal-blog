@@ -80,13 +80,13 @@ export function Header() {
         <LogoIcon width="80 " height="80" color={darkTheme} />
         <span className="sr-only">TechyComm logo</span>
       </Link>
-      <form className="ml-auto flex-1 relative sm:hidden">
+      <form className="ml-auto flex-auto relative lg:hidden">
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search posts..."
-            className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+            className="pl-8 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 outline-none shadow-none sm:w-[300px] md:w-[200px] lg:w-[300px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
