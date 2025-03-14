@@ -19,6 +19,7 @@ export type BlogPostCardProps = {
   post: PostType;
   slug?: string;
   key: string | number;
+  className?: string;
 };
 
 export type UsePostRequestType = {
