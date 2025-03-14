@@ -92,7 +92,7 @@ export default function Home() {
   return (
     <div className="container p-2 mx-auto">
       <div className="flex flex-col lg:flex-row gap-6 p-2 sm:p-4">
-        <main className="py-6 lg:py-12 w-full lg:w-3/4">
+        <main className="py-6 lg:py-12 w-full lg:w-4/5">
           {isFetching ? (
             <div className=" gap-8 md:grid-cols-2 lg:grid-cols-1">
               <PostSkeletonCard className="mt-8" />
@@ -104,8 +104,8 @@ export default function Home() {
           )}
         </main>
 
-        <aside className="hidden lg:block py-6 lg:py-12 lg:w-1/4 px-2 lg:border-l-2 lg:border-secondary">
-          <div className="lg:sticky lg:top-16 p-4 bg-background rounded-xl w-full lg:h-[84vh]">
+        <aside className="hidden lg:inline py-6 lg:py-12 lg:w-2/5 px-2 lg:border-l-2 lg:border-secondary">
+          <div className="lg:sticky lg:top-16 p-4 bg-background rounded-xl w-full ">
             <div>
               <div className="flex ml-auto flex-col gap-8">
                 <form className="ml-auto flex-1 sm:flex-start">
