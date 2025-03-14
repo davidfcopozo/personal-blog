@@ -15,10 +15,9 @@ import Link from "next/link";
 import { EngagementButton } from "./engagement-button";
 import { Card, CardFooter } from "./ui/card";
 
-export const NewBlogPostCard = ({ post }: BlogPostCardProps) => {
-  const { title, content, createdAt, comments, featuredImage, postedBy, slug } =
-    post;
-  const { _id: userID, username } = postedBy;
+export const NewBlogPostCard = ({ post, className }: BlogPostCardProps) => {
+  const { title, content, createdAt, featuredImage, postedBy, slug } = post;
+  const { username } = postedBy;
   const {
     handleLikeClick,
     handleBookmarkClick,
@@ -30,8 +29,7 @@ export const NewBlogPostCard = ({ post }: BlogPostCardProps) => {
   let description = extractFirstParagraphText(content as string);
 
   return (
-    <Card className="overflow-hidden border-none shadow-lg">
-      {/* <Link className="flex flex-col md:flex-row" href={`/${username}/${slug}`}> */}
+    <Card className={`overflow-hidden border-none shadow-lg ${className}`}>
       <div className="flex flex-col md:flex-row">
         <div className="relative h-48 w-full  md:w-2/5">
           <Image
@@ -123,7 +121,6 @@ export const NewBlogPostCard = ({ post }: BlogPostCardProps) => {
           </CardFooter>
         </div>
       </div>
-      {/* </Link> */}
     </Card>
   );
 };
