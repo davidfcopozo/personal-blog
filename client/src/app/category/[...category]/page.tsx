@@ -1,5 +1,5 @@
 "use client";
-import { BlogPostCard } from "@/components/blog-post-card";
+import { NewBlogPostCard } from "@/components/new-blog-post-card";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { PostType } from "@/typings/types";
@@ -24,7 +24,7 @@ export default function Category({ params }: { params: { category: string } }) {
     }
 
     return posts?.data;
-  }, [posts, cat]);
+  }, [posts]);
 
   useEffect(() => {
     if (error) {
@@ -38,24 +38,24 @@ export default function Category({ params }: { params: { category: string } }) {
 
   return (
     <div className="container px-4 mt-14 py-8">
-      <h1 className="text-3xl text-center md:text-start font-bold mb-10">{`Latest ${categoryToDisplay} Blog Posts`}</h1>
-      <div className="space-y-6 flex justify-center flex-wrap md:justify-normal">
+      <h1 className="text-3xl text-center md:text-start font-bold mb-8">{`Latest ${categoryToDisplay} Blog Posts`}</h1>
+      <main className="py-6 lg:py-6 w-full lg:w-3/4">
         {isFetching ? (
-          <div className="w-full flex justify-center flex-wrap gap-4 mt-14 sm:w-2/3 md:w-3/4 pt-1 px-2">
+          <div className="gap-8 grid-cols-1">
             <PostSkeletonCard />
             <PostSkeletonCard />
             <PostSkeletonCard />
           </div>
         ) : blogPosts && blogPosts.length > 0 ? (
           blogPosts.map((post) => (
-            <BlogPostCard key={post._id.toString()} post={post} />
+            <NewBlogPostCard key={post._id.toString()} post={post} />
           ))
         ) : (
           <div className="w-full flex justify-center items-center">
             <p>Sorry, no posts to display!</p>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
