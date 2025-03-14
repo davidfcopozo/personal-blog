@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CategoryType, PostType } from "@/typings/types";
 import CategoriesSkeleton from "@/components/categories-skeleton";
 import SearchResults from "@/components/search-results";
-import { NewBlogPostCard } from "@/components/new-blog-post-card";
+import { BlogPostCard } from "@/components/blog-post-card";
 
 export default function Home() {
   const { toast } = useToast();
@@ -80,7 +80,7 @@ export default function Home() {
             new Date(String(a.createdAt ?? new Date())).getTime()
         )
         .map((post: PostType, index: { toString: () => any }) => (
-          <NewBlogPostCard
+          <BlogPostCard
             key={post?._id.toString() + index.toString()}
             post={post}
             slug={post?.slug as string}

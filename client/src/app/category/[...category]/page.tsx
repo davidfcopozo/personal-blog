@@ -1,5 +1,5 @@
 "use client";
-import { NewBlogPostCard } from "@/components/new-blog-post-card";
+import { BlogPostCard } from "@/components/blog-post-card";
 import { PostSkeletonCard } from "@/components/post-skeleton";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { PostType } from "@/typings/types";
@@ -48,7 +48,7 @@ export default function Category({ params }: { params: { category: string } }) {
           </div>
         ) : blogPosts && blogPosts.length > 0 ? (
           blogPosts.map((post) => (
-            <NewBlogPostCard key={post._id.toString()} post={post} />
+            <BlogPostCard key={post._id.toString()} post={post} />
           ))
         ) : (
           <div className="w-full flex justify-center items-center">

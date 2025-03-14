@@ -9,15 +9,15 @@ import {
   showMonthDay,
   truncateText,
 } from "@/utils/formats";
-import { Bookmark, Heart, MessageSquare } from "lucide-react";
+import { Bookmark, Clock, Heart, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { EngagementButton } from "./engagement-button";
+import { Card, CardFooter } from "./ui/card";
 
-export const BlogPostCard = ({ post }: BlogPostCardProps) => {
-  const { title, content, createdAt, comments, featuredImage, postedBy, slug } =
-    post;
-  const { _id: userID, username } = postedBy;
+export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
+  const { title, content, createdAt, featuredImage, postedBy, slug } = post;
+  const { username } = postedBy;
   const {
     handleLikeClick,
     handleBookmarkClick,
@@ -29,36 +29,25 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   let description = extractFirstParagraphText(content as string);
 
   return (
-    <div className="flex flex-col max-w-sm md:max-h-[250px] md:flex-row sm:max-w-full border rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 hover:scale-[1.02]">
-      <Link className="md:w-1/3" href={`/${username}/${slug}`}>
-        <Image
-          src={featuredImage as string}
-          alt={title as string}
-          width={400}
-          height={300}
-          style={{ objectFit: "cover" }}
-          className="w-full h-full"
-        />
-      </Link>
-      <div className="w-full p-6 flex flex-col justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">
-            {calculateReadingTime(content as string)}
-          </p>
-          <Link href={`/${username}/${slug}`}>
-            <h2 className="text-2xl font-bold mb-4">{title}</h2>
-            <p className="text-foreground text-base mb-4">
-              {truncateText(description as string, 150)}
-            </p>
-          </Link>
+    <Card className={`overflow-hidden border-none shadow-lg ${className}`}>
+      <div className="flex flex-col md:flex-row">
+        <div className="relative h-48 w-full  md:w-2/5">
+          <Image
+            src={featuredImage as string}
+            alt={title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 40vw"
+          />
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs text-white">
+            <Clock className="h-3 w-3" />
+            <span>{calculateReadingTime(content as string)}</span>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row justify-between items-start">
-          <div className="flex sm:items-center space-x-4">
-            <Link
-              href={`/users/${userID.toString()}`}
-              className="font-semibold"
-            >
-              <Avatar>
+        <div className="flex flex-1 flex-col p-5">
+          <div className="mb-2 flex items-center gap-2">
+            <Link href={`/${username}`} className="font-semibold">
+              <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={postedBy?.avatar as string}
                   alt={getFullName(postedBy)}
@@ -66,19 +55,55 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
                 <AvatarFallback>{getNameInitials(postedBy)}</AvatarFallback>
               </Avatar>
             </Link>
-            <div>
-              <Link
-                href={`/users/${userID.toString()}`}
-                className="font-semibold"
-              >
-                {getFullName(postedBy)}
+            <div className="text-sm">
+              <Link href={`/${username}`} className="font-semibold">
+                <p className="font-medium">{getFullName(postedBy)}</p>
               </Link>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground">
                 {showMonthDay(createdAt!.toString())}
               </p>
             </div>
           </div>
-          <div className="flex space-x-1 sm:mr-6">
+
+          <Link href={`/${username}/${slug}`} className="group flex-1">
+            <h3 className="mb-2 text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+              {title}
+            </h3>
+            <p className="mb-4 line-clamp-2 text-muted-foreground">
+              {truncateText(description as string, 150)}
+            </p>
+          </Link>
+
+          <CardFooter className="flex justify-between p-0 pt-4">
+            <div className="flex gap-2">
+              <EngagementButton
+                icon={Heart}
+                count={amountOfLikes}
+                label="Like post"
+                onClick={handleLikeClick}
+                iconStyles={`${
+                  liked
+                    ? "stroke-pink-500"
+                    : "stroke-gray-400 hover:stroke-pink-500"
+                } !h-4 !w-4`}
+                activeColor="text-pink-500"
+                isActivated={liked}
+                horizontalCount
+              />
+              <Link
+                href={`/${username}/${post.slug}#comments-section`}
+                passHref
+              >
+                <EngagementButton
+                  icon={MessageSquare}
+                  count={post.comments?.length}
+                  label="Comment"
+                  iconStyles="hover:stroke-amber-500 !h-4 !w-4"
+                  activeColor="text-amber-500"
+                  horizontalCount
+                />
+              </Link>
+            </div>
             <EngagementButton
               icon={Bookmark}
               count={amountOfBookmarks}
@@ -93,35 +118,9 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
               isActivated={bookmarked}
               horizontalCount
             />
-
-            <EngagementButton
-              icon={Heart}
-              count={amountOfLikes}
-              label="Like post"
-              onClick={handleLikeClick}
-              iconStyles={`${
-                liked
-                  ? "stroke-pink-500"
-                  : "stroke-gray-400 hover:stroke-pink-500"
-              } !h-4 !w-4`}
-              activeColor="text-pink-500"
-              isActivated={liked}
-              horizontalCount
-            />
-
-            <Link href={`/${username}/${post.slug}#comments-section`} passHref>
-              <EngagementButton
-                icon={MessageSquare}
-                count={post.comments?.length}
-                label="Comment"
-                iconStyles="hover:stroke-amber-500 !h-4 !w-4"
-                activeColor="text-amber-500"
-                horizontalCount
-              />
-            </Link>
-          </div>
+          </CardFooter>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

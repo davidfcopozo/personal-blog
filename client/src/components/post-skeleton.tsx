@@ -33,7 +33,7 @@ export function PostSkeletonCard({ className }: { className?: string }) {
             <Skeleton className="h-4 w-full max-w-[85%]" />
           </div>
 
-          {/* Footer with engagement buttons - matches the NewBlogPostCard layout */}
+          {/* Footer with engagement buttons */}
           <CardFooter className="flex justify-between p-0 pt-4">
             <div className="flex gap-2">
               <Skeleton className="h-6 w-16" />
