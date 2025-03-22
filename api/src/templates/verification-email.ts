@@ -54,9 +54,9 @@ const verificationEmailTemplate = `
           <tr>
             <td style="padding: 40px 40px 20px 40px; text-align: center">
               <img
-                src="https://personal-blog-8s3j.onrender.com/Black-TechyComm-Logo.svg"
+                src="{{logo_src}}"
                 alt="TechyComm Logo"
-                style="width: 40px; height: 40px; margin-bottom: 20px"
+                style="width: 100px; height: 100px; margin-bottom: 20px"
                 width="40"
                 height="40"
               />

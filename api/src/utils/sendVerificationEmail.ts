@@ -20,6 +20,10 @@ export const sendVerificationEmail = async ({
     html: verificationEmailTemplate
       .replace(/\{\{verification_url\}\}/g, verificationUrl)
       .replace(/\{\{firstName\}\}/g, firstName as string)
+      .replace(
+        /\{\{logo_src\}\}/g,
+        "https://lh3.googleusercontent.com/pw/AP1GczP42usITm10yc2j45bzIWFZnuLDmIrVLOr_aGpSqMnQqZiXxGEdAKbOv103csKm-18I8edfCNHjwzv4lXiCDllEns4BD6fJxG-08v1D2NOqGsqZ8L1W3gFqSTE95lxzKeL3RJqK6jlgvYDITEbrjsM=w605-h605-s-no-gm?authuser=0" as string
+      )
       .replace(/\{\{year\}\}/g, currentYear as string),
   };
 
