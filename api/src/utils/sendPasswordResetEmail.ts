@@ -12,7 +12,9 @@ export const sendPasswordResetEmail = async ({
   geoLocation,
   ip,
 }: SendPasswordResetEmailProps) => {
-  const passwordResetURL = `${baseUrl}/api/auth/reset-password?token=${token}`;
+  const passwordResetURL = `${baseUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(
+    email as string
+  )}`;
   const currentTime = new Date().toLocaleString();
 
   // Process the template to handle conditional sections
@@ -31,7 +33,6 @@ export const sendPasswordResetEmail = async ({
     );
   }
 
-  // Replace other template variables
   processedTemplate = processedTemplate
     .replace(/\{\{name\}\}/g, firstName as string)
     .replace(/\{\{location\}\}/g, geoLocation as string)
