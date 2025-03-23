@@ -86,6 +86,20 @@ const passwordResetTemplate = `
         color: #64748b;
         line-height: 1.5;
       }
+      .security-warning {
+        background-color: #fee2e2;
+        border-left: 4px solid #ef4444;
+        padding: 12px;
+        margin-bottom: 24px;
+        border-radius: 4px;
+      }
+      .location-info {
+        background-color: #f0f9ff;
+        padding: 12px;
+        margin-bottom: 24px;
+        border-radius: 4px;
+        border-left: 4px solid #38bdf8;
+      }
       /* Mobile styles */
       @media screen and (max-width: 600px) {
         .content,
@@ -138,6 +152,29 @@ const passwordResetTemplate = `
               <tr>
                 <td class="content">
                   <p style="margin-top: 0; color: #334155">Hello {{name}},</p>
+
+                  {{#if_proxy}}
+                  <div class="security-warning">
+                    <p style="margin: 0; color: #b91c1c; font-weight: 500;">
+                      ⚠️ Security Alert
+                    </p>
+                    <p style="margin-top: 8px; color: #b91c1c;">
+                      We've detected that this password reset request came from a VPN, proxy, or hosting provider. 
+                      If you didn't request this password reset, please secure your account immediately.
+                    </p>
+                  </div>
+                  {{/if_proxy}}
+
+                  <div class="location-info">
+                    <p style="margin: 0; color: #0369a1; font-weight: 500;">
+                      Request Information
+                    </p>
+                    <p style="margin-top: 8px; color: #0369a1;">
+                      Location: {{location}}<br>
+                      IP Address: {{ip}}<br>
+                      Time: {{time}}
+                    </p>
+                  </div>
 
                   <p style="color: #334155">
                     {{requestText}}
