@@ -60,9 +60,9 @@ const emailVerified = `<!DOCTYPE html>
                 "
               >
                 <img
-                  src="https://personal-blog-8s3j.onrender.com/check.svg"
+                  src="{{logo_src}}"
                   alt="TechyComm Logo"
-                  style="width: 40px; height: 40px"
+                  style="width: 100px; height: 100px"
                   width="40"
                   height="40"
                 />
@@ -71,10 +71,10 @@ const emailVerified = `<!DOCTYPE html>
 
             <!-- Success Icon -->
             <tr>
-              <td style="padding: 48px 48px 32px; text-align: center">
+                <td style="padding: 48px 48px 32px; text-align: center">
                 <div
                   style="
-                    background-color: #22c55e;
+                    background-color: #009933;
                     border-radius: 50%;
                     width: 64px;
                     height: 64px;
@@ -85,9 +85,9 @@ const emailVerified = `<!DOCTYPE html>
                   "
                 >
                   <img
-                    src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/check.svg"
+                    src="{{success_check_src}}"
                     alt="Success Check"
-                    style="width: 32px; height: 32px; filter: invert(1)"
+                    style="width: 32px; height: 32px;"
                     width="32"
                     height="32"
                   />
@@ -240,43 +240,10 @@ const emailVerified = `<!DOCTYPE html>
                         "
                       >
                         <img
-                          src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/twitter.svg"
-                          alt="Twitter"
-                          style="width: 24px; height: 24px"
-                          width="24"
-                          height="24"
-                        />
-                      </a>
-                      <a
-                        href="#"
-                        style="
-                          display: inline-block;
-                          margin: 0 8px;
-                          text-decoration: none;
-                        "
-                      >
-                        <img
-                          src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/linkedin.svg"
-                          alt="LinkedIn"
-                          style="width: 24px; height: 24px"
-                          width="24"
-                          height="24"
-                        />
-                      </a>
-                      <a
-                        href="#"
-                        style="
-                          display: inline-block;
-                          margin: 0 8px;
-                          text-decoration: none;
-                        "
-                      >
-                        <img
-                          src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/github.svg"
+                          src="{{github_src}}"
                           alt="GitHub"
-                          style="width: 24px; height: 24px"
-                          width="24"
-                          height="24"
+                          width="26"
+                          height="20"
                         />
                       </a>
                     </td>
@@ -290,7 +257,7 @@ const emailVerified = `<!DOCTYPE html>
                     line-height: 20px;
                   "
                 >
-                  © 2025 Your Company. All rights reserved.
+                  © 2025 TechyComm. All rights reserved.
                 </p>
               </td>
             </tr>
