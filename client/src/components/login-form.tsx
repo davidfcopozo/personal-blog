@@ -75,7 +75,6 @@ export function LoginForm() {
         callbackUrl: "/dashboard",
         redirect: true,
       });
-
     } catch (error) {
       toast({
         variant: "destructive",
@@ -83,6 +82,50 @@ export function LoginForm() {
         description: `Could not sign in with ${provider}`,
       });
       setOauthLoading(null);
+    }
+  };
+
+  // Add a forgot password handler
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      toast({
+        variant: "destructive",
+        title: "Email required",
+        description: "Please enter your email address first",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Reset link sent",
+          description:
+            "If your email exists in our system, you'll receive password reset instructions",
+        });
+      } else {
+        throw new Error(data.error || "Something went wrong");
+      }
+    } catch (error: any) {
+      console.error("Password reset request error:", error);
+      toast({
+        variant: "destructive",
+        title: "Could not process request",
+        description: "Please try again later",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -169,9 +212,14 @@ export function LoginForm() {
           <div className="grid gap-2">
             <div className="flex items-center">
               <Label htmlFor="password">Password</Label>
-              <Link href="#" className="ml-auto inline-block text-sm underline">
+              <Button
+                variant="link"
+                className="ml-auto text-sm p-0 h-auto"
+                onClick={handleForgotPassword}
+                type="button"
+              >
                 Forgot your password?
-              </Link>
+              </Button>
             </div>
             <Input
               id="password"
