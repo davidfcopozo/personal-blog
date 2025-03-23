@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import usePostRequest from "@/hooks/usePostRequest";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -33,8 +34,50 @@ export default function ResetPasswordPage() {
 
   const baseUrl = `${process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT}/api`;
 
+  const { mutate: verifyToken } = usePostRequest({
+    url: "/api/auth/verify-reset-token",
+    onSuccess: () => {
+      setTokenValid(true);
+      setIsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Token verification error:", error);
+      toast({
+        variant: "destructive",
+        title: "Invalid reset link",
+        description:
+          error.message || "The password reset link is invalid or has expired",
+      });
+      setIsLoading(false);
+    },
+  });
+
+  const { mutate: resetPassword } = usePostRequest({
+    url: "/api/auth/reset-password",
+    onSuccess: () => {
+      setSuccess(true);
+      toast({
+        title: "Password reset successful",
+        description:
+          "Your password has been reset. You can now log in with your new password.",
+      });
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
+    },
+    onError: (error) => {
+      setError(error.message || "Failed to reset password");
+      toast({
+        variant: "destructive",
+        title: "Reset failed",
+        description: error.message || "Something went wrong",
+      });
+      setIsLoading(false);
+    },
+  });
+
   useEffect(() => {
-    async function verifyToken() {
+    async function checkToken() {
       if (!token || !email) {
         toast({
           variant: "destructive",
@@ -45,37 +88,11 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      try {
-        const response = await fetch("/api/auth/verify-reset-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token, email, baseUrl }),
-        });
-
-        if (response.ok) {
-          setTokenValid(true);
-        } else {
-          const data = await response.json();
-          throw new Error(data.error || "Invalid or expired token");
-        }
-      } catch (error: any) {
-        console.error("Token verification error:", error);
-        toast({
-          variant: "destructive",
-          title: "Invalid reset link",
-          description:
-            error.message ||
-            "The password reset link is invalid or has expired",
-        });
-      } finally {
-        setIsLoading(false);
-      }
+      verifyToken({ token, email, baseUrl });
     }
 
-    verifyToken();
-  }, [token, email, router, toast, baseUrl]);
+    checkToken();
+  }, [token, email, router, toast, baseUrl, verifyToken]);
 
   const validatePassword = () => {
     try {
@@ -112,45 +129,11 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
     setError("");
 
-    try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to reset password");
-      }
-
-      setSuccess(true);
-      toast({
-        title: "Password reset successful",
-        description:
-          "Your password has been reset. You can now log in with your new password.",
-      });
-
-      setTimeout(() => {
-        router.push("/login");
-      }, 3000);
-    } catch (err: any) {
-      setError(err.message || "Failed to reset password");
-      toast({
-        variant: "destructive",
-        title: "Reset failed",
-        description: err.message || "Something went wrong",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    resetPassword({
+      token,
+      email,
+      password,
+    });
   };
 
   if (isLoading) {
