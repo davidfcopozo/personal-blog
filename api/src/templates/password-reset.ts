@@ -95,6 +95,7 @@ const passwordResetTemplate = `
         .button {
           display: block;
           text-align: center;
+          color: #ffffff !important;
         }
       }
     </style>
@@ -151,7 +152,7 @@ const passwordResetTemplate = `
                   >
                     <tr>
                       <td align="center">
-                        <a href="{{resetLink}}" class="button">
+                        <a href="{{resetLink}}" class="button" style="color: #ffffff">
                           Reset Password
                         </a>
                       </td>
