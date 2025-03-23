@@ -15,7 +15,7 @@ export const sendPasswordResetEmail = async ({
   const passwordResetURL = `${baseUrl}/api/auth/reset-password?token=${token}`;
   const requestText =
     proxyOrVPN && geoLocation && ip
-      ? `We received a request from ${geoLocation} - ip address: ${ip} to reset the password for your account. To proceed with the password reset, click the button below:`
+      ? `We received a request from <span style="color: red">  ${geoLocation} - ip address: ${ip}</span> to reset the password for your account. To proceed with the password reset, click the button below:`
       : "We received a request to reset the password for your account. To proceed with the password reset, click the button below:";
 
   const emailOptions: SendMailOptions = {
