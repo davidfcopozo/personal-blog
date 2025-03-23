@@ -147,7 +147,7 @@ const emailVerified = `<!DOCTYPE html>
                         href="{{app_url}}"
                         style="
                           display: inline-block;
-                          background-color: #2563eb;
+                          background-color: #030712;
                           color: #ffffff;
                           font-size: 16px;
                           font-weight: 600;

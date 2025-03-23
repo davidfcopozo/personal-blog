@@ -111,7 +111,7 @@ const verificationEmailTemplate = `
                       style="
                         display: inline-block;
                         padding: 14px 32px;
-                        background-color: #2563eb;
+                        background-color: #030712;
                         color: #ffffff;
                         text-decoration: none;
                         font-weight: 600;
