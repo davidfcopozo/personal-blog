@@ -3,6 +3,7 @@ import axios from "axios";
 import { getClientIP, getIPGeolocation } from "@/lib/ip-utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT;
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT;
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +14,6 @@ export async function POST(req: NextRequest) {
     }
 
     const clientIP = getClientIP(req);
-
     const { geoLocation, isProxyOrVPN } = await getIPGeolocation(clientIP);
 
     const response = await axios.post(`${BASE_URL}/auth/forgot-password`, {
@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
         geoLocation,
         isProxyOrVPN,
       },
+      baseUrl: FRONTEND_URL, // Pass the frontend URL here
     });
 
     return NextResponse.json(response.data, { status: response.status });
