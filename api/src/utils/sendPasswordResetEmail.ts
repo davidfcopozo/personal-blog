@@ -13,23 +13,48 @@ export const sendPasswordResetEmail = async ({
   ip,
 }: SendPasswordResetEmailProps) => {
   const passwordResetURL = `${baseUrl}/api/auth/reset-password?token=${token}`;
-  const requestText =
-    proxyOrVPN && geoLocation && ip
-      ? `We received an unusual request from <span style="color: red"> ${geoLocation} - ip address: ${ip}</span> to reset the password for your account. If you made the request, to proceed with the password reset, click the button below otherwhise you can savely ignore this email:`
-      : `We received a request to reset the password ${
-          geoLocation &&
-          `from <span style="color: #030712> ${geoLocation}</span>`
-        } for your account. To proceed with the password reset, click the button below:`;
+  const currentTime = new Date().toLocaleString();
+
+  // Process the template to handle conditional sections
+  let processedTemplate = passwordResetTemplate;
+
+  // Handle the proxy/VPN warning section
+  if (proxyOrVPN) {
+    processedTemplate = processedTemplate.replace(
+      /\{\{#if_proxy\}\}([\s\S]*?)\{\{\/if_proxy\}\}/g,
+      "$1"
+    );
+  } else {
+    processedTemplate = processedTemplate.replace(
+      /\{\{#if_proxy\}\}([\s\S]*?)\{\{\/if_proxy\}\}/g,
+      ""
+    );
+  }
+
+  // Replace other template variables
+  processedTemplate = processedTemplate
+    .replace(/\{\{name\}\}/g, firstName as string)
+    .replace(/\{\{location\}\}/g, geoLocation as string)
+    .replace(/\{\{ip\}\}/g, ip as string)
+    .replace(/\{\{time\}\}/g, currentTime)
+    .replace(/\{\{email\}\}/g, email as string)
+    .replace(/\{\{resetLink\}\}/g, passwordResetURL as string);
+
+  // Create request text that mentions location if available
+  const requestText = `We received a request to reset the password for your account. If this was you, please use the button below to reset your password.`;
+
+  processedTemplate = processedTemplate.replace(
+    /\{\{requestText\}\}/g,
+    requestText
+  );
 
   const emailOptions: SendMailOptions = {
     from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
-    subject: "Password Reset Request",
-    html: passwordResetTemplate
-      .replace(/\{\{name\}\}/g, firstName as string)
-      .replace(/\{\{requestText\}\}/g, requestText as string)
-      .replace(/\{\{email\}\}/g, email as string)
-      .replace(/\{\{resetLink\}\}/g, passwordResetURL as string),
+    subject: proxyOrVPN
+      ? "🚨 SECURITY ALERT: Password Reset Request"
+      : "Password Reset Request",
+    html: processedTemplate,
   };
 
   await emailSender(emailOptions);
