@@ -14,15 +14,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [tokenValid, setTokenValid] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -30,16 +31,51 @@ export default function ResetPasswordPage() {
   const token = searchParams.get("token");
   const email = searchParams.get("email");
 
+  const baseUrl = `${process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT}/api`;
+
   useEffect(() => {
-    if (!token || !email) {
-      toast({
-        variant: "destructive",
-        title: "Invalid reset link",
-        description: "The password reset link is invalid or has expired",
-      });
-      router.push("/login");
+    async function verifyToken() {
+      if (!token || !email) {
+        toast({
+          variant: "destructive",
+          title: "Invalid reset link",
+          description: "The password reset link is missing required parameters",
+        });
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/auth/verify-reset-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token, email, baseUrl }),
+        });
+
+        if (response.ok) {
+          setTokenValid(true);
+        } else {
+          const data = await response.json();
+          throw new Error(data.error || "Invalid or expired token");
+        }
+      } catch (error: any) {
+        console.error("Token verification error:", error);
+        toast({
+          variant: "destructive",
+          title: "Invalid reset link",
+          description:
+            error.message ||
+            "The password reset link is invalid or has expired",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [token, email, router, toast]);
+
+    verifyToken();
+  }, [token, email, router, toast, baseUrl]);
 
   const validatePassword = () => {
     try {
@@ -102,7 +138,6 @@ export default function ResetPasswordPage() {
           "Your password has been reset. You can now log in with your new password.",
       });
 
-      // Redirect to login page after 3 seconds
       setTimeout(() => {
         router.push("/login");
       }, 3000);
@@ -117,6 +152,48 @@ export default function ResetPasswordPage() {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Verifying reset link</CardTitle>
+            <CardDescription>
+              Please wait while we verify your password reset link
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center py-6">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!tokenValid && !isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <AlertTriangle className="h-12 w-12 text-destructive" />
+            </div>
+            <CardTitle>Invalid Reset Link</CardTitle>
+            <CardDescription>
+              This password reset link is invalid or has expired. Please request
+              a new one.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button asChild className="w-full">
+              <Link href="/login">Back to Login</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   if (success) {
     return (
