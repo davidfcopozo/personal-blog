@@ -281,7 +281,7 @@ export const forgotPassword = async (
   next: NextFunction
 ) => {
   try {
-    const { email, ipData } = req.body;
+    const { email, ipData, baseUrl } = req.body;
 
     if (!email) {
       throw new BadRequest("Please provide a valid email address");
@@ -303,7 +303,7 @@ export const forgotPassword = async (
       firstName: user.firstName,
       email: user.email,
       token: passwordResetToken,
-      baseUrl,
+      baseUrl: baseUrl || process.env.PRODUCTION_URL,
       proxyOrVPN: ipData?.isProxyOrVPN || false,
       geoLocation: ipData?.geoLocation || "Unknown location",
       ip: ipData?.ip || "Unknown IP",
@@ -332,6 +332,49 @@ export const forgotPassword = async (
     res.status(StatusCodes.OK).json({
       success: true,
       msg: "A password reset link has been sent to your email",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const verifyResetToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+    const { token } = req.query;
+
+    if (!email || !token) {
+      throw new BadRequest("Email and token are required");
+    }
+
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address");
+    }
+
+    const user: UserType = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFound("No user found with this email address");
+    }
+
+    if (user.passwordVerificationToken !== hashString(token as string)) {
+      throw new Unauthenticated("Invalid token");
+    }
+
+    if (
+      user.passwordTokenExpirationDate &&
+      user.passwordTokenExpirationDate <= new Date(Date.now())
+    ) {
+      throw new Unauthenticated("Expired token");
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: "Token valid",
     });
   } catch (err) {
     next(err);
