@@ -5,7 +5,6 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Github } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { GoogleIcon } from "./icons";
+import usePostRequest from "@/hooks/usePostRequest";
 
 export function LoginForm() {
   const router = useRouter();
@@ -86,7 +86,25 @@ export function LoginForm() {
     }
   };
 
-  // Add a forgot password handler
+  const { mutate: forgotPasswordMutation } = usePostRequest({
+    url: "/api/auth/forgot-password",
+    onSuccess: () => {
+      toast({
+        title: "Reset link sent",
+        description:
+          "If your email exists in our system, you'll receive password reset instructions",
+      });
+    },
+    onError: (error) => {
+      console.error("Password reset request error:", error);
+      toast({
+        variant: "destructive",
+        title: "Could not process request",
+        description: "Please try again later",
+      });
+    },
+  });
+
   const handleForgotPassword = async () => {
     if (!formData.email) {
       toast({
@@ -100,34 +118,9 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT;
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          frontendUrl,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Reset link sent",
-          description:
-            "If your email exists in our system, you'll receive password reset instructions",
-        });
-      } else {
-        throw new Error(data.error || "Something went wrong");
-      }
-    } catch (error: any) {
-      console.error("Password reset request error:", error);
-      toast({
-        variant: "destructive",
-        title: "Could not process request",
-        description: "Please try again later",
+      await forgotPasswordMutation({
+        email: formData.email,
+        frontendUrl,
       });
     } finally {
       setIsLoading(false);
