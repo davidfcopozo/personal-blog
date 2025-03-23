@@ -98,12 +98,16 @@ export function LoginForm() {
 
     try {
       setIsLoading(true);
+      const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT;
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({
+          email: formData.email,
+          frontendUrl,
+        }),
       });
 
       const data = await response.json();
