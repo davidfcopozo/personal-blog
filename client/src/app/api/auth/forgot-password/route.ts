@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         geoLocation,
         isProxyOrVPN,
       },
-      baseUrl: FRONTEND_URL, // Pass the frontend URL here
+      baseUrl: FRONTEND_URL,
     });
 
     return NextResponse.json(response.data, { status: response.status });
