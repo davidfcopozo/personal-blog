@@ -13,7 +13,7 @@ export const sendEmailVerifiedConfirmation = async ({
   const emailOptions: SendMailOptions = {
     from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
-    subject: "Email Verification",
+    subject: "Email Confirmation",
     html: emailVerified
       .replace(/\{\{app_url\}\}/g, profileUrl as string)
       .replace(
