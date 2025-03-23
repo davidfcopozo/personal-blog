@@ -84,7 +84,7 @@ const verificationEmailTemplate = `
                   color: #374151;
                 "
               >
-                Hello {{firstName}}
+                Hello {{firstName}},
               </p>
               <p
                 style="
