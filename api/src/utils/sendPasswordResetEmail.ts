@@ -25,6 +25,7 @@ export const sendPasswordResetEmail = async ({
     html: passwordResetTemplate
       .replace(/\{\{name\}\}/g, firstName as string)
       .replace(/\{\{requestText\}\}/g, requestText as string)
+      .replace(/\{\{email\}\}/g, email as string)
       .replace(/\{\{resetLink\}\}/g, passwordResetURL as string),
   };
 
