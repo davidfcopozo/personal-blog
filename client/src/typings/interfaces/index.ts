@@ -304,3 +304,23 @@ export interface ImageInfoPanelPropsInterface {
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<ImageInterface>) => void;
 }
+
+export interface GeoLocationResponse {
+  status: string;
+  country: string;
+  countryCode: string;
+  region: string;
+  regionName: string;
+  city: string;
+  zip: string;
+  lat: number;
+  lon: number;
+  timezone: string;
+  isp: string;
+  org: string;
+  as: string;
+  query: string;
+  proxy: boolean;
+  hosting: boolean;
+  mobile: boolean;
+}

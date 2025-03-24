@@ -26,7 +26,7 @@ export type UsePostRequestType = {
   url: string;
   onSuccess: (data: any, variables?: any, context?: any) => void;
   onError: (error: any, variables?: any, context?: any) => void;
-  onMutate: (data: any, variables?: any, context?: any) => void;
+  onMutate?: (data: any, variables?: any, context?: any) => void;
 };
 
 export type ExtractImagesFromContentType = (content: string) => string[];

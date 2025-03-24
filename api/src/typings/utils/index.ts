@@ -6,6 +6,18 @@ export interface SendPasswordResetEmailProps {
   email: String;
   token: String;
   baseUrl: String;
+  proxyOrVPN?: Boolean | undefined;
+  geoLocation?: String | undefined;
+  ip?: String | undefined;
+}
+
+export interface SendPasswordChangedEmailProps {
+  firstName: String;
+  email: String;
+  baseUrl: String;
+  proxyOrVPN?: Boolean | undefined;
+  geoLocation?: String | undefined;
+  ip?: String | undefined;
 }
 
 export interface SendVerificationEmailProps {

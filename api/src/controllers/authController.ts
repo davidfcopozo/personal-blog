@@ -13,6 +13,7 @@ import dotenv from "dotenv";
 import { generateUniqueUsername } from "../utils/generateUniqueUsername";
 import { sendEmailVerifiedConfirmation } from "../utils/sendEmailVerifiedConfirmation";
 import { getBaseUrl } from "../utils/getBaseURL";
+import { sendPasswordChangedEmail } from "../utils/sendPasswordChangedEmail";
 dotenv.config();
 
 let baseUrl = getBaseUrl();
@@ -281,7 +282,7 @@ export const forgotPassword = async (
   next: NextFunction
 ) => {
   try {
-    const { email } = req.body;
+    const { email, ipData, baseUrl } = req.body;
 
     if (!email) {
       throw new BadRequest("Please provide a valid email address");
@@ -303,7 +304,10 @@ export const forgotPassword = async (
       firstName: user.firstName,
       email: user.email,
       token: passwordResetToken,
-      baseUrl,
+      baseUrl: baseUrl || process.env.PRODUCTION_URL,
+      proxyOrVPN: ipData?.isProxyOrVPN || false,
+      geoLocation: ipData?.geoLocation || "Unknown location",
+      ip: ipData?.ip || "Unknown IP",
     }).catch((err) => {
       throw new Error(err);
     });
@@ -335,13 +339,57 @@ export const forgotPassword = async (
   }
 };
 
+export const verifyResetToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+    const { token } = req.query;
+
+    if (!email || !token) {
+      throw new BadRequest("Email and token are required");
+    }
+
+    if (!isValidEmail(email)) {
+      throw new BadRequest("Invalid email address");
+    }
+
+    const user: UserType = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFound("No user found with this email address");
+    }
+
+    if (user.passwordVerificationToken !== hashString(token as string)) {
+      throw new Unauthenticated("Invalid token");
+    }
+
+    if (
+      user.passwordTokenExpirationDate &&
+      user.passwordTokenExpirationDate <= new Date(Date.now())
+    ) {
+      throw new Unauthenticated("Expired token");
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: "Token valid",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const resetPassword = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { email, password: newPassword } = req.body;
+    const { email, password: newPassword, ipData, baseUrl } = req.body;
+
     const { token } = req.query;
 
     if (!email || !newPassword || !token) {
@@ -368,6 +416,17 @@ export const resetPassword = async (
       user.passwordVerificationToken = null;
       user.passwordTokenExpirationDate = null;
       await user.save();
+
+      await sendPasswordChangedEmail({
+        firstName: user.firstName,
+        email: user.email,
+        baseUrl: baseUrl || process.env.PRODUCTION_URL,
+        proxyOrVPN: ipData?.isProxyOrVPN || false,
+        geoLocation: ipData?.geoLocation || "Unknown location",
+        ip: ipData?.ip || "Unknown IP",
+      }).catch((err) => {
+        throw new Error(err);
+      });
 
       res.status(StatusCodes.OK).json({
         success: true,

@@ -1,24 +1,22 @@
 import { SendMailOptions } from "nodemailer";
-import { SendPasswordResetEmailProps } from "../typings/utils";
+import { SendPasswordChangedEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
-import passwordResetTemplate from "../templates/password-reset";
+import passwordChangedTemplate from "../templates/password-changed";
 
-export const sendPasswordResetEmail = async ({
+export const sendPasswordChangedEmail = async ({
   firstName,
   email,
-  token,
   baseUrl,
   proxyOrVPN,
   geoLocation,
   ip,
-}: SendPasswordResetEmailProps) => {
-  const passwordResetURL = `${baseUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(
-    email as string
-  )}`;
+}: SendPasswordChangedEmailProps) => {
+  const baseUrlWithoutApi = baseUrl.replace("/api", "");
+  const securitySettingsUrl = `${baseUrlWithoutApi}/settings`;
   const currentTime = new Date().toLocaleString();
 
   // Process the template to handle conditional sections
-  let processedTemplate = passwordResetTemplate;
+  let processedTemplate = passwordChangedTemplate;
 
   // Handle the proxy/VPN warning section
   if (proxyOrVPN) {
@@ -39,7 +37,7 @@ export const sendPasswordResetEmail = async ({
     .replace(/\{\{ip\}\}/g, ip as string)
     .replace(/\{\{time\}\}/g, currentTime)
     .replace(/\{\{email\}\}/g, email as string)
-    .replace(/\{\{resetLink\}\}/g, passwordResetURL as string);
+    .replace(/\{\{securitySettingsUrl\}\}/g, securitySettingsUrl as string);
 
   // Create request text that mentions location if available
   const requestText = `We received a request to reset the password for your account. If this was you, please use the button below to reset your password.`;
@@ -53,8 +51,8 @@ export const sendPasswordResetEmail = async ({
     from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
     subject: proxyOrVPN
-      ? "🚨 SECURITY ALERT: Password Reset Request"
-      : "Password Reset Request",
+      ? "🚨 SECURITY ALERT: Your Password Has Been Changed"
+      : "Your Password Has Been Changed",
     html: processedTemplate,
   };
 
