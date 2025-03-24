@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation"; // Remove useSearchParams
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,11 @@ import { Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import usePostRequest from "@/hooks/usePostRequest";
 
-export default function ResetPasswordPage() {
+export default function ResetPasswordPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -26,11 +30,10 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [tokenValid, setTokenValid] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const token = searchParams.get("token");
-  const email = searchParams.get("email");
+  const token = searchParams.token as string;
+  const email = searchParams.email as string;
 
   const baseUrl = `${process.env.NEXT_PUBLIC_FRONTEND_API_ENDPOINT}/api`;
 
