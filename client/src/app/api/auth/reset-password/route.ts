@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { getClientIP, getIPGeolocation } from "@/lib/ip-utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, token, password } = await req.json();
+    const { email, token, password, baseUrl } = await req.json();
 
     if (!email || !token || !password) {
       return NextResponse.json(
@@ -14,11 +15,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const clientIP = getClientIP(req);
+    const { geoLocation, isProxyOrVPN } = await getIPGeolocation(clientIP);
+
     const response = await axios.post(
       `${BASE_URL}/auth/reset-password?token=${token}`,
       {
         email,
         password,
+        baseUrl,
+        ipData: {
+          geoLocation,
+          isProxyOrVPN,
+        },
       }
     );
 
