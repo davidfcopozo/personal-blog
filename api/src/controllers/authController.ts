@@ -13,6 +13,7 @@ import dotenv from "dotenv";
 import { generateUniqueUsername } from "../utils/generateUniqueUsername";
 import { sendEmailVerifiedConfirmation } from "../utils/sendEmailVerifiedConfirmation";
 import { getBaseUrl } from "../utils/getBaseURL";
+import { sendPasswordChangedEmail } from "../utils/sendPasswordChangedEmail";
 dotenv.config();
 
 let baseUrl = getBaseUrl();
@@ -387,7 +388,8 @@ export const resetPassword = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password: newPassword } = req.body;
+    const { email, password: newPassword, ipData, baseUrl } = req.body;
+
     const { token } = req.query;
 
     if (!email || !newPassword || !token) {
@@ -414,6 +416,17 @@ export const resetPassword = async (
       user.passwordVerificationToken = null;
       user.passwordTokenExpirationDate = null;
       await user.save();
+
+      await sendPasswordChangedEmail({
+        firstName: user.firstName,
+        email: user.email,
+        baseUrl: baseUrl || process.env.PRODUCTION_URL,
+        proxyOrVPN: ipData?.isProxyOrVPN || false,
+        geoLocation: ipData?.geoLocation || "Unknown location",
+        ip: ipData?.ip || "Unknown IP",
+      }).catch((err) => {
+        throw new Error(err);
+      });
 
       res.status(StatusCodes.OK).json({
         success: true,
