@@ -133,6 +133,7 @@ export default function ResetPasswordPage() {
       token,
       email,
       password,
+      baseUrl,
     });
   };
 
