@@ -8,6 +8,7 @@ import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/context/QueryProvider";
 import { AuthContextProvider } from "../context/AuthContext";
+import { UnverifiedEmailBanner } from "@/components/unverified-email-banner";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 <Header />
+                <UnverifiedEmailBanner />
                 {children}
               </ThemeProvider>
             </AuthContextProvider>
