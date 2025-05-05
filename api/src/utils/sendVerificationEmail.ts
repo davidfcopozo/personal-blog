@@ -9,7 +9,7 @@ export const sendVerificationEmail = async ({
   verificationToken,
   baseUrl,
 }: SendVerificationEmailProps) => {
-  const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+  const verificationUrl = `${baseUrl}/auth/email-verification/${verificationToken}?email=${encodeURIComponent(email as string)}`;
 
   const currentYear = new Date().getFullYear().toString();
 

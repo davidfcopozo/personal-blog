@@ -49,7 +49,7 @@ export async function PATCH(
   const { id } = params;
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!id) {
