@@ -8,6 +8,8 @@ const protectedRoutes = [
   "/profile",
   "/new-post",
   "/edit-post",
+  "/new",
+  "/edit",
 ];
 
 const authRoutes = ["/login", "/register"];
@@ -19,6 +21,39 @@ export async function middleware(request: NextRequest) {
   });
 
   const { pathname } = request.nextUrl;
+
+  if (pathname === "/auth") {
+    if (token) {
+      const dashboardUrl = new URL("/dashboard", request.nextUrl.origin);
+      return NextResponse.redirect(dashboardUrl.toString());
+    } else {
+      const loginUrl = new URL("/login", request.nextUrl.origin);
+      return NextResponse.redirect(loginUrl.toString());
+    }
+  }
+
+  if (pathname === "/users" || pathname === "/user") {
+    if (token) {
+      const userProfileUrl = new URL(
+        `/users/${token.sub}`,
+        request.nextUrl.origin
+      );
+      return NextResponse.redirect(userProfileUrl.toString());
+    } else {
+      const loginUrl = new URL("/login", request.nextUrl.origin);
+      return NextResponse.redirect(loginUrl.toString());
+    }
+  }
+
+  if (
+    pathname === "/blog" ||
+    pathname === "/blogs" ||
+    pathname === "/api" ||
+    pathname === "/category"
+  ) {
+    const homeUrl = new URL("/", request.nextUrl.origin);
+    return NextResponse.redirect(homeUrl.toString());
+  }
 
   const isProtectedRoute =
     protectedRoutes.some((route) => pathname.startsWith(route)) ||
