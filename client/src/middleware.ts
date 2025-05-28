@@ -48,6 +48,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname === "/blog" ||
     pathname === "/blogs" ||
+    pathname === "/api" ||
     pathname === "/category"
   ) {
     const homeUrl = new URL("/", request.nextUrl.origin);
