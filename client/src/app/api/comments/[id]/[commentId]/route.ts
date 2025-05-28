@@ -9,9 +9,8 @@ export async function DELETE(
   const { id: postId, commentId } = params;
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
-  console.log("ids===>", postId, commentId);
 
   if (!token) {
     return new Response(JSON.stringify({ message: "No token found" }), {

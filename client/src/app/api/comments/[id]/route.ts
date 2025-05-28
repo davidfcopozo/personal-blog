@@ -44,7 +44,7 @@ export async function POST(
   const { id } = params;
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!token) {
@@ -92,7 +92,7 @@ export async function PUT(
   const { id: postId } = params;
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!token) {
