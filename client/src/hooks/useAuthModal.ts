@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { AuthAction } from "@/components/auth-modal";
+import { AuthAction } from "@/typings/types";
 
 export function useAuthModal() {
   const [isOpen, setIsOpen] = useState(false);
