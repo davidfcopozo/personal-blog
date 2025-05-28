@@ -108,7 +108,7 @@ export default function Home() {
           <div className="lg:sticky lg:top-16 p-4 bg-background rounded-xl w-full ">
             <div>
               <div className="flex ml-auto flex-col gap-8">
-                <form className="ml-auto flex-1 sm:flex-start">
+                <form className="flex-1 sm:flex-start">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 ml-2 h-5 w-4 text-muted-foreground" />
                     <Input
