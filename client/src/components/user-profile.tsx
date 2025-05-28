@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import ProfilePageSkeleton from "./profile-page-skeleton";
 import { useFollowUser } from "@/hooks/useFollowUser";
+import { AuthModal } from "./auth-modal";
 
 const UserProfile = ({
   user,
@@ -23,7 +24,15 @@ const UserProfile = ({
 }) => {
   const [isOwner, setIsOwner] = useState(false);
   const { currentUser } = useAuth();
-  const { handleFollowToggle, isPending, isFollowed } = useFollowUser(user);
+  const {
+    handleFollowToggle,
+    isPending,
+    isFollowed,
+    isAuthModalOpen,
+    authModalAction,
+    closeAuthModal,
+    handleAuthSuccess,
+  } = useFollowUser(user);
 
   useEffect(() => {
     if (currentUser?.data?._id.toString() === user?._id?.toString()) {
@@ -217,9 +226,16 @@ const UserProfile = ({
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card>{" "}
         </div>
       </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        action={authModalAction || "follow"}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };

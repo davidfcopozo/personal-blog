@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EngagementButton } from "./engagement-button";
 import { Card, CardFooter } from "./ui/card";
+import { AuthModal } from "./auth-modal";
 
 export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
   const { title, content, createdAt, featuredImage, postedBy, slug } = post;
@@ -25,6 +26,11 @@ export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
     bookmarked,
     amountOfBookmarks,
     amountOfLikes,
+    // Auth modal properties
+    isAuthModalOpen,
+    authModalAction,
+    closeAuthModal,
+    handleAuthSuccess,
   } = useInteractions(post);
   let description = extractFirstParagraphText(content as string);
 
@@ -121,6 +127,13 @@ export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
           </CardFooter>
         </div>
       </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        action={authModalAction || "like"}
+        onSuccess={handleAuthSuccess}
+      />
     </Card>
   );
 };

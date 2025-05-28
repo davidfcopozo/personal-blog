@@ -1,7 +1,7 @@
 import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { AxiosError } from "axios";
 import { LucideIcon } from "lucide-react";
-import { PostType, UserType } from "../types";
+import { AuthAction, PostType, UserType } from "../types";
 
 export interface BaseDocument {
   _id: string;
@@ -323,4 +323,11 @@ export interface GeoLocationResponse {
   proxy: boolean;
   hosting: boolean;
   mobile: boolean;
+}
+
+export interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  action: AuthAction;
+  onSuccess?: () => void;
 }

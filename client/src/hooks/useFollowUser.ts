@@ -2,10 +2,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import usePutRequest from "./usePutRequest";
 import { UserFetchType, UserType } from "@/typings/types";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuthModal } from "./useAuthModal";
 
 export const useFollowUser = (user: UserType) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const {
+    requireAuth,
+    isOpen: isAuthModalOpen,
+    currentAction,
+    closeModal,
+    handleSuccess,
+  } = useAuthModal();
 
   const currentUserData = queryClient.getQueryData<UserFetchType>([
     "currentUser",
@@ -107,14 +115,19 @@ export const useFollowUser = (user: UserType) => {
       ]);
     },
   });
-
   const handleFollowToggle = () => {
-    toggleFollow.mutate(`${user._id}`);
+    requireAuth("follow", () => {
+      toggleFollow.mutate(`${user._id}`);
+    });
   };
-
   return {
     handleFollowToggle,
     isPending: toggleFollow.status === "pending",
     isFollowed,
+    // Auth modal properties
+    isAuthModalOpen,
+    authModalAction: currentAction,
+    closeAuthModal: closeModal,
+    handleAuthSuccess: handleSuccess,
   };
 };

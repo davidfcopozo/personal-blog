@@ -3,6 +3,7 @@ import BlogPost from "@/components/blog-post";
 import SinglePostSkeleton from "@/components/single-post-skeleton";
 import useFetchPost from "@/hooks/useFetchPost";
 import { useInteractions } from "@/hooks/useInteractions";
+import { AuthModal } from "@/components/auth-modal";
 import { useEffect, useState } from "react";
 
 const Blog = ({ params }: { params: { slug: string } }) => {
@@ -17,6 +18,11 @@ const Blog = ({ params }: { params: { slug: string } }) => {
     bookmarked,
     amountOfBookmarks,
     amountOfLikes,
+    // Auth modal properties
+    isAuthModalOpen,
+    authModalAction,
+    closeAuthModal,
+    handleAuthSuccess,
   } = useInteractions(data?.data);
 
   useEffect(() => {
@@ -40,6 +46,13 @@ const Blog = ({ params }: { params: { slug: string } }) => {
         amountOfBookmarks={amountOfBookmarks}
         amountOfLikes={amountOfLikes}
         post={data?.data}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        action={authModalAction || "like"}
+        onSuccess={handleAuthSuccess}
       />
     </div>
   );

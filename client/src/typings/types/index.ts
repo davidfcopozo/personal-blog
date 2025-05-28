@@ -144,3 +144,7 @@ export type UserFetchType = {
   data: UserType;
   success: boolean;
 };
+
+export type ModalStep = "initial" | "signin" | "register";
+
+export type AuthAction = "like" | "bookmark" | "comment" | "follow" | "reply";
