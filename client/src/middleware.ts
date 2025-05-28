@@ -45,6 +45,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (
+    pathname === "/blog" ||
+    pathname === "/blogs" ||
+    pathname === "/category"
+  ) {
+    const homeUrl = new URL("/", request.nextUrl.origin);
+    return NextResponse.redirect(homeUrl.toString());
+  }
+
   const isProtectedRoute =
     protectedRoutes.some((route) => pathname.startsWith(route)) ||
     pathname.startsWith("/edit-post/");
