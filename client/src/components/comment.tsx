@@ -28,6 +28,7 @@ import dynamic from "next/dynamic";
 import useDeleteComment from "@/hooks/useDeleteComment";
 import RelativeTime from "./relative-time";
 import { EngagementButton } from "./engagement-button";
+import { AuthModal } from "./auth-modal";
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
@@ -50,6 +51,11 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     commentLikesCount,
     handleReplyContentChange,
     replyMutationStatus,
+    // Auth modal properties
+    isAuthModalOpen,
+    authModalAction,
+    closeAuthModal,
+    handleAuthSuccess,
   } = useInteractions(post, comment);
 
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
@@ -203,6 +209,12 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        onSuccess={handleAuthSuccess}
+        action={authModalAction}
+      />
     </>
   );
 };
