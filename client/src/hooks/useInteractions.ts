@@ -3,13 +3,14 @@ import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
 import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState, useMemo } from "react";
 import {
   CommentInterface,
   PostInterface,
   ReplyInterface,
 } from "@/typings/interfaces";
 import { getSession } from "next-auth/react";
+import { useAuthModal } from "./useAuthModal";
 
 export const useInteractions = (
   post?: PostType,
@@ -19,14 +20,21 @@ export const useInteractions = (
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [commentContent, setCommentContent] = useState<string>("");
+  const {
+    requireAuth,
+    isOpen: isAuthModalOpen,
+    currentAction,
+    closeModal,
+    handleSuccess,
+  } = useAuthModal();
 
   const [liked, setLiked] = useState(false);
   const [amountOfLikes, setAmountOfLikes] = useState(0);
   const [currentUser, setCurrentUser] = useState("");
   const [bookmarked, setBookmarked] = useState(false);
   const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
-  const bookmarks = post?.bookmarks ?? [];
-  const likes = post?.likes ?? [];
+  const bookmarks = useMemo(() => post?.bookmarks ?? [], [post?.bookmarks]);
+  const likes = useMemo(() => post?.likes ?? [], [post?.likes]);
   const [commentLiked, setCommentLiked] = useState<boolean>(false);
   const [commentLikesCount, setCommentLikesCount] = useState<number>(
     comment?.likes?.length ?? 0
@@ -462,26 +470,27 @@ export const useInteractions = (
       return { previousPostsData, previousPostData };
     },
   });
-
   const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
-    createCommentMutation.mutate(
-      { _id: postId, content: commentContent },
-      {
-        onError: (error) => {
-          if (onError) onError();
-          const errorMessage =
-            error &&
-            typeof error === "object" &&
-            "Failed to process the request. Please try again.";
+    requireAuth("comment", () => {
+      createCommentMutation.mutate(
+        { _id: postId, content: commentContent },
+        {
+          onError: (error) => {
+            if (onError) onError();
+            const errorMessage =
+              error &&
+              typeof error === "object" &&
+              "Failed to process the request. Please try again.";
 
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: errorMessage,
-          });
-        },
-      }
-    );
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: errorMessage,
+            });
+          },
+        }
+      );
+    });
   };
 
   const createReplyMutation = usePostRequest({
@@ -660,7 +669,6 @@ export const useInteractions = (
       });
     },
   });
-
   const createReplyInteraction = ({ onError }: { onError?: () => void }) => {
     if (!postId || !comment?._id || !replyContent.trim()) {
       toast({
@@ -671,25 +679,27 @@ export const useInteractions = (
       return;
     }
 
-    createReplyMutation.mutate(
-      { parentId: comment._id, content: replyContent.trim() },
-      {
-        onError: (error) => {
-          if (onError) onError();
+    requireAuth("reply", () => {
+      createReplyMutation.mutate(
+        { parentId: comment._id, content: replyContent.trim() },
+        {
+          onError: (error) => {
+            if (onError) onError();
 
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : "Failed to process the request. Please try again.";
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "Failed to process the request. Please try again.";
 
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: errorMessage,
-          });
-        },
-      }
-    );
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: errorMessage,
+            });
+          },
+        }
+      );
+    });
   };
 
   const likeCommentMutation = usePutRequest({
@@ -768,48 +778,52 @@ export const useInteractions = (
     commentId: string,
     { onError }: { onError?: () => void }
   ) => {
-    const previousLikedState = commentLiked;
-    const previousLikesCount = commentLikesCount;
+    requireAuth("like", () => {
+      const previousLikedState = commentLiked;
+      const previousLikesCount = commentLikesCount;
 
-    setCommentLiked(!commentLiked);
-    setCommentLikesCount((prev) => (commentLiked ? prev - 1 : prev + 1));
+      setCommentLiked(!commentLiked);
+      setCommentLikesCount((prev) => (commentLiked ? prev - 1 : prev + 1));
 
-    likeCommentMutation.mutate(
-      { commentId },
-      {
-        onError: () => {
-          setCommentLiked(previousLikedState);
-          setCommentLikesCount(previousLikesCount);
-          if (onError) onError();
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to process the request. Please try again.",
-          });
-        },
-      }
-    );
+      likeCommentMutation.mutate(
+        { commentId },
+        {
+          onError: () => {
+            setCommentLiked(previousLikedState);
+            setCommentLikesCount(previousLikesCount);
+            if (onError) onError();
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to process the request. Please try again.",
+            });
+          },
+        }
+      );
+    });
   };
-
   /* Functions to export */
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    likeInteraction(`${post?._id}`, {
-      onError: () => {
-        console.error("Error handling like interaction");
-      },
+    requireAuth("like", () => {
+      likeInteraction(`${post?._id}`, {
+        onError: () => {
+          console.error("Error handling like interaction");
+        },
+      });
     });
   };
 
   const handleBookmarkClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    bookmarkInteraction(`${post?._id}`, {
-      onError: () => {
-        console.error("Error handling bookmark interaction");
-      },
+    requireAuth("bookmark", () => {
+      bookmarkInteraction(`${post?._id}`, {
+        onError: () => {
+          console.error("Error handling bookmark interaction");
+        },
+      });
     });
   };
-
   return {
     handleLikeClick,
     handleBookmarkClick,
@@ -832,5 +846,11 @@ export const useInteractions = (
     replyMutationStatus: createReplyMutation.status,
     setReplyContent,
     replyContent,
+    // Auth modal properties
+    isAuthModalOpen,
+    authModalAction: currentAction,
+    closeAuthModal: closeModal,
+    handleAuthSuccess: handleSuccess,
+    requireAuth,
   };
 };
