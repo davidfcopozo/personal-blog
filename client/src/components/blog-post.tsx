@@ -16,6 +16,7 @@ import scrollToElement from "@/utils/scrollToElement";
 import { BlogPostProps } from "@/typings/interfaces";
 import { AuthorPanel } from "./author-panel";
 import { useFollowUser } from "@/hooks/useFollowUser";
+import { AuthModal } from "./auth-modal";
 
 const BlogPost = ({
   handleLikeClick,
@@ -26,9 +27,15 @@ const BlogPost = ({
   amountOfBookmarks,
   post,
 }: BlogPostProps) => {
-  const { handleFollowToggle, isPending, isFollowed } = useFollowUser(
-    post?.postedBy as UserType
-  );
+  const {
+    handleFollowToggle,
+    isPending,
+    isFollowed,
+    isAuthModalOpen,
+    authModalAction,
+    closeAuthModal,
+    handleAuthSuccess,
+  } = useFollowUser(post?.postedBy as UserType);
 
   if (!post) {
     return (
@@ -237,7 +244,13 @@ const BlogPost = ({
             </div>
           </div>
         </div>
-      </div>
+      </div>{" "}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        action={authModalAction || "follow"}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };
