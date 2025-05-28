@@ -32,6 +32,19 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname === "/users" || pathname === "/user") {
+    if (token) {
+      const userProfileUrl = new URL(
+        `/users/${token.sub}`,
+        request.nextUrl.origin
+      );
+      return NextResponse.redirect(userProfileUrl.toString());
+    } else {
+      const loginUrl = new URL("/login", request.nextUrl.origin);
+      return NextResponse.redirect(loginUrl.toString());
+    }
+  }
+
   const isProtectedRoute =
     protectedRoutes.some((route) => pathname.startsWith(route)) ||
     pathname.startsWith("/edit-post/");
