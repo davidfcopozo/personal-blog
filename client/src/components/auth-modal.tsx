@@ -101,7 +101,7 @@ export function AuthModal({
 
       const session = await getSession();
       if (session?.user) {
-        // If we have a session but UI doesn't reflect it, refresh the auth context
+        // If we have a session but UI doesn&apos;t reflect it, refresh the auth context
         await refetchUser();
       }
     };
@@ -155,7 +155,7 @@ export function AuthModal({
       if (onSuccess) onSuccess();
       toast({
         title: "Welcome!",
-        description: `You've successfully signed in. You can now ${config.actionText}.`,
+        description: `You&apos;ve successfully signed in. You can now ${config.actionText}.`,
       });
     } catch (error) {
       console.error(`OAuth error with ${provider}:`, error);
@@ -198,7 +198,7 @@ export function AuthModal({
       if (onSuccess) onSuccess();
       toast({
         title: "Welcome back!",
-        description: `You've successfully signed in. You can now ${config.actionText}.`,
+        description: `You&apos;ve successfully signed in. You can now ${config.actionText}.`,
       });
     } catch (error) {
       setError("There was an error signing you in. Please try again.");
@@ -276,7 +276,7 @@ export function AuthModal({
           variant: "destructive",
           title: "Sign in failed",
           description:
-            "Account created but couldn't sign in automatically. Please try signing in.",
+            "Account created but couldn&apos;t sign in automatically. Please try signing in.",
         });
         setCurrentStep("signin");
         setSigninEmail(registerEmail.trim());
@@ -503,7 +503,7 @@ export function AuthModal({
       </form>
       <div className="pt-4 text-center">
         <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Button
             variant="link"
             className="p-0 h-auto font-normal"
