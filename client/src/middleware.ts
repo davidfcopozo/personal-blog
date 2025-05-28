@@ -8,6 +8,8 @@ const protectedRoutes = [
   "/profile",
   "/new-post",
   "/edit-post",
+  "/new",
+  "/edit",
 ];
 
 const authRoutes = ["/login", "/register"];
