@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import ReactQuill, { Quill } from "react-quill";
+import ReactQuill, { Quill } from "react-quill-new";
 import { formats, modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
 import { EditorProps } from "@/typings/interfaces";
 import { ImageUploadModal } from "./image-upload-modal";
@@ -12,8 +12,13 @@ const Editor = ({
   onEditorReady,
 }: EditorProps) => {
   const editorRef = useRef<ReactQuill>(null);
-  const { uploadImage, userImages, isLoadingImages, deleteImage, updateImageMetadata } =
-    useImageManager();
+  const {
+    uploadImage,
+    userImages,
+    isLoadingImages,
+    deleteImage,
+    updateImageMetadata,
+  } = useImageManager();
   const [isImageUploadModalOpen, setImageUploadModalOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState<{
     index: number;
@@ -94,14 +99,28 @@ const Editor = ({
     [handleImageUpload, uploadImage]
   );
 
-  let icons = Quill.import("ui/icons");
+  interface SVGToolbarIcons {
+    [key: string]:
+      | string
+      | {
+          [subKey: string]: string;
+        };
+  }
+
+  interface QuillHistoryHandler {
+    undo: () => void;
+    redo: () => void;
+  }
+
+  let icons = Quill.import("ui/icons") as SVGToolbarIcons;
+
   icons["undo"] = UNDO_ICON;
   icons["redo"] = REDO_ICON;
 
   const undoHandler = useCallback(() => {
     if (editorRef && "current" in editorRef && editorRef.current) {
       const quillEditor = editorRef.current.getEditor();
-      const history = quillEditor.getModule("history");
+      const history = quillEditor.getModule("history") as QuillHistoryHandler;
       return history.undo();
     }
   }, []);
@@ -109,14 +128,14 @@ const Editor = ({
   const redoHandler = useCallback(() => {
     if (editorRef && "current" in editorRef && editorRef.current) {
       const quillEditor = editorRef.current.getEditor();
-      const history = quillEditor.getModule("history");
+      const history = quillEditor.getModule("history") as QuillHistoryHandler;
       return history.redo();
     }
   }, []);
 
   useEffect(() => {
     if (editorRef.current) {
-      const toolbar = editorRef.current.getEditor().getModule("toolbar");
+      const toolbar = editorRef.current.getEditor().getModule("toolbar") as any;
       toolbar.addHandler("image", openImageUploadModal);
       toolbar.addHandler("undo", undoHandler);
       toolbar.addHandler("redo", redoHandler);
