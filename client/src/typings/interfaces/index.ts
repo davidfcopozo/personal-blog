@@ -331,3 +331,16 @@ export interface AuthModalProps {
   action: AuthAction;
   onSuccess?: () => void;
 }
+
+export interface SVGToolbarIcons {
+  [key: string]:
+    | string
+    | {
+        [subKey: string]: string;
+      };
+}
+
+export interface QuillHistoryHandler {
+  undo: () => void;
+  redo: () => void;
+}

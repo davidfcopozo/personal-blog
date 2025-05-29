@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactQuill, { Quill } from "react-quill-new";
 import { formats, modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
-import { EditorProps } from "@/typings/interfaces";
+import {
+  EditorProps,
+  QuillHistoryHandler,
+  SVGToolbarIcons,
+} from "@/typings/interfaces";
 import { ImageUploadModal } from "./image-upload-modal";
 import { useImageManager } from "@/hooks/useImageManager";
 
@@ -98,19 +102,6 @@ const Editor = ({
     },
     [handleImageUpload, uploadImage]
   );
-
-  interface SVGToolbarIcons {
-    [key: string]:
-      | string
-      | {
-          [subKey: string]: string;
-        };
-  }
-
-  interface QuillHistoryHandler {
-    undo: () => void;
-    redo: () => void;
-  }
 
   let icons = Quill.import("ui/icons") as SVGToolbarIcons;
 
