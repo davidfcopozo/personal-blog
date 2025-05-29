@@ -1,5 +1,8 @@
-import { Quill } from "react-quill";
-import ImageResize from "quill-image-resize-module-react";
+import dynamic from "next/dynamic";
+import { Quill } from "react-quill-new";
+const ImageResize = dynamic(() => import("quill-image-resize-module-react"), {
+  ssr: false,
+});
 
 Quill.register("modules/imageResize", ImageResize);
 
@@ -11,7 +14,7 @@ export const formats = [
   "strike",
   "blockquote",
   "list",
-  "bullet",
+  /* "bullet", */
   "indent",
   "align",
   "font",
@@ -20,7 +23,7 @@ export const formats = [
   "background",
   "link",
   "image",
-  "clean",
+  /*   "clean", */
   "video",
   "code-block",
 ];
@@ -28,7 +31,7 @@ export const formats = [
 export const modules = {
   history: { delay: 200, maxStack: 500, userOnly: true },
   imageResize: {
-    parchment: Quill.import("parchment"),
+    /* parchment: Quill.import("parchment"), */
     modules: ["Resize", "DisplaySize", "Toolbar"],
   },
   toolbar: {
@@ -38,7 +41,7 @@ export const modules = {
       ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
       [
         { list: "ordered" },
-        { list: "bullet" },
+        /* { list: "bullet" }, */
         { indent: "-1" },
         { indent: "+1" },
         { align: [] },
@@ -47,7 +50,6 @@ export const modules = {
       [{ script: "sub" }, { script: "super" }],
       [{ color: [] }, { background: [] }],
       ["link", "image", "video"],
-
       ["clean"],
     ],
     syntax: true,
@@ -78,7 +80,7 @@ const toolbarOptionLabels = {
   background: "Bankground color",
   font: "Font style",
   align: "Align text",
-  clean: "Remove all formatting",
+  /* clean: "Remove all formatting", */
 };
 
 export const setTitle = (
