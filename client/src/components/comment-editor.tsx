@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import ReactQuill from "react-quill";
+import ReactQuill from "react-quill-new";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
@@ -65,7 +65,7 @@ export default function CommentEditor({
 
       textarea.style.height = `${newHeight}px`;
     }
-  }, [content, maxHeight]);
+  }, [content, maxHeight, placeholder]);
 
   const handleSubmit = () => {
     if (content.trim()) {
