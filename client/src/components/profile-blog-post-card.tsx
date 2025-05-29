@@ -16,7 +16,7 @@ const ProfileBlogPostCard = ({ post }: { post: PostType }) => {
       <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
         <span>
           {post?.createdAt
-            ? new Date(post.createdAt.toString()).toLocaleDateString()
+            ? new Date(post.createdAt.toString()).toLocaleDateString("en-US", { timeZone: "UTC" })
             : ""}
         </span>
         <span>{visits as number} visits</span>
