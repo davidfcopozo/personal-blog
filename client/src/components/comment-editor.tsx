@@ -10,9 +10,9 @@ const modules = {
   toolbar: [
     ["bold", "italic", "underline", "strike"],
     ["blockquote", "code-block"],
-    [{ list: "ordered" }, { list: "bullet" }],
+    [{ list: "ordered" } /* , { list: "bullet" } */],
     ["link"],
-    ["clean"],
+    /*  ["clean"], */
   ],
 };
 
@@ -24,7 +24,7 @@ const formats = [
   "blockquote",
   "code-block",
   "list",
-  "bullet",
+  /* "bullet", */
   "link",
 ];
 
