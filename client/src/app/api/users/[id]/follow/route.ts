@@ -2,10 +2,8 @@ import axios from "axios";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { id } = params;
   const token = await getToken({
     req: req,

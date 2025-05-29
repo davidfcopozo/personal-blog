@@ -4,7 +4,7 @@ import { PostSkeletonCard } from "@/components/post-skeleton";
 import useFetchRequest from "@/hooks/useFetchRequest";
 import { CategoryType, PostType } from "@/typings/types";
 import { convertSlugToName } from "@/utils/formats";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, use } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,8 @@ import { Search } from "lucide-react";
 import SearchResults from "@/components/search-results";
 import CategoriesSkeleton from "@/components/categories-skeleton";
 
-export default function Category({ params }: { params: { category: string } }) {
+export default function Category(props: { params: Promise<{ category: string }> }) {
+  const params = use(props.params);
   const cat = decodeURI(params.category);
   const { toast } = useToast();
 

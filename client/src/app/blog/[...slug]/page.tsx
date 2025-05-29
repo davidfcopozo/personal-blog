@@ -1,6 +1,7 @@
 import BlogPost from "@/components/blog-post";
 
-const Blog = async ({ params }: { params: { slug: string[] } }) => {
+const Blog = async (props: { params: Promise<{ slug: string[] }> }) => {
+  const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
 
   return (

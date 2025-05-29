@@ -4,8 +4,9 @@ import { NextRequest } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; replyId: string; commentId: string } }
+  props: { params: Promise<{ id: string; replyId: string; commentId: string }> }
 ) {
+  const params = await props.params;
   const { id, commentId, replyId } = params;
 
   if (!id) {
@@ -37,10 +38,8 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { id } = params;
   const token = await getToken({
     req: req,

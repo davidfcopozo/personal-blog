@@ -1,9 +1,10 @@
 "use client";
-import React from "react";
+import React, { use } from "react";
 import BlogEditor from "@/components/blog-editor";
 import useFetchPost from "@/hooks/useFetchPost";
 
-const EditPostPage = ({ params }: { params: { slug: string } }) => {
+const EditPostPage = (props: { params: Promise<{ slug: string }> }) => {
+  const params = use(props.params);
   const slug = decodeURI(params.slug);
   const { data, isPending } = useFetchPost(slug);
 

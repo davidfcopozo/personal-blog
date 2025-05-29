@@ -1,9 +1,11 @@
-"use client";
+"use client";;
+import { use } from "react";
 import UserProfile from "@/components/user-profile";
 import { useFetchUserByUsername } from "@/hooks/useFetchUserByUsername";
 import NotFound from "../not-found";
 
-const UserPage = ({ params }: { params: { username: string } }) => {
+const UserPage = (props: { params: Promise<{ username: string }> }) => {
+  const params = use(props.params);
   const { data, isPending } = useFetchUserByUsername(`${params.username}`);
 
   if (!data && !isPending) {

@@ -1,10 +1,8 @@
 import axios from "axios";
 import { NextRequest } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { category: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ category: string }> }) {
+  const params = await props.params;
   const { category } = params;
 
   if (!category) {
