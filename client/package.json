@@ -31,10 +31,12 @@
     "next": "15.3.2",
     "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
+    "quill": "^2.0.3",
     "quill-image-resize-module-react": "^3.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-quill": "^2.0.0",
+    "react-quill-new": "^3.4.6",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
