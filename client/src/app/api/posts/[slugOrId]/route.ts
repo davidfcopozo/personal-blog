@@ -2,7 +2,10 @@ import axios from "axios";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function GET(req: NextRequest, props: { params: Promise<{ slugOrId: string }> }) {
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ slugOrId: string }> }
+) {
   const params = await props.params;
   const { slugOrId } = params;
 
@@ -35,13 +38,16 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slugOrId:
   }
 }
 
-export async function PATCH(req: NextRequest, props: { params: Promise<{ slugOrId: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  props: { params: Promise<{ slugOrId: string }> }
+) {
   const params = await props.params;
   const { slugOrId } = params;
 
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!slugOrId) {
@@ -92,13 +98,16 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ slugOrI
   }
 }
 
-export async function DELETE(req: NextRequest, props: { params: Promise<{ slugOrId: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  props: { params: Promise<{ slugOrId: string }> }
+) {
   const params = await props.params;
   const { slugOrId } = params;
 
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!slugOrId) {

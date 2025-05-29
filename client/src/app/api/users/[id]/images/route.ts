@@ -12,9 +12,12 @@ import {
 } from "@/typings/api/images";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT;
-const SECRET = process.env.NEXTAUTH_SECRET;
+const SECRET = process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
 
-export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
   const token = await getToken({ req, secret: SECRET });
@@ -44,7 +47,10 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 }
 
-export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
   const token = await getToken({ req, secret: SECRET });
@@ -90,7 +96,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   }
 }
 
-export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
 
@@ -135,7 +144,6 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
-
     return NextResponse.json(
       {
         error: error.response?.data?.msg || "Failed to delete image",
@@ -146,7 +154,10 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   }
 }
 
-export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
   const token = await getToken({ req, secret: SECRET });
