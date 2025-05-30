@@ -2,10 +2,8 @@ import axios from "axios";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { id } = params;
 
   if (!id) {
@@ -37,10 +35,8 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { id } = params;
   const token = await getToken({
     req: req,
@@ -85,10 +81,8 @@ export async function POST(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { id: postId } = params;
   const token = await getToken({
     req: req,

@@ -4,8 +4,9 @@ import { getToken } from "next-auth/jwt";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slugOrId: string } }
+  props: { params: Promise<{ slugOrId: string }> }
 ) {
+  const params = await props.params;
   const { slugOrId } = params;
 
   if (!slugOrId) {
@@ -39,13 +40,14 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { slugOrId: string } }
+  props: { params: Promise<{ slugOrId: string }> }
 ) {
+  const params = await props.params;
   const { slugOrId } = params;
 
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!slugOrId) {
@@ -98,13 +100,14 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { slugOrId: string } }
+  props: { params: Promise<{ slugOrId: string }> }
 ) {
+  const params = await props.params;
   const { slugOrId } = params;
 
   const token = await getToken({
     req: req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (!slugOrId) {

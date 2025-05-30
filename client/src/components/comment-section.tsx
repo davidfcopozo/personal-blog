@@ -22,7 +22,7 @@ export default function CommentSection({
       commentsSection?.scrollIntoView({ behavior: "smooth" });
       commentsSection?.focus();
     }
-  }, []);
+  }, [hash]);
 
   return (
     <section className="comment-section w-full max-w-7xl px-4 space-y-6 mb-8 sm:px-0">

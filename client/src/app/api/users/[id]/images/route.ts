@@ -12,12 +12,13 @@ import {
 } from "@/typings/api/images";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT;
-const SECRET = process.env.NEXTAUTH_SECRET;
+const SECRET = process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const { id } = params;
   const token = await getToken({ req, secret: SECRET });
   if (!token) {
@@ -48,8 +49,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const { id } = params;
   const token = await getToken({ req, secret: SECRET });
   if (!token) {
@@ -96,8 +98,9 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const { id } = params;
 
   const token = await getToken({ req, secret: SECRET });
@@ -141,7 +144,6 @@ export async function DELETE(
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error: any) {
-
     return NextResponse.json(
       {
         error: error.response?.data?.msg || "Failed to delete image",
@@ -154,8 +156,9 @@ export async function DELETE(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const { id } = params;
   const token = await getToken({ req, secret: SECRET });
   if (!token) {

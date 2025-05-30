@@ -2,10 +2,8 @@ import axios from "axios";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { username: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ username: string }> }) {
+  const params = await props.params;
   const { username } = params;
 
   if (!username) {

@@ -1,6 +1,6 @@
 "use client";
 import React, { FC, FormEvent, useEffect, useState } from "react";
-import "react-quill/dist/quill.snow.css";
+import "react-quill-new/dist/quill.snow.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";

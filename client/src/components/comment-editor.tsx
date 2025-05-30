@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import ReactQuill from "react-quill";
+import ReactQuill from "react-quill-new";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
@@ -10,9 +10,9 @@ const modules = {
   toolbar: [
     ["bold", "italic", "underline", "strike"],
     ["blockquote", "code-block"],
-    [{ list: "ordered" }, { list: "bullet" }],
+    [{ list: "ordered" } /* , { list: "bullet" } */],
     ["link"],
-    ["clean"],
+    /*  ["clean"], */
   ],
 };
 
@@ -24,7 +24,7 @@ const formats = [
   "blockquote",
   "code-block",
   "list",
-  "bullet",
+  /* "bullet", */
   "link",
 ];
 
@@ -65,7 +65,7 @@ export default function CommentEditor({
 
       textarea.style.height = `${newHeight}px`;
     }
-  }, [content, maxHeight]);
+  }, [content, maxHeight, placeholder]);
 
   const handleSubmit = () => {
     if (content.trim()) {

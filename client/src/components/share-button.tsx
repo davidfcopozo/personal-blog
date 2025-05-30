@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +13,11 @@ import { PostType } from "@/typings/types";
 export function ShareButton({ post }: { post: PostType }) {
   const { toast } = useToast();
 
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/blog/${post.slug}`
-      : "";
+  const [shareUrl, setShareUrl] = React.useState("");
+
+  useEffect(() => {
+    setShareUrl(`${window.location.origin}/blog/${post.slug}`);
+  }, [post.slug]);
 
   const shareOptions = [
     {
