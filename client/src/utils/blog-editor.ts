@@ -1,5 +1,7 @@
 import dynamic from "next/dynamic";
 import { Quill } from "react-quill-new";
+import "@/utils/custom-code-block";
+
 const ImageResize = dynamic(() => import("quill-image-resize-module-react"), {
   ssr: false,
 });
