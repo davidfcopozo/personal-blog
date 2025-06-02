@@ -1,7 +1,5 @@
 import dynamic from "next/dynamic";
 import { Quill } from "react-quill-new";
-import "@/utils/custom-code-block";
-
 const ImageResize = dynamic(() => import("quill-image-resize-module-react"), {
   ssr: false,
 });
@@ -31,6 +29,7 @@ export const formats = [
 ];
 
 export const modules = {
+  syntax: true,
   history: { delay: 200, maxStack: 500, userOnly: true },
   imageResize: {
     /* parchment: Quill.import("parchment"), */
@@ -54,7 +53,6 @@ export const modules = {
       ["link", "image", "video"],
       ["clean"],
     ],
-    syntax: true,
   },
   clipboard: {
     matchVisual: false,
