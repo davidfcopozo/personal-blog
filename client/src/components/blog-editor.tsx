@@ -1,6 +1,7 @@
 "use client";
 import React, { FC, FormEvent, useEffect, useState } from "react";
 import "react-quill-new/dist/quill.snow.css";
+import "highlight.js/styles/github.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
@@ -11,11 +12,40 @@ import { BlogEditorProps } from "@/typings/interfaces";
 import QuillLoadingSkeleton from "./quill-loading-skeleton";
 import { NewPostHeader } from "./new-post-header";
 import { Skeleton } from "./ui/skeleton";
+import hljs from "highlight.js";
 
-const Editor = dynamic(() => import("./editor"), {
-  ssr: false,
-  loading: () => <QuillLoadingSkeleton />,
-});
+const Editor = dynamic(
+  () => {
+    // Configure hljs globally before importing the editor
+    if (typeof window !== "undefined") {
+      // @ts-ignore
+      window.hljs = hljs;
+
+      // Configure hljs with languages for better detection
+      hljs.configure({
+        languages: [
+          "javascript",
+          "typescript",
+          "html",
+          "css",
+          "python",
+          "java",
+          "cpp",
+          "json",
+          "xml",
+          "bash",
+          "sql",
+        ],
+      });
+    }
+
+    return import("./editor");
+  },
+  {
+    ssr: false,
+    loading: () => <QuillLoadingSkeleton />,
+  }
+);
 
 const BlogEditor: FC<BlogEditorProps> = ({
   initialPost = null,
