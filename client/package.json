@@ -49,7 +49,6 @@
     "@types/node": "^20.12.12",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.5",
-    "@types/tinymce": "^4.6.9",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
     "eslint-config-next": "15.3.3",
