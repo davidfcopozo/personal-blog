@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactQuill, { Quill } from "react-quill-new";
-import { formats, modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
+import { modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
 import {
   EditorProps,
   QuillHistoryHandler,
@@ -8,6 +8,14 @@ import {
 } from "@/typings/interfaces";
 import { ImageUploadModal } from "./image-upload-modal";
 import { useImageManager } from "@/hooks/useImageManager";
+import hljs from "highlight.js";
+
+// Extend Quill types
+declare global {
+  interface Window {
+    Quill: typeof Quill;
+  }
+}
 
 const Editor = ({
   value,
@@ -133,13 +141,23 @@ const Editor = ({
     }
   }, [openImageUploadModal, undoHandler, redoHandler]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && editorRef.current) {
+      // Configure syntax highlighting
+      const languages = hljs.listLanguages();
+      const Syntax = Quill.import("modules/syntax") as any;
+      Syntax.DEFAULTS.highlight = (text: string) => {
+        return hljs.highlightAuto(text, languages).value;
+      };
+    }
+  }, []);
+
   return (
     <>
       <ReactQuill
         key="quil-editor"
         ref={editorRef}
         className="h-screen w-full"
-        formats={formats}
         value={value}
         onChange={onChange}
         modules={{
