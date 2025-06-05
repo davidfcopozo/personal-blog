@@ -1,7 +1,7 @@
 @import "react-quill-new/dist/quill.snow.css";
 @import "@/styles/comment-editor.css";
 @import "@/styles/blog-editor.css";
-@import "highlight.js/styles/github.css";
+@import "highlight.js/styles/atom-one-dark.css";
 
 @tailwind base;
 @tailwind components;
@@ -80,97 +80,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Syntax highlighting styles for Quill code blocks */
-.ql-code-block {
-  border-radius: 6px;
-  padding: 16px;
-  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo",
-    monospace;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.ql-code-block .hljs-keyword {
-  color: #d73a49 !important;
-  font-weight: 600;
-}
-
-.ql-code-block .hljs-string {
-  color: #032f62 !important;
-}
-
-.ql-code-block .hljs-comment {
-  color: #6a737d !important;
-  font-style: italic;
-}
-
-.ql-code-block .hljs-function {
-  color: #6f42c1 !important;
-}
-
-.ql-code-block .hljs-variable {
-  color: #e36209 !important;
-}
-
-.ql-code-block .hljs-number {
-  color: #005cc5 !important;
-}
-
-.ql-code-block .hljs-tag {
-  color: #22863a !important;
-}
-
-.ql-code-block .hljs-attr {
-  color: #6f42c1 !important;
-}
-
-.ql-code-block .hljs-attribute {
-  color: #6f42c1 !important;
-}
-
-.ql-code-block .hljs-name {
-  color: #22863a !important;
-}
-
-.ql-code-block .hljs-built_in {
-  color: #005cc5 !important;
-}
-
-.ql-code-block .hljs-literal {
-  color: #005cc5 !important;
-}
-
-.ql-code-block .hljs-type {
-  color: #d73a49 !important;
-}
-
-.ql-code-block .hljs-params {
-  color: #24292e !important;
-}
-
-.ql-code-block .hljs-meta {
-  color: #6a737d !important;
-}
-
-.ql-code-block .hljs-title {
-  color: #6f42c1 !important;
-}
-
-/* Additional language-specific styling */
-.ql-code-block.language-plaintext {
-  color: #24292e !important;
-}
-
-.ql-code-block .hljs-selector-tag {
-  color: #22863a !important;
-}
-
-.ql-code-block .hljs-selector-class {
-  color: #6f42c1 !important;
-}
-
-.ql-code-block .hljs-selector-id {
-  color: #005cc5 !important;
 }
