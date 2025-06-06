@@ -12,22 +12,11 @@ const modules = {
   toolbar: [
     ["bold", "italic", "underline", "strike"],
     ["blockquote", "code-block"],
-    [{ list: "ordered" } /* , { list: "bullet" } */],
+    [{ list: "ordered" }, { list: "bullet" }],
     ["link"],
-    /*  ["clean"], */
+    ["clean"],
   ],
 };
-
-const formats = [
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "code-block",
-  "link",
-];
 
 export default function CommentEditor({
   onSubmit,

@@ -32,7 +32,6 @@ export const modules = {
   syntax: true,
   history: { delay: 200, maxStack: 500, userOnly: true },
   imageResize: {
-    /* parchment: Quill.import("parchment"), */
     modules: ["Resize", "DisplaySize", "Toolbar"],
   },
   toolbar: {
@@ -42,7 +41,7 @@ export const modules = {
       ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
       [
         { list: "ordered" },
-        /* { list: "bullet" }, */
+        { list: "bullet" },
         { indent: "-1" },
         { indent: "+1" },
         { align: [] },
