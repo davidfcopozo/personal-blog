@@ -6,6 +6,15 @@
   @apply !rounded-b-md !border !border-input;
 }
 
+.ql-snow .ql-editor .ql-code-block-container {
+  padding: 1rem;
+}
+
+.ql-code-block-container .ql-ui {
+  top: 1rem;
+  right: 1rem;
+}
+
 /* Language-specific styling for dropdowns */
 .ql-code-block-container select.ql-ui.lang-javascript,
 .ql-code-block-container select.ql-ui.lang-js {
