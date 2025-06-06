@@ -44,6 +44,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.49.2
         version: 5.67.2(react@19.1.0)
+      '@types/prismjs':
+        specifier: ^1.26.5
+        version: 1.26.5
       axios:
         specifier: ^1.7.2
         version: 1.8.2
@@ -62,6 +65,9 @@ importers:
       firebase:
         specifier: ^10.12.3
         version: 10.14.1
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
       lucide-react:
         specifier: ^0.365.0
         version: 0.365.0(react@19.1.0)
@@ -74,9 +80,6 @@ importers:
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      quill:
-        specifier: ^2.0.3
-        version: 2.0.3
       quill-image-resize-module-react:
         specifier: ^3.0.0
         version: 3.0.0
@@ -114,9 +117,6 @@ importers:
       '@types/react-dom':
         specifier: 19.1.5
         version: 19.1.5(@types/react@19.1.6)
-      '@types/tinymce':
-        specifier: ^4.6.9
-        version: 4.6.9
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.21(postcss@8.5.3)
@@ -1101,14 +1101,14 @@ packages:
   '@types/bcrypt@5.0.2':
     resolution: {integrity: sha512-6atioO8Y75fNcbmj0G7UjI9lXN2pQ/IGJ2FWT4a/btd0Lk9lQalHLKhkgKVZ3r+spnmWUKfbMi1GEe9wyHQfNQ==}
 
-  '@types/jquery@3.5.32':
-    resolution: {integrity: sha512-b9Xbf4CkMqS02YH8zACqN1xzdxc3cO735Qe5AbSUFmyOiaWAbcpqh9Wna+Uk0vgACvoQHpWDg2rGdHkYPLmCiQ==}
-
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
   '@types/node@20.17.24':
     resolution: {integrity: sha512-d7fGCyB96w9BnWQrOsJtpyiSaBcAYYr75bnK6ZRjDbql2cGLj/3GsL5OYmLPNq76l7Gf2q4Rv9J2o6h5CrD9sA==}
+
+  '@types/prismjs@1.26.5':
+    resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
 
   '@types/react-dom@19.1.5':
     resolution: {integrity: sha512-CMCjrWucUBZvohgZxkjd6S9h0nZxXjzus6yDfUb+xLxYM7VvjKNH1tQrE9GWLql1XoOP4/Ds3bwFqShHUYraGg==}
@@ -1117,12 +1117,6 @@ packages:
 
   '@types/react@19.1.6':
     resolution: {integrity: sha512-JeG0rEWak0N6Itr6QUx+X60uQmN+5t3j9r/OVDtWzFXKaj6kD1BwJzOksD0FF6iWxZlbE1kB0q9vtnU2ekqa1Q==}
-
-  '@types/sizzle@2.3.9':
-    resolution: {integrity: sha512-xzLEyKB50yqCUPUJkIsrVvoWNfFUbIZI+RspLWt8u+tIW/BetMBZtgV2LY/2o+tYH8dRvQ+eoPf3NdhQCcLE2w==}
-
-  '@types/tinymce@4.6.9':
-    resolution: {integrity: sha512-pDxBUlV4v1jgJ97SlnVOSyf3KUy3OQ3s5Ddpfh1L9M5lXlBmX7TJ2OLSozx1WBxp91acHvYPWDwz2U/kMM1oxQ==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -2022,6 +2016,10 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  highlight.js@11.11.1:
+    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
+    engines: {node: '>=12.0.0'}
 
   http-parser-js@0.5.9:
     resolution: {integrity: sha512-n1XsPy3rXVxlqxVioEWdC+0+M+SQw0DpJynwtOPo1X+ZlvdzTLtDBIJJlDQTnwZIFJrZSzSGmIOUdP8tu+SgLw==}
@@ -4219,15 +4217,13 @@ snapshots:
     dependencies:
       '@types/node': 20.17.24
 
-  '@types/jquery@3.5.32':
-    dependencies:
-      '@types/sizzle': 2.3.9
-
   '@types/json5@0.0.29': {}
 
   '@types/node@20.17.24':
     dependencies:
       undici-types: 6.19.8
+
+  '@types/prismjs@1.26.5': {}
 
   '@types/react-dom@19.1.5(@types/react@19.1.6)':
     dependencies:
@@ -4236,12 +4232,6 @@ snapshots:
   '@types/react@19.1.6':
     dependencies:
       csstype: 3.1.3
-
-  '@types/sizzle@2.3.9': {}
-
-  '@types/tinymce@4.6.9':
-    dependencies:
-      '@types/jquery': 3.5.32
 
   '@types/trusted-types@2.0.7':
     optional: true
@@ -5365,6 +5355,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  highlight.js@11.11.1: {}
 
   http-parser-js@0.5.9: {}
 

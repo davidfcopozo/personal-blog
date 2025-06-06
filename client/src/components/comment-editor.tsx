@@ -1,32 +1,22 @@
 import { useEffect, useRef } from "react";
-import ReactQuill from "react-quill-new";
+import ReactQuill, { Quill } from "react-quill-new";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
 import { setTitle } from "@/utils/blog-editor";
 import { CommentEditorProps } from "@/typings/interfaces";
+import hljs from "highlight.js";
 
 const modules = {
+  syntax: true,
   toolbar: [
     ["bold", "italic", "underline", "strike"],
     ["blockquote", "code-block"],
-    [{ list: "ordered" } /* , { list: "bullet" } */],
+    [{ list: "ordered" }, { list: "bullet" }],
     ["link"],
-    /*  ["clean"], */
+    ["clean"],
   ],
 };
-
-const formats = [
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "code-block",
-  "list",
-  /* "bullet", */
-  "link",
-];
 
 export default function CommentEditor({
   onSubmit,
@@ -73,6 +63,128 @@ export default function CommentEditor({
     }
   };
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && textareaRef.current) {
+      // Configure languages for better detection
+      const languages = [
+        "javascript",
+        "typescript",
+        "python",
+        "java",
+        "cpp",
+        "c",
+        "csharp",
+        "cs",
+        "php",
+        "ruby",
+        "go",
+        "rust",
+        "html",
+        "xml",
+        "css",
+        "scss",
+        "sass",
+        "json",
+        "yaml",
+        "sql",
+        "bash",
+        "shell",
+        "powershell",
+        "dockerfile",
+        "markdown",
+        "plaintext",
+      ];
+
+      const Syntax = Quill.import("modules/syntax") as any;
+      const editor = textareaRef.current.getEditor();
+
+      // Store a queue of texts being processed to handle async detection
+      const processingQueue = new Set<string>();
+
+      // Override the highlight function to capture language detection
+      Syntax.DEFAULTS.highlight = (text: string) => {
+        // Clean the text for better detection
+        const cleanText = text.trim();
+        if (!cleanText) {
+          return hljs.highlight("", { language: "plaintext" }).value;
+        }
+
+        const result = hljs.highlightAuto(cleanText, languages);
+        const detectedLanguage = result.language || "plaintext";
+
+        // Create a unique identifier for this text
+        const textId = btoa(cleanText).substring(0, 20);
+
+        if (!processingQueue.has(textId)) {
+          processingQueue.add(textId);
+
+          // Use setTimeout to ensure DOM is updated
+          setTimeout(() => {
+            // Only target .ql-code-block elements (not containers)
+            const codeBlocks =
+              editor.root.querySelectorAll("div.ql-code-block");
+
+            for (const block of codeBlocks) {
+              const blockElement = block as HTMLElement;
+              const blockText = blockElement.textContent?.trim() || "";
+
+              // Check if this block matches our text and doesn't already have correct language
+              if (
+                blockText === cleanText &&
+                (!blockElement.hasAttribute("data-language") ||
+                  blockElement.getAttribute("data-language") !==
+                    detectedLanguage)
+              ) {
+                blockElement.setAttribute("data-language", detectedLanguage);
+
+                break;
+              }
+            }
+
+            processingQueue.delete(textId);
+          }, 50);
+        }
+
+        return result.value;
+      };
+
+      // Add event listener for content changes to reapply language detection
+      const handleTextChange = () => {
+        setTimeout(() => {
+          // Only process .ql-code-block elements
+          const codeBlocks = editor.root.querySelectorAll("div.ql-code-block");
+
+          codeBlocks.forEach((block) => {
+            const blockElement = block as HTMLElement;
+            const text = blockElement.textContent?.trim() || "";
+
+            if (text && !blockElement.hasAttribute("data-language")) {
+              try {
+                const result = hljs.highlightAuto(text, languages);
+                const language = result.language || "plaintext";
+                blockElement.setAttribute("data-language", language);
+              } catch (error) {
+                blockElement.setAttribute("data-language", "plaintext");
+              }
+            }
+          });
+        }, 300);
+      };
+
+      editor.on("text-change", handleTextChange);
+
+      // Initial scan for existing code blocks
+      setTimeout(() => {
+        handleTextChange();
+      }, 1000);
+
+      // Cleanup function
+      return () => {
+        editor.off("text-change", handleTextChange);
+      };
+    }
+  }, []);
+
   return (
     <>
       <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground rounded-md">
@@ -82,7 +194,6 @@ export default function CommentEditor({
             value={content}
             onChange={onChange}
             modules={modules}
-            formats={formats}
             placeholder={placeholder}
             className="bg-background text-foreground"
             ref={textareaRef}

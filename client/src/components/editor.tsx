@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactQuill, { Quill } from "react-quill-new";
-import { formats, modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
+import { modules, REDO_ICON, UNDO_ICON } from "@/utils/blog-editor";
 import {
   EditorProps,
   QuillHistoryHandler,
@@ -8,6 +8,14 @@ import {
 } from "@/typings/interfaces";
 import { ImageUploadModal } from "./image-upload-modal";
 import { useImageManager } from "@/hooks/useImageManager";
+import hljs from "highlight.js";
+
+// Extend Quill types
+declare global {
+  interface Window {
+    Quill: typeof Quill;
+  }
+}
 
 const Editor = ({
   value,
@@ -96,7 +104,6 @@ const Editor = ({
 
         return url;
       } catch (error) {
-        console.error("Error uploading image:", error);
         throw error;
       }
     },
@@ -133,13 +140,133 @@ const Editor = ({
     }
   }, [openImageUploadModal, undoHandler, redoHandler]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && editorRef.current) {
+      // Configure languages for better detection
+      const languages = [
+        "javascript",
+        "typescript",
+        "python",
+        "java",
+        "cpp",
+        "c",
+        "csharp",
+        "cs",
+        "php",
+        "ruby",
+        "go",
+        "rust",
+        "html",
+        "xml",
+        "css",
+        "scss",
+        "sass",
+        "json",
+        "yaml",
+        "sql",
+        "bash",
+        "shell",
+        "powershell",
+        "dockerfile",
+        "markdown",
+        "plaintext",
+      ];
+
+      const Syntax = Quill.import("modules/syntax") as any;
+      const editor = editorRef.current.getEditor();
+
+      // Store a queue of texts being processed to handle async detection
+      const processingQueue = new Set<string>();
+
+      // Override the highlight function to capture language detection
+      Syntax.DEFAULTS.highlight = (text: string) => {
+        // Clean the text for better detection
+        const cleanText = text.trim();
+        if (!cleanText) {
+          return hljs.highlight("", { language: "plaintext" }).value;
+        }
+
+        const result = hljs.highlightAuto(cleanText, languages);
+        const detectedLanguage = result.language || "plaintext";
+
+        // Create a unique identifier for this text
+        const textId = btoa(cleanText).substring(0, 20);
+
+        if (!processingQueue.has(textId)) {
+          processingQueue.add(textId);
+
+          // Use setTimeout to ensure DOM is updated
+          setTimeout(() => {
+            // Only target .ql-code-block elements (not containers)
+            const codeBlocks =
+              editor.root.querySelectorAll("div.ql-code-block");
+
+            for (const block of codeBlocks) {
+              const blockElement = block as HTMLElement;
+              const blockText = blockElement.textContent?.trim() || "";
+
+              // Check if this block matches our text and doesn't already have correct language
+              if (
+                blockText === cleanText &&
+                (!blockElement.hasAttribute("data-language") ||
+                  blockElement.getAttribute("data-language") !==
+                    detectedLanguage)
+              ) {
+                blockElement.setAttribute("data-language", detectedLanguage);
+                break;
+              }
+            }
+
+            processingQueue.delete(textId);
+          }, 50);
+        }
+
+        return result.value;
+      };
+
+      // Add event listener for content changes to reapply language detection
+      const handleTextChange = () => {
+        setTimeout(() => {
+          // Only process .ql-code-block elements
+          const codeBlocks = editor.root.querySelectorAll("div.ql-code-block");
+
+          codeBlocks.forEach((block) => {
+            const blockElement = block as HTMLElement;
+            const text = blockElement.textContent?.trim() || "";
+
+            if (text && !blockElement.hasAttribute("data-language")) {
+              try {
+                const result = hljs.highlightAuto(text, languages);
+                const language = result.language || "plaintext";
+                blockElement.setAttribute("data-language", language);
+              } catch (error) {
+                blockElement.setAttribute("data-language", "plaintext");
+              }
+            }
+          });
+        }, 300);
+      };
+
+      editor.on("text-change", handleTextChange);
+
+      // Initial scan for existing code blocks
+      setTimeout(() => {
+        handleTextChange();
+      }, 1000);
+
+      // Cleanup function
+      return () => {
+        editor.off("text-change", handleTextChange);
+      };
+    }
+  }, []);
+
   return (
     <>
       <ReactQuill
         key="quil-editor"
         ref={editorRef}
         className="h-screen w-full"
-        formats={formats}
         value={value}
         onChange={onChange}
         modules={{

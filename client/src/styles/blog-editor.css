@@ -5,3 +5,150 @@
 .quill .ql-container {
   @apply !rounded-b-md !border !border-input;
 }
+
+.ql-snow .ql-editor .ql-code-block-container {
+  padding: 1rem;
+}
+
+.ql-code-block-container .ql-ui {
+  top: 1rem;
+  right: 1rem;
+}
+
+/* Language-specific styling for dropdowns */
+.ql-code-block-container select.ql-ui.lang-javascript,
+.ql-code-block-container select.ql-ui.lang-js {
+  background-color: #f7df1e;
+  color: #000;
+  font-weight: 500;
+  border: 2px solid #f7df1e;
+}
+
+.ql-code-block-container select.ql-ui.lang-typescript,
+.ql-code-block-container select.ql-ui.lang-ts,
+.ql-code-block-container select.ql-ui.typescript-detected {
+  background-color: #3178c6 !important;
+  color: white !important;
+  font-weight: 500;
+  border: 2px solid #3178c6 !important;
+}
+
+.ql-code-block-container select.ql-ui.lang-python {
+  background-color: #3776ab;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #3776ab;
+}
+
+.ql-code-block-container select.ql-ui.lang-html,
+.ql-code-block-container select.ql-ui.lang-xml {
+  background-color: #e34c26;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #e34c26;
+}
+
+.ql-code-block-container select.ql-ui.lang-css,
+.ql-code-block-container select.ql-ui.lang-scss,
+.ql-code-block-container select.ql-ui.lang-sass {
+  background-color: #1572b6;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #1572b6;
+}
+
+.ql-code-block-container select.ql-ui.lang-json {
+  background-color: #292929;
+  color: #f8f8f2;
+  font-weight: 500;
+  border: 2px solid #292929;
+}
+
+.ql-code-block-container select.ql-ui.lang-bash,
+.ql-code-block-container select.ql-ui.lang-shell,
+.ql-code-block-container select.ql-ui.lang-sh {
+  background-color: #4eaa25;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #4eaa25;
+}
+
+.ql-code-block-container select.ql-ui.lang-java {
+  background-color: #ed8b00;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #ed8b00;
+}
+
+.ql-code-block-container select.ql-ui.lang-cpp,
+.ql-code-block-container select.ql-ui.lang-c {
+  background-color: #00599c;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #00599c;
+}
+
+.ql-code-block-container select.ql-ui.lang-php {
+  background-color: #777bb4;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #777bb4;
+}
+
+.ql-code-block-container select.ql-ui.lang-ruby {
+  background-color: #cc342d;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #cc342d;
+}
+
+.ql-code-block-container select.ql-ui.lang-sql {
+  background-color: #336791;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #336791;
+}
+
+.ql-code-block-container select.ql-ui.lang-markdown,
+.ql-code-block-container select.ql-ui.lang-md {
+  background-color: #083fa1;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #083fa1;
+}
+
+.ql-code-block-container select.ql-ui.lang-diff {
+  background-color: #88c999;
+  color: #000;
+  font-weight: 500;
+  border: 2px solid #88c999;
+}
+
+.ql-code-block-container select.ql-ui.lang-plaintext,
+.ql-code-block-container select.ql-ui.lang-plain {
+  background-color: #6b7280;
+  color: white;
+  font-weight: 500;
+  border: 2px solid #6b7280;
+}
+
+/* Add visual indicator for TypeScript detection */
+.ql-code-block-container select.ql-ui.typescript-detected::after {
+  content: " (TS)";
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
+/* Dark theme adjustments for dropdown styling */
+.dark .ql-code-block-container select.ql-ui.lang-javascript,
+.dark .ql-code-block-container select.ql-ui.lang-js {
+  background-color: #f7df1e;
+  color: #000;
+  border: 2px solid #f7df1e;
+}
+
+.dark .ql-code-block-container select.ql-ui.lang-diff {
+  background-color: #6f9f6f;
+  color: white;
+  border: 2px solid #6f9f6f;
+}

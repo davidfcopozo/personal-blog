@@ -1,6 +1,7 @@
 "use client";
 import React, { FC, FormEvent, useEffect, useState } from "react";
 import "react-quill-new/dist/quill.snow.css";
+import "highlight.js/styles/night-owl.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
@@ -11,11 +12,82 @@ import { BlogEditorProps } from "@/typings/interfaces";
 import QuillLoadingSkeleton from "./quill-loading-skeleton";
 import { NewPostHeader } from "./new-post-header";
 import { Skeleton } from "./ui/skeleton";
+import hljs from "highlight.js";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import html from "highlight.js/lib/languages/xml";
+import css from "highlight.js/lib/languages/css";
+import python from "highlight.js/lib/languages/python";
+import java from "highlight.js/lib/languages/java";
+import cpp from "highlight.js/lib/languages/cpp";
+import json from "highlight.js/lib/languages/json";
+import xml from "highlight.js/lib/languages/xml";
+import bash from "highlight.js/lib/languages/bash";
+import sql from "highlight.js/lib/languages/sql";
+import php from "highlight.js/lib/languages/php";
+import ruby from "highlight.js/lib/languages/ruby";
+import go from "highlight.js/lib/languages/go";
+import rust from "highlight.js/lib/languages/rust";
+import csharp from "highlight.js/lib/languages/csharp";
+import c from "highlight.js/lib/languages/c";
 
-const Editor = dynamic(() => import("./editor"), {
-  ssr: false,
-  loading: () => <QuillLoadingSkeleton />,
-});
+const Editor = dynamic(
+  () => {
+    // Configure hljs globally before importing the editor
+    if (typeof window !== "undefined") {
+      // @ts-ignore
+      window.hljs = hljs;
+
+      // Register JavaScript the imported languges
+      hljs.registerLanguage("javascript", javascript);
+      hljs.registerLanguage("typescript", typescript);
+      hljs.registerLanguage("html", html);
+      hljs.registerLanguage("css", css);
+      hljs.registerLanguage("python", python);
+      hljs.registerLanguage("java", java);
+      hljs.registerLanguage("cpp", cpp);
+      hljs.registerLanguage("json", json);
+      hljs.registerLanguage("xml", xml);
+      hljs.registerLanguage("bash", bash);
+      hljs.registerLanguage("sql", sql);
+      hljs.registerLanguage("php", php);
+      hljs.registerLanguage("ruby", ruby);
+      hljs.registerLanguage("go", go);
+      hljs.registerLanguage("rust", rust);
+      hljs.registerLanguage("csharp", csharp);
+      hljs.registerLanguage("c", c);
+
+      // Configure hljs with languages for better detection
+      hljs.configure({
+        languages: [
+          "javascript",
+          "typescript",
+          "html",
+          "css",
+          "python",
+          "java",
+          "cpp",
+          "json",
+          "xml",
+          "bash",
+          "sql",
+          "php",
+          "ruby",
+          "go",
+          "rust",
+          "csharp",
+          "c",
+        ],
+      });
+    }
+
+    return import("./editor");
+  },
+  {
+    ssr: false,
+    loading: () => <QuillLoadingSkeleton />,
+  }
+);
 
 const BlogEditor: FC<BlogEditorProps> = ({
   initialPost = null,
