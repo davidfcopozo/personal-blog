@@ -40,6 +40,25 @@ const Editor = dynamic(
       // @ts-ignore
       window.hljs = hljs;
 
+      // Register JavaScript the imported languges
+      hljs.registerLanguage("javascript", javascript);
+      hljs.registerLanguage("typescript", typescript);
+      hljs.registerLanguage("html", html);
+      hljs.registerLanguage("css", css);
+      hljs.registerLanguage("python", python);
+      hljs.registerLanguage("java", java);
+      hljs.registerLanguage("cpp", cpp);
+      hljs.registerLanguage("json", json);
+      hljs.registerLanguage("xml", xml);
+      hljs.registerLanguage("bash", bash);
+      hljs.registerLanguage("sql", sql);
+      hljs.registerLanguage("php", php);
+      hljs.registerLanguage("ruby", ruby);
+      hljs.registerLanguage("go", go);
+      hljs.registerLanguage("rust", rust);
+      hljs.registerLanguage("csharp", csharp);
+      hljs.registerLanguage("c", c);
+
       // Configure hljs with languages for better detection
       hljs.configure({
         languages: [
@@ -62,25 +81,6 @@ const Editor = dynamic(
           "c",
         ],
       });
-
-      // Register JavaScript the imported languges
-      hljs.registerLanguage("javascript", javascript);
-      hljs.registerLanguage("typescript", typescript);
-      hljs.registerLanguage("html", html);
-      hljs.registerLanguage("css", css);
-      hljs.registerLanguage("python", python);
-      hljs.registerLanguage("java", java);
-      hljs.registerLanguage("cpp", cpp);
-      hljs.registerLanguage("json", json);
-      hljs.registerLanguage("xml", xml);
-      hljs.registerLanguage("bash", bash);
-      hljs.registerLanguage("sql", sql);
-      hljs.registerLanguage("php", php);
-      hljs.registerLanguage("ruby", ruby);
-      hljs.registerLanguage("go", go);
-      hljs.registerLanguage("rust", rust);
-      hljs.registerLanguage("csharp", csharp);
-      hljs.registerLanguage("c", c);
     }
 
     return import("./editor");
