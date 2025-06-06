@@ -25,7 +25,16 @@ const dompurifyConfig = {
     "h5",
     "h6",
   ],
-  ALLOWED_ATTR: ["href", "target", "alt", "title", "src", "class"],
+  ALLOWED_ATTR: [
+    "href",
+    "target",
+    "alt",
+    "title",
+    "src",
+    "class",
+    "data-language",
+    "spellcheck",
+  ],
   ALLOW_DATA_ATTR: false, // Prevent data-* attributes unless explicitly needed
   FORBID_TAGS: ["script", "iframe", "object", "embed", "style"], // Explicitly forbid script and style tags
   FORBID_ATTR: ["on*", "style"], // Prevent event handler attributes
