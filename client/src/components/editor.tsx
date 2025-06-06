@@ -104,7 +104,6 @@ const Editor = ({
 
         return url;
       } catch (error) {
-        console.error("Error uploading image:", error);
         throw error;
       }
     },
@@ -176,15 +175,11 @@ const Editor = ({
       const Syntax = Quill.import("modules/syntax") as any;
       const editor = editorRef.current.getEditor();
 
-      console.log("Setting up syntax highlighting with language detection");
-
       // Store a queue of texts being processed to handle async detection
       const processingQueue = new Set<string>();
 
       // Override the highlight function to capture language detection
       Syntax.DEFAULTS.highlight = (text: string) => {
-        console.log("Highlighting text:", text.substring(0, 50));
-
         // Clean the text for better detection
         const cleanText = text.trim();
         if (!cleanText) {
@@ -193,13 +188,6 @@ const Editor = ({
 
         const result = hljs.highlightAuto(cleanText, languages);
         const detectedLanguage = result.language || "plaintext";
-
-        console.log(
-          "Detected language:",
-          detectedLanguage,
-          "confidence:",
-          result.relevance
-        );
 
         // Create a unique identifier for this text
         const textId = btoa(cleanText).substring(0, 20);
@@ -225,9 +213,6 @@ const Editor = ({
                     detectedLanguage)
               ) {
                 blockElement.setAttribute("data-language", detectedLanguage);
-                console.log(
-                  `Applied data-language="${detectedLanguage}" to code block`
-                );
                 break;
               }
             }
@@ -254,11 +239,7 @@ const Editor = ({
                 const result = hljs.highlightAuto(text, languages);
                 const language = result.language || "plaintext";
                 blockElement.setAttribute("data-language", language);
-                console.log(
-                  `Auto-applied language: ${language} to existing block`
-                );
               } catch (error) {
-                console.warn("Error detecting language:", error);
                 blockElement.setAttribute("data-language", "plaintext");
               }
             }
