@@ -1,7 +1,7 @@
 "use client";
 import React, { FC, FormEvent, useEffect, useState } from "react";
 import "react-quill-new/dist/quill.snow.css";
-import "highlight.js/styles/github.css";
+import "highlight.js/styles/night-owl.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
@@ -30,8 +30,6 @@ import go from "highlight.js/lib/languages/go";
 import rust from "highlight.js/lib/languages/rust";
 import csharp from "highlight.js/lib/languages/csharp";
 import c from "highlight.js/lib/languages/c";
-
-console.log(javascript);
 
 const Editor = dynamic(
   () => {

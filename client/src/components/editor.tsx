@@ -140,6 +140,7 @@ const Editor = ({
       toolbar.addHandler("redo", redoHandler);
     }
   }, [openImageUploadModal, undoHandler, redoHandler]);
+
   useEffect(() => {
     if (typeof window !== "undefined" && editorRef.current) {
       // Configure languages for better detection
