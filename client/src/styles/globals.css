@@ -1,4 +1,4 @@
-@import "react-quill-new/dist/quill.snow.css";
+@import "@/styles/tiptap.css";
 @import "@/styles/comment-editor.css";
 @import "@/styles/blog-editor.css";
 
