@@ -1,7 +1,5 @@
 "use client";
 import React, { FC, FormEvent, useEffect, useState } from "react";
-import "react-quill-new/dist/quill.snow.css";
-import "highlight.js/styles/night-owl.css";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
@@ -9,85 +7,29 @@ import Categories from "./categories";
 import Tags from "./tags";
 import dynamic from "next/dynamic";
 import { BlogEditorProps } from "@/typings/interfaces";
-import QuillLoadingSkeleton from "./quill-loading-skeleton";
 import { NewPostHeader } from "./new-post-header";
 import { Skeleton } from "./ui/skeleton";
-import hljs from "highlight.js";
-import javascript from "highlight.js/lib/languages/javascript";
-import typescript from "highlight.js/lib/languages/typescript";
-import html from "highlight.js/lib/languages/xml";
-import css from "highlight.js/lib/languages/css";
-import python from "highlight.js/lib/languages/python";
-import java from "highlight.js/lib/languages/java";
-import cpp from "highlight.js/lib/languages/cpp";
-import json from "highlight.js/lib/languages/json";
-import xml from "highlight.js/lib/languages/xml";
-import bash from "highlight.js/lib/languages/bash";
-import sql from "highlight.js/lib/languages/sql";
-import php from "highlight.js/lib/languages/php";
-import ruby from "highlight.js/lib/languages/ruby";
-import go from "highlight.js/lib/languages/go";
-import rust from "highlight.js/lib/languages/rust";
-import csharp from "highlight.js/lib/languages/csharp";
-import c from "highlight.js/lib/languages/c";
 
-const Editor = dynamic(
-  () => {
-    // Configure hljs globally before importing the editor
-    if (typeof window !== "undefined") {
-      // @ts-ignore
-      window.hljs = hljs;
-
-      // Register JavaScript the imported languges
-      hljs.registerLanguage("javascript", javascript);
-      hljs.registerLanguage("typescript", typescript);
-      hljs.registerLanguage("html", html);
-      hljs.registerLanguage("css", css);
-      hljs.registerLanguage("python", python);
-      hljs.registerLanguage("java", java);
-      hljs.registerLanguage("cpp", cpp);
-      hljs.registerLanguage("json", json);
-      hljs.registerLanguage("xml", xml);
-      hljs.registerLanguage("bash", bash);
-      hljs.registerLanguage("sql", sql);
-      hljs.registerLanguage("php", php);
-      hljs.registerLanguage("ruby", ruby);
-      hljs.registerLanguage("go", go);
-      hljs.registerLanguage("rust", rust);
-      hljs.registerLanguage("csharp", csharp);
-      hljs.registerLanguage("c", c);
-
-      // Configure hljs with languages for better detection
-      hljs.configure({
-        languages: [
-          "javascript",
-          "typescript",
-          "html",
-          "css",
-          "python",
-          "java",
-          "cpp",
-          "json",
-          "xml",
-          "bash",
-          "sql",
-          "php",
-          "ruby",
-          "go",
-          "rust",
-          "csharp",
-          "c",
-        ],
-      });
-    }
-
-    return import("./editor");
-  },
-  {
-    ssr: false,
-    loading: () => <QuillLoadingSkeleton />,
-  }
-);
+const TiptapBlogEditor = dynamic(() => import("./tiptap-blog-editor"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] border border-muted-foreground rounded-md">
+      <div className="p-4 border-b border-muted-foreground/20">
+        <div className="flex gap-2">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-8" />
+          ))}
+        </div>
+      </div>
+      <div className="p-6">
+        <Skeleton className="h-6 w-3/4 mb-4" />
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-5/6 mb-2" />
+        <Skeleton className="h-4 w-4/5" />
+      </div>
+    </div>
+  ),
+});
 
 const BlogEditor: FC<BlogEditorProps> = ({
   initialPost = null,
@@ -152,9 +94,9 @@ const BlogEditor: FC<BlogEditorProps> = ({
                 <div className="border p-2 rounded-md mb-4 w-full">
                   <Skeleton className="h-6 w-3/4" />
                 </div>
-              )}
+              )}{" "}
               <div className="mb-4">
-                <Editor
+                <TiptapBlogEditor
                   value={content || (initialPost?.content as string)}
                   onChange={handleContentChange}
                   handleImageUpload={handleImageUpload}
