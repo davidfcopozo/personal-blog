@@ -62,6 +62,7 @@ export default function CommentEditor({
         class: "prose prose-sm max-w-none focus:outline-none min-h-[100px] p-3",
       },
     },
+    immediatelyRender: false,
   });
 
   // Update editor content when value prop changes
