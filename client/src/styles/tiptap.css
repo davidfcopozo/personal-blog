@@ -189,49 +189,6 @@
   position: relative;
 }
 
-/* Syntax highlighting for code blocks */
-.ProseMirror .hljs {
-  color: hsl(var(--foreground));
-  background: transparent;
-}
-
-.ProseMirror .hljs-comment {
-  color: hsl(var(--muted-foreground));
-  font-style: italic;
-}
-
-.ProseMirror .hljs-keyword,
-.ProseMirror .hljs-selector-tag,
-.ProseMirror .hljs-subst {
-  color: hsl(var(--primary));
-  font-weight: 600;
-}
-
-.ProseMirror .hljs-string,
-.ProseMirror .hljs-doctag {
-  color: #22c55e;
-}
-
-.ProseMirror .hljs-number,
-.ProseMirror .hljs-literal {
-  color: #f59e0b;
-}
-
-.ProseMirror .hljs-function,
-.ProseMirror .hljs-title {
-  color: #3b82f6;
-}
-
-.ProseMirror .hljs-variable,
-.ProseMirror .hljs-template-variable {
-  color: #ef4444;
-}
-
-.ProseMirror .hljs-type,
-.ProseMirror .hljs-class {
-  color: #8b5cf6;
-}
-
 /* Table styling (if needed later) */
 .ProseMirror table {
   border-collapse: collapse;
@@ -352,31 +309,3 @@
     margin: 0.75rem 0;
   }
 }
-
-/* Dark mode adjustments */
-/* @media (prefers-color-scheme: dark) {
-  .ProseMirror .hljs-string,
-  .ProseMirror .hljs-doctag {
-    color: #86efac;
-  }
-
-  .ProseMirror .hljs-number,
-  .ProseMirror .hljs-literal {
-    color: #fbbf24;
-  }
-
-  .ProseMirror .hljs-function,
-  .ProseMirror .hljs-title {
-    color: #60a5fa;
-  }
-
-  .ProseMirror .hljs-variable,
-  .ProseMirror .hljs-template-variable {
-    color: #f87171;
-  }
-
-  .ProseMirror .hljs-type,
-  .ProseMirror .hljs-class {
-    color: #a78bfa;
-  }
-} */
