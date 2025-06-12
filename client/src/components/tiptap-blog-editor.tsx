@@ -19,7 +19,6 @@ import Heading from "@tiptap/extension-heading";
 import Youtube from "@tiptap/extension-youtube";
 import { ResizableImage } from "tiptap-extension-resizable-image";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import BlogEditorToolbar from "./blog-editor-toolbar";
 import { EditorProps } from "@/typings/interfaces";
