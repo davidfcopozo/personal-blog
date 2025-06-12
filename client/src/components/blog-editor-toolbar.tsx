@@ -2,12 +2,12 @@
 
 import { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
+import { CodeBlockButton } from "@/components/ui/code-block-button";
 import {
   Bold,
   Italic,
   Underline as UnderlineIcon,
   Strikethrough,
-  Code,
   Quote,
   List,
   ListOrdered,
@@ -67,9 +67,7 @@ export default function BlogEditorToolbar({
         >
           <Redo className="h-4 w-4" />
         </Button>
-
         <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
         {/* Headings */}
         <Button
           type="button"
@@ -113,9 +111,7 @@ export default function BlogEditorToolbar({
         >
           <Heading3 className="h-4 w-4" />
         </Button>
-
         <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
         {/* Text formatting */}
         <Button
           type="button"
@@ -157,9 +153,7 @@ export default function BlogEditorToolbar({
         >
           <Strikethrough className="h-4 w-4" />
         </Button>
-
         <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
         {/* Alignment */}
         <Button
           type="button"
@@ -207,9 +201,7 @@ export default function BlogEditorToolbar({
         >
           <AlignJustify className="h-4 w-4" />
         </Button>
-
         <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
         {/* Lists and blocks */}
         <Button
           type="button"
@@ -230,7 +222,7 @@ export default function BlogEditorToolbar({
           title="Numbered List"
         >
           <ListOrdered className="h-4 w-4" />
-        </Button>
+        </Button>{" "}
         <Button
           type="button"
           variant={editor.isActive("blockquote") ? "default" : "ghost"}
@@ -241,19 +233,8 @@ export default function BlogEditorToolbar({
         >
           <Quote className="h-4 w-4" />
         </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("codeBlock") ? "default" : "ghost"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className="h-8 w-8 p-0"
-          title="Code Block"
-        >
-          <Code className="h-4 w-4" />
-        </Button>
-
+        <CodeBlockButton editor={editor} />
         <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
         {/* Media and links */}
         <Button
           type="button"
