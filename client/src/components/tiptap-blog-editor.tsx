@@ -18,7 +18,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import FontFamily from "@tiptap/extension-font-family";
 import Heading from "@tiptap/extension-heading";
 import Youtube from "@tiptap/extension-youtube";
-import { createLowlight } from "lowlight";
+import { all, createLowlight } from "lowlight";
 
 // Import common languages for syntax highlighting
 import javascript from "highlight.js/lib/languages/javascript";
@@ -39,7 +39,7 @@ import csharp from "highlight.js/lib/languages/csharp";
 import c from "highlight.js/lib/languages/c";
 
 // Create lowlight instance
-const lowlight = createLowlight();
+const lowlight = createLowlight(all);
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
