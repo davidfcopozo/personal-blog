@@ -17,29 +17,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import FontFamily from "@tiptap/extension-font-family";
 import Heading from "@tiptap/extension-heading";
 import Youtube from "@tiptap/extension-youtube";
-import { all, createLowlight } from "lowlight";
 import { ResizableImage } from "tiptap-extension-resizable-image";
-
-// Import common languages for syntax highlighting
-import javascript from "highlight.js/lib/languages/javascript";
-import typescript from "highlight.js/lib/languages/typescript";
-import html from "highlight.js/lib/languages/xml";
-import css from "highlight.js/lib/languages/css";
-import python from "highlight.js/lib/languages/python";
-import java from "highlight.js/lib/languages/java";
-import cpp from "highlight.js/lib/languages/cpp";
-import json from "highlight.js/lib/languages/json";
-import bash from "highlight.js/lib/languages/bash";
-import sql from "highlight.js/lib/languages/sql";
-import php from "highlight.js/lib/languages/php";
-import ruby from "highlight.js/lib/languages/ruby";
-import go from "highlight.js/lib/languages/go";
-import rust from "highlight.js/lib/languages/rust";
-import csharp from "highlight.js/lib/languages/csharp";
-import c from "highlight.js/lib/languages/c";
-
-// Create lowlight instance
-const lowlight = createLowlight(all);
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -48,23 +26,20 @@ import { EditorProps } from "@/typings/interfaces";
 import { useEffect } from "react";
 import "@/styles/tiptap.css";
 
-// Register languages with lowlight
-lowlight.register("javascript", javascript);
-lowlight.register("typescript", typescript);
-lowlight.register("html", html);
-lowlight.register("css", css);
-lowlight.register("python", python);
-lowlight.register("java", java);
-lowlight.register("cpp", cpp);
-lowlight.register("json", json);
-lowlight.register("bash", bash);
-lowlight.register("sql", sql);
-lowlight.register("php", php);
-lowlight.register("ruby", ruby);
-lowlight.register("go", go);
-lowlight.register("rust", rust);
-lowlight.register("csharp", csharp);
-lowlight.register("c", c);
+// Import configurations from utils
+import {
+  createConfiguredLowlight,
+  tiptapEditorConfig,
+  extensionConfigs,
+  defaultImageSettings,
+  defaultTableSettings,
+  createPromptDialog,
+  validateImageFile,
+  validateYouTubeUrl,
+} from "@/utils/blog-editor";
+
+// Create lowlight instance
+const lowlight = createConfiguredLowlight();
 
 interface TiptapBlogEditorProps extends EditorProps {
   className?: string;
@@ -79,52 +54,30 @@ export default function TiptapBlogEditor({
 }: TiptapBlogEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        codeBlock: false, // We'll use CodeBlockLowlight instead
-        heading: false, // We'll use custom Heading extension
-      }),
+      StarterKit.configure(extensionConfigs.starterKit),
       Heading.configure({
-        levels: [1, 2, 3, 4, 5, 6],
+        ...extensionConfigs.heading,
+        levels: [...extensionConfigs.heading.levels],
       }),
       CodeBlockLowlight.configure({
         lowlight,
-        defaultLanguage: "plaintext",
+        ...extensionConfigs.codeBlockLowlight,
       }),
       Underline,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class:
-            "text-primary underline underline-offset-2 hover:text-primary/80",
-        },
-      }),
+      Link.configure(extensionConfigs.link),
       TextStyle,
       Color,
-      Highlight.configure({
-        multicolor: true,
-      }),
-      ResizableImage.configure({
-        defaultWidth: 310,
-        defaultHeight: 210,
-        withCaption: true,
-      }),
-      Table.configure({
-        resizable: true,
-      }),
+      Highlight.configure(extensionConfigs.highlight),
+      ResizableImage.configure(extensionConfigs.resizableImage),
+      Table.configure(extensionConfigs.table),
       TableRow,
       TableHeader,
       TableCell,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
+      TextAlign.configure(extensionConfigs.textAlign),
       FontFamily,
-      Youtube.configure({
-        controls: false,
-        nocookie: true,
-        modestBranding: true,
-      }),
+      Youtube.configure(extensionConfigs.youtube),
       Placeholder.configure({
-        placeholder: "Start writing your blog post...",
+        placeholder: extensionConfigs.placeholder.blog,
       }),
     ],
     content: value || "",
@@ -134,12 +87,8 @@ export default function TiptapBlogEditor({
     onCreate: () => {
       onEditorReady?.();
     },
-    editorProps: {
-      attributes: {
-        class: "prose prose-lg max-w-none focus:outline-none min-h-[400px] p-6",
-      },
-    },
-    immediatelyRender: false,
+    editorProps: tiptapEditorConfig.editorProps,
+    immediatelyRender: tiptapEditorConfig.immediatelyRender,
   });
 
   // Update editor content when value prop changes
@@ -155,7 +104,7 @@ export default function TiptapBlogEditor({
       input.accept = "image/*";
       input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) {
+        if (file && validateImageFile(file)) {
           try {
             const url = await handleImageUpload(file);
             editor
@@ -165,9 +114,9 @@ export default function TiptapBlogEditor({
                 src: url,
                 alt: file.name || "",
                 title: file.name || "",
-                width: 310,
-                height: 210,
-                "data-keep-ratio": true,
+                width: defaultImageSettings.width,
+                height: defaultImageSettings.height,
+                "data-keep-ratio": defaultImageSettings.keepRatio,
               })
               .run();
           } catch (error) {
@@ -178,17 +127,20 @@ export default function TiptapBlogEditor({
       input.click();
     }
   };
+
   const setLink = () => {
-    const url = window.prompt("Enter URL:");
+    const url = createPromptDialog("Enter URL:");
     if (url) {
       editor?.chain().focus().setLink({ href: url }).run();
     }
   };
 
   const addVideo = () => {
-    const url = window.prompt("Enter YouTube URL:");
-    if (url) {
+    const url = createPromptDialog("Enter YouTube URL:");
+    if (url && validateYouTubeUrl(url)) {
       editor?.chain().focus().setYoutubeVideo({ src: url }).run();
+    } else if (url && !validateYouTubeUrl(url)) {
+      alert("Please enter a valid YouTube URL");
     }
   };
 
@@ -196,7 +148,11 @@ export default function TiptapBlogEditor({
     editor
       ?.chain()
       .focus()
-      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+      .insertTable({
+        rows: defaultTableSettings.rows,
+        cols: defaultTableSettings.cols,
+        withHeaderRow: defaultTableSettings.withHeaderRow,
+      })
       .run();
   };
 

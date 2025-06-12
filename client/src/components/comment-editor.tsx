@@ -9,22 +9,6 @@ import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
-import { createLowlight } from "lowlight";
-
-// Import common languages for syntax highlighting
-import javascript from "highlight.js/lib/languages/javascript";
-import typescript from "highlight.js/lib/languages/typescript";
-import html from "highlight.js/lib/languages/xml";
-import css from "highlight.js/lib/languages/css";
-import python from "highlight.js/lib/languages/python";
-import java from "highlight.js/lib/languages/java";
-import cpp from "highlight.js/lib/languages/cpp";
-import json from "highlight.js/lib/languages/json";
-import bash from "highlight.js/lib/languages/bash";
-import sql from "highlight.js/lib/languages/sql";
-
-// Create lowlight instance
-const lowlight = createLowlight();
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,17 +17,14 @@ import { CommentEditorProps } from "@/typings/interfaces";
 import { useEffect } from "react";
 import "@/styles/tiptap.css";
 
-// Register languages with lowlight
-lowlight.register("javascript", javascript);
-lowlight.register("typescript", typescript);
-lowlight.register("html", html);
-lowlight.register("css", css);
-lowlight.register("python", python);
-lowlight.register("java", java);
-lowlight.register("cpp", cpp);
-lowlight.register("json", json);
-lowlight.register("bash", bash);
-lowlight.register("sql", sql);
+// Import configurations from utils
+import {
+  createConfiguredLowlight,
+  extensionConfigs,
+} from "@/utils/blog-editor";
+
+// Create lowlight instance
+const lowlight = createConfiguredLowlight();
 
 export default function CommentEditor({
   onSubmit,
@@ -57,28 +38,18 @@ export default function CommentEditor({
 }: CommentEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        codeBlock: false, // We'll use CodeBlockLowlight instead
-      }),
+      StarterKit.configure(extensionConfigs.starterKit),
       CodeBlockLowlight.configure({
         lowlight,
-        defaultLanguage: "plaintext",
+        ...extensionConfigs.codeBlockLowlight,
       }),
       Underline,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class:
-            "text-primary underline underline-offset-2 hover:text-primary/80",
-        },
-      }),
+      Link.configure(extensionConfigs.link),
       TextStyle,
       Color,
-      Highlight.configure({
-        multicolor: true,
-      }),
+      Highlight.configure(extensionConfigs.highlight),
       Placeholder.configure({
-        placeholder,
+        placeholder: placeholder || extensionConfigs.placeholder.comment,
       }),
     ],
     content: content || "",
