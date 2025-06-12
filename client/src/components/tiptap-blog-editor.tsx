@@ -18,7 +18,6 @@ import FontFamily from "@tiptap/extension-font-family";
 import Heading from "@tiptap/extension-heading";
 import Youtube from "@tiptap/extension-youtube";
 import { ResizableImage } from "tiptap-extension-resizable-image";
-/* import { Extension } from "@tiptap/core"; */
 import { languageDetectionPlugin } from "@/components/extensions/language-detection-plugin";
 
 import { Card } from "@/components/ui/card";
