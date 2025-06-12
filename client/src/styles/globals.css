@@ -1,6 +1,7 @@
 @import "@/styles/tiptap.css";
 @import "@/styles/comment-editor.css";
 @import "@/styles/blog-editor.css";
+@import "tiptap-extension-resizable-image/styles.css";
 
 @tailwind base;
 @tailwind components;
