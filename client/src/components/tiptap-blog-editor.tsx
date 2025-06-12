@@ -68,6 +68,7 @@ import {
   Heading3,
   Undo,
   Redo,
+  VideoIcon,
 } from "lucide-react";
 
 // Register languages with lowlight
@@ -441,6 +442,15 @@ export default function TiptapBlogEditor({
             className="h-8 w-8 p-0"
           >
             <ImageIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={addVideo}
+            className="h-8 w-8 p-0"
+          >
+            <VideoIcon className="h-4 w-4" />
           </Button>
           <Button
             type="button"
