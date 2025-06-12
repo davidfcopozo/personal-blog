@@ -43,33 +43,10 @@ const lowlight = createLowlight(all);
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import BlogEditorToolbar from "./blog-editor-toolbar";
 import { EditorProps } from "@/typings/interfaces";
 import { useEffect } from "react";
 import "@/styles/tiptap.css";
-import {
-  Bold,
-  Italic,
-  Underline as UnderlineIcon,
-  Strikethrough,
-  Code,
-  Quote,
-  List,
-  ListOrdered,
-  Link as LinkIcon,
-  Image as ImageIcon,
-  Video,
-  Table as TableIcon,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  Heading1,
-  Heading2,
-  Heading3,
-  Undo,
-  Redo,
-  VideoIcon,
-} from "lucide-react";
 
 // Register languages with lowlight
 lowlight.register("javascript", javascript);
@@ -162,6 +139,7 @@ export default function TiptapBlogEditor({
         class: "prose prose-lg max-w-none focus:outline-none min-h-[400px] p-6",
       },
     },
+    immediatelyRender: false,
   });
 
   // Update editor content when value prop changes
@@ -223,246 +201,16 @@ export default function TiptapBlogEditor({
       </Card>
     );
   }
-
   return (
     <Card className={`w-full ${className}`}>
       {/* Toolbar */}
-      <div className="border-b border-muted-foreground/20 p-3">
-        <div className="flex flex-wrap items-center gap-1">
-          {/* Undo/Redo */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-            className="h-8 w-8 p-0"
-          >
-            <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-            className="h-8 w-8 p-0"
-          >
-            <Redo className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
-          {/* Headings */}
-          <Button
-            type="button"
-            variant={
-              editor.isActive("heading", { level: 1 }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 1 }).run()
-            }
-            className="h-8 w-8 p-0"
-          >
-            <Heading1 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={
-              editor.isActive("heading", { level: 2 }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-            className="h-8 w-8 p-0"
-          >
-            <Heading2 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={
-              editor.isActive("heading", { level: 3 }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run()
-            }
-            className="h-8 w-8 p-0"
-          >
-            <Heading3 className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
-          {/* Text formatting */}
-          <Button
-            type="button"
-            variant={editor.isActive("bold") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className="h-8 w-8 p-0"
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={editor.isActive("italic") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className="h-8 w-8 p-0"
-          >
-            <Italic className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={editor.isActive("underline") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className="h-8 w-8 p-0"
-          >
-            <UnderlineIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={editor.isActive("strike") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleStrike().run()}
-            className="h-8 w-8 p-0"
-          >
-            <Strikethrough className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
-          {/* Alignment */}
-          <Button
-            type="button"
-            variant={
-              editor.isActive({ textAlign: "left" }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            className="h-8 w-8 p-0"
-          >
-            <AlignLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={
-              editor.isActive({ textAlign: "center" }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() => editor.chain().focus().setTextAlign("center").run()}
-            className="h-8 w-8 p-0"
-          >
-            <AlignCenter className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={
-              editor.isActive({ textAlign: "right" }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() => editor.chain().focus().setTextAlign("right").run()}
-            className="h-8 w-8 p-0"
-          >
-            <AlignRight className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={
-              editor.isActive({ textAlign: "justify" }) ? "default" : "ghost"
-            }
-            size="sm"
-            onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-            className="h-8 w-8 p-0"
-          >
-            <AlignJustify className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
-          {/* Lists and blocks */}
-          <Button
-            type="button"
-            variant={editor.isActive("bulletList") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className="h-8 w-8 p-0"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={editor.isActive("orderedList") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className="h-8 w-8 p-0"
-          >
-            <ListOrdered className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={editor.isActive("blockquote") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className="h-8 w-8 p-0"
-          >
-            <Quote className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={editor.isActive("codeBlock") ? "default" : "ghost"}
-            size="sm"
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className="h-8 w-8 p-0"
-          >
-            <Code className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-muted-foreground/20 mx-2" />
-
-          {/* Media and links */}
-          <Button
-            type="button"
-            variant={editor.isActive("link") ? "default" : "ghost"}
-            size="sm"
-            onClick={setLink}
-            className="h-8 w-8 p-0"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addImage}
-            className="h-8 w-8 p-0"
-          >
-            <ImageIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addVideo}
-            className="h-8 w-8 p-0"
-          >
-            <VideoIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={insertTable}
-            className="h-8 w-8 p-0"
-          >
-            <TableIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <BlogEditorToolbar
+        editor={editor}
+        onAddImage={addImage}
+        onAddVideo={addVideo}
+        onSetLink={setLink}
+        onInsertTable={insertTable}
+      />
 
       {/* Editor Content */}
       <div className="relative">
