@@ -9,6 +9,7 @@ import Link from "next/link";
 import React from "react";
 import CommentSection from "./comment-section";
 import { UserType } from "@/typings/types";
+import ContentRenderer from "./ui/content-renderer";
 import { EngagementButton } from "./engagement-button";
 import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
 import { ShareButton } from "./share-button";
@@ -207,14 +208,14 @@ const BlogPost = ({
                     </div>
                   </div>
                   <h1 className="order-1 lg:order-2 text-2xl text-center font-serif font-semibold pb-4 pt-10 text-foreground md:pt-12 md:pb-8 lg:text-4xl md:text-3xl">
-                    {post.title}
+                    {post.title}{" "}
                   </h1>
                 </div>
               </div>
               <div className="py-6 bg-background">
-                <div
+                <ContentRenderer
+                  content={post.content || ""}
                   className="md:w-[80%] w-[90%] pt-4"
-                  dangerouslySetInnerHTML={{ __html: post.content || "" }}
                 />
               </div>
               <CommentSection comments={post.comments || []} post={post} />
