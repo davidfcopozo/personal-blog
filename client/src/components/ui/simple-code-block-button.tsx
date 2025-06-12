@@ -74,7 +74,7 @@ export const SimpleCodeBlockButton: React.FC<SimpleCodeBlockButtonProps> = ({
           Popular Languages
         </DropdownMenuLabel>
 
-        {SUPPORTED_LANGUAGES.slice(1, 6).map((language) => (
+        {SUPPORTED_LANGUAGES.map((language) => (
           <DropdownMenuItem
             key={language.value}
             onClick={() => insertCodeBlock(language.value)}
