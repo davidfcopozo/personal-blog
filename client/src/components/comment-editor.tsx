@@ -12,6 +12,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SimpleCodeBlockButton } from "@/components/ui/simple-code-block-button";
 import { Send } from "lucide-react";
 import { CommentEditorProps } from "@/typings/interfaces";
 import { useEffect } from "react";
@@ -173,15 +174,7 @@ export default function CommentEditor({
             >
               &lt;/&gt;
             </Button>
-            <Button
-              type="button"
-              variant={editor.isActive("codeBlock") ? "default" : "ghost"}
-              size="sm"
-              onClick={toggleCodeBlock}
-              className="h-8 px-2"
-            >
-              Code Block
-            </Button>
+            <SimpleCodeBlockButton editor={editor} />
             <div className="w-px h-6 bg-muted-foreground/20 mx-1" />
             <Button
               type="button"
