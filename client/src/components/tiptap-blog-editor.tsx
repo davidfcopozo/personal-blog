@@ -9,7 +9,6 @@ import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
 import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
@@ -19,6 +18,7 @@ import FontFamily from "@tiptap/extension-font-family";
 import Heading from "@tiptap/extension-heading";
 import Youtube from "@tiptap/extension-youtube";
 import { all, createLowlight } from "lowlight";
+import { ResizableImage } from "tiptap-extension-resizable-image";
 
 // Import common languages for syntax highlighting
 import javascript from "highlight.js/lib/languages/javascript";
@@ -103,10 +103,10 @@ export default function TiptapBlogEditor({
       Highlight.configure({
         multicolor: true,
       }),
-      Image.configure({
-        HTMLAttributes: {
-          class: "max-w-full h-auto rounded-lg",
-        },
+      ResizableImage.configure({
+        defaultWidth: 310,
+        defaultHeight: 210,
+        withCaption: true,
       }),
       Table.configure({
         resizable: true,
@@ -148,7 +148,6 @@ export default function TiptapBlogEditor({
       editor.commands.setContent(value || "");
     }
   }, [value, editor]);
-
   const addImage = async () => {
     if (handleImageUpload) {
       const input = document.createElement("input");
@@ -159,7 +158,18 @@ export default function TiptapBlogEditor({
         if (file) {
           try {
             const url = await handleImageUpload(file);
-            editor?.chain().focus().setImage({ src: url }).run();
+            editor
+              ?.chain()
+              .focus()
+              .setResizableImage({
+                src: url,
+                alt: file.name || "",
+                title: file.name || "",
+                width: 310,
+                height: 210,
+                "data-keep-ratio": true,
+              })
+              .run();
           } catch (error) {
             console.error("Failed to upload image:", error);
           }
