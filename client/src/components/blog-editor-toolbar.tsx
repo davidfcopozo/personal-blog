@@ -163,9 +163,7 @@ export default function BlogEditorToolbar({
         {/* Alignment */}
         <Button
           type="button"
-          variant={
-            editor.isActive({ textAlign: "left" }) ? "default" : "ghost"
-          }
+          variant={editor.isActive({ textAlign: "left" }) ? "default" : "ghost"}
           size="sm"
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           className="h-8 w-8 p-0"
