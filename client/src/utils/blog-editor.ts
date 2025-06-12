@@ -3,6 +3,7 @@ import { all, createLowlight } from "lowlight";
 
 // Import common languages for syntax highlighting
 import javascript from "highlight.js/lib/languages/javascript";
+// ...existing imports...
 import typescript from "highlight.js/lib/languages/typescript";
 import html from "highlight.js/lib/languages/xml";
 import css from "highlight.js/lib/languages/css";
@@ -18,6 +19,181 @@ import go from "highlight.js/lib/languages/go";
 import rust from "highlight.js/lib/languages/rust";
 import csharp from "highlight.js/lib/languages/csharp";
 import c from "highlight.js/lib/languages/c";
+
+// Language detection utility
+export const detectLanguageFromCode = (code: string): string => {
+  if (!code || code.trim().length === 0) return "plaintext";
+
+  // Check for common patterns to improve detection accuracy
+  const trimmedCode = code.trim();
+
+  // HTML detection
+  if (
+    trimmedCode.includes("<!DOCTYPE") ||
+    (trimmedCode.includes("<") &&
+      trimmedCode.includes(">") &&
+      trimmedCode.includes("</"))
+  ) {
+    return "html";
+  }
+
+  // CSS detection
+  if (
+    trimmedCode.includes("{") &&
+    trimmedCode.includes("}") &&
+    (trimmedCode.includes(":") || trimmedCode.includes("@"))
+  ) {
+    return "css";
+  }
+
+  // JSON detection
+  if (
+    (trimmedCode.startsWith("{") && trimmedCode.endsWith("}")) ||
+    (trimmedCode.startsWith("[") && trimmedCode.endsWith("]"))
+  ) {
+    try {
+      JSON.parse(trimmedCode);
+      return "json";
+    } catch (e) {
+      // Not valid JSON, continue with other detection
+    }
+  }
+  // Shell/Bash detection
+  if (
+    trimmedCode.startsWith("#!") ||
+    /^#!(\/bin\/bash|\/bin\/sh|\/usr\/bin\/env)/.test(trimmedCode)
+  ) {
+    return "bash";
+  }
+
+  // TypeScript detection (before JavaScript)
+  if (
+    trimmedCode.includes("interface ") ||
+    trimmedCode.includes("type ") ||
+    trimmedCode.includes(": string") ||
+    trimmedCode.includes(": number") ||
+    trimmedCode.includes(": boolean") ||
+    trimmedCode.includes("enum ") ||
+    trimmedCode.includes("implements ")
+  ) {
+    return "typescript";
+  }
+
+  // JavaScript detection
+  if (
+    trimmedCode.includes("function ") ||
+    trimmedCode.includes("const ") ||
+    trimmedCode.includes("let ") ||
+    trimmedCode.includes("var ") ||
+    trimmedCode.includes("=>") ||
+    trimmedCode.includes("console.log") ||
+    trimmedCode.includes("require(") ||
+    trimmedCode.includes("import ") ||
+    trimmedCode.includes("export ")
+  ) {
+    return "javascript";
+  }
+
+  // Python detection
+  if (
+    trimmedCode.includes("def ") ||
+    trimmedCode.includes("import ") ||
+    trimmedCode.includes("from ") ||
+    trimmedCode.includes("print(") ||
+    trimmedCode.includes("class ") ||
+    /^[ ]*if __name__ == ['""]__main__['""]/.test(trimmedCode)
+  ) {
+    return "python";
+  }
+
+  // Java detection
+  if (
+    trimmedCode.includes("public class ") ||
+    trimmedCode.includes("private ") ||
+    trimmedCode.includes("public static void main") ||
+    trimmedCode.includes("System.out.println")
+  ) {
+    return "java";
+  }
+
+  // C++ detection
+  if (
+    trimmedCode.includes("#include") ||
+    trimmedCode.includes("std::") ||
+    trimmedCode.includes("cout <<") ||
+    trimmedCode.includes("cin >>") ||
+    trimmedCode.includes("namespace ")
+  ) {
+    return "cpp";
+  }
+
+  // C# detection
+  if (
+    trimmedCode.includes("using System") ||
+    trimmedCode.includes("namespace ") ||
+    trimmedCode.includes("Console.WriteLine") ||
+    trimmedCode.includes("public class ") ||
+    (trimmedCode.includes("[") && trimmedCode.includes("]"))
+  ) {
+    return "csharp";
+  }
+
+  // PHP detection
+  if (
+    trimmedCode.startsWith("<?php") ||
+    trimmedCode.includes("<?php") ||
+    (trimmedCode.includes("$") &&
+      (trimmedCode.includes("echo ") || trimmedCode.includes("print ")))
+  ) {
+    return "php";
+  }
+
+  // SQL detection
+  if (
+    /\b(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b/i.test(trimmedCode)
+  ) {
+    return "sql";
+  }
+
+  // Use highlight.js as fallback for other languages
+  if (typeof window !== "undefined") {
+    try {
+      const hljs = require("highlight.js");
+      const result = hljs.highlightAuto(trimmedCode, [
+        "javascript",
+        "typescript",
+        "python",
+        "java",
+        "cpp",
+        "c",
+        "csharp",
+        "php",
+        "ruby",
+        "go",
+        "rust",
+        "html",
+        "css",
+        "json",
+        "sql",
+        "bash",
+        "shell",
+        "xml",
+        "yaml",
+        "dockerfile",
+        "markdown",
+      ]);
+
+      // Only return detected language if confidence is reasonable
+      if (result.language && result.relevance > 5) {
+        return result.language;
+      }
+    } catch (error) {
+      console.warn("Language detection failed:", error);
+    }
+  }
+
+  return "plaintext";
+};
 
 // Create and configure lowlight instance
 export const createConfiguredLowlight = () => {
@@ -65,6 +241,10 @@ export const extensionConfigs = {
   },
   codeBlockLowlight: {
     defaultLanguage: "plaintext",
+    languageClassPrefix: "language-",
+    HTMLAttributes: {
+      class: "code-block-wrapper",
+    },
   },
   link: {
     openOnClick: false,
