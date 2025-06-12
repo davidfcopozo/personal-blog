@@ -114,7 +114,7 @@ const CodeBlockRenderer: React.FC<CodeBlockRendererProps> = ({
   return (
     <div className={`code-block-wrapper relative ${className}`}>
       {language && language !== "plaintext" && (
-        <div className="absolute top-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded border">
+        <div className="absolute top-4 right-8 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded border">
           {getLanguageLabel(language)}
         </div>
       )}
