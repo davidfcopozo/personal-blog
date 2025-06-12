@@ -354,7 +354,7 @@
 }
 
 /* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   .ProseMirror .hljs-string,
   .ProseMirror .hljs-doctag {
     color: #86efac;
@@ -379,4 +379,4 @@
   .ProseMirror .hljs-class {
     color: #a78bfa;
   }
-}
+} */
