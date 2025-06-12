@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, Extension } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Underline from "@tiptap/extension-underline";
@@ -18,6 +18,8 @@ import FontFamily from "@tiptap/extension-font-family";
 import Heading from "@tiptap/extension-heading";
 import Youtube from "@tiptap/extension-youtube";
 import { ResizableImage } from "tiptap-extension-resizable-image";
+/* import { Extension } from "@tiptap/core"; */
+import { languageDetectionPlugin } from "@/components/extensions/language-detection-plugin";
 
 import { Card } from "@/components/ui/card";
 import BlogEditorToolbar from "./blog-editor-toolbar";
@@ -39,6 +41,15 @@ import {
 
 // Create lowlight instance
 const lowlight = createConfiguredLowlight();
+
+// Language Detection Extension
+const LanguageDetection = Extension.create({
+  name: "languageDetection",
+
+  addProseMirrorPlugins() {
+    return [languageDetectionPlugin];
+  },
+});
 
 interface TiptapBlogEditorProps extends EditorProps {
   className?: string;
@@ -62,6 +73,7 @@ export default function TiptapBlogEditor({
         lowlight,
         ...extensionConfigs.codeBlockLowlight,
       }),
+      LanguageDetection,
       Underline,
       Link.configure(extensionConfigs.link),
       TextStyle,
