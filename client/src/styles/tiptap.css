@@ -291,6 +291,51 @@
   border-radius: 0.5rem;
 }
 
+/* Resizable Image Styles */
+.ProseMirror .resizable-image {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.ProseMirror .resizable-image img {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: transform 0.2s ease;
+}
+
+.image-component {
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.ProseMirror .resizable-image:hover img {
+  transform: scale(1.02);
+}
+
+.ProseMirror .resizable-image .resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  border-radius: 50%;
+  cursor: nw-resize;
+}
+
+.ProseMirror .resizable-image .resize-handle:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+.ProseMirror .resizable-image .caption {
+  display: block;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .ProseMirror {
