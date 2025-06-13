@@ -168,7 +168,7 @@ export default function TiptapBlogEditor({
 
   if (!editor) {
     return (
-      <Card className={`w-full ${className}`}>
+      <Card className={`w-full ${className} border-muted-foreground/20`}>
         <div className="p-6">
           <div className="min-h-[400px] flex items-center justify-center text-muted-foreground">
             Loading editor...
@@ -178,7 +178,7 @@ export default function TiptapBlogEditor({
     );
   }
   return (
-    <Card className={`w-full ${className}`}>
+    <Card className={`w-full ${className} overflow-auto `}>
       {/* Toolbar */}
       <BlogEditorToolbar
         editor={editor}
