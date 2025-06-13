@@ -23,7 +23,7 @@ import { languageDetectionPlugin } from "@/components/extensions/language-detect
 import { Card } from "@/components/ui/card";
 import BlogEditorToolbar from "./blog-editor-toolbar";
 import { EditorProps } from "@/typings/interfaces";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "@/styles/tiptap.css";
 
 // Import configurations from utils
@@ -37,6 +37,11 @@ import {
   validateImageFile,
   validateYouTubeUrl,
 } from "@/utils/blog-editor";
+
+// Import image management
+import { useImageManager } from "@/hooks/useImageManager";
+import { ImageUploadModal } from "./image-upload-modal";
+import { VideoInsertModal } from "./video-insert-modal";
 
 // Create lowlight instance
 const lowlight = createConfiguredLowlight();
@@ -61,6 +66,18 @@ export default function TiptapBlogEditor({
   onEditorReady,
   className = "",
 }: TiptapBlogEditorProps) {
+  // Image gallery integration
+  const {
+    uploadImage,
+    userImages,
+    isLoadingImages,
+    deleteImage,
+    updateImageMetadata,
+  } = useImageManager();
+  const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure(extensionConfigs.starterKit),
@@ -107,35 +124,46 @@ export default function TiptapBlogEditor({
       editor.commands.setContent(value || "");
     }
   }, [value, editor]);
+
+  // Enhanced image insertion with gallery support
   const addImage = async () => {
-    if (handleImageUpload) {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file && validateImageFile(file)) {
-          try {
-            const url = await handleImageUpload(file);
-            editor
-              ?.chain()
-              .focus()
-              .setResizableImage({
-                src: url,
-                alt: file.name || "",
-                title: file.name || "",
-                width: defaultImageSettings.width,
-                height: defaultImageSettings.height,
-                "data-keep-ratio": defaultImageSettings.keepRatio,
-              })
-              .run();
-          } catch (error) {
-            console.error("Failed to upload image:", error);
-          }
-        }
-      };
-      input.click();
+    setIsImageGalleryOpen(true);
+  };
+
+  // Handle image selection from gallery
+  const handleImageSelect = (url: string) => {
+    if (editor) {
+      editor
+        ?.chain()
+        .focus()
+        .setResizableImage({
+          src: url,
+          alt: "",
+          title: "",
+          width: defaultImageSettings.width,
+          height: defaultImageSettings.height,
+          "data-keep-ratio": defaultImageSettings.keepRatio,
+        })
+        .run();
     }
+    setIsImageGalleryOpen(false);
+  };
+
+  // Handle direct image upload
+  const handleDirectImageUpload = async (file: File) => {
+    if (validateImageFile(file)) {
+      try {
+        // Use the passed handleImageUpload function or fallback to uploadImage
+        const url = handleImageUpload
+          ? await handleImageUpload(file)
+          : await uploadImage(file);
+        return url;
+      } catch (error) {
+        console.error("Failed to upload image:", error);
+        throw error;
+      }
+    }
+    throw new Error("Invalid image file");
   };
 
   const setLink = () => {
@@ -144,14 +172,15 @@ export default function TiptapBlogEditor({
       editor?.chain().focus().setLink({ href: url }).run();
     }
   };
-
   const addVideo = () => {
-    const url = createPromptDialog("Enter YouTube URL:");
-    if (url && validateYouTubeUrl(url)) {
+    setIsVideoModalOpen(true);
+  };
+
+  const handleVideoInsert = (url: string) => {
+    if (editor && validateYouTubeUrl(url)) {
       editor?.chain().focus().setYoutubeVideo({ src: url }).run();
-    } else if (url && !validateYouTubeUrl(url)) {
-      alert("Please enter a valid YouTube URL");
     }
+    setIsVideoModalOpen(false);
   };
 
   const insertTable = () => {
@@ -187,14 +216,31 @@ export default function TiptapBlogEditor({
         onSetLink={setLink}
         onInsertTable={insertTable}
       />
-
       {/* Editor Content */}
       <div className="relative">
         <EditorContent
           editor={editor}
           className="bg-background text-foreground [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:p-6"
         />
-      </div>
+      </div>{" "}
+      {/* Image Gallery Modal */}
+      <ImageUploadModal
+        isImageUploadModalOpen={isImageGalleryOpen}
+        openImageUploadModal={() => setIsImageGalleryOpen(!isImageGalleryOpen)}
+        onInsertImage={handleImageSelect}
+        handleImageUpload={handleDirectImageUpload}
+        images={userImages}
+        onDeleteImage={deleteImage}
+        onUpdate={updateImageMetadata}
+        isLoadingImages={isLoadingImages}
+        buttonText="Insert Image"
+      />
+      {/* Video Insert Modal */}
+      <VideoInsertModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        onInsertVideo={handleVideoInsert}
+      />
     </Card>
   );
 }
