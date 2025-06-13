@@ -50,8 +50,8 @@ export const SimpleCodeBlockButton: React.FC<SimpleCodeBlockButtonProps> = ({
           className="h-8 px-2"
           title="Code Block"
         >
-          <Code className="h-4 w-4 mr-1" />
           Code Block
+          <Code className="h-4 w-4 mr-1" />
           <ChevronDown className="h-3 w-3 ml-1" />
         </Button>
       </DropdownMenuTrigger>
