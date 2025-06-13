@@ -126,7 +126,7 @@ export default function CommentEditor({
 
   return (
     <>
-      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground rounded-md">
+      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground/20 rounded-md overflow-auto">
         <div className="border-b border-muted-foreground/20">
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-1 p-2">
