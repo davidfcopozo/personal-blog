@@ -13,7 +13,17 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SimpleCodeBlockButton } from "@/components/ui/simple-code-block-button";
-import { Send } from "lucide-react";
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Quote,
+  Send,
+  Strikethrough,
+  UnderlineIcon,
+  Link as LinkIcon,
+} from "lucide-react";
 import { CommentEditorProps } from "@/typings/interfaces";
 import { useEffect } from "react";
 import "@/styles/tiptap.css";
@@ -127,7 +137,7 @@ export default function CommentEditor({
               onClick={toggleBold}
               className="h-8 w-8 p-0"
             >
-              <span className="font-bold">B</span>
+              <Bold className="h-4 w-4" />
             </Button>
             <Button
               type="button"
@@ -136,7 +146,7 @@ export default function CommentEditor({
               onClick={toggleItalic}
               className="h-8 w-8 p-0"
             >
-              <span className="italic">I</span>
+              <Italic className="h-4 w-4" />
             </Button>
             <Button
               type="button"
@@ -145,7 +155,7 @@ export default function CommentEditor({
               onClick={toggleUnderline}
               className="h-8 w-8 p-0"
             >
-              <span className="underline">U</span>
+              <UnderlineIcon className="h-4 w-4" />
             </Button>
             <Button
               type="button"
@@ -154,7 +164,7 @@ export default function CommentEditor({
               onClick={toggleStrike}
               className="h-8 w-8 p-0"
             >
-              <span className="line-through">S</span>
+              <Strikethrough className="h-4 w-4" />
             </Button>
             <div className="w-px h-6 bg-muted-foreground/20 mx-1" />
             <Button
@@ -164,7 +174,7 @@ export default function CommentEditor({
               onClick={toggleBlockquote}
               className="h-8 px-2"
             >
-              Quote
+              <Quote className="h-4 w-4" />
             </Button>{" "}
             <Button
               type="button"
@@ -172,6 +182,7 @@ export default function CommentEditor({
               size="sm"
               onClick={() => editor?.chain().focus().toggleCode().run()}
               className="h-8 px-2"
+              title="Inline Code"
             >
               &lt;/&gt;
             </Button>
@@ -183,8 +194,9 @@ export default function CommentEditor({
               size="sm"
               onClick={toggleBulletList}
               className="h-8 px-2"
+              title="Bullet List"
             >
-              • List
+              <List className="h-4 w-4" />
             </Button>
             <Button
               type="button"
@@ -192,8 +204,9 @@ export default function CommentEditor({
               size="sm"
               onClick={toggleOrderedList}
               className="h-8 px-2"
+              title="Numbered List"
             >
-              1. List
+              <ListOrdered className="h-4 w-4" />
             </Button>
             <div className="w-px h-6 bg-muted-foreground/20 mx-1" />
             <Button
@@ -203,7 +216,7 @@ export default function CommentEditor({
               onClick={setLink}
               className="h-8 px-2"
             >
-              Link
+              <LinkIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
