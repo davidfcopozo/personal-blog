@@ -97,6 +97,7 @@ export interface NewPostLayoutProps {
 export interface NewPostHeaderProps {
   onSave: (status: "draft" | "published" | "unpublished") => void;
   currentStatus?: "draft" | "published" | "unpublished";
+  hasChanges?: boolean;
 }
 
 export interface BlogEditorProps {
