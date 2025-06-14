@@ -38,8 +38,8 @@ const BlogEditor: FC<BlogEditorProps> = ({
 }) => {
   const [isEditorLoaded, setIsEditorLoaded] = useState(false);
 
-  const handleSave = (e: FormEvent) => {
-    handleSubmit(e);
+  const handleSave = (status: "draft" | "published") => {
+    handleSubmit(status);
   };
 
   const {
