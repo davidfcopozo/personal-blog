@@ -314,19 +314,17 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         }
         if (currentFeatureImage !== initialPost.featuredImage) {
           changes.featuredImage = currentFeatureImage as string;
-        } // Always update status when explicitly provided
+        }
+
+        // Always include status when explicitly provided (user clicked draft/publish)
         console.log(
           "Status comparison - current status:",
           status,
           "initial status:",
           initialPost.status
         );
-        if (status !== initialPost.status) {
-          console.log("Status changed, adding to changes:", status);
-          changes.status = status;
-        } else {
-          console.log("Status unchanged, not adding to changes");
-        }
+        changes.status = status;
+        console.log("Always adding status to changes:", status);
 
         // Compare categories and tags for genuine differences
         if (
