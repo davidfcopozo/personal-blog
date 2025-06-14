@@ -26,6 +26,14 @@ export function NewPostHeader({ onSave }: NewPostHeaderProps) {
     );
   }, [theme, systemTheme, session]);
 
+  const handleSaveDraft = () => {
+    onSave("draft");
+  };
+
+  const handlePublish = () => {
+    onSave("published");
+  };
+
   return (
     <header className="fixed w-full justify-between top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <Link
@@ -39,18 +47,17 @@ export function NewPostHeader({ onSave }: NewPostHeaderProps) {
         <div className="flex text-sm gap-2 items-center md:gap-4 lg:gap-5">
           <ModeToggle />
         </div>
-      </nav>
-
+      </nav>{" "}
       <div className="flex gap-2">
         <Button
           variant="outline"
           className="bg-background"
-          onClick={onSave}
+          onClick={handleSaveDraft}
           size="sm"
         >
           Save Draft
         </Button>
-        <Button className="bg-foreground" size="sm" onClick={onSave}>
+        <Button className="bg-foreground" size="sm" onClick={handlePublish}>
           Publish
         </Button>
       </div>
