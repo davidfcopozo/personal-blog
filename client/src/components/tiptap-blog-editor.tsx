@@ -174,13 +174,13 @@ export default function TiptapBlogEditor({
   };
   const addVideo = () => {
     setIsVideoModalOpen(true);
-  };  const handleVideoInsert = (url: string) => {
+  };
+  const handleVideoInsert = (url: string) => {
     if (editor && validateYouTubeUrl(url)) {
-      console.log('Inserting YouTube video with URL:', url);
       // The YouTube extension expects the URL as a string parameter
       editor?.chain().focus().setYoutubeVideo({ src: url }).run();
     } else {
-      console.error('Invalid YouTube URL:', url);
+      console.error("Invalid YouTube URL:", url);
     }
     setIsVideoModalOpen(false);
   };
