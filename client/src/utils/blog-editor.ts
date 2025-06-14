@@ -330,7 +330,44 @@ export const validateImageFile = (file: File): boolean => {
 };
 
 export const validateYouTubeUrl = (url: string): boolean => {
-  const youtubeRegex =
-    /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/|m\.youtube\.com\/watch\?v=)[\w-]+(&\S*)?$/;
-  return youtubeRegex.test(url);
+  // Enhanced security: Only allow HTTPS YouTube URLs
+  const secureYoutubeRegex =
+    /^https:\/\/(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/|m\.youtube\.com\/watch\?v=)[a-zA-Z0-9_-]{10,12}(\?[a-zA-Z0-9_&=%-]*)?(\#[a-zA-Z0-9_&=%-]*)?$/;
+
+  // Additional security checks
+  if (!secureYoutubeRegex.test(url)) {
+    return false;
+  }
+
+  // Ensure no dangerous query parameters
+  const dangerousParams = [
+    "javascript:",
+    "data:",
+    "vbscript:",
+    "onclick",
+    "onerror",
+    "onload",
+  ];
+  const lowercaseUrl = url.toLowerCase();
+
+  for (const param of dangerousParams) {
+    if (lowercaseUrl.includes(param)) {
+      return false;
+    }
+  }
+
+  // Ensure the URL doesn't contain encoded malicious content
+  try {
+    const decodedUrl = decodeURIComponent(url);
+    for (const param of dangerousParams) {
+      if (decodedUrl.toLowerCase().includes(param)) {
+        return false;
+      }
+    }
+  } catch (e) {
+    // If URL can't be decoded, it's suspicious
+    return false;
+  }
+
+  return true;
 };
