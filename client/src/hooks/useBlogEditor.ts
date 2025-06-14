@@ -6,6 +6,7 @@ import {
   useEffect,
 } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 import { storage } from "../../firebaseConfig";
 import {
   ref,
@@ -30,6 +31,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     useState<File | null>(null);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [postData, setPostData] = useState({
@@ -51,7 +53,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     },
     []
   );
-
   const {
     mutate: newPostMutate,
     data: newPostData,
@@ -59,16 +60,27 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     error: newPostError,
   } = usePostRequest({
     url: "/api/posts",
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
-      setPostData({
-        title: "",
-        content: "",
-        featuredImage: null,
-        categories: [],
-        tags: [],
-      });
-      setTemporaryFeatureImage(null);
+
+      // Redirect to edit page instead of resetting state
+      if (data?.slug) {
+        toast({
+          title: "Success",
+          description:
+            "Blog post created successfully! Redirecting to edit page...",
+        });
+        // Add a small delay to ensure the toast is shown before redirect
+        setTimeout(() => {
+          router.push(`/edit-post/${data.slug}`);
+        }, 100);
+      } else {
+        toast({
+          title: "Success",
+          description:
+            "Blog post created successfully, but couldn't redirect to edit page",
+        });
+      }
     },
     onError: () => {
       const previousPosts = queryClient.getQueryData(["posts"]);
@@ -89,7 +101,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       return { previousPosts };
     },
   });
-
   const {
     mutate: updatePostMutate,
     data: updatePostData,
@@ -103,6 +114,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         title: "Success",
         description: "Blog post updated successfully",
       });
+      // For updates, we're already on the edit page, so no need to redirect
+      // Just invalidate queries to refresh the data
     },
     onError: (error, variables, context) => {
       if (context?.previousData) {
@@ -240,20 +253,15 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       setTemporaryFeatureImage(null);
     }
   }, [temporaryFeatureImage, handleImageUpload, updatePostState]);
-
   useEffect(() => {
     if (temporaryFeatureImage) {
       handleFeatureImageUpload();
     }
   }, [temporaryFeatureImage, handleFeatureImageUpload]);
 
+  // Only show error toast for newPost, success is handled in onSuccess callback
   useEffect(() => {
-    if (newPostStatus === "success") {
-      toast({
-        title: "Success",
-        description: "Blog post created successfully",
-      });
-    } else if (newPostStatus === "error") {
+    if (newPostStatus === "error") {
       toast({
         variant: "destructive",
         title: "Error",
