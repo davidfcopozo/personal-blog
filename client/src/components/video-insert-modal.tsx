@@ -26,9 +26,26 @@ export function VideoInsertModal({
 }: VideoInsertModalProps) {
   const [videoUrl, setVideoUrl] = useState("");
   const [error, setError] = useState("");
+  const [previewId, setPreviewId] = useState("");
 
+  const extractVideoId = (url: string): string => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/v\/([^&\n?#]+)/,
+      /m\.youtube\.com\/watch\?v=([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+    return "";
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling to parent form
 
     if (!videoUrl.trim()) {
       setError("Please enter a YouTube URL");
@@ -47,19 +64,32 @@ export function VideoInsertModal({
   const handleClose = () => {
     setVideoUrl("");
     setError("");
+    setPreviewId("");
     onClose();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVideoUrl(e.target.value);
+    const url = e.target.value;
+    setVideoUrl(url);
+    
     if (error) {
       setError("");
     }
-  };
 
+    // Update preview if valid URL
+    if (validateYouTubeUrl(url)) {
+      const videoId = extractVideoId(url);
+      setPreviewId(videoId);
+    } else {
+      setPreviewId("");
+    }
+  };
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent 
+        onPointerDownOutside={(e) => e.stopPropagation()}
+        onInteractOutside={(e) => e.stopPropagation()}
+      >
         <DialogHeader>
           <DialogTitle>Insert YouTube Video</DialogTitle>
         </DialogHeader>
@@ -74,10 +104,14 @@ export function VideoInsertModal({
                 value={videoUrl}
                 onChange={handleInputChange}
                 className={error ? "border-destructive" : ""}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation();
+                  }
+                }}
               />
               {error && <p className="text-sm text-destructive">{error}</p>}
-            </div>
-            <div className="text-sm text-muted-foreground">
+            </div><div className="text-sm text-muted-foreground">
               <p>Supported formats:</p>
               <ul className="list-disc list-inside mt-1 space-y-1">
                 <li>https://www.youtube.com/watch?v=VIDEO_ID</li>
@@ -85,6 +119,22 @@ export function VideoInsertModal({
                 <li>https://www.youtube.com/embed/VIDEO_ID</li>
               </ul>
             </div>
+            
+            {/* Video Preview */}
+            {previewId && (
+              <div className="space-y-2">
+                <Label>Preview</Label>
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-muted">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${previewId}`}
+                    title="Video Preview"
+                    className="w-full h-full"
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" onClick={handleClose}>
