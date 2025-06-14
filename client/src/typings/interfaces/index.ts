@@ -117,6 +117,7 @@ export interface InitialPost {
   featuredImage: string | null;
   categories?: CategoryInterface[];
   tags?: string[];
+  status?: "draft" | "published" | "unpublished";
 }
 
 export interface UseBlogEditorProps {
