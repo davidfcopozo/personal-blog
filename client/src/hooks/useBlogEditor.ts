@@ -322,7 +322,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         if (tags.length > 0 || (initialPost.tags ?? []).length > 0) {
           if (!arraysEqual(tags, initialPost.tags || [])) {
             changes.tags = tags;
-          }        } // Only proceed with mutation if there are changes to be made
+          }
+        } // Only proceed with mutation if there are changes to be made
         if (Object.keys(changes).length > 0) {
           console.log("Sending update with changes:", changes);
           updatePostMutate({

@@ -78,10 +78,10 @@ const BlogEditor: FC<BlogEditorProps> = ({
   }, []);
   return (
     <div className="outer-container">
-      <NewPostHeader 
-        onSave={handleSave} 
-        currentStatus={currentStatus} 
-        hasChanges={hasUnsavedChanges()} 
+      <NewPostHeader
+        onSave={handleSave}
+        currentStatus={currentStatus}
+        hasChanges={hasUnsavedChanges()}
       />
       <main>
         <div className="flex-column md:flex">

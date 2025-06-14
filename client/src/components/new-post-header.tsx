@@ -16,7 +16,11 @@ import { useSession } from "next-auth/react";
 import { NewPostHeaderProps } from "@/typings/interfaces";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 
-export function NewPostHeader({ onSave, currentStatus, hasChanges = false }: NewPostHeaderProps) {
+export function NewPostHeader({
+  onSave,
+  currentStatus,
+  hasChanges = false,
+}: NewPostHeaderProps) {
   const { theme, systemTheme } = useTheme();
   const { data: session } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
@@ -60,7 +64,9 @@ export function NewPostHeader({ onSave, currentStatus, hasChanges = false }: New
           <ModeToggle />
         </div>
       </nav>{" "}
-      <div className="flex gap-2">        <Button
+      <div className="flex gap-2">
+        {" "}
+        <Button
           variant="outline"
           className="bg-background relative"
           onClick={handleSaveDraft}
@@ -70,7 +76,8 @@ export function NewPostHeader({ onSave, currentStatus, hasChanges = false }: New
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
           )}
           Save Draft
-        </Button>{isPublished ? (
+        </Button>
+        {isPublished ? (
           hasChanges ? (
             // If published and has changes, show Update button
             <Button className="bg-foreground" size="sm" onClick={handlePublish}>
