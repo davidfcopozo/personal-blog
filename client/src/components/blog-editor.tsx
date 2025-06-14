@@ -1,5 +1,5 @@
 "use client";
-import React, { FC, FormEvent, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import FeatureImage from "./feature-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
@@ -37,9 +37,14 @@ const BlogEditor: FC<BlogEditorProps> = ({
   isPostLoading = false,
 }) => {
   const [isEditorLoaded, setIsEditorLoaded] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<
+    "draft" | "published" | "unpublished"
+  >(initialPost?.status || "draft");
 
-  const handleSave = (status: "draft" | "published") => {
+  const handleSave = (status: "draft" | "published" | "unpublished") => {
     handleSubmit(status);
+    // Update the current status immediately for UI feedback
+    setCurrentStatus(status);
   };
 
   const {
@@ -53,7 +58,6 @@ const BlogEditor: FC<BlogEditorProps> = ({
   } = useBlogEditor({ initialPost, slug });
 
   const { title, content, featuredImage, tags, categories } = postData;
-
   useEffect(() => {
     if (initialPost) {
       updatePostState("title", initialPost.title || "");
@@ -61,6 +65,7 @@ const BlogEditor: FC<BlogEditorProps> = ({
       updatePostState("featuredImage", initialPost.featuredImage || null);
       updatePostState("categories", initialPost.categories || []);
       updatePostState("tags", initialPost.tags || []);
+      setCurrentStatus(initialPost.status || "draft");
     }
   }, [initialPost, updatePostState]);
 
@@ -71,10 +76,9 @@ const BlogEditor: FC<BlogEditorProps> = ({
 
     return () => clearTimeout(timer);
   }, []);
-
   return (
     <div className="outer-container">
-      <NewPostHeader onSave={handleSave} />
+      <NewPostHeader onSave={handleSave} currentStatus={currentStatus} />
       <main>
         <div className="flex-column md:flex">
           {" "}
