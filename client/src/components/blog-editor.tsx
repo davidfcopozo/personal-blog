@@ -46,7 +46,6 @@ const BlogEditor: FC<BlogEditorProps> = ({
     // Update the current status immediately for UI feedback
     setCurrentStatus(status);
   };
-
   const {
     temporaryFeatureImage,
     postData,
@@ -55,6 +54,7 @@ const BlogEditor: FC<BlogEditorProps> = ({
     handleContentChange,
     handleImageUpload,
     handleFeatureImagePick,
+    hasUnsavedChanges,
   } = useBlogEditor({ initialPost, slug });
 
   const { title, content, featuredImage, tags, categories } = postData;
@@ -78,7 +78,11 @@ const BlogEditor: FC<BlogEditorProps> = ({
   }, []);
   return (
     <div className="outer-container">
-      <NewPostHeader onSave={handleSave} currentStatus={currentStatus} />
+      <NewPostHeader 
+        onSave={handleSave} 
+        currentStatus={currentStatus} 
+        hasChanges={hasUnsavedChanges()} 
+      />
       <main>
         <div className="flex-column md:flex">
           {" "}
