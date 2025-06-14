@@ -16,7 +16,7 @@ import { useSession } from "next-auth/react";
 import { NewPostHeaderProps } from "@/typings/interfaces";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 
-export function NewPostHeader({ onSave, currentStatus }: NewPostHeaderProps) {
+export function NewPostHeader({ onSave, currentStatus, hasChanges = false }: NewPostHeaderProps) {
   const { theme, systemTheme } = useTheme();
   const { data: session } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
@@ -60,32 +60,40 @@ export function NewPostHeader({ onSave, currentStatus }: NewPostHeaderProps) {
           <ModeToggle />
         </div>
       </nav>{" "}
-      <div className="flex gap-2">
-        <Button
+      <div className="flex gap-2">        <Button
           variant="outline"
-          className="bg-background"
+          className="bg-background relative"
           onClick={handleSaveDraft}
           size="sm"
         >
+          {hasChanges && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+          )}
           Save Draft
-        </Button>
-
-        {isPublished ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-foreground" size="sm">
-                <Eye className="w-4 h-4 mr-1" />
-                Published
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleUnpublish}>
-                <EyeOff className="w-4 h-4 mr-2" />
-                Unpublish
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        </Button>{isPublished ? (
+          hasChanges ? (
+            // If published and has changes, show Update button
+            <Button className="bg-foreground" size="sm" onClick={handlePublish}>
+              Update
+            </Button>
+          ) : (
+            // If published and no changes, show dropdown
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-foreground" size="sm">
+                  <Eye className="w-4 h-4 mr-1" />
+                  Published
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleUnpublish}>
+                  <EyeOff className="w-4 h-4 mr-2" />
+                  Unpublish
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
         ) : (
           <Button className="bg-foreground" size="sm" onClick={handlePublish}>
             Publish
