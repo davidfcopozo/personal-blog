@@ -3,6 +3,7 @@
 import React from "react";
 import DOMPurify from "dompurify";
 import CodeBlockRenderer from "./code-block-renderer";
+import { sanitizeContent } from "@/utils/sanitize-content";
 
 interface ContentRendererProps {
   content: string;
@@ -13,44 +14,19 @@ const ContentRenderer: React.FC<ContentRendererProps> = ({
   content,
   className = "",
 }) => {
-  const renderContent = () => {
-    if (typeof window === "undefined") {
-      // Server-side rendering fallback
+  const renderContent = () => {    if (typeof window === "undefined") {
+      // Server-side rendering fallback - use our sanitization function
       return (
         <div
-          className={className}
+          className={`blog-content ${className}`}
           dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(content, {
-              ALLOWED_TAGS: [
-                "p",
-                "br",
-                "strong",
-                "em",
-                "u",
-                "s",
-                "a",
-                "h1",
-                "h2",
-                "h3",
-                "h4",
-                "h5",
-                "h6",
-                "ul",
-                "ol",
-                "li",
-                "blockquote",
-                "img",
-              ],
-              ALLOWED_ATTR: ["href", "target", "alt", "title", "src"],
-            }),
+            __html: sanitizeContent(content),
           }}
         />
       );
-    }
-
-    // Create a temporary div to parse the HTML
+    }    // Create a temporary div to parse the HTML
     const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = DOMPurify.sanitize(content);
+    tempDiv.innerHTML = sanitizeContent(content);
 
     // Find all pre > code elements (code blocks)
     const codeBlocks = tempDiv.querySelectorAll("pre code");
@@ -137,46 +113,19 @@ const ContentRenderer: React.FC<ContentRendererProps> = ({
           />
         );
       }
-    }
-
-    // If no code blocks were found, render the content normally
+    }    // If no code blocks were found, render the content normally
     if (parts.length === 0) {
       return (
         <div
-          className={className}
+          className={`blog-content ${className}`}
           dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(content, {
-              ALLOWED_TAGS: [
-                "a",
-                "b",
-                "i",
-                "em",
-                "strong",
-                "u",
-                "ul",
-                "ol",
-                "li",
-                "p",
-                "br",
-                "span",
-                "blockquote",
-                "img",
-                "h1",
-                "h2",
-                "h3",
-                "h4",
-                "h5",
-                "h6",
-                "mark",
-              ],
-              ALLOWED_ATTR: ["href", "target", "alt", "title", "src", "class"],
-            }),
+            __html: sanitizeContent(content),
           }}
         />
       );
     }
 
-    return <div className={className}>{parts}</div>;
+    return <div className={`blog-content ${className}`}>{parts}</div>;
   };
 
   return renderContent();
