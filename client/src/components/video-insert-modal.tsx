@@ -32,9 +32,9 @@ export function VideoInsertModal({
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
       /youtube\.com\/v\/([^&\n?#]+)/,
-      /m\.youtube\.com\/watch\?v=([^&\n?#]+)/
+      /m\.youtube\.com\/watch\?v=([^&\n?#]+)/,
     ];
-    
+
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match) {
@@ -71,7 +71,7 @@ export function VideoInsertModal({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setVideoUrl(url);
-    
+
     if (error) {
       setError("");
     }
@@ -86,7 +86,7 @@ export function VideoInsertModal({
   };
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent 
+      <DialogContent
         onPointerDownOutside={(e) => e.stopPropagation()}
         onInteractOutside={(e) => e.stopPropagation()}
       >
@@ -111,7 +111,8 @@ export function VideoInsertModal({
                 }}
               />
               {error && <p className="text-sm text-destructive">{error}</p>}
-            </div><div className="text-sm text-muted-foreground">
+            </div>
+            <div className="text-sm text-muted-foreground">
               <p>Supported formats:</p>
               <ul className="list-disc list-inside mt-1 space-y-1">
                 <li>https://www.youtube.com/watch?v=VIDEO_ID</li>
@@ -119,7 +120,7 @@ export function VideoInsertModal({
                 <li>https://www.youtube.com/embed/VIDEO_ID</li>
               </ul>
             </div>
-            
+
             {/* Video Preview */}
             {previewId && (
               <div className="space-y-2">
