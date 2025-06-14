@@ -235,6 +235,11 @@ export const extensionConfigs = {
   starterKit: {
     codeBlock: false as const, // We'll use CodeBlockLowlight instead
     heading: false as const, // We'll use custom Heading extension
+    strike: {
+      HTMLAttributes: {
+        class: "strikethrough",
+      },
+    },
   },
   heading: {
     levels: [1, 2, 3, 4, 5, 6] as const,
@@ -261,15 +266,16 @@ export const extensionConfigs = {
     withCaption: true,
   },
   table: {
-    resizable: true,
-  },
+    resizable: true,  },
   textAlign: {
     types: ["heading", "paragraph"],
   },
   youtube: {
-    controls: false,
-    nocookie: true,
-    modestBranding: true,
+    controls: true,
+    nocookie: false,
+    modestBranding: false,
+    width: 640,
+    height: 480,
   },
   placeholder: {
     blog: "Start writing your blog post...",
@@ -324,6 +330,6 @@ export const validateImageFile = (file: File): boolean => {
 
 export const validateYouTubeUrl = (url: string): boolean => {
   const youtubeRegex =
-    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/;
+    /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/|m\.youtube\.com\/watch\?v=)[\w-]+(&\S*)?$/;
   return youtubeRegex.test(url);
 };
