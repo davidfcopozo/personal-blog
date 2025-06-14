@@ -95,7 +95,7 @@ export interface NewPostLayoutProps {
 }
 
 export interface NewPostHeaderProps {
-  onSave: (e: FormEvent) => void;
+  onSave: (status: "draft" | "published") => void;
 }
 
 export interface BlogEditorProps {
