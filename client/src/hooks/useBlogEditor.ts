@@ -322,8 +322,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         if (tags.length > 0 || (initialPost.tags ?? []).length > 0) {
           if (!arraysEqual(tags, initialPost.tags || [])) {
             changes.tags = tags;
-          }
-        } // Only proceed with mutation if there are changes to be made
+          }        } // Only proceed with mutation if there are changes to be made
         if (Object.keys(changes).length > 0) {
           console.log("Sending update with changes:", changes);
           updatePostMutate({
@@ -331,10 +330,18 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
             _id: initialPost?._id?.toString(),
           });
         } else {
-          toast({
-            title: "No Changes",
-            description: "No changes were made to the post.",
-          });
+          // If no content changes but status is different, still allow the update
+          if (status !== initialPost.status) {
+            updatePostMutate({
+              status,
+              _id: initialPost?._id?.toString(),
+            });
+          } else {
+            toast({
+              title: "No Changes",
+              description: "No changes were made to the post.",
+            });
+          }
         }
       } else {
         const cleanTitle = DOMPurify.sanitize(title, {
@@ -369,6 +376,34 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     ]
   );
 
+  // Check if there are any unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    if (!initialPost) {
+      // For new posts, check if there's any content
+      return !!(
+        title ||
+        (content && content !== "<p><br></p>") ||
+        featuredImage ||
+        categories.length > 0 ||
+        tags.length > 0
+      );
+    }
+
+    // For existing posts, compare with initial values
+    const cleanTitle = DOMPurify.sanitize(title, {
+      ALLOWED_TAGS: ["p", "br", "span", "strong", "em", "b", "i"],
+      ALLOWED_ATTR: [],
+    });
+
+    return (
+      cleanTitle !== initialPost.title ||
+      content !== initialPost.content ||
+      featuredImage !== initialPost.featuredImage ||
+      !arraysEqual(categories, initialPost.categories || []) ||
+      !arraysEqual(tags, initialPost.tags || [])
+    );
+  }, [title, content, featuredImage, categories, tags, initialPost]);
+
   return {
     temporaryFeatureImage,
     handleTitleChange,
@@ -378,5 +413,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     handleFeatureImagePick,
     updatePostState,
     postData,
+    hasUnsavedChanges,
   };
 };
