@@ -38,7 +38,8 @@ const dompurifyConfig = {
     "tr",
     "td",
     "th",
-  ],ALLOWED_ATTR: [
+  ],
+  ALLOWED_ATTR: [
     "href",
     "target",
     "alt",
@@ -74,7 +75,8 @@ const dompurifyConfig = {
     "playlist", // YouTube iframe attributes
     "rel", // YouTube iframe attributes
     "start", // YouTube iframe attributes
-  ],  ALLOW_DATA_ATTR: true, // Allow data-* attributes for video embeds
+  ],
+  ALLOW_DATA_ATTR: true, // Allow data-* attributes for video embeds
   FORBID_TAGS: ["script", "object", "embed", "style"], // Remove iframe from forbidden tags
   FORBID_ATTR: ["on*"], // Remove style from forbidden attributes - allow style for video dimensions
   ADD_ATTR: ["rel"], // Add rel attribute for links
@@ -83,7 +85,8 @@ const dompurifyConfig = {
   RETURN_DOM_FRAGMENT: false, // Return string, not fragment
   KEEP_CONTENT: true, // Preserve inner content
   // Allow YouTube iframe URLs only
-  ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  ALLOWED_URI_REGEXP:
+    /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
 };
 
 export const sanitizeContent = (dirtyHtml: string) => {
