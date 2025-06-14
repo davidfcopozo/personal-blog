@@ -266,7 +266,8 @@ export const extensionConfigs = {
     withCaption: true,
   },
   table: {
-    resizable: true,  },
+    resizable: true,
+  },
   textAlign: {
     types: ["heading", "paragraph"],
   },
