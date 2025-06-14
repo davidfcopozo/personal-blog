@@ -261,11 +261,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       });
     }
   }, [newPostStatus, toast]);
-
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-
+    async (status: "draft" | "published") => {
       if (!title) {
         return toast({
           variant: "destructive",
@@ -305,6 +302,11 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         }
         if (currentFeatureImage !== initialPost.featuredImage) {
           changes.featuredImage = currentFeatureImage as string;
+        }
+
+        // Always update status when explicitly provided
+        if (status !== initialPost.status) {
+          changes.status = status;
         }
 
         // Compare categories and tags for genuine differences
@@ -348,6 +350,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           featuredImage: currentFeatureImage,
           categories,
           tags,
+          status, // Include status in new post creation
         });
       }
     },
