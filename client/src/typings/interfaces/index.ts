@@ -95,17 +95,12 @@ export interface NewPostLayoutProps {
 }
 
 export interface NewPostHeaderProps {
-  onSave: (status: "draft" | "published") => void;
+  onSave: (status: "draft" | "published" | "unpublished") => void;
+  currentStatus?: "draft" | "published" | "unpublished";
 }
 
 export interface BlogEditorProps {
-  initialPost?: {
-    title: string;
-    content: string;
-    featuredImage: string | null;
-    categories?: CategoryInterface[];
-    tags?: string[];
-  } | null;
+  initialPost?: InitialPost | null;
   slug?: string;
   isPostLoading?: boolean;
 }
