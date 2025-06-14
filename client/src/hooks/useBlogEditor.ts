@@ -285,15 +285,13 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       let currentFeatureImage = featuredImage;
       if (temporaryFeatureImage) {
         currentFeatureImage = await handleImageUpload(temporaryFeatureImage);
-      }
-
-      if (initialPost && slug) {
+      }      if (initialPost && slug) {
         const cleanTitle = DOMPurify.sanitize(title, {
-          USE_PROFILES: { html: true },
+          ALLOWED_TAGS: ['p', 'br', 'span', 'strong', 'em', 'b', 'i'],
+          ALLOWED_ATTR: [],
         });
-        const cleanContent = DOMPurify.sanitize(content, {
-          USE_PROFILES: { html: true },
-        });
+        // Don't sanitize content on client - let server handle it
+        const cleanContent = content;
 
         const changes: UpdatePostPayload = {};
 
@@ -335,14 +333,13 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
             title: "No Changes",
             description: "No changes were made to the post.",
           });
-        }
-      } else {
+        }      } else {
         const cleanTitle = DOMPurify.sanitize(title, {
-          USE_PROFILES: { html: true },
+          ALLOWED_TAGS: ['p', 'br', 'span', 'strong', 'em', 'b', 'i'],
+          ALLOWED_ATTR: [],
         });
-        const cleanContent = DOMPurify.sanitize(content, {
-          USE_PROFILES: { html: true },
-        });
+        // Don't sanitize content on client - let server handle it
+        const cleanContent = content;
         newPostMutate({
           title: cleanTitle,
           content: cleanContent,
