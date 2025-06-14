@@ -271,6 +271,10 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   }, [newPostStatus, toast]);
   const handleSubmit = useCallback(
     async (status: "draft" | "published") => {
+      console.log("handleSubmit called with status:", status);
+      console.log("initialPost:", initialPost);
+      console.log("initialPost.status:", initialPost?.status);
+
       if (!title) {
         return toast({
           variant: "destructive",
@@ -310,11 +314,18 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         }
         if (currentFeatureImage !== initialPost.featuredImage) {
           changes.featuredImage = currentFeatureImage as string;
-        }
-
-        // Always update status when explicitly provided
+        } // Always update status when explicitly provided
+        console.log(
+          "Status comparison - current status:",
+          status,
+          "initial status:",
+          initialPost.status
+        );
         if (status !== initialPost.status) {
+          console.log("Status changed, adding to changes:", status);
           changes.status = status;
+        } else {
+          console.log("Status unchanged, not adding to changes");
         }
 
         // Compare categories and tags for genuine differences
@@ -331,15 +342,18 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           if (!arraysEqual(tags, initialPost.tags || [])) {
             changes.tags = tags;
           }
-        }
+        } // Only proceed with mutation if there are changes to be made
+        console.log("Changes to be made:", changes);
+        console.log("Number of changes:", Object.keys(changes).length);
 
-        // Only proceed with mutation if there are changes to be made
         if (Object.keys(changes).length > 0) {
+          console.log("Sending update with changes:", changes);
           updatePostMutate({
             ...changes,
             _id: initialPost?._id?.toString(),
           });
         } else {
+          console.log("No changes detected");
           toast({
             title: "No Changes",
             description: "No changes were made to the post.",
