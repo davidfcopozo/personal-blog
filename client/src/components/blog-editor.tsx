@@ -77,10 +77,11 @@ const BlogEditor: FC<BlogEditorProps> = ({
       <NewPostHeader onSave={handleSave} />
       <main>
         <div className="flex-column md:flex">
+          {" "}
           <div
             className={`mb-20 ${!isPostLoading && "p-4"} xs:mb-4 md:w-3/4  `}
           >
-            <form onSubmit={handleSubmit}>
+            <div>
               {isEditorLoaded && !isPostLoading ? (
                 <div className="mb-4">
                   <Input
@@ -103,7 +104,7 @@ const BlogEditor: FC<BlogEditorProps> = ({
                   onEditorReady={() => setIsEditorLoaded(true)}
                 />
               </div>
-            </form>
+            </div>
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
             <FeatureImage
