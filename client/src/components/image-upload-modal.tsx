@@ -125,11 +125,14 @@ export function ImageUploadModal({
       setIsProcessing(false);
     }
   };
-
   return (
     <>
       <Dialog open={isImageUploadModalOpen} onOpenChange={openImageUploadModal}>
-        <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto">
+        <DialogContent 
+          className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto"
+          onPointerDownOutside={(e) => e.stopPropagation()}
+          onInteractOutside={(e) => e.stopPropagation()}
+        >
           <DialogHeader>
             <DialogTitle>Image Gallery</DialogTitle>
           </DialogHeader>
