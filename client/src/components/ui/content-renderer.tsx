@@ -14,7 +14,8 @@ const ContentRenderer: React.FC<ContentRendererProps> = ({
   content,
   className = "",
 }) => {
-  const renderContent = () => {    if (typeof window === "undefined") {
+  const renderContent = () => {
+    if (typeof window === "undefined") {
       // Server-side rendering fallback - use our sanitization function
       return (
         <div
@@ -24,7 +25,7 @@ const ContentRenderer: React.FC<ContentRendererProps> = ({
           }}
         />
       );
-    }    // Create a temporary div to parse the HTML
+    } // Create a temporary div to parse the HTML
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = sanitizeContent(content);
 
@@ -113,7 +114,7 @@ const ContentRenderer: React.FC<ContentRendererProps> = ({
           />
         );
       }
-    }    // If no code blocks were found, render the content normally
+    } // If no code blocks were found, render the content normally
     if (parts.length === 0) {
       return (
         <div
