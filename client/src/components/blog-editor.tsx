@@ -63,6 +63,8 @@ const BlogEditor: FC<BlogEditorProps> = ({
     handleImageUpload,
     handleFeatureImagePick,
     hasUnsavedChanges,
+    isSaving,
+    saveError,
   } = useBlogEditor({ initialPost, slug });
 
   const { title, content, featuredImage, tags, categories } = postData;
@@ -86,10 +88,12 @@ const BlogEditor: FC<BlogEditorProps> = ({
   }, []);
   return (
     <div className="outer-container">
+      {" "}
       <NewPostHeader
         onSave={handleSave}
         currentStatus={currentStatus}
         hasChanges={hasUnsavedChanges()}
+        isSaving={isSaving}
       />
       <main>
         <div className="flex-column md:flex">
