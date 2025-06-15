@@ -36,6 +36,15 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     tags: [] as string[],
   });
 
+  // Track the last saved state to compare against for changes
+  const [lastSavedData, setLastSavedData] = useState({
+    title: "",
+    content: "",
+    featuredImage: null as string | null,
+    categories: [] as CategoryInterface[],
+    tags: [] as string[],
+  });
+
   const { title, content, featuredImage, categories, tags } = postData;
 
   const updatePostState = useCallback(
@@ -56,6 +65,15 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     url: "/api/posts",
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+
+      // Update lastSavedData to current state to reset change indicator
+      setLastSavedData({
+        title,
+        content,
+        featuredImage,
+        categories,
+        tags,
+      });
 
       // Redirect to edit page instead of resetting state
       if (data?.slug) {
@@ -104,6 +122,16 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     url: `/api/posts/${initialPost?._id}`,
     onSuccess: (updatePostData, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+
+      // Update lastSavedData to current state to reset change indicator
+      setLastSavedData({
+        title,
+        content,
+        featuredImage,
+        categories,
+        tags,
+      });
+
       toast({
         title: "Success",
         description: "Blog post updated successfully",
@@ -375,35 +403,66 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       updatePostMutate,
     ]
   );
-
   // Check if there are any unsaved changes
   const hasUnsavedChanges = useCallback(() => {
     if (!initialPost) {
-      // For new posts, check if there's any content
+      // For new posts, check if there's any content that hasn't been saved
       return !!(
-        title ||
-        (content && content !== "<p><br></p>") ||
-        featuredImage ||
-        categories.length > 0 ||
-        tags.length > 0
+        title !== lastSavedData.title ||
+        (content &&
+          content !== "<p><br></p>" &&
+          content !== lastSavedData.content) ||
+        featuredImage !== lastSavedData.featuredImage ||
+        !arraysEqual(categories, lastSavedData.categories) ||
+        !arraysEqual(tags, lastSavedData.tags)
       );
     }
 
-    // For existing posts, compare with initial values
+    // For existing posts, compare with last saved state (or initial values if never saved)
+    const comparisonData = lastSavedData.title
+      ? lastSavedData
+      : {
+          title: initialPost.title || "",
+          content: initialPost.content || "",
+          featuredImage: initialPost.featuredImage || null,
+          categories: initialPost.categories || [],
+          tags: initialPost.tags || [],
+        };
+
     const cleanTitle = DOMPurify.sanitize(title, {
       ALLOWED_TAGS: ["p", "br", "span", "strong", "em", "b", "i"],
       ALLOWED_ATTR: [],
     });
 
     return (
-      cleanTitle !== initialPost.title ||
-      content !== initialPost.content ||
-      featuredImage !== initialPost.featuredImage ||
-      !arraysEqual(categories, initialPost.categories || []) ||
-      !arraysEqual(tags, initialPost.tags || [])
+      cleanTitle !== comparisonData.title ||
+      content !== comparisonData.content ||
+      featuredImage !== comparisonData.featuredImage ||
+      !arraysEqual(categories, comparisonData.categories) ||
+      !arraysEqual(tags, comparisonData.tags)
     );
-  }, [title, content, featuredImage, categories, tags, initialPost]);
+  }, [
+    title,
+    content,
+    featuredImage,
+    categories,
+    tags,
+    initialPost,
+    lastSavedData,
+  ]);
 
+  // Initialize lastSavedData when initialPost is loaded
+  useEffect(() => {
+    if (initialPost) {
+      setLastSavedData({
+        title: initialPost.title || "",
+        content: initialPost.content || "",
+        featuredImage: initialPost.featuredImage || null,
+        categories: initialPost.categories || [],
+        tags: initialPost.tags || [],
+      });
+    }
+  }, [initialPost]);
   return {
     temporaryFeatureImage,
     handleTitleChange,
@@ -414,5 +473,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     updatePostState,
     postData,
     hasUnsavedChanges,
+    // Return save status for better UX
+    isSaving: newPostStatus === "pending" || updatePostStatus === "pending",
+    saveError: newPostError || updatePostError,
   };
 };
