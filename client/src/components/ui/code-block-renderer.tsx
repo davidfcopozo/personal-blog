@@ -2,8 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import hljs from "highlight.js";
-import "highlight.js/styles/night-owl.css";
-
+import "highlight.js/styles/base16/one-light.css";
 // Import specific languages for better bundle size
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
@@ -21,6 +20,8 @@ import go from "highlight.js/lib/languages/go";
 import rust from "highlight.js/lib/languages/rust";
 import csharp from "highlight.js/lib/languages/csharp";
 import c from "highlight.js/lib/languages/c";
+import { loadHighlightTheme } from "@/utils/highlightTheme";
+import { useTheme } from "next-themes";
 
 interface CodeBlockRendererProps {
   code: string;
@@ -34,6 +35,12 @@ const CodeBlockRenderer: React.FC<CodeBlockRendererProps> = ({
   className = "",
 }) => {
   const codeRef = useRef<HTMLElement>(null);
+
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    loadHighlightTheme(theme === "dark");
+  }, [theme]);
 
   useEffect(() => {
     // Register languages
