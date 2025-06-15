@@ -8,7 +8,7 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImageInterface } from "@/typings/interfaces";
+import { ImageInterface, ImageMetadata } from "@/typings/interfaces";
 import { UserType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
 import useDeleteImages from "./useDeleteImages";
@@ -17,10 +17,6 @@ import usePatchRequest from "./usePatchRequest";
 import { AxiosError } from "axios";
 import { getSession } from "next-auth/react";
 import getImageHash from "@/utils/getImageHash";
-
-interface ImageMetadata extends Omit<ImageInterface, "_id"> {
-  hash: string;
-}
 
 export const useImageManager = () => {
   const [uploading, setUploading] = useState<boolean>(false);

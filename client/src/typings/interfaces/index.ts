@@ -347,3 +347,7 @@ export interface DeleteImageProps {
   itemId: string;
   key?: string;
 }
+
+export interface ImageMetadata extends Omit<ImageInterface, "_id"> {
+  hash: string;
+}
