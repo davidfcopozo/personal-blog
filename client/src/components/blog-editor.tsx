@@ -9,6 +9,8 @@ import dynamic from "next/dynamic";
 import { BlogEditorProps } from "@/typings/interfaces";
 import { NewPostHeader } from "./new-post-header";
 import { Skeleton } from "./ui/skeleton";
+import { loadHighlightTheme } from "@/utils/highlightTheme";
+import { useTheme } from "next-themes";
 
 const TiptapBlogEditor = dynamic(() => import("./tiptap-blog-editor"), {
   ssr: false,
@@ -40,6 +42,12 @@ const BlogEditor: FC<BlogEditorProps> = ({
   const [currentStatus, setCurrentStatus] = useState<
     "draft" | "published" | "unpublished"
   >(initialPost?.status || "draft");
+
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    loadHighlightTheme(theme === "dark");
+  }, [theme]);
 
   const handleSave = (status: "draft" | "published" | "unpublished") => {
     handleSubmit(status);
