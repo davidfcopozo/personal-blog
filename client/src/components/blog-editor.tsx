@@ -13,7 +13,7 @@ import { Skeleton } from "./ui/skeleton";
 const TiptapBlogEditor = dynamic(() => import("./tiptap-blog-editor"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[500px] border border-muted-foreground rounded-md">
+    <div className="w-full h-[500px] border border-muted-foreground/20 rounded-md">
       <div className="p-4 border-b border-muted-foreground/20">
         <div className="flex gap-2">
           {Array.from({ length: 10 }).map((_, i) => (
