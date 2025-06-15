@@ -325,7 +325,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           }
         } // Only proceed with mutation if there are changes to be made
         if (Object.keys(changes).length > 0) {
-          console.log("Sending update with changes:", changes);
           updatePostMutate({
             ...changes,
             _id: initialPost?._id?.toString(),
