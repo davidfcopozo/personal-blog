@@ -342,3 +342,8 @@ export interface QuillHistoryHandler {
   undo: () => void;
   redo: () => void;
 }
+
+export interface DeleteImageProps {
+  itemId: string;
+  key?: string;
+}
