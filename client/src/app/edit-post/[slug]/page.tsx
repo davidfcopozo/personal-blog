@@ -1,12 +1,20 @@
 "use client";
-import React, { use } from "react";
+import React, { use, useEffect } from "react";
 import BlogEditor from "@/components/blog-editor";
 import useFetchPost from "@/hooks/useFetchPost";
+import { loadHighlightTheme } from "@/utils/highlightTheme";
+import { useTheme } from "next-themes";
 
 const EditPostPage = (props: { params: Promise<{ slug: string }> }) => {
   const params = use(props.params);
   const slug = decodeURI(params.slug);
   const { data, isPending } = useFetchPost(slug);
+
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    loadHighlightTheme(theme === "dark");
+  }, [theme]);
 
   const post = data?.data;
   return (
