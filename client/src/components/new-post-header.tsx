@@ -20,6 +20,7 @@ export function NewPostHeader({
   onSave,
   currentStatus,
   hasChanges = false,
+  isSaving = false,
 }: NewPostHeaderProps) {
   const { theme, systemTheme } = useTheme();
   const { data: session } = useSession();
@@ -71,23 +72,29 @@ export function NewPostHeader({
           className="bg-background relative"
           onClick={handleSaveDraft}
           size="sm"
+          disabled={isSaving}
         >
-          {hasChanges && (
+          {hasChanges && !isSaving && (
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
           )}
-          Save Draft
-        </Button>
+          {isSaving ? "Saving..." : "Save Draft"}
+        </Button>{" "}
         {isPublished ? (
-          hasChanges ? (
+          hasChanges && !isSaving ? (
             // If published and has changes, show Update button
-            <Button className="bg-foreground" size="sm" onClick={handlePublish}>
-              Update
+            <Button
+              className="bg-foreground"
+              size="sm"
+              onClick={handlePublish}
+              disabled={isSaving}
+            >
+              {isSaving ? "Updating..." : "Update"}
             </Button>
           ) : (
             // If published and no changes, show dropdown
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="bg-foreground" size="sm">
+                <Button className="bg-foreground" size="sm" disabled={isSaving}>
                   <Eye className="w-4 h-4 mr-1" />
                   Published
                   <ChevronDown className="w-4 h-4 ml-1" />
@@ -102,8 +109,13 @@ export function NewPostHeader({
             </DropdownMenu>
           )
         ) : (
-          <Button className="bg-foreground" size="sm" onClick={handlePublish}>
-            Publish
+          <Button
+            className="bg-foreground"
+            size="sm"
+            onClick={handlePublish}
+            disabled={isSaving}
+          >
+            {isSaving ? "Publishing..." : "Publish"}
           </Button>
         )}
       </div>
