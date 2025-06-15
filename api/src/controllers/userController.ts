@@ -1,7 +1,7 @@
 import User from "../models/userModel";
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RequestWithUserInfo } from "../typings/models/user";
+import { MongooseId, RequestWithUserInfo } from "../typings/models/user";
 import { BadRequest, NotFound, Unauthenticated } from "../errors/index";
 import { isValidUsername, validateImageUrl } from "../utils/validators";
 import { UserType } from "../typings/types";
@@ -141,10 +141,6 @@ export const updateUserById = async (
       const foundInterestIds = validInterests.map((interest) =>
         interest._id.toString()
       );
-      interface MongooseId {
-        _id: string | mongoose.Types.ObjectId;
-        toString(): string;
-      }
 
       const invalidInterestIds: MongooseId[] = interestsIds.filter(
         (id: MongooseId): boolean => !foundInterestIds.includes(id.toString())

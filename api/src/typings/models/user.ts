@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { Document, ObjectId } from "mongoose";
+import mongoose, { Document, ObjectId } from "mongoose";
 import { CategoryInterface } from "./category";
 import { TopicInterface } from "./topic";
 
@@ -48,4 +48,9 @@ export interface RequestWithUserInfo extends Request {
   user: {
     userId: String;
   };
+}
+
+export interface MongooseId {
+  _id: string | mongoose.Types.ObjectId;
+  toString(): string;
 }
