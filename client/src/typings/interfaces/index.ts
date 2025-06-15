@@ -95,17 +95,14 @@ export interface NewPostLayoutProps {
 }
 
 export interface NewPostHeaderProps {
-  onSave: (e: FormEvent) => void;
+  onSave: (status: "draft" | "published" | "unpublished") => void;
+  currentStatus?: "draft" | "published" | "unpublished";
+  hasChanges?: boolean;
+  isSaving?: boolean;
 }
 
 export interface BlogEditorProps {
-  initialPost?: {
-    title: string;
-    content: string;
-    featuredImage: string | null;
-    categories?: CategoryInterface[];
-    tags?: string[];
-  } | null;
+  initialPost?: InitialPost | null;
   slug?: string;
   isPostLoading?: boolean;
 }
@@ -117,6 +114,7 @@ export interface InitialPost {
   featuredImage: string | null;
   categories?: CategoryInterface[];
   tags?: string[];
+  status?: "draft" | "published" | "unpublished";
 }
 
 export interface UseBlogEditorProps {
@@ -343,4 +341,13 @@ export interface SVGToolbarIcons {
 export interface QuillHistoryHandler {
   undo: () => void;
   redo: () => void;
+}
+
+export interface DeleteImageProps {
+  itemId: string;
+  key?: string;
+}
+
+export interface ImageMetadata extends Omit<ImageInterface, "_id"> {
+  hash: string;
 }

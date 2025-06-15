@@ -243,7 +243,6 @@ export const updatePostBySlugOrId = async (
         "Nothing to update. Please provide the data to be updated"
       );
     }
-
     const {
       title,
       content,
@@ -251,7 +250,7 @@ export const updatePostBySlugOrId = async (
       featuredImage,
       bookmarks,
       comments,
-      published,
+      status,
       tags,
       categories,
     } = req.body;
@@ -261,13 +260,12 @@ export const updatePostBySlugOrId = async (
 
     // Handle regular fields only if they are provided
     const setFields: any = {};
-
     if (title !== undefined) setFields.title = title;
     if (content !== undefined) setFields.content = sanitizeContent(content);
     if (slug !== undefined) setFields.slug = slug;
     if (bookmarks !== undefined) setFields.bookmarks = bookmarks;
     if (comments !== undefined) setFields.comments = comments;
-    if (published !== undefined) setFields.published = published;
+    if (status !== undefined) setFields.status = status;
 
     if (featuredImage !== undefined) {
       setFields.featuredImage = featuredImage || process.env.DEFAULT_POST_IMAGE;

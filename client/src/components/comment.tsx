@@ -7,6 +7,7 @@ import { MoreVertical, Heart, MessageSquare } from "lucide-react";
 import { getFullName, getNameInitials } from "@/utils/formats";
 import { CommentProps } from "@/typings/types";
 import useFetchRequest from "@/hooks/useFetchRequest";
+import ContentRenderer from "@/components/ui/content-renderer";
 import { useInteractions } from "@/hooks/useInteractions";
 import {
   DropdownMenu,
@@ -139,13 +140,10 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
                     Delete
                   </DropdownMenuItem>
-                </DropdownMenuContent>
+                </DropdownMenuContent>{" "}
               </DropdownMenu>
             </div>
-            <div
-              className="ml-2"
-              dangerouslySetInnerHTML={{ __html: comment.content || "" }}
-            />
+            <ContentRenderer content={comment.content || ""} className="ml-2" />
             <div className="h-content">
               <div className="flex items-center justify-end mr-4 gap-2 relative">
                 <EngagementButton

@@ -1,11 +1,6 @@
-import {
-  useState,
-  useCallback,
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-} from "react";
+import { useState, useCallback, ChangeEvent, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 import { storage } from "../../firebaseConfig";
 import {
   ref,
@@ -30,9 +25,19 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     useState<File | null>(null);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [postData, setPostData] = useState({
+    title: "",
+    content: "",
+    featuredImage: null as string | null,
+    categories: [] as CategoryInterface[],
+    tags: [] as string[],
+  });
+
+  // Track the last saved state to compare against for changes
+  const [lastSavedData, setLastSavedData] = useState({
     title: "",
     content: "",
     featuredImage: null as string | null,
@@ -51,7 +56,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     },
     []
   );
-
   const {
     mutate: newPostMutate,
     data: newPostData,
@@ -59,16 +63,36 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     error: newPostError,
   } = usePostRequest({
     url: "/api/posts",
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
-      setPostData({
-        title: "",
-        content: "",
-        featuredImage: null,
-        categories: [],
-        tags: [],
+
+      // Update lastSavedData to current state to reset change indicator
+      setLastSavedData({
+        title,
+        content,
+        featuredImage,
+        categories,
+        tags,
       });
-      setTemporaryFeatureImage(null);
+
+      // Redirect to edit page instead of resetting state
+      if (data?.slug) {
+        toast({
+          title: "Success",
+          description:
+            "Blog post created successfully! Redirecting to edit page...",
+        });
+        // Add a small delay to ensure the toast is shown before redirect
+        setTimeout(() => {
+          router.push(`/edit-post/${data.slug}`);
+        }, 100);
+      } else {
+        toast({
+          title: "Success",
+          description:
+            "Blog post created successfully, but couldn't redirect to edit page",
+        });
+      }
     },
     onError: () => {
       const previousPosts = queryClient.getQueryData(["posts"]);
@@ -89,7 +113,6 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       return { previousPosts };
     },
   });
-
   const {
     mutate: updatePostMutate,
     data: updatePostData,
@@ -99,10 +122,22 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     url: `/api/posts/${initialPost?._id}`,
     onSuccess: (updatePostData, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+
+      // Update lastSavedData to current state to reset change indicator
+      setLastSavedData({
+        title,
+        content,
+        featuredImage,
+        categories,
+        tags,
+      });
+
       toast({
         title: "Success",
         description: "Blog post updated successfully",
       });
+      // For updates, we're already on the edit page, so no need to redirect
+      // Just invalidate queries to refresh the data
     },
     onError: (error, variables, context) => {
       if (context?.previousData) {
@@ -240,20 +275,15 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       setTemporaryFeatureImage(null);
     }
   }, [temporaryFeatureImage, handleImageUpload, updatePostState]);
-
   useEffect(() => {
     if (temporaryFeatureImage) {
       handleFeatureImageUpload();
     }
   }, [temporaryFeatureImage, handleFeatureImageUpload]);
 
+  // Only show error toast for newPost, success is handled in onSuccess callback
   useEffect(() => {
-    if (newPostStatus === "success") {
-      toast({
-        title: "Success",
-        description: "Blog post created successfully",
-      });
-    } else if (newPostStatus === "error") {
+    if (newPostStatus === "error") {
       toast({
         variant: "destructive",
         title: "Error",
@@ -261,11 +291,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       });
     }
   }, [newPostStatus, toast]);
-
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-
+    async (status: "draft" | "published" | "unpublished") => {
       if (!title) {
         return toast({
           variant: "destructive",
@@ -286,14 +313,13 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       if (temporaryFeatureImage) {
         currentFeatureImage = await handleImageUpload(temporaryFeatureImage);
       }
-
       if (initialPost && slug) {
         const cleanTitle = DOMPurify.sanitize(title, {
-          USE_PROFILES: { html: true },
+          ALLOWED_TAGS: ["p", "br", "span", "strong", "em", "b", "i"],
+          ALLOWED_ATTR: [],
         });
-        const cleanContent = DOMPurify.sanitize(content, {
-          USE_PROFILES: { html: true },
-        });
+        // Don't sanitize content on client - let server handle it
+        const cleanContent = content;
 
         const changes: UpdatePostPayload = {};
 
@@ -307,6 +333,9 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         if (currentFeatureImage !== initialPost.featuredImage) {
           changes.featuredImage = currentFeatureImage as string;
         }
+
+        // Always include status when explicitly provided (user clicked draft/publish)
+        changes.status = status;
 
         // Compare categories and tags for genuine differences
         if (
@@ -322,33 +351,40 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
           if (!arraysEqual(tags, initialPost.tags || [])) {
             changes.tags = tags;
           }
-        }
-
-        // Only proceed with mutation if there are changes to be made
+        } // Only proceed with mutation if there are changes to be made
         if (Object.keys(changes).length > 0) {
           updatePostMutate({
             ...changes,
             _id: initialPost?._id?.toString(),
           });
         } else {
-          toast({
-            title: "No Changes",
-            description: "No changes were made to the post.",
-          });
+          // If no content changes but status is different, still allow the update
+          if (status !== initialPost.status) {
+            updatePostMutate({
+              status,
+              _id: initialPost?._id?.toString(),
+            });
+          } else {
+            toast({
+              title: "No Changes",
+              description: "No changes were made to the post.",
+            });
+          }
         }
       } else {
         const cleanTitle = DOMPurify.sanitize(title, {
-          USE_PROFILES: { html: true },
+          ALLOWED_TAGS: ["p", "br", "span", "strong", "em", "b", "i"],
+          ALLOWED_ATTR: [],
         });
-        const cleanContent = DOMPurify.sanitize(content, {
-          USE_PROFILES: { html: true },
-        });
+        // Don't sanitize content on client - let server handle it
+        const cleanContent = content;
         newPostMutate({
           title: cleanTitle,
           content: cleanContent,
           featuredImage: currentFeatureImage,
           categories,
           tags,
+          status, // Include status in new post creation
         });
       }
     },
@@ -367,7 +403,66 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       updatePostMutate,
     ]
   );
+  // Check if there are any unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    if (!initialPost) {
+      // For new posts, check if there's any content that hasn't been saved
+      return !!(
+        title !== lastSavedData.title ||
+        (content &&
+          content !== "<p><br></p>" &&
+          content !== lastSavedData.content) ||
+        featuredImage !== lastSavedData.featuredImage ||
+        !arraysEqual(categories, lastSavedData.categories) ||
+        !arraysEqual(tags, lastSavedData.tags)
+      );
+    }
 
+    // For existing posts, compare with last saved state (or initial values if never saved)
+    const comparisonData = lastSavedData.title
+      ? lastSavedData
+      : {
+          title: initialPost.title || "",
+          content: initialPost.content || "",
+          featuredImage: initialPost.featuredImage || null,
+          categories: initialPost.categories || [],
+          tags: initialPost.tags || [],
+        };
+
+    const cleanTitle = DOMPurify.sanitize(title, {
+      ALLOWED_TAGS: ["p", "br", "span", "strong", "em", "b", "i"],
+      ALLOWED_ATTR: [],
+    });
+
+    return (
+      cleanTitle !== comparisonData.title ||
+      content !== comparisonData.content ||
+      featuredImage !== comparisonData.featuredImage ||
+      !arraysEqual(categories, comparisonData.categories) ||
+      !arraysEqual(tags, comparisonData.tags)
+    );
+  }, [
+    title,
+    content,
+    featuredImage,
+    categories,
+    tags,
+    initialPost,
+    lastSavedData,
+  ]);
+
+  // Initialize lastSavedData when initialPost is loaded
+  useEffect(() => {
+    if (initialPost) {
+      setLastSavedData({
+        title: initialPost.title || "",
+        content: initialPost.content || "",
+        featuredImage: initialPost.featuredImage || null,
+        categories: initialPost.categories || [],
+        tags: initialPost.tags || [],
+      });
+    }
+  }, [initialPost]);
   return {
     temporaryFeatureImage,
     handleTitleChange,
@@ -377,5 +472,9 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     handleFeatureImagePick,
     updatePostState,
     postData,
+    hasUnsavedChanges,
+    // Return save status for better UX
+    isSaving: newPostStatus === "pending" || updatePostStatus === "pending",
+    saveError: newPostError || updatePostError,
   };
 };

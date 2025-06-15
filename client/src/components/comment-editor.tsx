@@ -1,209 +1,114 @@
-import { useEffect, useRef } from "react";
-import ReactQuill, { Quill } from "react-quill-new";
+"use client";
+
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import CommentEditorToolbar from "./comment-editor-toolbar";
 import { Send } from "lucide-react";
-import { setTitle } from "@/utils/blog-editor";
 import { CommentEditorProps } from "@/typings/interfaces";
-import hljs from "highlight.js";
+import { useEffect } from "react";
+import "@/styles/tiptap.css";
+import {
+  createConfiguredLowlight,
+  extensionConfigs,
+} from "@/utils/blog-editor";
 
-const modules = {
-  syntax: true,
-  toolbar: [
-    ["bold", "italic", "underline", "strike"],
-    ["blockquote", "code-block"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link"],
-    ["clean"],
-  ],
-};
+// Create lowlight instance
+const lowlight = createConfiguredLowlight();
 
 export default function CommentEditor({
   onSubmit,
   onCancel,
-  placeholder,
+  placeholder = "Share your thoughts...",
   maxHeight = 300,
   showCancelButton,
   value: content,
   onChange,
   commentMutationStatus,
 }: CommentEditorProps) {
-  const textareaRef = useRef<ReactQuill>(null);
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure(extensionConfigs.starterKit),
+      CodeBlockLowlight.configure({
+        lowlight,
+        ...extensionConfigs.codeBlockLowlight,
+      }),
+      Underline,
+      Link.configure(extensionConfigs.link),
+      TextStyle,
+      Color,
+      Highlight.configure(extensionConfigs.highlight),
+      Placeholder.configure({
+        placeholder: placeholder || extensionConfigs.placeholder.comment,
+      }),
+    ],
+    content: content || "",
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm max-w-none focus:outline-none min-h-[100px] p-3",
+      },
+    },
+    immediatelyRender: false,
+  });
 
   useEffect(() => {
-    const toolbar = document.querySelector(".ql-toolbar") as HTMLElement;
-
-    if (toolbar) {
-      // Assign title attribute for each toolbar item
-      modules.toolbar.forEach((group, index) => {
-        setTitle(group, toolbar, index);
-      });
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content || "");
     }
-  }, []);
-
-  useEffect(() => {
-    const quillEditor = textareaRef.current;
-    if (quillEditor) {
-      const textarea = quillEditor.getEditor().root;
-      // Reset height to auto to correctly calculate scroll height
-      textarea.style.height = "auto";
-      textarea.style.overflowY = "hidden";
-      textarea.ariaPlaceholder = placeholder as string;
-
-      // Calculate new height, cap at maxHeight
-      const newHeight = Math.min(textarea.scrollHeight, maxHeight);
-
-      textarea.style.height = `${newHeight}px`;
-    }
-  }, [content, maxHeight, placeholder]);
+  }, [content, editor]);
 
   const handleSubmit = () => {
-    if (content.trim()) {
-      onSubmit(content);
+    if (editor) {
+      const htmlContent = editor.getHTML();
+      // Check if there's actual content (not just empty tags)
+      const textContent = editor.getText();
+      if (textContent.trim()) {
+        onSubmit(htmlContent);
+      }
     }
   };
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && textareaRef.current) {
-      // Configure languages for better detection
-      const languages = [
-        "javascript",
-        "typescript",
-        "python",
-        "java",
-        "cpp",
-        "c",
-        "csharp",
-        "cs",
-        "php",
-        "ruby",
-        "go",
-        "rust",
-        "html",
-        "xml",
-        "css",
-        "scss",
-        "sass",
-        "json",
-        "yaml",
-        "sql",
-        "bash",
-        "shell",
-        "powershell",
-        "dockerfile",
-        "markdown",
-        "plaintext",
-      ];
-
-      const Syntax = Quill.import("modules/syntax") as any;
-      const editor = textareaRef.current.getEditor();
-
-      // Store a queue of texts being processed to handle async detection
-      const processingQueue = new Set<string>();
-
-      // Override the highlight function to capture language detection
-      Syntax.DEFAULTS.highlight = (text: string) => {
-        // Clean the text for better detection
-        const cleanText = text.trim();
-        if (!cleanText) {
-          return hljs.highlight("", { language: "plaintext" }).value;
-        }
-
-        const result = hljs.highlightAuto(cleanText, languages);
-        const detectedLanguage = result.language || "plaintext";
-
-        // Create a unique identifier for this text
-        const textId = btoa(cleanText).substring(0, 20);
-
-        if (!processingQueue.has(textId)) {
-          processingQueue.add(textId);
-
-          // Use setTimeout to ensure DOM is updated
-          setTimeout(() => {
-            // Only target .ql-code-block elements (not containers)
-            const codeBlocks =
-              editor.root.querySelectorAll("div.ql-code-block");
-
-            for (const block of codeBlocks) {
-              const blockElement = block as HTMLElement;
-              const blockText = blockElement.textContent?.trim() || "";
-
-              // Check if this block matches our text and doesn't already have correct language
-              if (
-                blockText === cleanText &&
-                (!blockElement.hasAttribute("data-language") ||
-                  blockElement.getAttribute("data-language") !==
-                    detectedLanguage)
-              ) {
-                blockElement.setAttribute("data-language", detectedLanguage);
-
-                break;
-              }
-            }
-
-            processingQueue.delete(textId);
-          }, 50);
-        }
-
-        return result.value;
-      };
-
-      // Add event listener for content changes to reapply language detection
-      const handleTextChange = () => {
-        setTimeout(() => {
-          // Only process .ql-code-block elements
-          const codeBlocks = editor.root.querySelectorAll("div.ql-code-block");
-
-          codeBlocks.forEach((block) => {
-            const blockElement = block as HTMLElement;
-            const text = blockElement.textContent?.trim() || "";
-
-            if (text && !blockElement.hasAttribute("data-language")) {
-              try {
-                const result = hljs.highlightAuto(text, languages);
-                const language = result.language || "plaintext";
-                blockElement.setAttribute("data-language", language);
-              } catch (error) {
-                blockElement.setAttribute("data-language", "plaintext");
-              }
-            }
-          });
-        }, 300);
-      };
-
-      editor.on("text-change", handleTextChange);
-
-      // Initial scan for existing code blocks
-      setTimeout(() => {
-        handleTextChange();
-      }, 1000);
-
-      // Cleanup function
-      return () => {
-        editor.off("text-change", handleTextChange);
-      };
-    }
-  }, []);
+  if (!editor) {
+    return (
+      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground rounded-md">
+        <div className="p-4">
+          <div className="min-h-[100px] flex items-center justify-center text-muted-foreground">
+            Loading editor...
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <>
-      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground rounded-md">
-        <div>
-          <ReactQuill
-            theme="snow"
-            value={content}
-            onChange={onChange}
-            modules={modules}
-            placeholder={placeholder}
-            className="bg-background text-foreground"
-            ref={textareaRef}
-            style={{
-              maxHeight: `${maxHeight}px`,
-              overflowY: "auto",
-            }}
+      <Card className="w-full mt-4 max-w-7xl border-[1px] border-muted-foreground/20 rounded-md overflow-auto">
+        <CommentEditorToolbar editor={editor} />
+        <div
+          className="relative"
+          style={{
+            maxHeight: `${maxHeight}px`,
+            overflowY: "auto",
+          }}
+        >
+          <EditorContent
+            editor={editor}
+            className="bg-background text-foreground [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:p-3"
           />
         </div>
       </Card>
+
       <div className="flex justify-end gap-2 mt-4">
         {onCancel && showCancelButton && (
           <Button variant="outline" onClick={onCancel} className="py-4">

@@ -1,124 +1,373 @@
-import dynamic from "next/dynamic";
-import { Quill } from "react-quill-new";
-const ImageResize = dynamic(() => import("quill-image-resize-module-react"), {
-  ssr: false,
-});
+// Tiptap Blog Editor Configuration
+import { all, createLowlight } from "lowlight";
 
-Quill.register("modules/imageResize", ImageResize);
+// Import common languages for syntax highlighting
+import javascript from "highlight.js/lib/languages/javascript";
+// ...existing imports...
+import typescript from "highlight.js/lib/languages/typescript";
+import html from "highlight.js/lib/languages/xml";
+import css from "highlight.js/lib/languages/css";
+import python from "highlight.js/lib/languages/python";
+import java from "highlight.js/lib/languages/java";
+import cpp from "highlight.js/lib/languages/cpp";
+import json from "highlight.js/lib/languages/json";
+import bash from "highlight.js/lib/languages/bash";
+import sql from "highlight.js/lib/languages/sql";
+import php from "highlight.js/lib/languages/php";
+import ruby from "highlight.js/lib/languages/ruby";
+import go from "highlight.js/lib/languages/go";
+import rust from "highlight.js/lib/languages/rust";
+import csharp from "highlight.js/lib/languages/csharp";
+import c from "highlight.js/lib/languages/c";
 
-export const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  /* "bullet", */
-  "indent",
-  "align",
-  "font",
-  "script",
-  "color",
-  "background",
-  "link",
-  "image",
-  /*   "clean", */
-  "video",
-  "code-block",
-];
+// Language detection utility
+export const detectLanguageFromCode = (code: string): string => {
+  if (!code || code.trim().length === 0) return "plaintext";
 
-export const modules = {
-  syntax: true,
-  history: { delay: 200, maxStack: 500, userOnly: true },
-  imageResize: {
-    modules: ["Resize", "DisplaySize", "Toolbar"],
-  },
-  toolbar: {
-    container: [
-      ["undo", "redo"],
-      [{ header: "1" }, { header: "2" }, { header: [1, 2, 3, 4, 5, 6, false] }],
-      ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
-      [
-        { list: "ordered" },
-        { list: "bullet" },
-        { indent: "-1" },
-        { indent: "+1" },
-        { align: [] },
-      ],
-      [{ font: [] }],
-      [{ script: "sub" }, { script: "super" }],
-      [{ color: [] }, { background: [] }],
-      ["link", "image", "video"],
-      ["clean"],
-    ],
-  },
-  clipboard: {
-    matchVisual: false,
-  },
-};
+  // Check for common patterns to improve detection accuracy
+  const trimmedCode = code.trim();
 
-const toolbarOptionLabels = {
-  bold: "Bold",
-  italic: "Italic",
-  underline: "Underline",
-  strike: "Strike through",
-  blockquote: "Blockquote",
-  "code-block": "Code block",
-  link: "Link",
-  image: "Image",
-  video: "Video",
-  formula: "Formula",
-  header: "Header",
-  list: "List",
-  script: "Script",
-  indent: "Indent",
-  direction: "Text direction",
-  size: "Text size",
-  color: "Text color",
-  background: "Bankground color",
-  font: "Font style",
-  align: "Align text",
-  /* clean: "Remove all formatting", */
-};
+  // HTML detection
+  if (
+    trimmedCode.includes("<!DOCTYPE") ||
+    (trimmedCode.includes("<") &&
+      trimmedCode.includes(">") &&
+      trimmedCode.includes("</"))
+  ) {
+    return "html";
+  }
 
-export const setTitle = (
-  menu: any,
-  toolbarGroup: HTMLElement,
-  objIndex: number = 0
-) => {
-  if (Array.isArray(menu)) {
-    // Recursively handle array items
-    menu.forEach((item, index) => {
-      setTitle(item, toolbarGroup, index);
-    });
-  } else if (typeof menu === "object") {
-    // Handle toolbar object items (e.g., { list: "ordered" })
-    Object.keys(menu).forEach((key) => {
-      const value = menu[key];
-      const title =
-        toolbarOptionLabels[key as keyof typeof toolbarOptionLabels] ||
-        key.charAt(0).toUpperCase() + key.slice(1);
-      const elements = toolbarGroup.querySelectorAll(`.ql-${key}`);
-      if (elements[objIndex]) {
-        elements[objIndex].setAttribute(
-          "title",
-          Array.isArray(value)
-            ? `${title} ${value.join(", ")}`
-            : `${title} ${value}`
-        );
-      }
-    });
-  } else {
-    // Handle direct string items (e.g., "bold")
-    const title =
-      toolbarOptionLabels[menu as keyof typeof toolbarOptionLabels] || menu;
-    const element = toolbarGroup.querySelector(`.ql-${menu}`);
-    if (element) {
-      element.setAttribute("title", title);
+  // CSS detection
+  if (
+    trimmedCode.includes("{") &&
+    trimmedCode.includes("}") &&
+    (trimmedCode.includes(":") || trimmedCode.includes("@"))
+  ) {
+    return "css";
+  }
+
+  // JSON detection
+  if (
+    (trimmedCode.startsWith("{") && trimmedCode.endsWith("}")) ||
+    (trimmedCode.startsWith("[") && trimmedCode.endsWith("]"))
+  ) {
+    try {
+      JSON.parse(trimmedCode);
+      return "json";
+    } catch (e) {
+      // Not valid JSON, continue with other detection
     }
   }
+  // Shell/Bash detection
+  if (
+    trimmedCode.startsWith("#!") ||
+    /^#!(\/bin\/bash|\/bin\/sh|\/usr\/bin\/env)/.test(trimmedCode)
+  ) {
+    return "bash";
+  }
+
+  // TypeScript detection (before JavaScript)
+  if (
+    trimmedCode.includes("interface ") ||
+    trimmedCode.includes("type ") ||
+    trimmedCode.includes(": string") ||
+    trimmedCode.includes(": number") ||
+    trimmedCode.includes(": boolean") ||
+    trimmedCode.includes("enum ") ||
+    trimmedCode.includes("implements ")
+  ) {
+    return "typescript";
+  }
+
+  // JavaScript detection
+  if (
+    trimmedCode.includes("function ") ||
+    trimmedCode.includes("const ") ||
+    trimmedCode.includes("let ") ||
+    trimmedCode.includes("var ") ||
+    trimmedCode.includes("=>") ||
+    trimmedCode.includes("console.log") ||
+    trimmedCode.includes("require(") ||
+    trimmedCode.includes("import ") ||
+    trimmedCode.includes("export ")
+  ) {
+    return "javascript";
+  }
+
+  // Python detection
+  if (
+    trimmedCode.includes("def ") ||
+    trimmedCode.includes("import ") ||
+    trimmedCode.includes("from ") ||
+    trimmedCode.includes("print(") ||
+    trimmedCode.includes("class ") ||
+    /^[ ]*if __name__ == ['""]__main__['""]/.test(trimmedCode)
+  ) {
+    return "python";
+  }
+
+  // Java detection
+  if (
+    trimmedCode.includes("public class ") ||
+    trimmedCode.includes("private ") ||
+    trimmedCode.includes("public static void main") ||
+    trimmedCode.includes("System.out.println")
+  ) {
+    return "java";
+  }
+
+  // C++ detection
+  if (
+    trimmedCode.includes("#include") ||
+    trimmedCode.includes("std::") ||
+    trimmedCode.includes("cout <<") ||
+    trimmedCode.includes("cin >>") ||
+    trimmedCode.includes("namespace ")
+  ) {
+    return "cpp";
+  }
+
+  // C# detection
+  if (
+    trimmedCode.includes("using System") ||
+    trimmedCode.includes("namespace ") ||
+    trimmedCode.includes("Console.WriteLine") ||
+    trimmedCode.includes("public class ") ||
+    (trimmedCode.includes("[") && trimmedCode.includes("]"))
+  ) {
+    return "csharp";
+  }
+
+  // PHP detection
+  if (
+    trimmedCode.startsWith("<?php") ||
+    trimmedCode.includes("<?php") ||
+    (trimmedCode.includes("$") &&
+      (trimmedCode.includes("echo ") || trimmedCode.includes("print ")))
+  ) {
+    return "php";
+  }
+
+  // SQL detection
+  if (
+    /\b(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b/i.test(trimmedCode)
+  ) {
+    return "sql";
+  }
+
+  // Use highlight.js as fallback for other languages
+  if (typeof window !== "undefined") {
+    try {
+      const hljs = require("highlight.js");
+      const result = hljs.highlightAuto(trimmedCode, [
+        "javascript",
+        "typescript",
+        "python",
+        "java",
+        "cpp",
+        "c",
+        "csharp",
+        "php",
+        "ruby",
+        "go",
+        "rust",
+        "html",
+        "css",
+        "json",
+        "sql",
+        "bash",
+        "shell",
+        "xml",
+        "yaml",
+        "dockerfile",
+        "markdown",
+      ]);
+
+      // Only return detected language if confidence is reasonable
+      if (result.language && result.relevance > 5) {
+        return result.language;
+      }
+    } catch (error) {
+      console.warn("Language detection failed:", error);
+    }
+  }
+
+  return "plaintext";
 };
 
-export const UNDO_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-up-left ql-stroke"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
-export const REDO_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-up-right ql-stroke"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>`;
+// Create and configure lowlight instance
+export const createConfiguredLowlight = () => {
+  const lowlight = createLowlight(all);
+
+  // Register languages with lowlight
+  lowlight.register("javascript", javascript);
+  lowlight.register("typescript", typescript);
+  lowlight.register("html", html);
+  lowlight.register("css", css);
+  lowlight.register("python", python);
+  lowlight.register("java", java);
+  lowlight.register("cpp", cpp);
+  lowlight.register("json", json);
+  lowlight.register("bash", bash);
+  lowlight.register("sql", sql);
+  lowlight.register("php", php);
+  lowlight.register("ruby", ruby);
+  lowlight.register("go", go);
+  lowlight.register("rust", rust);
+  lowlight.register("csharp", csharp);
+  lowlight.register("c", c);
+
+  return lowlight;
+};
+
+// Tiptap editor configurations
+export const tiptapEditorConfig = {
+  editorProps: {
+    attributes: {
+      class: "prose prose-lg max-w-none focus:outline-none min-h-[400px] p-6",
+    },
+  },
+  immediatelyRender: false,
+};
+
+// Tiptap extension configurations
+export const extensionConfigs = {
+  starterKit: {
+    codeBlock: false as const, // We'll use CodeBlockLowlight instead
+    heading: false as const, // We'll use custom Heading extension
+    strike: {
+      HTMLAttributes: {
+        class: "strikethrough",
+      },
+    },
+  },
+  heading: {
+    levels: [1, 2, 3, 4, 5, 6] as const,
+  },
+  codeBlockLowlight: {
+    defaultLanguage: "plaintext",
+    languageClassPrefix: "language-",
+    HTMLAttributes: {
+      class: "code-block-wrapper",
+    },
+  },
+  link: {
+    openOnClick: false,
+    HTMLAttributes: {
+      class: "text-primary underline underline-offset-2 hover:text-primary/80",
+    },
+  },
+  highlight: {
+    multicolor: true,
+  },
+  resizableImage: {
+    defaultWidth: 310,
+    defaultHeight: 210,
+    withCaption: true,
+  },
+  table: {
+    resizable: true,
+  },
+  textAlign: {
+    types: ["heading", "paragraph"],
+  },
+  youtube: {
+    controls: true,
+    nocookie: false,
+    modestBranding: false,
+    width: 640,
+    height: 480,
+  },
+  placeholder: {
+    blog: "Start writing your blog post...",
+    comment: "Share your thoughts...",
+  },
+};
+
+// Default image settings
+export const defaultImageSettings = {
+  width: 310,
+  height: 210,
+  keepRatio: true,
+};
+
+// Table insertion defaults
+export const defaultTableSettings = {
+  rows: 3,
+  cols: 3,
+  withHeaderRow: true,
+};
+
+// Editor helper functions
+export const createPromptDialog = (
+  message: string,
+  defaultValue: string = ""
+): string | null => {
+  return window.prompt(message, defaultValue);
+};
+
+export const validateImageFile = (file: File): boolean => {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+
+  if (!allowedTypes.includes(file.type)) {
+    alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+    return false;
+  }
+
+  if (file.size > maxSize) {
+    alert("Image file size should be less than 10MB");
+    return false;
+  }
+
+  return true;
+};
+
+export const validateYouTubeUrl = (url: string): boolean => {
+  // Enhanced security: Only allow HTTPS YouTube URLs
+  const secureYoutubeRegex =
+    /^https:\/\/(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/|m\.youtube\.com\/watch\?v=)[a-zA-Z0-9_-]{10,12}(\?[a-zA-Z0-9_&=%-]*)?(\#[a-zA-Z0-9_&=%-]*)?$/;
+
+  // Additional security checks
+  if (!secureYoutubeRegex.test(url)) {
+    return false;
+  }
+
+  // Ensure no dangerous query parameters
+  const dangerousParams = [
+    "javascript:",
+    "data:",
+    "vbscript:",
+    "onclick",
+    "onerror",
+    "onload",
+  ];
+  const lowercaseUrl = url.toLowerCase();
+
+  for (const param of dangerousParams) {
+    if (lowercaseUrl.includes(param)) {
+      return false;
+    }
+  }
+
+  // Ensure the URL doesn't contain encoded malicious content
+  try {
+    const decodedUrl = decodeURIComponent(url);
+    for (const param of dangerousParams) {
+      if (decodedUrl.toLowerCase().includes(param)) {
+        return false;
+      }
+    }
+  } catch (e) {
+    // If URL can't be decoded, it's suspicious
+    return false;
+  }
+
+  return true;
+};

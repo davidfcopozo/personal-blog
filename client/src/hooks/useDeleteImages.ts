@@ -1,12 +1,10 @@
 import { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
-import { UseMutationRequestProps } from "@/typings/interfaces";
+import {
+  DeleteImageProps,
+  UseMutationRequestProps,
+} from "@/typings/interfaces";
 import apiClient from "@/utils/axiosIntance";
-
-interface DeleteImageProps {
-  itemId: string;
-  key?: string;
-}
 
 const useDeleteImages = ({
   url,

@@ -177,84 +177,78 @@ const PostsTabContent = memo(
             </TableHeader>
             <TableBody>
               {sortedPosts.length > 0 ? (
-                sortedPosts.map((post: PostType, key: number | string) => (
-                  <>
-                    <TableRow key={key}>
-                      <TableCell id="title" className="font-medium">
-                        <Link
-                          href={`/${post.postedBy.username}/${post.slug}`}
-                          className="hover:underline"
-                        >
-                          {post?.title}
-                        </Link>
-                      </TableCell>
-                      <TableCell id="status">
-                        <Badge variant="outline" className="capitalize">
-                          {post?.status}
-                        </Badge>
-                      </TableCell>
-
-                      <TableCell id="likes" className="hidden md:table-cell">
-                        {post?.likes?.length}
-                      </TableCell>
-                      <TableCell id="comments" className="hidden md:table-cell">
-                        {post?.comments?.length}
-                      </TableCell>
-                      <TableCell
-                        id="categories"
-                        className="hidden md:table-cell"
+                sortedPosts.map((post: PostType) => (
+                  <TableRow key={post._id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/${post.postedBy.username}/${post.slug}`}
+                        className="hover:underline"
                       >
-                        {post?.categories?.map((category: CategoryType) => (
-                          <span key={category._id.toString()}>
-                            {category.name}
-                            {(post?.categories?.length ?? 0) - 1 !==
-                            post?.categories?.indexOf(category)
-                              ? ", "
-                              : ""}
-                          </span>
-                        ))}
-                      </TableCell>
-                      <TableCell id="visits" className="hidden md:table-cell">
-                        {post?.visits}
-                      </TableCell>
-                      <TableCell id="date" className="hidden md:table-cell">
-                        {showMonthDayYear(post?.createdAt?.toString() || "")}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              aria-haspopup="true"
-                              size="icon"
-                              variant="ghost"
-                              className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel className="border-b-[1px]">
-                              Actions
-                            </DropdownMenuLabel>
-                            <DropdownMenuItem
-                              onClick={() => onEditPost(post.slug)}
-                              className="cursor-pointer"
-                            >
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={status === "pending"}
-                              onClick={() => onDeletePost(post)}
-                              className="cursor-pointer"
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  </>
+                        {post?.title}
+                      </Link>
+                    </TableCell>{" "}
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {post?.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {post?.likes?.length}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {post?.comments?.length}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {post?.categories?.map((category: CategoryType) => (
+                        <span key={category._id.toString()}>
+                          {category.name}
+                          {(post?.categories?.length ?? 0) - 1 !==
+                          post?.categories?.indexOf(category)
+                            ? ", "
+                            : ""}
+                        </span>
+                      ))}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {post?.visits}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {showMonthDayYear(post?.createdAt?.toString() || "")}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                            className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel className="border-b-[1px]">
+                            Actions
+                          </DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => onEditPost(post.slug)}
+                            className="cursor-pointer"
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={status === "pending"}
+                            onClick={() => onDeletePost(post)}
+                            className="cursor-pointer"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : arePostsFetching || arePostsLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
@@ -263,9 +257,14 @@ const PostsTabContent = memo(
                   </TableRow>
                 ))
               ) : (
-                <TableCell className="pt-4 lg:text-md">
-                  No posts found
-                </TableCell>
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="pt-4 lg:text-md text-center"
+                  >
+                    No posts found
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
