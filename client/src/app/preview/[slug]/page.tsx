@@ -15,8 +15,6 @@ const PreviewPage = (props: { params: Promise<{ slug: string }> }) => {
   const { data, error, isLoading, isFetching } = usePreviewPost(slug);
   const [hasInitialData, setHasInitialData] = useState(false);
 
-  console.log(error);
-
   const {
     handleLikeClick,
     handleBookmarkClick,
