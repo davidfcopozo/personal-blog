@@ -99,6 +99,9 @@ export interface NewPostHeaderProps {
   currentStatus?: "draft" | "published" | "unpublished";
   hasChanges?: boolean;
   isSaving?: boolean;
+  slug?: string;
+  onPreview?: () => void;
+  hasContent?: boolean;
 }
 
 export interface BlogEditorProps {

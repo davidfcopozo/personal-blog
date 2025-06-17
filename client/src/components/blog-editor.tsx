@@ -11,6 +11,7 @@ import { NewPostHeader } from "./new-post-header";
 import { Skeleton } from "./ui/skeleton";
 import { loadHighlightTheme } from "@/utils/highlightTheme";
 import { useTheme } from "next-themes";
+import { useToast } from "./ui/use-toast";
 
 const TiptapBlogEditor = dynamic(() => import("./tiptap-blog-editor"), {
   ssr: false,
@@ -44,16 +45,49 @@ const BlogEditor: FC<BlogEditorProps> = ({
   >(initialPost?.status || "draft");
 
   const { theme } = useTheme();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadHighlightTheme(theme === "dark");
   }, [theme]);
-
   const handleSave = (status: "draft" | "published" | "unpublished") => {
     handleSubmit(status);
     // Update the current status immediately for UI feedback
     setCurrentStatus(status);
   };
+  const handlePreview = async () => {
+    if (slug) {
+      // If post already exists, open preview directly
+      window.open(`/preview/${slug}`, "_blank");
+    } else if (hasPreviewableContent()) {
+      // If no slug but has content, save as draft first then preview
+      try {
+        // Save as draft first
+        await handleSubmit("draft");
+        toast({
+          title: "Saving Draft",
+          description:
+            "Saving your post as draft. You'll be redirected to the edit page where you can preview it.",
+        });
+      } catch (error) {
+        console.error("Failed to save draft for preview:", error);
+        toast({
+          variant: "destructive",
+          title: "Save Failed",
+          description:
+            "Failed to save post. Please ensure you have both a title and content.",
+        });
+      }
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Content Required",
+        description:
+          "Please add both a title and content before previewing your post.",
+      });
+    }
+  };
+
   const {
     temporaryFeatureImage,
     postData,
@@ -85,15 +119,57 @@ const BlogEditor: FC<BlogEditorProps> = ({
     }, 500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, []); // Check if there's enough content to show preview - requires both title and content
+  const hasPreviewableContent = (): boolean => {
+    const hasValidTitle = title && title.trim().length > 0;
+    const hasValidContent = content && !isContentEmpty(content);
+
+    return Boolean(hasValidTitle && hasValidContent);
+  };
+
+  // Helper function to check if content is effectively empty
+  const isContentEmpty = (content: string): boolean => {
+    if (!content) return true;
+    const cleanContent = content
+      .replace(/<p><\/p>/g, "")
+      .replace(/<p><br><\/p>/g, "")
+      .replace(/<p><br\/><\/p>/g, "")
+      .replace(/<br>/g, "")
+      .replace(/<br\/>/g, "")
+      .replace(/&nbsp;/g, "")
+      .replace(/<[^>]*>/g, "") // Remove all HTML tags
+      .trim();
+    return cleanContent.length === 0;
+  };
+
+  const hasRealChanges = (): boolean => {
+    const originalHasUnsavedChanges = hasUnsavedChanges();
+
+    if (!originalHasUnsavedChanges) return false;
+
+    if (!initialPost) {
+      const hasRealTitle = title && title.trim().length > 0;
+      const hasRealContent = content && !isContentEmpty(content);
+      const hasRealCategories = categories.length > 0;
+      const hasRealTags = tags.length > 0;
+
+      return hasRealTitle || hasRealContent || hasRealCategories || hasRealTags;
+    }
+
+    return originalHasUnsavedChanges;
+  };
+
   return (
     <div className="outer-container">
       {" "}
       <NewPostHeader
         onSave={handleSave}
         currentStatus={currentStatus}
-        hasChanges={hasUnsavedChanges()}
+        hasChanges={hasRealChanges()}
         isSaving={isSaving}
+        slug={slug || undefined}
+        onPreview={handlePreview}
+        hasContent={hasPreviewableContent()}
       />
       <main>
         <div className="flex-column md:flex">
