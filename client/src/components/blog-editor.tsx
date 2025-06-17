@@ -48,12 +48,17 @@ const BlogEditor: FC<BlogEditorProps> = ({
   useEffect(() => {
     loadHighlightTheme(theme === "dark");
   }, [theme]);
-
   const handleSave = (status: "draft" | "published" | "unpublished") => {
     handleSubmit(status);
     // Update the current status immediately for UI feedback
     setCurrentStatus(status);
   };
+  const handlePreview = () => {
+    if (slug) {
+      window.open(`/preview/${slug}`, "_blank");
+    }
+  };
+
   const {
     temporaryFeatureImage,
     postData,
@@ -94,6 +99,8 @@ const BlogEditor: FC<BlogEditorProps> = ({
         currentStatus={currentStatus}
         hasChanges={hasUnsavedChanges()}
         isSaving={isSaving}
+        slug={slug || undefined}
+        onPreview={handlePreview}
       />
       <main>
         <div className="flex-column md:flex">
