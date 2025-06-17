@@ -23,6 +23,7 @@ export function NewPostHeader({
   isSaving = false,
   slug,
   onPreview,
+  hasContent = false,
 }: NewPostHeaderProps) {
   const { theme, systemTheme } = useTheme();
   const { data: session } = useSession();
@@ -79,9 +80,7 @@ export function NewPostHeader({
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
           )}
           {isSaving ? "Saving..." : "Save Draft"}
-        </Button>
-
-        {slug && (
+        </Button>        {(slug || hasContent) && onPreview && (
           <Button
             variant="outline"
             className="bg-background"
@@ -90,7 +89,7 @@ export function NewPostHeader({
             disabled={isSaving}
           >
             <Eye className="w-4 h-4 mr-1" />
-            Preview
+            {slug ? "Preview" : "Save & Preview"}
           </Button>
         )}
         {isPublished ? (
