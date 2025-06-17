@@ -101,6 +101,7 @@ export interface NewPostHeaderProps {
   isSaving?: boolean;
   slug?: string;
   onPreview?: () => void;
+  hasContent?: boolean;
 }
 
 export interface BlogEditorProps {
