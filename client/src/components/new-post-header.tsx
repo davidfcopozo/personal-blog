@@ -21,6 +21,8 @@ export function NewPostHeader({
   currentStatus,
   hasChanges = false,
   isSaving = false,
+  slug,
+  onPreview,
 }: NewPostHeaderProps) {
   const { theme, systemTheme } = useTheme();
   const { data: session } = useSession();
@@ -66,7 +68,6 @@ export function NewPostHeader({
         </div>
       </nav>{" "}
       <div className="flex gap-2">
-        {" "}
         <Button
           variant="outline"
           className="bg-background relative"
@@ -78,10 +79,22 @@ export function NewPostHeader({
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
           )}
           {isSaving ? "Saving..." : "Save Draft"}
-        </Button>{" "}
+        </Button>
+
+        {slug && (
+          <Button
+            variant="outline"
+            className="bg-background"
+            onClick={onPreview}
+            size="sm"
+            disabled={isSaving}
+          >
+            <Eye className="w-4 h-4 mr-1" />
+            Preview
+          </Button>
+        )}
         {isPublished ? (
           hasChanges && !isSaving ? (
-            // If published and has changes, show Update button
             <Button
               className="bg-foreground"
               size="sm"
@@ -91,7 +104,6 @@ export function NewPostHeader({
               {isSaving ? "Updating..." : "Update"}
             </Button>
           ) : (
-            // If published and no changes, show dropdown
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="bg-foreground" size="sm" disabled={isSaving}>
