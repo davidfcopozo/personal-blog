@@ -10,6 +10,7 @@ const protectedRoutes = [
   "/edit-post",
   "/new",
   "/edit",
+  "/preview",
 ];
 
 const authRoutes = ["/login", "/register"];
