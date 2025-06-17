@@ -80,7 +80,8 @@ export function NewPostHeader({
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
           )}
           {isSaving ? "Saving..." : "Save Draft"}
-        </Button>        {(slug || hasContent) && onPreview && (
+        </Button>{" "}
+        {(slug || hasContent) && onPreview && (
           <Button
             variant="outline"
             className="bg-background"
