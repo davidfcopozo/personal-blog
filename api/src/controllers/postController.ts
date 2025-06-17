@@ -67,7 +67,7 @@ export const getAllPosts = async (
   res: Response,
   next: NextFunction
 ) => {
-  const posts: PostType[] = await Post.find()
+  const posts: PostType[] = await Post.find({ status: "published" })
     .populate("postedBy")
     .sort("createdAt");
 
@@ -93,10 +93,17 @@ export const getPostBySlugOrId = async (
   try {
     let post: PostType | null;
 
+    // Only find published posts for public access
     if (mongoose.Types.ObjectId.isValid(slugOrId)) {
-      post = await Post.findById(slugOrId).populate("postedBy");
+      post = await Post.findOne({
+        _id: slugOrId,
+        status: "published",
+      }).populate("postedBy");
     } else {
-      post = await Post.findOne({ slug: slugOrId }).populate("postedBy");
+      post = await Post.findOne({
+        slug: slugOrId,
+        status: "published",
+      }).populate("postedBy");
     }
 
     if (!post) {
@@ -126,6 +133,7 @@ export const getPostsByCategory = async (
 
     const posts: PostType[] = await Post.find({
       categories: cat._id,
+      status: "published", // Only show published posts
     }).populate("postedBy");
 
     if (posts.length < 1) {
@@ -509,5 +517,84 @@ export const toggleBookmark = async (
     }
   } catch (error) {
     next(error);
+  }
+};
+
+/**
+ * Preview a post - allows post owners to view their own posts regardless of status
+ * This includes drafts, published, and unpublished posts
+ */
+export const previewPost = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { slugOrId } = req.params;
+  const { userId } = req.user;
+
+  try {
+    let post: PostType | null;
+
+    // Find post by slug or ID
+    if (mongoose.Types.ObjectId.isValid(slugOrId)) {
+      post = await Post.findById(slugOrId).populate("postedBy");
+    } else {
+      post = await Post.findOne({ slug: slugOrId }).populate("postedBy");
+    }
+
+    if (!post) {
+      throw new NotFound("Post not found");
+    } // Check if the user is the owner of the post
+    // Handle both populated and non-populated postedBy field
+    const postOwnerId =
+      (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
+
+    if (postOwnerId !== userId) {
+      throw new Unauthenticated("You are not authorized to preview this post");
+    }
+
+    // Return the post regardless of its status (draft, published, unpublished)
+    // since the owner should be able to preview their own content
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: post,
+      isPreview: true,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+/**
+ * Get user's own posts - returns all posts created by the authenticated user
+ * Supports optional status filtering via query parameter
+ */
+export const getUserPosts = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.user;
+  const { status } = req.query; // Optional filter by status
+
+  try {
+    let query: any = { postedBy: userId };
+
+    // Add status filter if provided
+    if (status && ["draft", "published", "unpublished"].includes(status)) {
+      query.status = status;
+    }
+
+    const posts: PostType[] = await Post.find(query)
+      .populate("postedBy")
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: posts,
+      count: posts.length,
+    });
+  } catch (err) {
+    return next(err);
   }
 };
