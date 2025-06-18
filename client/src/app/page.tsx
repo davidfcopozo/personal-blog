@@ -104,7 +104,7 @@ export default function Home() {
           )}
         </main>
 
-        <aside className="hidden lg:inline py-6 lg:py-12 lg:w-2/5 px-2 lg:border-l-2 lg:border-secondary">
+        <aside className="hidden lg:inline py-6 lg:py-12 lg:w-1/5 px-2 lg:border-l-2 lg:border-secondary">
           <div className="lg:sticky lg:top-16 p-4 bg-background rounded-xl w-full ">
             <div>
               <div className="flex ml-auto flex-col gap-8">
@@ -114,7 +114,7 @@ export default function Home() {
                     <Input
                       type="search"
                       placeholder="Search posts..."
-                      className="rounded-full pl-10 w-full sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                      className="rounded-full pl-10 w-full sm:w-[300px] md:w-[200px] lg:w-100"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setIsFocused(true)}
