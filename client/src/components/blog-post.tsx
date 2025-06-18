@@ -11,13 +11,16 @@ import CommentSection from "./comment-section";
 import { UserType } from "@/typings/types";
 import ContentRenderer from "./ui/content-renderer";
 import { EngagementButton } from "./engagement-button";
-import { Heart, Bookmark, MessageSquare, Clock, Eye } from "lucide-react";
+import { Heart, Bookmark, MessageSquare, Clock, Eye, Edit } from "lucide-react";
 import { ShareButton } from "./share-button";
 import scrollToElement from "@/utils/scrollToElement";
 import { BlogPostProps } from "@/typings/interfaces";
 import { AuthorPanel } from "./author-panel";
 import { useFollowUser } from "@/hooks/useFollowUser";
 import { AuthModal } from "./auth-modal";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { Button } from "./ui/button";
 
 const BlogPost = ({
   handleLikeClick,
@@ -28,6 +31,9 @@ const BlogPost = ({
   amountOfBookmarks,
   post,
 }: BlogPostProps) => {
+  const router = useRouter();
+  const { currentUser } = useAuth();
+
   const {
     handleFollowToggle,
     isPending,
@@ -37,6 +43,15 @@ const BlogPost = ({
     closeAuthModal,
     handleAuthSuccess,
   } = useFollowUser(post?.postedBy as UserType);
+
+  // Check if current user is the post owner
+  const isPostOwner = currentUser?.data?._id === post?.postedBy?._id;
+
+  const handleEditPost = () => {
+    if (post?.slug) {
+      router.push(`/edit-post/${post.slug}`);
+    }
+  };
 
   if (!post) {
     return (
@@ -54,9 +69,22 @@ const BlogPost = ({
     <div className="w-full min-h-screen bg-background mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
+          {" "}
           {/* Left Panel - Engagement Tools */}
           <div className="order-2 lg:order-1 lg:w-20 hidden lg:block">
             <div className="lg:sticky bg-muted lg:top-[5.5rem] flex lg:flex-col justify-center gap-2 p-4 rounded-3xl shadow-sm">
+              {isPostOwner && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEditPost}
+                  className="flex flex-col items-center gap-1 h-auto p-2 hover:bg-accent rounded-lg"
+                  title="Edit post"
+                >
+                  <Edit className="h-5 w-5 text-muted-foreground hover:text-orange-500" />
+                  <span className="text-xs text-muted-foreground">Edit</span>
+                </Button>
+              )}
               <EngagementButton
                 icon={Heart}
                 count={amountOfLikes}
@@ -88,7 +116,6 @@ const BlogPost = ({
               <ShareButton post={post} />
             </div>
           </div>
-
           {/* Main */}
           <main className="order-1 lg:order-2 lg:flex-1">
             <article className="rounded-lg overflow-hidden mt-6">
@@ -159,10 +186,24 @@ const BlogPost = ({
                         <Eye className="w-4 h-4" />
                         {post.visits} views
                       </span>
-                    </div>
+                    </div>{" "}
                     {/* Engagement buttons */}
                     <div className="flex lg:hidden w-[100%] border-y-[1px] mt-2 w-100">
                       <div className="flex w-[100%] lg:flex-col justify-start rounded-3xl shadow-sm">
+                        {isPostOwner && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleEditPost}
+                            className="flex items-center gap-1 p-0 h-auto px-3 py-2 hover:bg-accent rounded-lg"
+                            title="Edit post"
+                          >
+                            <Edit className="h-5 w-5 text-muted-foreground hover:text-orange-500" />
+                            <span className="text-sm text-muted-foreground">
+                              Edit
+                            </span>
+                          </Button>
+                        )}
                         <EngagementButton
                           icon={Heart}
                           extraClasses="p-0"
