@@ -90,7 +90,7 @@ export default function Home() {
   }, [posts]);
 
   return (
-    <div className="container p-2 mx-auto">
+    <div className="container p-2 mx-auto max-w-100">
       <div className="flex flex-col lg:flex-row gap-6 p-2 sm:p-4">
         <main className="py-6 lg:py-12 w-full lg:w-4/5">
           {isFetching ? (
@@ -104,7 +104,7 @@ export default function Home() {
           )}
         </main>
 
-        <aside className="hidden lg:inline py-6 lg:py-12 lg:w-2/5 px-2 lg:border-l-2 lg:border-secondary">
+        <aside className="hidden lg:inline py-6 lg:py-12 lg:w-1/5 px-2 lg:border-l-2 lg:border-secondary">
           <div className="lg:sticky lg:top-16 p-4 bg-background rounded-xl w-full ">
             <div>
               <div className="flex ml-auto flex-col gap-8">
@@ -114,7 +114,7 @@ export default function Home() {
                     <Input
                       type="search"
                       placeholder="Search posts..."
-                      className="rounded-full pl-10 w-full sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                      className="rounded-full pl-10 w-full sm:w-[300px] md:w-[100%]"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setIsFocused(true)}
@@ -142,7 +142,7 @@ export default function Home() {
                         <Link
                           key={`${category._id}`}
                           href={`/category/${category.slug}`}
-                          className="bg-card-foreground py-[0.1em] rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
+                          className="bg-card-foreground py-[0.2em] text-sm rounded-xl justify-center px-3 transition-all duration-300 hover:scale-105"
                           prefetch={false}
                         >
                           <p>{category.name}</p>
@@ -152,7 +152,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-6 mt-7 ml-2 text-muted-foreground text-xs">
+              <div className="flex gap-2 xl:gap-4 mt-7 ml-2 text-muted-foreground text-xs">
                 <Link href="/#">Home</Link>
                 <Link href="/#">Terms</Link>
                 <Link href="/#">About</Link>
