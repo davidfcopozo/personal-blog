@@ -250,3 +250,61 @@ export const toggleLike = async (
     next(error);
   }
 };
+
+export const updateCommentById = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { id: postId, commentId },
+    user: { userId },
+    body: { content },
+  } = req;
+
+  try {
+    const post = (await Post.findById(postId)) as PostMongooseType | null;
+    if (!post) {
+      throw new NotFound("This post doesn't exist");
+    }
+
+    const comment: CommentType = await Comment.findOne({
+      _id: commentId,
+      postedBy: userId,
+    });
+
+    if (!comment) {
+      throw new NotFound(
+        "No comments found or you're not authorized to edit this comment"
+      );
+    }
+
+    if (!post?._id.equals(comment?.post)) {
+      throw new BadRequest("This comment does not belong to this post");
+    }
+
+    if (!content || content.trim() === "") {
+      throw new BadRequest("Comment content cannot be empty");
+    }
+
+    const cleanContent = sanitizeContent(content);
+
+    const updatedComment = await Comment.findOneAndUpdate(
+      { _id: commentId, postedBy: userId },
+      { content: cleanContent },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedComment) {
+      throw new BadRequest("Failed to update comment");
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: updatedComment,
+      msg: "Comment updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
