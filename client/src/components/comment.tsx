@@ -83,6 +83,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   const handleEdit = () => {
     setIsEditing(true);
     setEditContent(comment?.content || "");
+    setShowEditor(false);
   };
 
   const handleCancelEdit = () => {
@@ -148,103 +149,98 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     });
     setShowEditor(false);
   };
-
   return (
     <>
-      <article className="flex bg-background rounded-lg">
-        <div
-          id={`${comment?._id}`}
-          className="flex flex-1 items-start gap-2 px-4 py-2 border-[1px] rounded-md"
-        >
-          <Avatar className="w-10 h-10 border">
-            <AvatarImage src="/placeholder-user.jpg" />
-            <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
-          </Avatar>
-          <div className="grid gap-2 flex-1">
-            {" "}
-            <div className="flex ml-2 items-center gap-2">
-              <div className="font-medium">{getFullName(postedBy?.data)}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                <RelativeTime createdAt={comment?.createdAt} />
+      {isEditing ? (
+        <CommentEditor
+          onSubmit={handleSaveEdit}
+          value={editContent}
+          onChange={handleEditContentChange}
+          onCancel={handleCancelEdit}
+          showCancelButton={true}
+          placeholder="Edit your comment..."
+          commentMutationStatus={updateStatus}
+          isEditing={true}
+        />
+      ) : (
+        <article className="flex bg-background rounded-lg">
+          <div
+            id={`${comment?._id}`}
+            className="flex flex-1 items-start gap-2 px-4 pb-2 pt-4 border-[1px] rounded-md"
+          >
+            <Avatar className="w-10 h-10 border">
+              <AvatarImage src="/placeholder-user.jpg" />
+              <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
+            </Avatar>
+            <div className="grid gap-2 flex-1">
+              <div className="flex ml-2 items-center gap-2">
+                <div className="font-medium">{getFullName(postedBy?.data)}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <RelativeTime createdAt={comment?.createdAt} />
+                </div>
+                {currentUser && (isCommentOwner || !isCommentOwner) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="ml-auto">
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">More options</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {isCommentOwner && (
+                        <DropdownMenuItem onClick={handleEdit}>
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {!isCommentOwner && (
+                        <DropdownMenuItem onClick={handleReportAbuse}>
+                          Report Abuse
+                        </DropdownMenuItem>
+                      )}
+                      {isCommentOwner && (
+                        <DropdownMenuItem
+                          onClick={() => setIsDeleteDialogOpen(true)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
-              {currentUser && (isCommentOwner || !isCommentOwner) && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-auto">
-                      <MoreVertical className="h-4 w-4" />
-                      <span className="sr-only">More options</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {isCommentOwner && (
-                      <DropdownMenuItem onClick={handleEdit}>
-                        Edit
-                      </DropdownMenuItem>
-                    )}
-                    {!isCommentOwner && (
-                      <DropdownMenuItem onClick={handleReportAbuse}>
-                        Report Abuse
-                      </DropdownMenuItem>
-                    )}
-                    {isCommentOwner && (
-                      <DropdownMenuItem
-                        onClick={() => setIsDeleteDialogOpen(true)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-            {isEditing ? (
-              <div className="ml-2">
-                {" "}
-                <CommentEditor
-                  onSubmit={handleSaveEdit}
-                  value={editContent}
-                  onChange={handleEditContentChange}
-                  onCancel={handleCancelEdit}
-                  showCancelButton={true}
-                  placeholder="Edit your comment..."
-                  commentMutationStatus={updateStatus}
-                  isEditing={true}
-                />
-              </div>
-            ) : (
               <ContentRenderer
                 content={comment.content || ""}
                 className="ml-2"
               />
-            )}
-            <div className="h-content">
-              <div className="flex items-center justify-end mr-4 gap-2 relative">
-                <EngagementButton
-                  icon={MessageSquare}
-                  count={comment?.replies.length}
-                  iconStyles="hover:stroke-amber-500 !h-5 !w-5"
-                  label="Reply"
-                  onClick={() => setShowEditor((showEditor) => !showEditor)}
-                  horizontalCount
-                />
-                <EngagementButton
-                  icon={Heart}
-                  count={commentLikesCount}
-                  label="Like post"
-                  onClick={handleLikeClick}
-                  iconStyles={`!h-5 !w-5 ${
-                    commentLiked ? "text-pink-500" : "hover:stroke-pink-500"
-                  }`}
-                  activeColor="text-pink-500"
-                  isActivated={commentLiked}
-                  horizontalCount
-                />
+              <div className="h-content">
+                <div className="flex items-center justify-end mr-4 gap-2 relative">
+                  <EngagementButton
+                    icon={MessageSquare}
+                    count={comment?.replies.length}
+                    iconStyles="hover:stroke-amber-500 !h-5 !w-5"
+                    label="Reply"
+                    onClick={() => setShowEditor((showEditor) => !showEditor)}
+                    horizontalCount
+                  />
+                  <EngagementButton
+                    icon={Heart}
+                    count={commentLikesCount}
+                    label="Like post"
+                    onClick={handleLikeClick}
+                    iconStyles={`!h-5 !w-5 ${
+                      commentLiked ? "text-pink-500" : "hover:stroke-pink-500"
+                    }`}
+                    activeColor="text-pink-500"
+                    isActivated={commentLiked}
+                    horizontalCount
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </article>
-      {showEditor && (
+        </article>
+      )}
+      {showEditor && !isEditing && (
         <CommentEditor
           onSubmit={handleSubmit}
           value={replyContent}
