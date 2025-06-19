@@ -33,7 +33,8 @@ export default function CommentEditor({
   value: content,
   onChange,
   commentMutationStatus,
-}: CommentEditorProps) {
+  isEditing = false,
+}: CommentEditorProps & { isEditing?: boolean }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure(extensionConfigs.starterKit),
@@ -67,11 +68,9 @@ export default function CommentEditor({
       editor.commands.setContent(content || "");
     }
   }, [content, editor]);
-
   const handleSubmit = () => {
     if (editor) {
       const htmlContent = editor.getHTML();
-      // Check if there's actual content (not just empty tags)
       const textContent = editor.getText();
       if (textContent.trim()) {
         onSubmit(htmlContent);
