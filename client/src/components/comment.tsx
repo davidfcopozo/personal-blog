@@ -31,6 +31,8 @@ import useUpdateComment from "@/hooks/useUpdateComment";
 import RelativeTime from "./relative-time";
 import { EngagementButton } from "./engagement-button";
 import { AuthModal } from "./auth-modal";
+import { useAuth } from "@/context/AuthContext";
+
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
@@ -41,9 +43,14 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment?.content || "");
 
+  const { currentUser } = useAuth();
   const { mutate: deleteComment } = useDeleteComment(post);
   const { mutate: updateComment, status: updateStatus } =
     useUpdateComment(post);
+
+  // Check if current user is the owner of the comment
+  const isCommentOwner =
+    currentUser?.data?._id?.toString() === comment?.postedBy?.toString();
 
   const { data: postedBy } = useFetchRequest(
     ["commentPostedBy"],
@@ -160,26 +167,39 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 <RelativeTime createdAt={comment?.createdAt} />
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="ml-auto">
-                    <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">More options</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleReportAbuse}>
-                    Report Abuse
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>{" "}
-              </DropdownMenu>
+              {currentUser && (isCommentOwner || !isCommentOwner) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-auto">
+                      <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">More options</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {isCommentOwner && (
+                      <DropdownMenuItem onClick={handleEdit}>
+                        Edit
+                      </DropdownMenuItem>
+                    )}
+                    {!isCommentOwner && (
+                      <DropdownMenuItem onClick={handleReportAbuse}>
+                        Report Abuse
+                      </DropdownMenuItem>
+                    )}
+                    {isCommentOwner && (
+                      <DropdownMenuItem
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             {isEditing ? (
               <div className="ml-2">
+                {" "}
                 <CommentEditor
                   onSubmit={handleSaveEdit}
                   value={editContent}
@@ -188,6 +208,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   showCancelButton={true}
                   placeholder="Edit your comment..."
                   commentMutationStatus={updateStatus}
+                  isEditing={true}
                 />
               </div>
             ) : (
