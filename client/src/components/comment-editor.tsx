@@ -113,14 +113,14 @@ export default function CommentEditor({
           <Button variant="outline" onClick={onCancel} className="py-4">
             Cancel
           </Button>
-        )}
+        )}{" "}
         <Button
           onClick={handleSubmit}
           className="gap-2"
           disabled={commentMutationStatus === "pending"}
         >
           <Send className="w-4 h-4" />
-          Submit
+          {isEditing ? "Update" : "Submit"}
         </Button>
       </div>
     </>
