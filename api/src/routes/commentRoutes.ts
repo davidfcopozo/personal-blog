@@ -6,6 +6,7 @@ import {
   getComments,
   getCommentById,
   deleteCommentById,
+  updateCommentById,
   toggleLike,
 } from "../controllers/commentController";
 
@@ -16,6 +17,9 @@ router
   .post(auth, createComment)
   .put(auth, toggleLike);
 
-router.route("/:id/:commentId").delete(auth, deleteCommentById);
+router
+  .route("/:id/:commentId")
+  .delete(auth, deleteCommentById)
+  .patch(auth, updateCommentById);
 
 export default router;
