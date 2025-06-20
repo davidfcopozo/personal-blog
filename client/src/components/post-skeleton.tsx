@@ -5,7 +5,7 @@ export function PostSkeletonCard({ className }: { className?: string }) {
   return (
     <Card className={`overflow-hidden border-none shadow-lg mb-6 ${className}`}>
       <div className="flex flex-col md:flex-row">
-        {/* Featured Image Skeleton */}
+        {/* Cover Image Skeleton */}
         <div className="relative h-48 w-full md:w-2/5">
           <Skeleton className="h-full w-full" />
           {/* Reading time pill */}

@@ -21,8 +21,9 @@ import usePatchRequest from "./usePatchRequest";
 import { arraysEqual } from "@/utils/formats";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
-  const [temporaryFeatureImage, setTemporaryFeatureImage] =
-    useState<File | null>(null);
+  const [temporaryCoverImage, setTemporaryCoverImage] = useState<File | null>(
+    null
+  );
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { toast } = useToast();
   const router = useRouter();
@@ -31,7 +32,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const [postData, setPostData] = useState({
     title: "",
     content: "",
-    featuredImage: null as string | null,
+    coverImage: null as string | null,
     categories: [] as CategoryInterface[],
     tags: [] as string[],
   });
@@ -40,12 +41,12 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
   const [lastSavedData, setLastSavedData] = useState({
     title: "",
     content: "",
-    featuredImage: null as string | null,
+    coverImage: null as string | null,
     categories: [] as CategoryInterface[],
     tags: [] as string[],
   });
 
-  const { title, content, featuredImage, categories, tags } = postData;
+  const { title, content, coverImage, categories, tags } = postData;
 
   const updatePostState = useCallback(
     <T extends keyof typeof postData>(key: T, value: (typeof postData)[T]) => {
@@ -70,7 +71,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       setLastSavedData({
         title,
         content,
-        featuredImage,
+        coverImage,
         categories,
         tags,
       });
@@ -127,7 +128,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       setLastSavedData({
         title,
         content,
-        featuredImage,
+        coverImage,
         categories,
         tags,
       });
@@ -219,22 +220,22 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     [updatePostState]
   );
 
-  const handleFeatureImagePick = useCallback(
+  const handleCoverImagePick = useCallback(
     (fileOrUrl: File | { url: string; isDirectUrl: boolean } | null) => {
       if (!fileOrUrl) {
-        setTemporaryFeatureImage(null);
-        updatePostState("featuredImage", null);
+        setTemporaryCoverImage(null);
+        updatePostState("coverImage", null);
         return;
       }
 
       // Handle direct URL from gallery selection
       if ("isDirectUrl" in fileOrUrl && fileOrUrl.isDirectUrl) {
-        updatePostState("featuredImage", fileOrUrl.url);
-        setTemporaryFeatureImage(null);
+        updatePostState("coverImage", fileOrUrl.url);
+        setTemporaryCoverImage(null);
         return;
       }
 
-      setTemporaryFeatureImage(fileOrUrl as File);
+      setTemporaryCoverImage(fileOrUrl as File);
     },
     [updatePostState]
   );
@@ -268,18 +269,18 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     [currentImages, queryClient, toast]
   );
 
-  const handleFeatureImageUpload = useCallback(async () => {
-    if (temporaryFeatureImage) {
-      const uploadedUrl = await handleImageUpload(temporaryFeatureImage);
-      updatePostState("featuredImage", uploadedUrl);
-      setTemporaryFeatureImage(null);
+  const handleCoverImageUpload = useCallback(async () => {
+    if (temporaryCoverImage) {
+      const uploadedUrl = await handleImageUpload(temporaryCoverImage);
+      updatePostState("coverImage", uploadedUrl);
+      setTemporaryCoverImage(null);
     }
-  }, [temporaryFeatureImage, handleImageUpload, updatePostState]);
+  }, [temporaryCoverImage, handleImageUpload, updatePostState]);
   useEffect(() => {
-    if (temporaryFeatureImage) {
-      handleFeatureImageUpload();
+    if (temporaryCoverImage) {
+      handleCoverImageUpload();
     }
-  }, [temporaryFeatureImage, handleFeatureImageUpload]);
+  }, [temporaryCoverImage, handleCoverImageUpload]);
 
   // Only show error toast for newPost, success is handled in onSuccess callback
   useEffect(() => {
@@ -309,9 +310,9 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         });
       }
 
-      let currentFeatureImage = featuredImage;
-      if (temporaryFeatureImage) {
-        currentFeatureImage = await handleImageUpload(temporaryFeatureImage);
+      let currentCoverImage = coverImage;
+      if (temporaryCoverImage) {
+        currentCoverImage = await handleImageUpload(temporaryCoverImage);
       }
       if (initialPost && slug) {
         const cleanTitle = DOMPurify.sanitize(title, {
@@ -330,8 +331,8 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         if (cleanContent !== initialPost.content) {
           changes.content = cleanContent;
         }
-        if (currentFeatureImage !== initialPost.featuredImage) {
-          changes.featuredImage = currentFeatureImage as string;
+        if (currentCoverImage !== initialPost.coverImage) {
+          changes.coverImage = currentCoverImage as string;
         }
 
         // Always include status when explicitly provided (user clicked draft/publish)
@@ -381,7 +382,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         newPostMutate({
           title: cleanTitle,
           content: cleanContent,
-          featuredImage: currentFeatureImage,
+          coverImage: currentCoverImage,
           categories,
           tags,
           status, // Include status in new post creation
@@ -391,11 +392,11 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     [
       title,
       content,
-      featuredImage,
+      coverImage,
       categories,
       tags,
       initialPost,
-      temporaryFeatureImage,
+      temporaryCoverImage,
       newPostMutate,
       handleImageUpload,
       toast,
@@ -412,7 +413,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
         (content &&
           content !== "<p><br></p>" &&
           content !== lastSavedData.content) ||
-        featuredImage !== lastSavedData.featuredImage ||
+        coverImage !== lastSavedData.coverImage ||
         !arraysEqual(categories, lastSavedData.categories) ||
         !arraysEqual(tags, lastSavedData.tags)
       );
@@ -424,7 +425,7 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       : {
           title: initialPost.title || "",
           content: initialPost.content || "",
-          featuredImage: initialPost.featuredImage || null,
+          coverImage: initialPost.coverImage || null,
           categories: initialPost.categories || [],
           tags: initialPost.tags || [],
         };
@@ -437,14 +438,14 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     return (
       cleanTitle !== comparisonData.title ||
       content !== comparisonData.content ||
-      featuredImage !== comparisonData.featuredImage ||
+      coverImage !== comparisonData.coverImage ||
       !arraysEqual(categories, comparisonData.categories) ||
       !arraysEqual(tags, comparisonData.tags)
     );
   }, [
     title,
     content,
-    featuredImage,
+    coverImage,
     categories,
     tags,
     initialPost,
@@ -457,19 +458,19 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
       setLastSavedData({
         title: initialPost.title || "",
         content: initialPost.content || "",
-        featuredImage: initialPost.featuredImage || null,
+        coverImage: initialPost.coverImage || null,
         categories: initialPost.categories || [],
         tags: initialPost.tags || [],
       });
     }
   }, [initialPost]);
   return {
-    temporaryFeatureImage,
+    temporaryCoverImage,
     handleTitleChange,
     handleContentChange,
     handleSubmit,
     handleImageUpload,
-    handleFeatureImagePick,
+    handleCoverImagePick,
     updatePostState,
     postData,
     hasUnsavedChanges,

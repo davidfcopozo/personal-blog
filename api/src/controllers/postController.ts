@@ -255,7 +255,7 @@ export const updatePostBySlugOrId = async (
       title,
       content,
       slug,
-      featuredImage,
+      coverImage,
       bookmarks,
       comments,
       status,
@@ -275,8 +275,8 @@ export const updatePostBySlugOrId = async (
     if (comments !== undefined) setFields.comments = comments;
     if (status !== undefined) setFields.status = status;
 
-    if (featuredImage !== undefined) {
-      setFields.featuredImage = featuredImage || process.env.DEFAULT_POST_IMAGE;
+    if (coverImage !== undefined) {
+      setFields.coverImage = coverImage || process.env.DEFAULT_POST_IMAGE;
     }
 
     // Only add $set if there are fields to set

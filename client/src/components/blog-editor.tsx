@@ -1,7 +1,7 @@
 "use client";
 import React, { FC, useEffect, useState } from "react";
 import { Input } from "./ui/input";
-import FeatureImage from "./feature-image";
+import CoverImage from "./cover-image";
 import { useBlogEditor } from "@/hooks/useBlogEditor";
 import Categories from "./categories";
 import Tags from "./tags";
@@ -89,24 +89,24 @@ const BlogEditor: FC<BlogEditorProps> = ({
   };
 
   const {
-    temporaryFeatureImage,
+    temporaryCoverImage,
     postData,
     updatePostState,
     handleSubmit,
     handleContentChange,
     handleImageUpload,
-    handleFeatureImagePick,
+    handleCoverImagePick,
     hasUnsavedChanges,
     isSaving,
     saveError,
   } = useBlogEditor({ initialPost, slug });
 
-  const { title, content, featuredImage, tags, categories } = postData;
+  const { title, content, coverImage, tags, categories } = postData;
   useEffect(() => {
     if (initialPost) {
       updatePostState("title", initialPost.title || "");
       updatePostState("content", initialPost.content || "");
-      updatePostState("featuredImage", initialPost.featuredImage || null);
+      updatePostState("coverImage", initialPost.coverImage || null);
       updatePostState("categories", initialPost.categories || []);
       updatePostState("tags", initialPost.tags || []);
       setCurrentStatus(initialPost.status || "draft");
@@ -203,10 +203,10 @@ const BlogEditor: FC<BlogEditorProps> = ({
             </div>
           </div>
           <div className="[&>*:nth-child(even)]:my-8 md:w-1/4 p-4">
-            <FeatureImage
-              imageUrl={featuredImage}
-              temporaryFeatureImage={temporaryFeatureImage}
-              onUpload={handleFeatureImagePick}
+            <CoverImage
+              imageUrl={coverImage}
+              temporaryCoverImage={temporaryCoverImage}
+              onUpload={handleCoverImagePick}
             />
             <Categories
               categories={categories}

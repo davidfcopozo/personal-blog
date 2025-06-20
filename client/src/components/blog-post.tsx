@@ -122,7 +122,7 @@ const BlogPost = ({
               <div className="flex flex-col">
                 <div className="w-full order-2 lg:order-1 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
                   <Image
-                    src={post.featuredImage as string}
+                    src={post.coverImage as string}
                     alt="Blog Cover"
                     fill
                     style={{ objectFit: "cover" }}

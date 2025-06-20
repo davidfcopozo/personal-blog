@@ -2,17 +2,17 @@ import Image from "next/image";
 import { UploadIcon, XIcon } from "./icons";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { FeatureImageProps } from "@/typings/interfaces";
+import { CoverImageProps } from "@/typings/interfaces";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useImageManager } from "@/hooks/useImageManager";
 import { ImageUploadModal } from "./image-upload-modal";
 import { Loader2 } from "lucide-react";
 
-const FeatureImage = ({
+const CoverImage = ({
   imageUrl,
   onUpload,
-  temporaryFeatureImage,
-}: FeatureImageProps) => {
+  temporaryCoverImage,
+}: CoverImageProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     uploadImage,
@@ -30,10 +30,10 @@ const FeatureImage = ({
 
   // Clear preview when temporary image changes
   useEffect(() => {
-    if (temporaryFeatureImage === null) {
+    if (temporaryCoverImage === null) {
       setPreviewUrl(null);
     }
-  }, [temporaryFeatureImage]);
+  }, [temporaryCoverImage]);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -61,7 +61,7 @@ const FeatureImage = ({
 
         onUpload(file);
       } catch (error) {
-        console.error("Error uploading feature image:", error);
+        console.error("Error uploading Cover image:", error);
         setIsUploading(false);
         setPreviewUrl(null);
       }
@@ -80,9 +80,7 @@ const FeatureImage = ({
   const displayImage =
     previewUrl ||
     selectedGalleryUrl ||
-    (temporaryFeatureImage
-      ? URL.createObjectURL(temporaryFeatureImage)
-      : imageUrl);
+    (temporaryCoverImage ? URL.createObjectURL(temporaryCoverImage) : imageUrl);
 
   useEffect(() => {
     return () => {
@@ -95,7 +93,7 @@ const FeatureImage = ({
   return (
     <Card className="text-center">
       <CardHeader>
-        <CardTitle>Feature Image</CardTitle>
+        <CardTitle>Cover Image</CardTitle>
       </CardHeader>
       <CardContent className="py-4 px-2">
         <div className="grid gap-2 w-full">
@@ -154,7 +152,7 @@ const FeatureImage = ({
               <>
                 <Image
                   src={displayImage}
-                  alt="Feature Image"
+                  alt="Cover Image"
                   width={300}
                   height={200}
                   className="rounded-lg w-full h-auto"
@@ -196,4 +194,4 @@ const FeatureImage = ({
     </Card>
   );
 };
-export default FeatureImage;
+export default CoverImage;
