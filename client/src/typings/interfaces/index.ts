@@ -188,6 +188,7 @@ export interface CommentEditorProps {
   showCancelButton: boolean;
   value: string;
   commentMutationStatus: string;
+  originalContent?: string;
 }
 
 export interface NestedCommentProps {
