@@ -14,7 +14,7 @@ const postSchema = new Schema<PostInterface>(
       ref: "User",
       required: true,
     },
-    featuredImage: {
+    coverImage: {
       type: String,
       public_id: String,
       default: DEFAULT_COVER_IMAGE,

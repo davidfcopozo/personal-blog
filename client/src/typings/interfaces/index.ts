@@ -31,7 +31,7 @@ export interface PostInterface extends BaseDocument {
   content: string;
   slug: string;
   postedBy: string;
-  featuredImage?: string;
+  coverImage?: string;
   likes?: string[];
   bookmarks?: string[];
   tags?: string[];
@@ -114,7 +114,7 @@ export interface InitialPost {
   _id?: string;
   title: string;
   content: string;
-  featuredImage: string | null;
+  coverImage: string | null;
   categories?: CategoryInterface[];
   tags?: string[];
   status?: "draft" | "published" | "unpublished";
@@ -125,9 +125,9 @@ export interface UseBlogEditorProps {
   slug?: string | null;
 }
 
-export interface FeatureImageProps {
+export interface CoverImageProps {
   imageUrl: string | null;
-  temporaryFeatureImage: File | null;
+  temporaryCoverImage: File | null;
   onUpload: (file: File | null) => void;
 }
 

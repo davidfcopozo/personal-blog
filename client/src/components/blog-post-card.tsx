@@ -17,7 +17,7 @@ import { Card, CardFooter } from "./ui/card";
 import { AuthModal } from "./auth-modal";
 
 export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
-  const { title, content, createdAt, featuredImage, postedBy, slug } = post;
+  const { title, content, createdAt, coverImage, postedBy, slug } = post;
   const { username } = postedBy;
   const {
     handleLikeClick,
@@ -39,7 +39,7 @@ export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
       <div className="flex flex-col md:flex-row">
         <div className="relative h-48 w-full  md:w-2/5">
           <Image
-            src={featuredImage as string}
+            src={coverImage as string}
             alt={title}
             fill
             className="object-cover"
