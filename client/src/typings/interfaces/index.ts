@@ -355,3 +355,11 @@ export interface DeleteImageProps {
 export interface ImageMetadata extends Omit<ImageInterface, "_id"> {
   hash: string;
 }
+
+export interface CommentNavigationGuardOptions {
+  content: string;
+  originalContent?: string;
+  isEditing?: boolean;
+  onSave?: () => Promise<void>;
+  enabled?: boolean;
+}
