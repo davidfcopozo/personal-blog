@@ -20,6 +20,8 @@ import {
   createConfiguredLowlight,
   extensionConfigs,
 } from "@/utils/blog-editor";
+import { useCommentNavigationGuard } from "@/hooks/useCommentNavigationGuard";
+import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 
 // Create lowlight instance
 const lowlight = createConfiguredLowlight();
@@ -34,7 +36,39 @@ export default function CommentEditor({
   onChange,
   commentMutationStatus,
   isEditing = false,
+  originalContent,
 }: CommentEditorProps & { isEditing?: boolean }) {
+  const {
+    hasUnsavedChanges,
+    isDialogOpen,
+    isSaving: isNavigationSaving,
+    handleCancelWithGuard,
+    handleSave: handleNavigationSave,
+    handleDiscard,
+    handleDialogClose,
+  } = useCommentNavigationGuard({
+    content,
+    originalContent: originalContent || (isEditing ? content : ""),
+    isEditing,
+    onSave: async () => {
+      if (editor) {
+        const htmlContent = editor.getHTML();
+        const textContent = editor.getText();
+        if (textContent.trim()) {
+          await new Promise<void>((resolve, reject) => {
+            try {
+              onSubmit(htmlContent);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          });
+        }
+      }
+    },
+    enabled: true,
+  });
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure(extensionConfigs.starterKit),
@@ -106,11 +140,14 @@ export default function CommentEditor({
             className="bg-background text-foreground [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:p-3"
           />
         </div>
-      </Card>
-
+      </Card>{" "}
       <div className="flex justify-end gap-2 mt-4">
         {onCancel && showCancelButton && (
-          <Button variant="outline" onClick={onCancel} className="py-4">
+          <Button
+            variant="outline"
+            onClick={() => handleCancelWithGuard(onCancel)}
+            className="py-4"
+          >
             Cancel
           </Button>
         )}{" "}
@@ -122,7 +159,22 @@ export default function CommentEditor({
           <Send className="w-4 h-4" />
           {isEditing ? "Update" : "Submit"}
         </Button>
-      </div>
+      </div>{" "}
+      <UnsavedChangesDialog
+        isOpen={isDialogOpen}
+        onClose={handleDialogClose}
+        onSave={handleNavigationSave}
+        onDiscard={handleDiscard}
+        title={isEditing ? "Unsaved Comment Edits" : "Unsaved Comment"}
+        description={
+          isEditing
+            ? "You have unsaved changes to your comment. Would you like to save them before canceling?"
+            : "You have started writing a comment. Would you like to save it before canceling?"
+        }
+        saveButtonText={isEditing ? "Save Changes" : "Submit Comment"}
+        discardButtonText="Discard Changes"
+        isSaving={isNavigationSaving}
+      />
     </>
   );
 }

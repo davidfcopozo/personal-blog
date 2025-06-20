@@ -12,6 +12,8 @@ import { Skeleton } from "./ui/skeleton";
 import { loadHighlightTheme } from "@/utils/highlightTheme";
 import { useTheme } from "next-themes";
 import { useToast } from "./ui/use-toast";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
+import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 
 const TiptapBlogEditor = dynamic(() => import("./tiptap-blog-editor"), {
   ssr: false,
@@ -87,7 +89,6 @@ const BlogEditor: FC<BlogEditorProps> = ({
       });
     }
   };
-
   const {
     temporaryCoverImage,
     postData,
@@ -102,6 +103,7 @@ const BlogEditor: FC<BlogEditorProps> = ({
   } = useBlogEditor({ initialPost, slug });
 
   const { title, content, coverImage, tags, categories } = postData;
+
   useEffect(() => {
     if (initialPost) {
       updatePostState("title", initialPost.title || "");
@@ -158,6 +160,24 @@ const BlogEditor: FC<BlogEditorProps> = ({
 
     return originalHasUnsavedChanges;
   };
+
+  // Navigation guard for unsaved changes
+  const {
+    navigateWithGuard,
+    isDialogOpen,
+    isSaving: isNavigationSaving,
+    handleSave: handleNavigationSave,
+    handleDiscard,
+    handleDialogClose,
+  } = useNavigationGuard({
+    hasUnsavedChanges: hasRealChanges(),
+    onSave: async () => {
+      // Save as draft when user wants to navigate away
+      await handleSubmit(currentStatus === "published" ? "published" : "draft");
+    },
+    message:
+      "You have unsaved changes to your blog post. Are you sure you want to leave?",
+  });
 
   return (
     <div className="outer-container">
@@ -227,8 +247,24 @@ const BlogEditor: FC<BlogEditorProps> = ({
               }
             />
           </div>
-        </div>
+        </div>{" "}
       </main>
+      {/* Unsaved Changes Dialog */}
+      <UnsavedChangesDialog
+        isOpen={isDialogOpen}
+        onClose={handleDialogClose}
+        onSave={handleNavigationSave}
+        onDiscard={handleDiscard}
+        title="Unsaved Blog Changes"
+        description={
+          initialPost
+            ? "You have unsaved changes to your blog post. Would you like to save them before leaving?"
+            : "You have started writing a new blog post. Would you like to save it as a draft before leaving?"
+        }
+        saveButtonText={initialPost ? "Save Changes" : "Save as Draft"}
+        discardButtonText="Discard Changes"
+        isSaving={isNavigationSaving}
+      />
     </div>
   );
 };

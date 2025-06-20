@@ -188,6 +188,7 @@ export interface CommentEditorProps {
   showCancelButton: boolean;
   value: string;
   commentMutationStatus: string;
+  originalContent?: string;
 }
 
 export interface NestedCommentProps {
@@ -353,4 +354,21 @@ export interface DeleteImageProps {
 
 export interface ImageMetadata extends Omit<ImageInterface, "_id"> {
   hash: string;
+}
+
+export interface CommentNavigationGuardOptions {
+  content: string;
+  originalContent?: string;
+  isEditing?: boolean;
+  onSave?: () => Promise<void>;
+  enabled?: boolean;
+}
+
+export interface NavigationGuardOptions {
+  hasUnsavedChanges: boolean;
+  message?: string;
+  onBeforeUnload?: () => void;
+  onSave?: () => Promise<void>;
+  autoSave?: () => Promise<void>;
+  enableDialog?: boolean;
 }
