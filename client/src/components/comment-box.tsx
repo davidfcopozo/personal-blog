@@ -102,7 +102,7 @@ const CommentBox = ({ post }: { post: PostType }) => {
           e.preventDefault();
         }}
       >
-        <h3 className="text-xl font-bold mb-4">Add a new comment</h3>
+        <h3 className="text-xl font-bold mb-4">Add a new comment</h3>{" "}
         <CommentEditor
           value={commentContent}
           onChange={handleChange}
@@ -111,6 +111,7 @@ const CommentBox = ({ post }: { post: PostType }) => {
           showCancelButton={false}
           commentMutationStatus={commentMutationStatus}
           placeholder="Share your thoughts with the community..."
+          originalContent=""
         />
       </form>
 
