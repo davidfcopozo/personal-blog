@@ -151,6 +151,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   };
   return (
     <>
+      {" "}
       {isEditing ? (
         <CommentEditor
           onSubmit={handleSaveEdit}
@@ -161,6 +162,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
           placeholder="Edit your comment..."
           commentMutationStatus={updateStatus}
           isEditing={true}
+          originalContent={comment?.content || ""}
         />
       ) : (
         <article className="flex bg-background rounded-lg">
@@ -239,7 +241,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
             </div>
           </div>
         </article>
-      )}
+      )}{" "}
       {showEditor && !isEditing && (
         <CommentEditor
           onSubmit={handleSubmit}
@@ -249,6 +251,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
           showCancelButton={true}
           placeholder="Write a reply..."
           commentMutationStatus={replyMutationStatus}
+          originalContent=""
         />
       )}
       <AlertDialog
