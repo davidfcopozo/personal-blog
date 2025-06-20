@@ -363,3 +363,12 @@ export interface CommentNavigationGuardOptions {
   onSave?: () => Promise<void>;
   enabled?: boolean;
 }
+
+export interface NavigationGuardOptions {
+  hasUnsavedChanges: boolean;
+  message?: string;
+  onBeforeUnload?: () => void;
+  onSave?: () => Promise<void>;
+  autoSave?: () => Promise<void>;
+  enableDialog?: boolean;
+}
