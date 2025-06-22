@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/context/QueryProvider";
 import { AuthContextProvider } from "../context/AuthContext";
 import { UnverifiedEmailBanner } from "@/components/unverified-email-banner";
+import { SocketProvider } from "@/context/SocketContext";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -45,13 +46,15 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
               >
-                <Header />
-                <UnverifiedEmailBanner />
-                {children}
+                <SocketProvider>
+                  <Header />
+                  <UnverifiedEmailBanner />
+                  {children}
+                  <Toaster />
+                </SocketProvider>
               </ThemeProvider>
             </AuthContextProvider>
           </AuthProvider>
-          <Toaster />
         </QueryProvider>
       </body>
     </html>
