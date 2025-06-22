@@ -12,9 +12,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNotifications, Notification } from "@/hooks/useNotifications";
+import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { Notification } from "@/typings/interfaces";
 
 const NotificationBell: React.FC = () => {
   const {
