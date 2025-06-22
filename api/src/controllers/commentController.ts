@@ -1,5 +1,6 @@
 import Comment from "../models/commentModel";
 import Post from "../models/postModel";
+import User from "../models/userModel";
 
 import { NextFunction, Response } from "express";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -8,6 +9,7 @@ import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
 import { CommentType, PostMongooseType, PostType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
+import { NotificationService } from "../utils/notificationService";
 
 export const createComment = async (
   req: RequestWithUserInfo | any,
@@ -21,7 +23,7 @@ export const createComment = async (
   } = req;
 
   try {
-    const post: PostType = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId).populate("postedBy");
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
@@ -45,6 +47,42 @@ export const createComment = async (
     );
 
     if (result?.modifiedCount === 1) {
+      // Create notification for post author (if not commenting on own post)
+      const notificationService: NotificationService = req.app.get(
+        "notificationService"
+      );
+
+      if (notificationService && post.postedBy.toString() !== userId) {
+        await notificationService.createCommentNotification(
+          post.postedBy,
+          userId,
+          postId,
+          comment._id.toString()
+        );
+      }
+
+      // Check for mentions in the comment content
+      const mentionRegex = /@(\w+)/g;
+      const mentions = cleanContent.match(mentionRegex);
+
+      if (mentions && notificationService) {
+        const uniqueMentions = [
+          ...new Set(mentions.map((mention) => mention.substring(1))),
+        ];
+
+        for (const username of uniqueMentions) {
+          const mentionedUser = await User.findOne({ username });
+          if (mentionedUser && mentionedUser._id.toString() !== userId) {
+            await notificationService.createMentionNotification(
+              mentionedUser._id,
+              userId,
+              postId,
+              comment._id.toString()
+            );
+          }
+        }
+      }
+
       res.status(StatusCodes.CREATED).json({ success: true, data: comment });
     }
   } catch (error) {
