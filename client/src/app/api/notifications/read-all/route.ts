@@ -6,7 +6,6 @@ const API_BASE_URL =
   "http://localhost:8000/api/v1";
 
 export async function PATCH(request: NextRequest) {
-  // Get token for authentication
   const token = await getToken({
     req: request,
     secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
