@@ -398,19 +398,30 @@ export const toggleLike = async (
       );
 
       await session.commitTransaction();
-
       if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
         const notificationService: NotificationService = req.app.get(
           "notificationService"
         );
         const postOwnerId =
           (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
-        if (notificationService && postOwnerId !== userId) {
-          await notificationService.createLikeNotification(
-            postOwnerId,
-            userId,
-            postId
+        if (notificationService) {
+          console.log(
+            "📤 About to emit like update for post:",
+            postId,
+            "user:",
+            userId
           );
+          await notificationService.emitLikeUpdate(postId, userId, true);
+
+          if (postOwnerId !== userId) {
+            await notificationService.createLikeNotification(
+              postOwnerId,
+              userId,
+              postId
+            );
+          }
+        } else {
+          console.log("❌ No notification service available");
         }
 
         res
@@ -435,8 +446,15 @@ export const toggleLike = async (
       );
 
       await session.commitTransaction();
-
       if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
+        const notificationService: NotificationService = req.app.get(
+          "notificationService"
+        );
+
+        if (notificationService) {
+          await notificationService.emitLikeUpdate(postId, userId, false);
+        }
+
         res.status(StatusCodes.OK).json({
           success: true,
           msg: "You've disliked this post.",
@@ -497,19 +515,23 @@ export const toggleBookmark = async (
       );
 
       await session.commitTransaction();
-
       if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
         const notificationService: NotificationService = req.app.get(
           "notificationService"
         );
         const postOwnerId =
           (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
-        if (notificationService && postOwnerId !== userId) {
-          await notificationService.createBookmarkNotification(
-            postOwnerId,
-            userId,
-            postId
-          );
+
+        if (notificationService) {
+          await notificationService.emitBookmarkUpdate(postId, userId, true);
+
+          if (postOwnerId !== userId) {
+            await notificationService.createBookmarkNotification(
+              postOwnerId,
+              userId,
+              postId
+            );
+          }
         }
 
         res
@@ -533,8 +555,15 @@ export const toggleBookmark = async (
       );
 
       await session.commitTransaction();
-
       if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
+        const notificationService: NotificationService = req.app.get(
+          "notificationService"
+        );
+
+        if (notificationService) {
+          await notificationService.emitBookmarkUpdate(postId, userId, false);
+        }
+
         res.status(StatusCodes.OK).json({
           success: true,
           msg: "You've unbookmarked this post.",
