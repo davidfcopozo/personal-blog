@@ -10,6 +10,7 @@ import QueryProvider from "@/context/QueryProvider";
 import { AuthContextProvider } from "../context/AuthContext";
 import { UnverifiedEmailBanner } from "@/components/unverified-email-banner";
 import { SocketProvider } from "@/context/SocketContext";
+import SocketDebugPanel from "@/components/socket-debug-panel";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -46,11 +47,13 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
               >
+                {" "}
                 <SocketProvider>
                   <Header />
                   <UnverifiedEmailBanner />
                   {children}
                   <Toaster />
+                  <SocketDebugPanel />
                 </SocketProvider>
               </ThemeProvider>
             </AuthContextProvider>
