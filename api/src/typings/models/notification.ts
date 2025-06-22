@@ -55,3 +55,12 @@ export interface AuthenticatedRequest extends Request {
     userId: string;
   };
 }
+
+export interface CreateNotificationData {
+  recipientId: ObjectId | string;
+  senderId: ObjectId | string;
+  type: NotificationType;
+  message: string;
+  relatedPostId?: ObjectId | string;
+  relatedCommentId?: ObjectId | string;
+}
