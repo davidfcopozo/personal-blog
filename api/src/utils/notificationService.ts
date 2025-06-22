@@ -287,4 +287,75 @@ export class NotificationService {
       relatedPostId: postId,
     });
   }
+
+  async emitPostUpdate(
+    postId: string,
+    updateType: "like" | "bookmark" | "comment",
+    data: any
+  ) {
+    if (this.io) {
+      this.io.emit("postUpdate", {
+        postId,
+        updateType,
+        data,
+        timestamp: new Date(),
+      });
+    }
+  }
+
+  async emitLikeUpdate(postId: string, userId: string, isLiked: boolean) {
+    console.log("🚀 Emitting like update:", { postId, userId, isLiked });
+    if (this.io) {
+      this.io.emit("postLikeUpdate", {
+        postId,
+        userId,
+        isLiked,
+        timestamp: new Date(),
+      });
+      console.log("✅ Like update emitted successfully");
+    } else {
+      console.log("❌ No Socket.IO instance available for like update");
+    }
+  }
+  async emitBookmarkUpdate(
+    postId: string,
+    userId: string,
+    isBookmarked: boolean
+  ) {
+    console.log("🚀 Emitting bookmark update:", {
+      postId,
+      userId,
+      isBookmarked,
+    });
+    if (this.io) {
+      this.io.emit("postBookmarkUpdate", {
+        postId,
+        userId,
+        isBookmarked,
+        timestamp: new Date(),
+      });
+      console.log("✅ Bookmark update emitted successfully");
+    } else {
+      console.log("❌ No Socket.IO instance available for bookmark update");
+    }
+  }
+
+  async emitCommentUpdate(
+    postId: string,
+    commentId: string,
+    action: "add" | "remove"
+  ) {
+    console.log("🚀 Emitting comment update:", { postId, commentId, action });
+    if (this.io) {
+      this.io.emit("postCommentUpdate", {
+        postId,
+        commentId,
+        action,
+        timestamp: new Date(),
+      });
+      console.log("✅ Comment update emitted successfully");
+    } else {
+      console.log("❌ No Socket.IO instance available for comment update");
+    }
+  }
 }
