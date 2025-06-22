@@ -50,22 +50,54 @@ export const createComment = async (
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
-
       if (notificationService) {
+        console.log(
+          "📤 Emitting comment update for post:",
+          postId,
+          "comment:",
+          comment._id.toString()
+        );
         await notificationService.emitCommentUpdate(
           postId,
           comment._id.toString(),
           "add"
         );
 
-        if (post.postedBy.toString() !== userId) {
+        const postOwnerId = (post.postedBy as any)?._id
+          ? (post.postedBy as any)._id.toString()
+          : post.postedBy.toString();
+
+        if (postOwnerId !== userId) {
+          console.log(
+            "📧 Creating comment notification for post owner:",
+            postOwnerId,
+            "from user:",
+            userId
+          );
+          console.log("📋 Post details:", {
+            postId: post._id,
+            postTitle: post.title,
+            postOwnerType: typeof post.postedBy,
+            postOwner: post.postedBy,
+            postOwnerId: postOwnerId,
+            commenterType: typeof userId,
+            commenter: userId,
+          });
+
           await notificationService.createCommentNotification(
-            post.postedBy,
+            postOwnerId,
             userId,
             postId,
             comment._id.toString()
           );
+          console.log("✅ Comment notification created successfully");
+        } else {
+          console.log(
+            "🚫 Not sending notification - user commented on their own post"
+          );
         }
+      } else {
+        console.log("❌ No notification service available for comment");
       }
 
       // Check for mentions in the comment content
