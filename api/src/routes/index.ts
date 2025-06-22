@@ -6,6 +6,7 @@ import replyRoutes from "./replyRoutes";
 import userRoutes from "./userRoutes";
 import categoryRoutes from "./categoryRoutes";
 import topicRoutes from "./topicRoutes";
+import notificationRoutes from "./notificationRoutes";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use("/api/v1/replies", replyRoutes);
 router.use("/api/v1/posts", postRouter);
 router.use("/api/v1/categories", categoryRoutes);
 router.use("/api/v1/topics", topicRoutes);
+router.use("/api/v1/notifications", notificationRoutes);
 
 export default router;
