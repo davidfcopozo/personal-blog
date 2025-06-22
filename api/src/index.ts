@@ -8,15 +8,18 @@ import hpp from "hpp";
 import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import { connectDB } from "./config/connect";
 import routes from "./routes/index";
 import { errorHandlerMiddleware } from "./middleware/error-handler";
 import { notFound } from "./middleware/not-found";
 import path from "path";
+import { NotificationService } from "./utils/notificationService";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 const MONGO_DB: string = process.env.MONGO_DB as string;
 
 const app = express();
@@ -50,8 +53,38 @@ app.use(errorHandlerMiddleware);
 const startServer = async () => {
   try {
     await connectDB(MONGO_DB);
-    app.listen(PORT, () => {
+
+    const httpServer = createServer(app);
+
+    const io = new SocketIOServer(httpServer, {
+      cors: {
+        origin: process.env.CLIENT_URL || "http://localhost:3000",
+        methods: ["GET", "POST"],
+      },
+    });
+
+    io.on("connection", (socket) => {
+      console.log("User connected:", socket.id);
+
+      socket.on("join", (userId) => {
+        socket.join(userId);
+        console.log(`User ${userId} joined their room`);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+      });
+    });
+
+    // Make io accessible throughout the app
+    app.set("io", io);
+
+    const notificationService = new NotificationService(io);
+    app.set("notificationService", notificationService);
+
+    httpServer.listen(PORT, () => {
       console.log(`Server is listening on port ${PORT}!!`);
+      console.log(`Socket.IO server ready`);
     });
   } catch (error) {
     console.log(error);
