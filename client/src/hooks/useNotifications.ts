@@ -10,13 +10,32 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-
   useEffect(() => {
-    if (!socket) return;
+    if (!socket) {
+      console.log("❌ No socket available for notification listener");
+      return;
+    }
 
+    console.log(
+      "🔌 Socket available, setting up notification listener. Socket ID:",
+      socket.id
+    );
     const handleNotification = (notification: Notification) => {
-      setNotifications((prev) => [notification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
+      console.log("📱 Received notification via Socket.IO:", notification);
+
+      setNotifications((prev) => {
+        console.log(
+          "📝 Adding notification to list, previous count:",
+          prev.length
+        );
+        const newList = [notification, ...prev];
+        console.log("📝 New notifications list count:", newList.length);
+        return newList;
+      });
+      setUnreadCount((prev) => {
+        console.log("📊 Updating unread count from", prev, "to", prev + 1);
+        return prev + 1;
+      });
 
       toast({
         title: "New Notification",
@@ -25,9 +44,11 @@ export const useNotifications = () => {
       });
     };
 
+    console.log("🔌 Setting up notification listener on socket");
     socket.on("notification", handleNotification);
 
     return () => {
+      console.log("🔌 Cleaning up notification listener");
       socket.off("notification", handleNotification);
     };
   }, [socket, toast]);
@@ -46,15 +67,30 @@ export const useNotifications = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch notifications");
         }
-
         const data = await response.json();
 
+        console.log("📊 Fetched notifications data:", data);
+        console.log("📊 Current unread count before update:", unreadCount);
+
         if (page === 1) {
+          console.log(
+            "📝 Setting notifications (page 1):",
+            data.notifications.length,
+            "items"
+          );
           setNotifications(data.notifications);
         } else {
+          console.log(
+            "📝 Adding notifications (page",
+            page,
+            "):",
+            data.notifications.length,
+            "items"
+          );
           setNotifications((prev) => [...prev, ...data.notifications]);
         }
 
+        console.log("📊 Setting unread count to:", data.unreadCount);
         setUnreadCount(data.unreadCount);
         return data;
       } catch (error) {
@@ -68,7 +104,7 @@ export const useNotifications = () => {
         setIsLoading(false);
       }
     },
-    [toast]
+    [toast, unreadCount]
   );
 
   const markAsRead = useCallback(async (notificationId: string) => {
