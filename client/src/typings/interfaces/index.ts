@@ -4,6 +4,11 @@ import { LucideIcon } from "lucide-react";
 import { AuthAction, PostType, UserType } from "../types";
 import { Socket } from "socket.io-client";
 
+export interface SocketContextType {
+  socket: Socket | null;
+  isConnected: boolean;
+}
+
 export interface BaseDocument {
   _id: string;
   createdAt: string;
@@ -395,11 +400,6 @@ export interface NotificationPreferencesInterface {
     inApp: boolean;
     email: boolean;
   };
-}
-
-export interface SocketContextType {
-  socket: Socket | null;
-  isConnected: boolean;
 }
 
 export interface Notification {
