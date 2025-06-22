@@ -3,6 +3,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { SocketContextType } from "@/typings/interfaces";
+import { useQueryClient } from "@tanstack/react-query";
+import { PostFetchType } from "@/typings/types";
+import { PostInterface } from "@/typings/interfaces";
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
@@ -25,6 +28,43 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const queryClient = useQueryClient(); // Helper function to update a specific post in the React Query cache
+  const updatePostInCache = (
+    postId: string,
+    updateFn: (post: PostInterface) => PostInterface
+  ) => {
+    console.log("🔄 Updating post in cache:", postId);
+
+    // Update posts list cache
+    const updated = queryClient.setQueryData<PostFetchType>(
+      ["posts"],
+      (oldData) => {
+        if (!oldData?.data || !Array.isArray(oldData.data)) {
+          console.log("No posts data found in cache");
+          return oldData;
+        }
+
+        console.log("Found posts data, updating...");
+        const updatedData = {
+          ...oldData,
+          data: oldData.data.map((post: PostInterface) => {
+            if (post._id?.toString() === postId) {
+              console.log("Found matching post to update:", post._id);
+              const updatedPost = updateFn(post);
+              console.log("Post updated from:", post, "to:", updatedPost);
+              return updatedPost;
+            }
+            return post;
+          }),
+        };
+
+        console.log("Cache updated successfully");
+        return updatedData;
+      }
+    );
+
+    console.log("setQueryData returned:", updated);
+  };
 
   useEffect(() => {
     console.log("SocketContext useEffect triggered.");
@@ -77,11 +117,83 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     newSocket.on("connect_error", (error) => {
       console.error("❌ Socket.IO connection error:", error);
       setIsConnected(false);
-    });
-
-    // Listen for notifications
+    }); // Listen for notifications
     newSocket.on("notification", (data) => {
       console.log("🔔 Received notification:", data);
+    }); // Listen for global post updates for real-time interaction counts
+    newSocket.on("postLikeUpdate", (data) => {
+      console.log("👍 Received like update:", data);
+      console.log(
+        "Current posts cache before update:",
+        queryClient.getQueryData(["posts"])
+      );
+
+      updatePostInCache(data.postId, (post) => {
+        console.log("Updating post:", post._id, "with like data:", data);
+        const likes = post.likes || [];
+        if (data.isLiked) {
+          // Add like if not already present
+          if (!likes.includes(data.userId)) {
+            const updatedPost = { ...post, likes: [...likes, data.userId] };
+            console.log("Updated post with new like:", updatedPost);
+            return updatedPost;
+          }
+        } else {
+          // Remove like
+          const updatedPost = {
+            ...post,
+            likes: likes.filter((id) => id !== data.userId),
+          };
+          console.log("Updated post with removed like:", updatedPost);
+          return updatedPost;
+        }
+        return post;
+      });
+
+      console.log(
+        "Posts cache after update:",
+        queryClient.getQueryData(["posts"])
+      );
+    });
+
+    newSocket.on("postBookmarkUpdate", (data) => {
+      console.log("🔖 Received bookmark update:", data);
+      updatePostInCache(data.postId, (post) => {
+        const bookmarks = post.bookmarks || [];
+        if (data.isBookmarked) {
+          // Add bookmark if not already present
+          if (!bookmarks.includes(data.userId)) {
+            return { ...post, bookmarks: [...bookmarks, data.userId] };
+          }
+        } else {
+          // Remove bookmark
+          return {
+            ...post,
+            bookmarks: bookmarks.filter((id) => id !== data.userId),
+          };
+        }
+        return post;
+      });
+    });
+
+    newSocket.on("postCommentUpdate", (data) => {
+      console.log("� Received comment update:", data);
+      updatePostInCache(data.postId, (post) => {
+        const comments = post.comments || [];
+        if (data.action === "add") {
+          // Add comment if not already present
+          if (!comments.includes(data.commentId)) {
+            return { ...post, comments: [...comments, data.commentId] };
+          }
+        } else if (data.action === "remove") {
+          // Remove comment
+          return {
+            ...post,
+            comments: comments.filter((id) => id !== data.commentId),
+          };
+        }
+        return post;
+      });
     });
 
     // Test the connection
