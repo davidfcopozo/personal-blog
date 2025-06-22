@@ -100,7 +100,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       timeout: 20000,
       forceNew: true,
     });
-
     newSocket.on("connect", () => {
       console.log("✅ Connected to Socket.IO server", newSocket.id);
       setIsConnected(true);
@@ -109,18 +108,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       console.log("🔌 Joined room:", userId);
     });
 
+    newSocket.on("joinConfirmation", (data) => {
+      console.log("🎯 Join confirmation received:", data);
+    });
+
     newSocket.on("disconnect", (reason) => {
       console.log("❌ Disconnected from Socket.IO server. Reason:", reason);
       setIsConnected(false);
     });
-
     newSocket.on("connect_error", (error) => {
       console.error("❌ Socket.IO connection error:", error);
       setIsConnected(false);
-    }); // Listen for notifications
-    newSocket.on("notification", (data) => {
-      console.log("🔔 Received notification:", data);
-    }); // Listen for global post updates for real-time interaction counts
+    });
+
+    // Listen for global post updates for real-time interaction counts
     newSocket.on("postLikeUpdate", (data) => {
       console.log("👍 Received like update:", data);
       console.log(
