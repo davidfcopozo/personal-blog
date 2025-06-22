@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { sanitizeContent } from "../utils/sanitize-content";
 import { CategoryInterface } from "../typings/models/category";
 import Category from "../models/categoryModel";
+import { NotificationService } from "../utils/notificationService";
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -367,9 +368,10 @@ export const toggleLike = async (
 
   const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
-    const post: PostType = await Post.findById(postId).session(session);
+    const post: PostType = await Post.findById(postId)
+      .populate("postedBy")
+      .session(session);
     const user: UserType = await User.findById(userId).session(session);
 
     if (!post) {
@@ -398,6 +400,19 @@ export const toggleLike = async (
       await session.commitTransaction();
 
       if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
+        const notificationService: NotificationService = req.app.get(
+          "notificationService"
+        );
+        const postOwnerId =
+          (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
+        if (notificationService && postOwnerId !== userId) {
+          await notificationService.createLikeNotification(
+            postOwnerId,
+            userId,
+            postId
+          );
+        }
+
         res
           .status(StatusCodes.OK)
           .json({ success: true, msg: "You've liked this post." });
@@ -450,9 +465,10 @@ export const toggleBookmark = async (
 
   const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
-    const post: PostType = await Post.findById(postId).session(session);
+    const post: PostType = await Post.findById(postId)
+      .populate("postedBy")
+      .session(session);
     const user: UserType = await User.findById(userId).session(session);
 
     if (!post) {
@@ -468,7 +484,7 @@ export const toggleBookmark = async (
     );
 
     if (isBookmarked?.length! < 1) {
-      // Add bookmark to the post's likes array property
+      // Add bookmark to the post's bookmark array property
       const postResult = await Post.updateOne(
         { _id: post._id },
         { $addToSet: { bookmarks: userId } },
@@ -483,6 +499,19 @@ export const toggleBookmark = async (
       await session.commitTransaction();
 
       if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
+        const notificationService: NotificationService = req.app.get(
+          "notificationService"
+        );
+        const postOwnerId =
+          (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
+        if (notificationService && postOwnerId !== userId) {
+          await notificationService.createBookmarkNotification(
+            postOwnerId,
+            userId,
+            postId
+          );
+        }
+
         res
           .status(StatusCodes.OK)
           .json({ success: true, msg: "You've bookmarked this post." });
@@ -490,7 +519,7 @@ export const toggleBookmark = async (
         throw new BadRequest("Something went wrong, please try again!");
       }
     } else {
-      // Remove bookmark from the post's likes array property
+      // Remove bookmark from the post's bookmark array property
       const postResult = await Post.updateOne(
         { _id: post._id },
         { $pull: { bookmarks: userId } },
@@ -520,10 +549,6 @@ export const toggleBookmark = async (
   }
 };
 
-/**
- * Preview a post - allows post owners to view their own posts regardless of status
- * This includes drafts, published, and unpublished posts
- */
 export const previewPost = async (
   req: RequestWithUserInfo | any,
   res: Response,
@@ -535,7 +560,6 @@ export const previewPost = async (
   try {
     let post: PostType | null;
 
-    // Find post by slug or ID
     if (mongoose.Types.ObjectId.isValid(slugOrId)) {
       post = await Post.findById(slugOrId).populate("postedBy");
     } else {
@@ -544,8 +568,8 @@ export const previewPost = async (
 
     if (!post) {
       throw new NotFound("Post not found");
-    } // Check if the user is the owner of the post
-    // Handle both populated and non-populated postedBy field
+    }
+
     const postOwnerId =
       (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
 
@@ -553,8 +577,6 @@ export const previewPost = async (
       throw new Unauthenticated("You are not authorized to preview this post");
     }
 
-    // Return the post regardless of its status (draft, published, unpublished)
-    // since the owner should be able to preview their own content
     res.status(StatusCodes.OK).json({
       success: true,
       data: post,
@@ -565,29 +587,24 @@ export const previewPost = async (
   }
 };
 
-/**
- * Get user's own posts - returns all posts created by the authenticated user
- * Supports optional status filtering via query parameter
- */
 export const getUserPosts = async (
   req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
   const { userId } = req.user;
-  const { status } = req.query; // Optional filter by status
+  const { status } = req.query;
 
   try {
     let query: any = { postedBy: userId };
 
-    // Add status filter if provided
     if (status && ["draft", "published", "unpublished"].includes(status)) {
       query.status = status;
     }
 
     const posts: PostType[] = await Post.find(query)
       .populate("postedBy")
-      .sort({ createdAt: -1 }); // Sort by newest first
+      .sort({ createdAt: -1 });
 
     res.status(StatusCodes.OK).json({
       success: true,
