@@ -27,14 +27,47 @@ export const useInteractions = (
     closeModal,
     handleSuccess,
   } = useAuthModal();
-
-  const [liked, setLiked] = useState(false);
-  const [amountOfLikes, setAmountOfLikes] = useState(0);
   const [currentUser, setCurrentUser] = useState("");
-  const [bookmarked, setBookmarked] = useState(false);
-  const [amountOfBookmarks, setAmountOfBookmarks] = useState(0);
-  const bookmarks = useMemo(() => post?.bookmarks ?? [], [post?.bookmarks]);
-  const likes = useMemo(() => post?.likes ?? [], [post?.likes]);
+  const cachedPostsData = queryClient.getQueryData<PostFetchType>(["posts"]);
+  const currentPostData = useMemo(() => {
+    if (
+      cachedPostsData?.data &&
+      Array.isArray(cachedPostsData.data) &&
+      postId
+    ) {
+      return cachedPostsData.data.find(
+        (p: PostInterface) => p._id.toString() === postId.toString()
+      );
+    }
+    return post;
+  }, [cachedPostsData, post, postId]);
+
+  const bookmarks = useMemo(
+    () => currentPostData?.bookmarks ?? [],
+    [currentPostData?.bookmarks]
+  );
+  const likes = useMemo(
+    () => currentPostData?.likes ?? [],
+    [currentPostData?.likes]
+  );
+
+  const liked = useMemo(() => {
+    if (!currentUser || !likes?.length) return false;
+    return likes.some((like) => like.toString() === currentUser);
+  }, [currentUser, likes]);
+
+  const amountOfLikes = useMemo(() => likes.length, [likes]);
+
+  const bookmarked = useMemo(() => {
+    if (!currentUser || !bookmarks?.length) return false;
+    return bookmarks.some((bookmark) => bookmark.toString() === currentUser);
+  }, [currentUser, bookmarks]);
+
+  const amountOfBookmarks = useMemo(() => bookmarks.length, [bookmarks]);
+  const commentsCount = useMemo(
+    () => currentPostData?.comments?.length ?? 0,
+    [currentPostData?.comments]
+  );
   const [commentLiked, setCommentLiked] = useState<boolean>(false);
   const [commentLikesCount, setCommentLikesCount] = useState<number>(
     comment?.likes?.length ?? 0
@@ -53,113 +86,55 @@ export const useInteractions = (
   }, []);
 
   useEffect(() => {
-    if (currentUser && likes?.length) {
-      const userLiked = likes.some((like) => like.toString() === currentUser);
-      setLiked(userLiked);
-    }
-    setAmountOfLikes(likes.length);
-
-    if (currentUser && bookmarks?.length) {
-      const userBookmarked = bookmarks.some(
-        (bookmark) => bookmark.toString() === currentUser
-      );
-      setBookmarked(userBookmarked);
-    }
-    setAmountOfBookmarks(bookmarks.length);
-
     if (comment && currentUser) {
       const userLikedComment =
         comment.likes?.some((like) => like.toString() === currentUser) ?? false;
       setCommentLiked(userLikedComment);
       setCommentLikesCount(comment.likes?.length ?? 0);
     }
-  }, [currentUser, likes, bookmarks, comment]);
+  }, [comment, currentUser]);
 
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
-
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
     onSuccess: (_, variables: { postId: string }) => {
-      const postsData = queryClient.getQueryData<PostFetchType>(["posts"]);
-
-      if (postsData?.data) {
-        // Update the specific post in the cached data to avoid full refetch of posts with query validation
-        const updatedPosts = {
-          ...postsData,
-          data: postsData.data.map((post: PostInterface) => {
-            if (post._id.toString() === variables.postId.toString()) {
-              const userId = queryClient.getQueryData<{
-                data: { _id: string };
-              }>(["currentUser"])?.data._id;
-              const userIdString = userId?.toString();
-              const isLiked = post.likes?.some(
-                (like) => like.toString() === userIdString
-              );
-
-              return {
-                ...post,
-                likes: isLiked
-                  ? post.likes?.filter(
-                      (like) => like.toString() !== userIdString
-                    )
-                  : [...(post.likes || []), userId!],
-              };
-            }
-            return post;
-          }),
-        };
-
-        // Set the updated data back in the cache
-        queryClient.setQueryData(["posts"], updatedPosts);
-      }
-
       toast({
         title: "Success",
         description: "Your action was successful.",
       });
     },
-    onError: (error) => {
-      //Error during mutation
-      const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
-      queryClient.setQueryData(["posts"], previousPosts);
-
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "Failed to process the request. Please try again.";
+    onError: (error, _, context: any) => {
+      // Revert optimistic update on error
+      if (context?.previousData) {
+        queryClient.setQueryData(["posts"], context.previousData);
+      }
 
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMessage,
+        description: "Failed to process the request. Please try again.",
       });
     },
-    onMutate: async (postId: object) => {
+    onMutate: async (variables: { postId: string }) => {
       await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
 
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
       ]);
-      const previousPosts = previousPostsData?.data;
-      if (!Array.isArray(previousPosts)) {
-        return { previousData: previousPosts };
-      }
 
+      // Optimistically update the posts cache
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!Array.isArray(oldPosts?.data)) {
+        if (!oldPosts?.data || !Array.isArray(oldPosts.data)) {
           return oldPosts;
         }
 
         return {
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
-            if (post._id.toString() === postId.toString()) {
-              const userId = queryClient.getQueryData<{
-                data: { _id: string };
-              }>(["currentUser"])?.data._id;
-              const userIdString = userId?.toString();
+            if (post._id?.toString() === variables.postId?.toString()) {
+              const userIdString = currentUser;
               const isLiked = post.likes?.some(
                 (like) => like.toString() === userIdString
               );
@@ -169,8 +144,8 @@ export const useInteractions = (
                 likes: isLiked
                   ? post.likes?.filter(
                       (like) => like.toString() !== userIdString
-                    )
-                  : [...(post.likes || []), userId!],
+                    ) || []
+                  : [...(post.likes || []), userIdString],
               };
             }
             return post;
@@ -178,26 +153,17 @@ export const useInteractions = (
         };
       });
 
-      return { previousData: previousPosts };
+      return { previousData: previousPostsData };
     },
   });
-
   const likeInteraction = (
     postId: string,
     { onError }: { onError?: () => void }
   ) => {
-    const previousLikedState = liked;
-    const previousLikesCount = amountOfLikes;
-
-    setLiked(!liked);
-    setAmountOfLikes((prev) => (liked ? prev - 1 : prev + 1));
-
     likeMutation.mutate(
       { postId },
       {
         onError: (error) => {
-          setLiked(previousLikedState);
-          setAmountOfLikes(previousLikesCount);
           if (onError) onError();
           toast({
             variant: "destructive",
@@ -208,22 +174,44 @@ export const useInteractions = (
       }
     );
   };
-
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
     onSuccess: (_, variables: { postId: string }) => {
-      const postsData = queryClient.getQueryData<PostFetchType>(["posts"]);
+      toast({
+        title: "Success",
+        description: "Your action was successful.",
+      });
+    },
+    onError: (error, _, context: any) => {
+      // Revert optimistic update on error
+      if (context?.previousData) {
+        queryClient.setQueryData(["posts"], context.previousData);
+      }
 
-      if (postsData?.data) {
-        // Update the specific post in the cached data to avoid full refetch of posts with query validation
-        const updatedPosts = {
-          ...postsData,
-          data: postsData.data.map((post: PostInterface) => {
-            if (post._id.toString() === variables.postId.toString()) {
-              const userId = queryClient.getQueryData<{
-                data: { _id: string };
-              }>(["currentUser"])?.data._id;
-              const userIdString = userId?.toString();
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to process the request. Please try again.",
+      });
+    },
+    onMutate: async (variables: { postId: string }) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
+
+      const previousPostsData = queryClient.getQueryData<PostFetchType>([
+        "posts",
+      ]);
+
+      // Optimistically update the posts cache
+      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
+        if (!oldPosts?.data || !Array.isArray(oldPosts.data)) {
+          return oldPosts;
+        }
+
+        return {
+          ...oldPosts,
+          data: oldPosts.data.map((post: PostInterface) => {
+            if (post._id?.toString() === variables.postId?.toString()) {
+              const userIdString = currentUser;
               const isBookmarked = post.bookmarks?.some(
                 (bookmark) => bookmark.toString() === userIdString
               );
@@ -233,74 +221,8 @@ export const useInteractions = (
                 bookmarks: isBookmarked
                   ? post.bookmarks?.filter(
                       (bookmark) => bookmark.toString() !== userIdString
-                    )
-                  : [...(post.bookmarks || []), userId!],
-              };
-            }
-            return post;
-          }),
-        };
-
-        // Set the updated data back in the cache
-        queryClient.setQueryData(["posts"], updatedPosts);
-      }
-
-      toast({
-        title: "Success",
-        description: "Your action was successful.",
-      });
-    },
-    onError: (error) => {
-      //Error during mutation
-      const previousPosts = queryClient.getQueryData<PostFetchType>(["posts"]);
-      queryClient.setQueryData(["posts"], previousPosts);
-
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "Failed to process the request. Please try again.";
-
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
-      });
-    },
-    onMutate: async (postId: object) => {
-      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
-
-      const previousPostsData = queryClient.getQueryData<PostFetchType>([
-        "posts",
-      ]);
-      const previousPosts = previousPostsData?.data;
-      if (!Array.isArray(previousPosts)) {
-        return { previousData: previousPosts };
-      }
-
-      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!Array.isArray(oldPosts?.data)) {
-          return oldPosts;
-        }
-
-        return {
-          ...oldPosts,
-          data: oldPosts.data.map((post: PostInterface) => {
-            if (post._id.toString() === postId.toString()) {
-              const userId = queryClient.getQueryData<{
-                data: { _id: string };
-              }>(["currentUser"])?.data._id;
-              const userIdString = userId?.toString();
-              const isBookmarked = post.likes?.some(
-                (bookmark) => bookmark.toString() === userIdString
-              );
-
-              return {
-                ...post,
-                bookmarks: isBookmarked
-                  ? post.likes?.filter(
-                      (like) => like.toString() !== userIdString
-                    )
-                  : [...(post.bookmarks || []), userId!],
+                    ) || []
+                  : [...(post.bookmarks || []), userIdString],
               };
             }
             return post;
@@ -308,26 +230,17 @@ export const useInteractions = (
         };
       });
 
-      return { previousData: previousPosts };
+      return { previousData: previousPostsData };
     },
   });
-
   const bookmarkInteraction = (
     postId: string,
     { onError }: { onError?: () => void }
   ) => {
-    const previousBookmarkedState = bookmarked;
-    const previousBookmarksCount = amountOfBookmarks;
-
-    setBookmarked(!bookmarked);
-    setAmountOfBookmarks((prev) => (bookmarked ? prev - 1 : prev + 1));
-
     bookmarkMutation.mutate(
       { postId },
       {
         onError: (error) => {
-          setBookmarked(previousBookmarkedState);
-          setAmountOfBookmarks(previousBookmarksCount);
           if (onError) onError();
           toast({
             variant: "destructive",
@@ -338,10 +251,10 @@ export const useInteractions = (
       }
     );
   };
-
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
+      // Update posts cache without invalidation
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!oldPosts?.data) return oldPosts;
         const postList = Array.isArray(oldPosts.data)
@@ -365,6 +278,7 @@ export const useInteractions = (
         };
       });
 
+      // Update single post cache if it exists
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
@@ -834,6 +748,7 @@ export const useInteractions = (
     bookmarkInteraction,
     bookmarked,
     amountOfBookmarks,
+    commentsCount: currentPostData?.comments?.length ?? 0,
     createCommentInteraction,
     commentContent,
     commentMutationStatus: createCommentMutation.status,
