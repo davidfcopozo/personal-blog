@@ -26,6 +26,7 @@ export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
     bookmarked,
     amountOfBookmarks,
     amountOfLikes,
+    commentsCount,
     // Auth modal properties
     isAuthModalOpen,
     authModalAction,
@@ -95,14 +96,14 @@ export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
                 activeColor="text-pink-500"
                 isActivated={liked}
                 horizontalCount
-              />
+              />{" "}
               <Link
                 href={`/${username}/${post.slug}#comments-section`}
                 passHref
               >
                 <EngagementButton
                   icon={MessageSquare}
-                  count={post.comments?.length}
+                  count={commentsCount}
                   label="Comment"
                   iconStyles="hover:stroke-amber-500 !h-4 !w-4"
                   activeColor="text-amber-500"
