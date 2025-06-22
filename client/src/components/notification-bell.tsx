@@ -13,11 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useSocket } from "@/context/SocketContext";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { Notification } from "@/typings/interfaces";
 
 const NotificationBell: React.FC = () => {
+  const { socket, isConnected } = useSocket();
   const {
     notifications,
     unreadCount,
@@ -27,8 +29,11 @@ const NotificationBell: React.FC = () => {
     markAllAsRead,
     deleteNotification,
   } = useNotifications();
-
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    fetchNotifications(1, 10);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,9 +88,17 @@ const NotificationBell: React.FC = () => {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      {" "}
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
+          {/* Connection status indicator */}
+          <div
+            className={`absolute -top-0.5 -left-0.5 h-2 w-2 rounded-full ${
+              isConnected ? "bg-green-500" : "bg-red-500"
+            }`}
+            title={isConnected ? "Connected" : "Disconnected"}
+          />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
