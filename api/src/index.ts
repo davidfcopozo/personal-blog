@@ -62,13 +62,49 @@ const startServer = async () => {
         methods: ["GET", "POST"],
       },
     });
-
     io.on("connection", (socket) => {
       console.log("User connected:", socket.id);
 
       socket.on("join", (userId) => {
         socket.join(userId);
-        console.log(`User ${userId} joined their room`);
+        console.log(
+          `✅ User ${userId} joined their room with socket ${socket.id}`
+        );
+
+        // Send a confirmation back to the user
+        socket.emit("joinConfirmation", { userId, socketId: socket.id });
+      });
+      socket.on("test-notification", (data) => {
+        console.log("🧪 Test notification request:", data);
+        console.log(
+          "🏠 Available rooms:",
+          Object.keys(io.sockets.adapter.rooms)
+        );
+        console.log(
+          "👥 Clients in target room:",
+          io.sockets.adapter.rooms.get(data.userId)?.size || 0
+        );
+
+        // Send a test notification back to the user's room
+        const testNotification = {
+          id: `test-${Date.now()}`,
+          type: "comment",
+          message: "This is a test notification",
+          sender: {
+            firstName: "Test",
+            lastName: "User",
+            username: "testuser",
+            avatar: null,
+          },
+          relatedPost: null,
+          relatedComment: null,
+          isRead: false,
+          createdAt: new Date(),
+        };
+
+        console.log("🧪 Sending test notification to room:", data.userId);
+        io.to(data.userId).emit("notification", testNotification);
+        console.log("🧪 Test notification sent successfully");
       });
 
       socket.on("disconnect", () => {
