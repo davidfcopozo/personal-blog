@@ -45,20 +45,27 @@ export const createComment = async (
       },
       { new: true }
     );
-
     if (result?.modifiedCount === 1) {
       // Create notification for post author (if not commenting on own post)
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
 
-      if (notificationService && post.postedBy.toString() !== userId) {
-        await notificationService.createCommentNotification(
-          post.postedBy,
-          userId,
+      if (notificationService) {
+        await notificationService.emitCommentUpdate(
           postId,
-          comment._id.toString()
+          comment._id.toString(),
+          "add"
         );
+
+        if (post.postedBy.toString() !== userId) {
+          await notificationService.createCommentNotification(
+            post.postedBy,
+            userId,
+            postId,
+            comment._id.toString()
+          );
+        }
       }
 
       // Check for mentions in the comment content
