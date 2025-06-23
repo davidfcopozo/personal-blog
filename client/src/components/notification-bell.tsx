@@ -209,6 +209,7 @@ const NotificationBell: React.FC = () => {
                         </Link>
                       </div>
                       <div className="flex-shrink-0 flex items-center space-x-2">
+                        {" "}
                         {!notification.isRead && (
                           <Button
                             variant="ghost"
@@ -223,6 +224,7 @@ const NotificationBell: React.FC = () => {
                             title="Mark as read"
                           >
                             <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                            <span className="sr-only">Mark as read</span>
                           </Button>
                         )}
                         <Button
@@ -237,6 +239,7 @@ const NotificationBell: React.FC = () => {
                           title="Delete notification"
                         >
                           <Trash2 className="h-3 w-3" />
+                          <span className="sr-only">Delete notification</span>
                         </Button>
                       </div>
                     </div>

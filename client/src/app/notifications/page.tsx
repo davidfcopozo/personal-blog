@@ -183,6 +183,7 @@ const NotificationsPage: React.FC = () => {
                     </Link>
                   </div>
                   <div className="flex-shrink-0 flex items-center space-x-2">
+                    {" "}
                     {!notification.isRead && (
                       <Button
                         variant="ghost"
@@ -194,9 +195,13 @@ const NotificationsPage: React.FC = () => {
                             markAsRead(notificationId);
                           }
                         }}
-                        className="h-8 w-8 p-0"
+                        className="h-8 px-2"
+                        title="Mark as read"
                       >
-                        <Circle className="h-4 w-4 fill-blue-500 text-blue-500" />
+                        <Circle className="h-4 w-4 fill-blue-500 text-blue-500 mr-1" />
+                        <span className="sr-only md:not-sr-only">
+                          Mark as read
+                        </span>
                       </Button>
                     )}
                     <Button
@@ -209,9 +214,11 @@ const NotificationsPage: React.FC = () => {
                           deleteNotification(notificationId);
                         }
                       }}
-                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-8 px-2 opacity-50 group-hover:opacity-100 transition-opacity"
+                      title="Delete notification"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="h-4 w-4 text-destructive mr-1" />
+                      <span className="sr-only md:not-sr-only">Delete</span>
                     </Button>
                   </div>
                 </div>
