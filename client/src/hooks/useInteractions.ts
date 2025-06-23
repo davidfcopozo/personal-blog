@@ -29,7 +29,18 @@ export const useInteractions = (
   } = useAuthModal();
   const [currentUser, setCurrentUser] = useState("");
   const cachedPostsData = queryClient.getQueryData<PostFetchType>(["posts"]);
+  const cachedSinglePostData = queryClient.getQueryData<any>([
+    "post",
+    post?.slug,
+  ]);
+
   const currentPostData = useMemo(() => {
+    // First try to get from individual post cache (most up-to-date for single post pages)
+    if (cachedSinglePostData?.data && cachedSinglePostData.data._id) {
+      return cachedSinglePostData.data;
+    }
+
+    // Then try posts list cache
     if (
       cachedPostsData?.data &&
       Array.isArray(cachedPostsData.data) &&
@@ -39,8 +50,10 @@ export const useInteractions = (
         (p: PostInterface) => p._id.toString() === postId.toString()
       );
     }
+
+    // Fallback to the original post prop
     return post;
-  }, [cachedPostsData, post, postId]);
+  }, [cachedPostsData, cachedSinglePostData, post, postId]);
 
   const bookmarks = useMemo(
     () => currentPostData?.bookmarks ?? [],
@@ -50,17 +63,18 @@ export const useInteractions = (
     () => currentPostData?.likes ?? [],
     [currentPostData?.likes]
   );
-
   const liked = useMemo(() => {
     if (!currentUser || !likes?.length) return false;
-    return likes.some((like) => like.toString() === currentUser);
+    return likes.some((like: string) => like.toString() === currentUser);
   }, [currentUser, likes]);
 
   const amountOfLikes = useMemo(() => likes.length, [likes]);
 
   const bookmarked = useMemo(() => {
     if (!currentUser || !bookmarks?.length) return false;
-    return bookmarks.some((bookmark) => bookmark.toString() === currentUser);
+    return bookmarks.some(
+      (bookmark: string) => bookmark.toString() === currentUser
+    );
   }, [currentUser, bookmarks]);
 
   const amountOfBookmarks = useMemo(() => bookmarks.length, [bookmarks]);
@@ -93,7 +107,6 @@ export const useInteractions = (
       setCommentLikesCount(comment.likes?.length ?? 0);
     }
   }, [comment, currentUser]);
-
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
@@ -107,8 +120,14 @@ export const useInteractions = (
     },
     onError: (error, _, context: any) => {
       // Revert optimistic update on error
-      if (context?.previousData) {
-        queryClient.setQueryData(["posts"], context.previousData);
+      if (context?.previousPostsData) {
+        queryClient.setQueryData(["posts"], context.previousPostsData);
+      }
+      if (context?.previousPostData) {
+        queryClient.setQueryData(
+          ["post", post?.slug],
+          context.previousPostData
+        );
       }
 
       toast({
@@ -119,9 +138,14 @@ export const useInteractions = (
     },
     onMutate: async (variables: { postId: string }) => {
       await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
+      await queryClient.cancelQueries({ queryKey: ["post", post?.slug] });
 
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
+      ]);
+      const previousPostData = queryClient.getQueryData<any>([
+        "post",
+        post?.slug,
       ]);
 
       // Optimistically update the posts cache
@@ -153,7 +177,29 @@ export const useInteractions = (
         };
       });
 
-      return { previousData: previousPostsData };
+      // Optimistically update the single post cache
+      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
+        if (!oldPost?.data) return oldPost;
+
+        const userIdString = currentUser;
+        const isLiked = oldPost.data.likes?.some(
+          (like: string) => like.toString() === userIdString
+        );
+
+        return {
+          ...oldPost,
+          data: {
+            ...oldPost.data,
+            likes: isLiked
+              ? oldPost.data.likes?.filter(
+                  (like: string) => like.toString() !== userIdString
+                ) || []
+              : [...(oldPost.data.likes || []), userIdString],
+          },
+        };
+      });
+
+      return { previousPostsData, previousPostData } as any;
     },
   });
   const likeInteraction = (
@@ -184,8 +230,14 @@ export const useInteractions = (
     },
     onError: (error, _, context: any) => {
       // Revert optimistic update on error
-      if (context?.previousData) {
-        queryClient.setQueryData(["posts"], context.previousData);
+      if (context?.previousPostsData) {
+        queryClient.setQueryData(["posts"], context.previousPostsData);
+      }
+      if (context?.previousPostData) {
+        queryClient.setQueryData(
+          ["post", post?.slug],
+          context.previousPostData
+        );
       }
 
       toast({
@@ -196,9 +248,14 @@ export const useInteractions = (
     },
     onMutate: async (variables: { postId: string }) => {
       await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
+      await queryClient.cancelQueries({ queryKey: ["post", post?.slug] });
 
       const previousPostsData = queryClient.getQueryData<PostFetchType>([
         "posts",
+      ]);
+      const previousPostData = queryClient.getQueryData<any>([
+        "post",
+        post?.slug,
       ]);
 
       // Optimistically update the posts cache
@@ -230,7 +287,29 @@ export const useInteractions = (
         };
       });
 
-      return { previousData: previousPostsData };
+      // Optimistically update the single post cache
+      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
+        if (!oldPost?.data) return oldPost;
+
+        const userIdString = currentUser;
+        const isBookmarked = oldPost.data.bookmarks?.some(
+          (bookmark: string) => bookmark.toString() === userIdString
+        );
+
+        return {
+          ...oldPost,
+          data: {
+            ...oldPost.data,
+            bookmarks: isBookmarked
+              ? oldPost.data.bookmarks?.filter(
+                  (bookmark: string) => bookmark.toString() !== userIdString
+                ) || []
+              : [...(oldPost.data.bookmarks || []), userIdString],
+          },
+        };
+      });
+
+      return { previousPostsData, previousPostData } as any;
     },
   });
   const bookmarkInteraction = (
@@ -300,7 +379,6 @@ export const useInteractions = (
 
         return oldPost;
       });
-
       queryClient.setQueryData<CommentInterface[]>(
         ["comments"],
         (oldComments) => {
