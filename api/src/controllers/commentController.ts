@@ -37,7 +37,6 @@ export const createComment = async (
       postedBy: userId,
       post: postId,
     });
-
     const result = await Post.updateOne(
       { _id: postId },
       {
@@ -45,59 +44,37 @@ export const createComment = async (
       },
       { new: true }
     );
+
     if (result?.modifiedCount === 1) {
       // Create notification for post author (if not commenting on own post)
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
       if (notificationService) {
-        console.log(
-          "📤 Emitting comment update for post:",
-          postId,
-          "comment:",
-          comment._id.toString()
-        );
         await notificationService.emitCommentUpdate(
           postId,
           comment._id.toString(),
           "add"
         );
 
+        // Emit new comment for real-time rendering
+        const populatedComment = await Comment.findById(comment._id).populate(
+          "postedBy"
+        );
+        await notificationService.emitNewComment(postId, populatedComment);
+
         const postOwnerId = (post.postedBy as any)?._id
           ? (post.postedBy as any)._id.toString()
           : post.postedBy.toString();
 
         if (postOwnerId !== userId) {
-          console.log(
-            "📧 Creating comment notification for post owner:",
-            postOwnerId,
-            "from user:",
-            userId
-          );
-          console.log("📋 Post details:", {
-            postId: post._id,
-            postTitle: post.title,
-            postOwnerType: typeof post.postedBy,
-            postOwner: post.postedBy,
-            postOwnerId: postOwnerId,
-            commenterType: typeof userId,
-            commenter: userId,
-          });
-
           await notificationService.createCommentNotification(
             postOwnerId,
             userId,
             postId,
             comment._id.toString()
           );
-          console.log("✅ Comment notification created successfully");
-        } else {
-          console.log(
-            "🚫 Not sending notification - user commented on their own post"
-          );
         }
-      } else {
-        console.log("❌ No notification service available for comment");
       }
 
       // Check for mentions in the comment content
@@ -277,7 +254,7 @@ export const toggleLike = async (
     const post = (await Post.findById(postId)) as PostMongooseType | null;
     const comment: CommentType = await Comment.findById({
       _id: commentId,
-    });
+    }).populate("postedBy");
 
     if (!comment) {
       throw new NotFound("No comments found");
@@ -289,6 +266,9 @@ export const toggleLike = async (
     }
 
     const isLiked = comment.likes?.filter((like) => like.toString() === userId);
+    const notificationService: NotificationService = req.app.get(
+      "notificationService"
+    );
 
     if (isLiked?.length! < 1) {
       // Add like to the comment's likes array property
@@ -300,6 +280,29 @@ export const toggleLike = async (
 
       //If the comment id has been removed from the post's comment array, also remove it from the comment document
       if (result.modifiedCount === 1) {
+        // Emit socket event for real-time updates
+        if (notificationService) {
+          await notificationService.emitCommentLikeUpdate(
+            commentId,
+            userId,
+            true
+          );
+
+          // Create notification for comment author (if not liking own comment)
+          const commentOwnerId = (comment.postedBy as any)?._id
+            ? (comment.postedBy as any)._id.toString()
+            : comment.postedBy.toString();
+
+          if (commentOwnerId !== userId) {
+            await notificationService.createCommentLikeNotification(
+              commentOwnerId,
+              userId,
+              postId,
+              commentId
+            );
+          }
+        }
+
         res
           .status(StatusCodes.OK)
           .json({ success: true, msg: "You've liked this comment." });
@@ -315,6 +318,15 @@ export const toggleLike = async (
       );
 
       if (result.modifiedCount === 1) {
+        // Emit socket event for real-time updates
+        if (notificationService) {
+          await notificationService.emitCommentLikeUpdate(
+            commentId,
+            userId,
+            false
+          );
+        }
+
         res.status(StatusCodes.OK).json({
           success: true,
           msg: "You've disliked this comment.",
