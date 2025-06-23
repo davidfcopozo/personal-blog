@@ -70,9 +70,6 @@ const startServer = async () => {
         userId = joinUserId;
         if (userId) {
           socket.join(userId);
-          console.log(
-            `✅ User ${userId} joined their room with socket ${socket.id}`
-          );
         }
 
         // Send a confirmation back to the user

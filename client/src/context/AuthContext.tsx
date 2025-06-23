@@ -29,19 +29,13 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
     queryKey: ["currentUser"],
     queryFn: async () => {
       const session = await getSession();
-      console.log("AuthContext: Session data:", session);
-
       if (!session?.user?.id) {
-        console.log("AuthContext: No session or user ID found");
         return null;
       }
-
       try {
         const { data } = await axios.get(`/api/auth/me`);
-        console.log("AuthContext: User data fetched:", data);
         return data;
       } catch (error) {
-        console.error("AuthContext: Error fetching user:", error);
         return null;
       }
     },
@@ -53,7 +47,6 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const initializeAuth = async () => {
       if (!currentUser && !isUserLoading) {
-        console.log("AuthContext: Refetching user data");
         await refetchUser();
       }
       setIsLoading(false);
@@ -68,11 +61,9 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
         ...credentials,
         redirect: false,
       });
-
       if (result?.error) {
         throw new Error(result.error);
       }
-
       setTimeout(async () => {
         await refetchUser();
         setIsLoading(false);
@@ -89,7 +80,6 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
       if (result?.error) {
         throw new Error(result.error);
       }
-
       setTimeout(async () => {
         await refetchUser();
         setIsLoading(false);
