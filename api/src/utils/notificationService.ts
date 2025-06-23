@@ -462,41 +462,22 @@ export class NotificationService {
         timestamp: new Date(),
       });
     }
-  }
-  async emitNewComment(postId: string, comment: any, postSlug: string) {
+  }  async emitNewComment(postId: string, comment: any, postSlug: string) {
     if (this.io) {
-      console.log("📡 Emitting newComment socket event:", {
-        postId,
-        postSlug,
-        commentId: comment._id,
-        commentAuthor: comment.postedBy?._id || comment.postedBy,
-      });
-
       this.io.emit("newComment", {
         postId,
         postSlug,
         comment,
         timestamp: new Date(),
       });
-    } else {
-      console.error("❌ Socket.io not available for emitting newComment");
     }
-  }
-  async emitNewReply(
+  }  async emitNewReply(
     postId: string,
     parentCommentId: string,
     reply: any,
     postSlug: string
   ) {
     if (this.io) {
-      console.log("📡 Emitting newReply socket event:", {
-        postId,
-        postSlug,
-        parentCommentId,
-        replyId: reply._id,
-        replyAuthor: reply.postedBy?._id || reply.postedBy,
-      });
-
       this.io.emit("newReply", {
         postId,
         postSlug,
@@ -504,8 +485,6 @@ export class NotificationService {
         reply,
         timestamp: new Date(),
       });
-    } else {
-      console.error("❌ Socket.io not available for emitting newReply");
     }
   }
 }
