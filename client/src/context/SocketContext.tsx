@@ -262,95 +262,144 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
-
     newSocket.on("newComment", (data) => {
-      queryClient.setQueryData(["comments"], (oldData: any) => {
-        if (!oldData?.data) {
-          return { data: [data.comment] };
-        }
-
-        if (!Array.isArray(oldData.data)) {
-          return { data: [data.comment, oldData.data] };
-        }
-
-        // Check if comment already exists (deduplication)
-        const exists = oldData.data.some(
-          (comment: any) =>
-            comment._id?.toString() === data.comment._id?.toString()
-        );
-
-        if (!exists) {
-          return {
-            ...oldData,
-            data: [data.comment, ...oldData.data],
-          };
-        }
-
-        return oldData;
+      console.log("📡 Received newComment socket event:", {
+        postId: data.postId,
+        postSlug: data.postSlug,
+        commentId: data.comment._id,
+        commentAuthor: data.comment.postedBy?._id || data.comment.postedBy,
+        currentUser: userId,
       });
 
-      // Invalidate comments query to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-    });
+      // For ALL users (including author), add the new comment to the cache
+      // This ensures everyone sees the comment immediately
+      queryClient.setQueryData<any>(["comments"], (oldData: any) => {
+        if (!oldData) return [data.comment];
 
-    newSocket.on("newReply", (data) => {
-      // Add new reply to parent comment
-      queryClient.setQueryData(["comments"], (oldData: any) => {
-        if (!oldData?.data || !Array.isArray(oldData.data)) {
+        // Check if comment already exists to avoid duplicates
+        const exists = oldData.find((c: any) => c._id === data.comment._id);
+        if (exists) {
+          console.log("🔄 Comment already exists in cache, skipping");
           return oldData;
         }
 
-        return {
-          ...oldData,
-          data: oldData.data.map((comment: any) => {
-            if (comment._id?.toString() === data.parentCommentId) {
-              const replies = comment.replies || [];
-              // Check if reply already exists
-              const exists = replies.some(
-                (replyId: string) =>
-                  replyId.toString() === data.reply._id?.toString()
-              );
+        console.log("✅ Adding new comment to cache");
+        return [...oldData, data.comment];
+      });
 
-              if (!exists) {
-                return {
-                  ...comment,
-                  replies: [...replies, data.reply._id],
-                };
-              }
+      // Update post caches to increment comment count for all users
+      updatePostInCache(data.postId, (post) => {
+        const comments = post.comments || [];
+        if (!comments.includes(data.comment._id)) {
+          console.log("✅ Adding comment ID to post comments array");
+          return { ...post, comments: [...comments, data.comment._id] };
+        }
+        return post;
+      });
+
+      // Show toast notification for post author if it's their post and they didn't create the comment
+      if (data.comment.postedBy !== userId) {
+        // Try to get post data from cache
+        let postOwnerId = null;
+
+        // First try to get from individual post cache
+        const singlePostData = queryClient.getQueryData<any>([
+          "post",
+          data.postSlug,
+        ]);
+        if (singlePostData?.data?.postedBy) {
+          postOwnerId = singlePostData.data.postedBy;
+        }
+
+        // If not found, try from posts list cache
+        if (!postOwnerId) {
+          const postsData = queryClient.getQueryData<any>(["posts"]);
+          const postInList = postsData?.data?.find(
+            (p: any) => p._id === data.postId
+          );
+          if (postInList?.postedBy) {
+            postOwnerId = postInList.postedBy;
+          }
+        }
+
+        // Check if current user is the post owner
+        if (
+          postOwnerId &&
+          (postOwnerId === userId || postOwnerId.toString() === userId)
+        ) {
+          console.log("📬 Showing notification to post owner");
+          toast({
+            title: `${getNotificationIcon("comment")} New Comment`,
+            description: `Someone commented on your post`,
+            duration: 3000,
+          });
+        }
+      }
+    });
+    newSocket.on("newReply", (data) => {
+      console.log("📡 Received newReply socket event:", {
+        postId: data.postId,
+        postSlug: data.postSlug,
+        parentCommentId: data.parentCommentId,
+        replyId: data.reply._id,
+        replyAuthor: data.reply.postedBy?._id || data.reply.postedBy,
+        currentUser: userId,
+      });
+
+      // For ALL users (including author), add the new reply to the cache
+      // This ensures everyone sees the reply immediately
+      queryClient.setQueryData(
+        [`replies-${data.parentCommentId}`],
+        (oldData: any) => {
+          if (!oldData) return [data.reply];
+
+          // Check if reply already exists to avoid duplicates
+          const exists = oldData.find((r: any) => r._id === data.reply._id);
+          if (exists) {
+            console.log("🔄 Reply already exists in cache, skipping");
+            return oldData;
+          }
+
+          console.log("✅ Adding new reply to cache");
+          return [...oldData, data.reply];
+        }
+      );
+
+      // Also update the parent comment's replies array in the comments cache for all users
+      queryClient.setQueryData(["comments"], (oldComments: any) => {
+        if (!oldComments) return oldComments;
+
+        return oldComments.map((comment: any) => {
+          if (comment._id === data.parentCommentId) {
+            const currentReplies = comment.replies || [];
+            if (!currentReplies.includes(data.reply._id)) {
+              console.log("✅ Adding reply ID to parent comment replies array");
+              return {
+                ...comment,
+                replies: [...currentReplies, data.reply._id],
+              };
             }
-            return comment;
-          }),
-        };
+          }
+          return comment;
+        });
       });
 
-      // Also add the reply to comments cache if it doesn't exist
-      queryClient.setQueryData(["comments"], (oldData: any) => {
-        if (!oldData?.data) {
-          return { data: [data.reply] };
+      // Show toast notification for reply author if it's their comment and they didn't create the reply
+      if (data.reply.postedBy !== userId) {
+        const parentComment = queryClient.getQueryData<any>([
+          "comment",
+          data.parentCommentId,
+        ]);
+
+        if (parentComment?.data?.postedBy === userId) {
+          console.log("📬 Showing notification to comment owner");
+          toast({
+            title: `${getNotificationIcon("reply")} New Reply`,
+            description: `Someone replied to your comment`,
+            duration: 3000,
+          });
         }
-
-        if (!Array.isArray(oldData.data)) {
-          return { data: [data.reply, oldData.data] };
-        }
-
-        // Check if reply already exists as a comment
-        const exists = oldData.data.some(
-          (comment: any) =>
-            comment._id?.toString() === data.reply._id?.toString()
-        );
-
-        if (!exists) {
-          return {
-            ...oldData,
-            data: [...oldData.data, data.reply],
-          };
-        }
-
-        return oldData;
-      });
-
-      // Invalidate comments query to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      }
     });
     setSocket(newSocket);
     return () => {
