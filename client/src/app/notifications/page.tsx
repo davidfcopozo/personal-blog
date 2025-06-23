@@ -151,7 +151,9 @@ const NotificationsPage: React.FC = () => {
                       className="block"
                       onClick={() => {
                         if (!notification.isRead) {
-                          markAsRead(notification.id);
+                          if (notification.id) {
+                            markAsRead(notification.id);
+                          }
                         }
                       }}
                     >
@@ -176,7 +178,9 @@ const NotificationsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={() =>
+                          notification.id && markAsRead(notification.id)
+                        }
                         className="h-8 w-8 p-0"
                       >
                         <Circle className="h-4 w-4 fill-blue-500 text-blue-500" />
@@ -185,7 +189,11 @@ const NotificationsPage: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => deleteNotification(notification.id)}
+                      onClick={() => {
+                        if (notification.id) {
+                          deleteNotification(notification.id);
+                        }
+                      }}
                       className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
