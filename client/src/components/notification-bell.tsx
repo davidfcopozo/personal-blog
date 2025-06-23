@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bell, Check, Trash2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,16 +27,23 @@ const NotificationBell: React.FC = () => {
     deleteNotification,
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    fetchNotifications(1, 10);
+    if (!hasFetchedRef.current) {
+      fetchNotifications(1, 10);
+      hasFetchedRef.current = true;
+    }
   }, [fetchNotifications]);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchNotifications(1, 10);
+    if (isOpen && hasFetchedRef.current) {
+      if (notifications.length === 0) {
+        fetchNotifications(1, 10);
+      }
     }
-  }, [isOpen, fetchNotifications]);
+  }, [isOpen, fetchNotifications, notifications.length]);
+
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
       await markAsRead(notification.id || notification._id!);
