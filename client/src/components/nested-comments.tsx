@@ -13,11 +13,10 @@ const NestedComment: FC<NestedCommentProps> = ({
   // State to track if this comment is expandable
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
-
   const { fetchedReplies, isLoading, isFetching } = useFetchReplies({
     ids: comment?.replies?.length >= 1 ? comment?.replies : [],
     key: `replies-${comment._id}`,
-    url: `/api/replies/${post._id}/${comment?._id}`,
+    url: `/replies/${post._id}/${comment?._id}`,
     // Only fetch if expanded or children not yet loaded
     isExpanded: isExpanded,
     childrenLoaded: !childrenLoaded,
