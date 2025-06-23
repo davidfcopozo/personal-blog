@@ -403,7 +403,8 @@ export interface NotificationPreferencesInterface {
 }
 
 export interface Notification {
-  id: string;
+  id?: string;
+  _id?: string;
   type: "mention" | "comment" | "reply" | "bookmark" | "like";
   message: string;
   sender: {
