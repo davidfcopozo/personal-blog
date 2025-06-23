@@ -78,15 +78,6 @@ export const createReply = async (
         if (!populatedReply) {
           throw new BadRequest("Failed to populate the new reply.");
         }
-
-        console.log("💬 Emitting new reply event:", {
-          postId,
-          postSlug: post.slug,
-          parentCommentId: parentId,
-          replyId: populatedReply._id,
-          replyAuthor: populatedReply.postedBy,
-        });
-
         await notificationService.emitNewReply(
           postId,
           parentId,
@@ -100,13 +91,6 @@ export const createReply = async (
           comment.postedBy &&
           comment.postedBy._id.toString() !== userId
         ) {
-          console.log("📬 Creating reply notification:", {
-            commentOwnerId: comment.postedBy._id.toString(),
-            replyAuthorId: userId.toString(),
-            postId,
-            replyId: reply._id.toString(),
-          });
-
           await notificationService.createReplyNotification(
             comment.postedBy._id.toString(),
             userId.toString(),
