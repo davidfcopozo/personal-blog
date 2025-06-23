@@ -44,10 +44,16 @@ const NotificationsPage: React.FC = () => {
         return "🔔";
     }
   };
-
   const getNotificationLink = (notification: Notification) => {
-    if (notification.relatedPost) {
-      return `/posts/${notification.relatedPost}`;
+    if (
+      notification.relatedPost &&
+      typeof notification.relatedPost === "object"
+    ) {
+      const username = notification.relatedPost.postedBy?.username;
+      const slug = notification.relatedPost.slug;
+      if (username && slug) {
+        return `/${username}/${slug}`;
+      }
     }
     return "#";
   };
@@ -58,7 +64,7 @@ const NotificationsPage: React.FC = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto mt-16 px-4 py-8 max-w-4xl">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -131,9 +137,10 @@ const NotificationsPage: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-2">
+              {" "}
               {filteredNotifications.map((notification) => (
                 <div
-                  key={notification.id}
+                  key={notification._id || notification.id}
                   className={`group flex items-start space-x-4 p-4 border rounded-lg transition-colors hover:bg-muted/50 ${
                     !notification.isRead
                       ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
@@ -151,8 +158,10 @@ const NotificationsPage: React.FC = () => {
                       className="block"
                       onClick={() => {
                         if (!notification.isRead) {
-                          if (notification.id) {
-                            markAsRead(notification.id);
+                          const notificationId =
+                            notification._id || notification.id;
+                          if (notificationId) {
+                            markAsRead(notificationId);
                           }
                         }
                       }}
@@ -178,9 +187,13 @@ const NotificationsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          notification.id && markAsRead(notification.id)
-                        }
+                        onClick={() => {
+                          const notificationId =
+                            notification._id || notification.id;
+                          if (notificationId) {
+                            markAsRead(notificationId);
+                          }
+                        }}
                         className="h-8 w-8 p-0"
                       >
                         <Circle className="h-4 w-4 fill-blue-500 text-blue-500" />
@@ -190,8 +203,10 @@ const NotificationsPage: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        if (notification.id) {
-                          deleteNotification(notification.id);
+                        const notificationId =
+                          notification._id || notification.id;
+                        if (notificationId) {
+                          deleteNotification(notificationId);
                         }
                       }}
                       className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
