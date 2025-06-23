@@ -413,7 +413,16 @@ export interface Notification {
     username: string;
     avatar: string;
   };
-  relatedPost?: string | { _id: string; slug?: string; title?: string };
+  relatedPost?:
+    | string
+    | {
+        _id: string;
+        slug?: string;
+        title?: string;
+        postedBy?: {
+          username: string;
+        };
+      };
   relatedComment?: string | { _id: string; content?: string };
   isRead: boolean;
   createdAt: string;
