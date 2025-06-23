@@ -28,15 +28,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const queryClient = useQueryClient(); // Helper function to update a specific post in the React Query cache
+  const queryClient = useQueryClient();
   const updatePostInCache = (
     postId: string,
     updateFn: (post: PostInterface) => PostInterface
   ) => {
     console.log("🔄 Updating post in cache:", postId);
+    let hasUpdated = false;
 
-    // Update posts list cache
-    const updated = queryClient.setQueryData<PostFetchType>(
+    const postsUpdated = queryClient.setQueryData<PostFetchType>(
       ["posts"],
       (oldData) => {
         if (!oldData?.data || !Array.isArray(oldData.data)) {
@@ -52,25 +52,66 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
               console.log("Found matching post to update:", post._id);
               const updatedPost = updateFn(post);
               console.log("Post updated from:", post, "to:", updatedPost);
+              hasUpdated = true;
               return updatedPost;
             }
             return post;
           }),
         };
 
-        console.log("Cache updated successfully");
+        console.log("Posts cache updated successfully");
         return updatedData;
       }
     );
 
-    console.log("setQueryData returned:", updated);
+    // Also update individual post cache if it exists. We need to check all possible single post cache keys
+    const queries = queryClient.getQueryCache().findAll({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return (
+          Array.isArray(queryKey) &&
+          queryKey.length === 2 &&
+          queryKey[0] === "post" &&
+          typeof queryKey[1] === "string"
+        );
+      },
+    });
+
+    queries.forEach((query) => {
+      const [, slug] = query.queryKey as [string, string];
+      queryClient.setQueryData(["post", slug], (oldData: any) => {
+        if (!oldData?.data || oldData.data._id?.toString() !== postId) {
+          return oldData;
+        }
+
+        console.log(`Found individual post cache [post, ${slug}], updating...`);
+        const updatedPost = updateFn(oldData.data);
+        hasUpdated = true;
+        return {
+          ...oldData,
+          data: updatedPost,
+        };
+      });
+    });
+
+    if (!hasUpdated) {
+      console.log(
+        "No cache found for post, invalidating queries to refetch..."
+      );
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+      queries.forEach((query) => {
+        queryClient.invalidateQueries({ queryKey: query.queryKey });
+      });
+    }
+
+    console.log("setQueryData returned:", postsUpdated);
   };
 
   useEffect(() => {
     console.log("SocketContext useEffect triggered.");
     console.log("Auth loading:", isAuthLoading);
     console.log("User:", currentUser);
-    // Don't try to connect while auth is still loading
     if (isAuthLoading) {
       console.log("Auth still loading, waiting...");
       return;
@@ -79,7 +120,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const userId = currentUser?._id || currentUser?.data?._id;
     if (!userId) {
       console.log("No user ID, not connecting to socket. User:", currentUser);
-      // Clean up existing socket if user logs out
       if (socket) {
         console.log("Cleaning up existing socket connection");
         socket.close();
@@ -120,10 +160,19 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       console.error("❌ Socket.IO connection error:", error);
       setIsConnected(false);
     });
-
-    // Listen for global post updates for real-time interaction counts
     newSocket.on("postLikeUpdate", (data) => {
       console.log("👍 Received like update:", data);
+
+      // Debug: Check what queries are in the cache
+      const allQueries = queryClient.getQueryCache().getAll();
+      console.log(
+        "All queries in cache:",
+        allQueries.map((q) => ({
+          queryKey: q.queryKey,
+          hasData: !!q.state.data,
+        }))
+      );
+
       console.log(
         "Current posts cache before update:",
         queryClient.getQueryData(["posts"])
@@ -133,14 +182,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         console.log("Updating post:", post._id, "with like data:", data);
         const likes = post.likes || [];
         if (data.isLiked) {
-          // Add like if not already present
           if (!likes.includes(data.userId)) {
             const updatedPost = { ...post, likes: [...likes, data.userId] };
             console.log("Updated post with new like:", updatedPost);
             return updatedPost;
           }
         } else {
-          // Remove like
           const updatedPost = {
             ...post,
             likes: likes.filter((id) => id !== data.userId),
@@ -156,18 +203,26 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         queryClient.getQueryData(["posts"])
       );
     });
-
     newSocket.on("postBookmarkUpdate", (data) => {
       console.log("🔖 Received bookmark update:", data);
+
+      // Debug: Check what queries are in the cache
+      const allQueries = queryClient.getQueryCache().getAll();
+      console.log(
+        "All queries in cache:",
+        allQueries.map((q) => ({
+          queryKey: q.queryKey,
+          hasData: !!q.state.data,
+        }))
+      );
+
       updatePostInCache(data.postId, (post) => {
         const bookmarks = post.bookmarks || [];
         if (data.isBookmarked) {
-          // Add bookmark if not already present
           if (!bookmarks.includes(data.userId)) {
             return { ...post, bookmarks: [...bookmarks, data.userId] };
           }
         } else {
-          // Remove bookmark
           return {
             ...post,
             bookmarks: bookmarks.filter((id) => id !== data.userId),
@@ -182,12 +237,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       updatePostInCache(data.postId, (post) => {
         const comments = post.comments || [];
         if (data.action === "add") {
-          // Add comment if not already present
           if (!comments.includes(data.commentId)) {
             return { ...post, comments: [...comments, data.commentId] };
           }
         } else if (data.action === "remove") {
-          // Remove comment
           return {
             ...post,
             comments: comments.filter((id) => id !== data.commentId),
