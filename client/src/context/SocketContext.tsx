@@ -33,25 +33,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     postId: string,
     updateFn: (post: PostInterface) => PostInterface
   ) => {
-    console.log("🔄 Updating post in cache:", postId);
     let hasUpdated = false;
 
     const postsUpdated = queryClient.setQueryData<PostFetchType>(
       ["posts"],
       (oldData) => {
         if (!oldData?.data || !Array.isArray(oldData.data)) {
-          console.log("No posts data found in cache");
           return oldData;
         }
 
-        console.log("Found posts data, updating...");
         const updatedData = {
           ...oldData,
           data: oldData.data.map((post: PostInterface) => {
             if (post._id?.toString() === postId) {
-              console.log("Found matching post to update:", post._id);
               const updatedPost = updateFn(post);
-              console.log("Post updated from:", post, "to:", updatedPost);
               hasUpdated = true;
               return updatedPost;
             }
@@ -59,7 +54,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           }),
         };
 
-        console.log("Posts cache updated successfully");
         return updatedData;
       }
     );
@@ -83,8 +77,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         if (!oldData?.data || oldData.data._id?.toString() !== postId) {
           return oldData;
         }
-
-        console.log(`Found individual post cache [post, ${slug}], updating...`);
         const updatedPost = updateFn(oldData.data);
         hasUpdated = true;
         return {
@@ -95,33 +87,22 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     if (!hasUpdated) {
-      console.log(
-        "No cache found for post, invalidating queries to refetch..."
-      );
+      // Fallback: invalidate queries to refetch if cache update failed
       queryClient.invalidateQueries({ queryKey: ["posts"] });
 
       queries.forEach((query) => {
         queryClient.invalidateQueries({ queryKey: query.queryKey });
       });
     }
-
-    console.log("setQueryData returned:", postsUpdated);
   };
-
   useEffect(() => {
-    console.log("SocketContext useEffect triggered.");
-    console.log("Auth loading:", isAuthLoading);
-    console.log("User:", currentUser);
     if (isAuthLoading) {
-      console.log("Auth still loading, waiting...");
       return;
     }
 
     const userId = currentUser?._id || currentUser?.data?._id;
     if (!userId) {
-      console.log("No user ID, not connecting to socket. User:", currentUser);
       if (socket) {
-        console.log("Cleaning up existing socket connection");
         socket.close();
         setSocket(null);
         setIsConnected(false);
