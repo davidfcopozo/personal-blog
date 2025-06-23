@@ -11,6 +11,7 @@ import {
 } from "@/typings/interfaces";
 import { getSession } from "next-auth/react";
 import { useAuthModal } from "./useAuthModal";
+import { useSocket } from "@/context/SocketContext";
 
 export const useInteractions = (
   post?: PostType,
@@ -19,6 +20,7 @@ export const useInteractions = (
   const postId = useRef(post?._id).current;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { socket } = useSocket();
   const [commentContent, setCommentContent] = useState<string>("");
   const {
     requireAuth,
@@ -98,7 +100,6 @@ export const useInteractions = (
 
     getUserId();
   }, []);
-
   useEffect(() => {
     if (comment && currentUser) {
       const userLikedComment =
@@ -107,6 +108,48 @@ export const useInteractions = (
       setCommentLikesCount(comment.likes?.length ?? 0);
     }
   }, [comment, currentUser]);
+
+  useEffect(() => {
+    if (!socket || !comment) return;
+
+    const handleCommentLikeUpdate = (data: {
+      commentId: string;
+      userId: string;
+      isLiked: boolean;
+    }) => {
+      if (data.commentId === comment._id) {
+        if (data.userId === currentUser) {
+          setCommentLiked(data.isLiked);
+        }
+
+        setCommentLikesCount((prev) => {
+          const currentLikes = comment.likes || [];
+          const userAlreadyLiked = currentLikes.includes(data.userId);
+
+          if (data.isLiked && !userAlreadyLiked) {
+            return prev + 1;
+          } else if (!data.isLiked && userAlreadyLiked) {
+            return prev - 1;
+          }
+          return prev;
+        });
+
+        if (comment.likes) {
+          if (data.isLiked && !comment.likes.includes(data.userId)) {
+            comment.likes.push(data.userId);
+          } else if (!data.isLiked) {
+            comment.likes = comment.likes.filter((id) => id !== data.userId);
+          }
+        }
+      }
+    };
+
+    socket.on("commentLikeUpdate", handleCommentLikeUpdate);
+
+    return () => {
+      socket.off("commentLikeUpdate", handleCommentLikeUpdate);
+    };
+  }, [socket, comment, currentUser]);
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
@@ -693,24 +736,16 @@ export const useInteractions = (
       );
     });
   };
-
   const likeCommentMutation = usePutRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (_, variables: { commentId: string }) => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-      queryClient.invalidateQueries({
-        queryKey: ["comments", variables.commentId],
-      });
-
+      // No need to invalidate queries since we're using optimistic updates
       toast({
         title: "Success",
         description: "Your action was successful.",
       });
     },
     onError: (error, variables) => {
-      //Error during mutation
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-
       const errorMessage =
         error &&
         typeof error === "object" &&
@@ -721,48 +756,6 @@ export const useInteractions = (
         title: "Error",
         description: errorMessage,
       });
-    },
-    onMutate: async (newReply: any) => {
-      await queryClient.cancelQueries({ queryKey: ["comments"], exact: true });
-      await queryClient.cancelQueries({
-        queryKey: ["comments", `${comment?._id}`],
-        exact: true,
-      });
-
-      const previousCommentsData = queryClient.getQueryData<CommentFetchType>([
-        "comments",
-      ]);
-
-      const previousComments = previousCommentsData?.data;
-      if (!Array.isArray(previousComments)) {
-        return { previousData: previousComments };
-      }
-
-      queryClient.setQueryData(
-        ["comments"],
-        (oldComments: CommentFetchType) => {
-          if (!oldComments?.data) return oldComments;
-
-          const commentList = Array.isArray(oldComments.data)
-            ? oldComments.data
-            : [oldComments.data];
-
-          return {
-            ...oldComments,
-            data: commentList.map((existingComment: CommentInterface) => {
-              if (existingComment.post.toString() === postId?.toString()) {
-                return {
-                  ...existingComment,
-                  replies: [...(existingComment.replies || []), newReply._id],
-                };
-              }
-              return existingComment;
-            }),
-          };
-        }
-      );
-
-      return { previousData: previousComments };
     },
   });
 
