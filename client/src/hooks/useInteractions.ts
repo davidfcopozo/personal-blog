@@ -372,12 +372,63 @@ export const useInteractions = (
         },
       }
     );
-  };
-  const createCommentMutation = usePostRequest({
+  };  const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
-      // Socket events handle cache updates for all users now
-      // Just clear the input and show success
+      console.log("🎉 Comment created successfully:", newComment);
+      
+      // Update the comments cache with the new comment (for the author)
+      queryClient.setQueryData<CommentInterface[]>(["comments"], (oldData) => {
+        if (!oldData) return [newComment];
+        
+        // Check if comment already exists to avoid duplicates
+        const exists = oldData.find((c) => c._id === newComment._id);
+        if (exists) return oldData;
+        
+        return [...oldData, newComment];
+      });
+
+      // Update posts cache to increment comment count
+      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
+        if (!oldPosts?.data) return oldPosts;
+        const postList = Array.isArray(oldPosts.data)
+          ? oldPosts.data
+          : [oldPosts.data];
+        return {
+          ...oldPosts,
+          data: postList.map((post: PostInterface) => {
+            if (post._id?.toString() === postId?.toString()) {
+              const existingComments = post.comments || [];
+              if (!existingComments.includes(newComment._id)) {
+                return {
+                  ...post,
+                  comments: [...existingComments, newComment._id],
+                };
+              }
+            }
+            return post;
+          }),
+        };
+      });
+
+      // Update single post cache if it exists
+      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
+        if (!oldPost?.data) return oldPost;
+
+        const existingComments = oldPost.data.comments || [];
+        if (!existingComments.includes(newComment._id)) {
+          return {
+            ...oldPost,
+            data: {
+              ...oldPost.data,
+              comments: [...existingComments, newComment._id],
+            },
+          };
+        }
+
+        return oldPost;
+      });
+
       setCommentContent("");
     },
     onError: (error) => {
@@ -391,14 +442,8 @@ export const useInteractions = (
         description: errorMessage,
       });
     },
-  });
-  const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
+  });  const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
     requireAuth("comment", () => {
-      console.log("📝 Creating comment mutation...", {
-        postId,
-        content: commentContent,
-      });
-
       createCommentMutation.mutate(
         { _id: postId, content: commentContent },
         {
@@ -418,12 +463,70 @@ export const useInteractions = (
         }
       );
     });
-  };
-  const createReplyMutation = usePostRequest({
+  };  const createReplyMutation = usePostRequest({
     url: `/api/replies/${postId}`,
     onSuccess: (newReply: ReplyInterface) => {
-      // Socket events handle cache updates for all users now
-      // Just clear the input and show success
+      if (!newReply || !newReply.parentId || !newReply._id) {
+        console.error("Reply data is incomplete:", newReply);
+        return;
+      }
+
+      // Update the replies cache for the immediate parent's cache
+      queryClient.setQueryData(
+        [`replies-${newReply.parentId}`],
+        (oldReplies: ReplyInterface[] | undefined) => {
+          if (!oldReplies) return [newReply];
+          
+          // Check if reply already exists to avoid duplicates
+          const exists = oldReplies.find((r) => r._id === newReply._id);
+          if (exists) return oldReplies;
+          
+          return [...oldReplies, newReply];
+        }
+      );
+
+      // Update the grandparent's replies cache
+      queryClient.setQueryData(
+        [`replies-${comment?.parentId}`],
+        (oldReplies: ReplyInterface[] | undefined) => {
+          return oldReplies?.map((reply) => {
+            if (`${reply._id}` === `${newReply.parentId}`) {
+              const currentReplies = reply.replies || [];
+              if (!currentReplies.includes(`${newReply._id}`)) {
+                return {
+                  ...reply,
+                  replies: [...currentReplies, `${newReply._id}`],
+                };
+              }
+            }
+            return reply;
+          });
+        }
+      );
+
+      // Update the comments cache
+      queryClient.setQueryData(
+        ["comments"],
+        (oldComments: CommentInterface[] | undefined) => {
+          if (!oldComments) {
+            return oldComments;
+          }
+
+          return oldComments.map((comment) => {
+            if (comment._id.toString() === newReply.parentId) {
+              const currentReplies = comment.replies || [];
+              if (!currentReplies.includes(`${newReply._id}`)) {
+                return {
+                  ...comment,
+                  replies: [...currentReplies, `${newReply._id}`],
+                };
+              }
+            }
+            return comment;
+          });
+        }
+      );
+
       setReplyContent("");
 
       // Success Toast
