@@ -261,16 +261,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           });
         }
       }
-    });
-    newSocket.on("newComment", (data) => {
-      console.log("📡 Received newComment socket event:", {
-        postId: data.postId,
-        postSlug: data.postSlug,
-        commentId: data.comment._id,
-        commentAuthor: data.comment.postedBy?._id || data.comment.postedBy,
-        currentUser: userId,
-      });
-
+    });    newSocket.on("newComment", (data) => {
       // For ALL users (including author), add the new comment to the cache
       // This ensures everyone sees the comment immediately
       queryClient.setQueryData<any>(["comments"], (oldData: any) => {
@@ -279,22 +270,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         // Check if comment already exists to avoid duplicates
         const exists = oldData.find((c: any) => c._id === data.comment._id);
         if (exists) {
-          console.log("🔄 Comment already exists in cache, skipping");
           return oldData;
         }
 
-        console.log("✅ Adding new comment to cache");
         return [...oldData, data.comment];
-      });
-
-      // Update post caches to increment comment count for all users
-      updatePostInCache(data.postId, (post) => {
-        const comments = post.comments || [];
-        if (!comments.includes(data.comment._id)) {
-          console.log("✅ Adding comment ID to post comments array");
-          return { ...post, comments: [...comments, data.comment._id] };
-        }
-        return post;
       });
 
       // Show toast notification for post author if it's their post and they didn't create the comment
