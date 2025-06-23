@@ -213,10 +213,144 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
         return post;
       });
-    });
-    // Handle real-time notifications
+    }); // Handle real-time notifications
     newSocket.on("notification", (notification) => {
       // The useNotifications hook will handle this
+    });
+
+    newSocket.on("commentLikeUpdate", (data) => {
+      queryClient.setQueryData(["comments"], (oldData: any) => {
+        if (!oldData?.data || !Array.isArray(oldData.data)) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          data: oldData.data.map((comment: any) => {
+            if (comment._id?.toString() === data.commentId) {
+              const likes = comment.likes || [];
+              if (data.isLiked) {
+                if (!likes.includes(data.userId)) {
+                  return { ...comment, likes: [...likes, data.userId] };
+                }
+              } else {
+                return {
+                  ...comment,
+                  likes: likes.filter((id: string) => id !== data.userId),
+                };
+              }
+            }
+            return comment;
+          }),
+        };
+      });
+
+      if (data.userId !== userId) {
+        const comment = queryClient
+          .getQueryData<any>(["comments"])
+          ?.data?.find(
+            (c: any) =>
+              c._id?.toString() === data.commentId && c.postedBy === userId
+          );
+
+        if (comment && data.isLiked) {
+          toast({
+            title: `${getNotificationIcon("like")} Comment Liked`,
+            description: "Someone liked your comment",
+            duration: 3000,
+          });
+        }
+      }
+    });
+
+    newSocket.on("newComment", (data) => {
+      queryClient.setQueryData(["comments"], (oldData: any) => {
+        if (!oldData?.data) {
+          return { data: [data.comment] };
+        }
+
+        if (!Array.isArray(oldData.data)) {
+          return { data: [data.comment, oldData.data] };
+        }
+
+        // Check if comment already exists (deduplication)
+        const exists = oldData.data.some(
+          (comment: any) =>
+            comment._id?.toString() === data.comment._id?.toString()
+        );
+
+        if (!exists) {
+          return {
+            ...oldData,
+            data: [data.comment, ...oldData.data],
+          };
+        }
+
+        return oldData;
+      });
+
+      // Invalidate comments query to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+    });
+
+    newSocket.on("newReply", (data) => {
+      // Add new reply to parent comment
+      queryClient.setQueryData(["comments"], (oldData: any) => {
+        if (!oldData?.data || !Array.isArray(oldData.data)) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          data: oldData.data.map((comment: any) => {
+            if (comment._id?.toString() === data.parentCommentId) {
+              const replies = comment.replies || [];
+              // Check if reply already exists
+              const exists = replies.some(
+                (replyId: string) =>
+                  replyId.toString() === data.reply._id?.toString()
+              );
+
+              if (!exists) {
+                return {
+                  ...comment,
+                  replies: [...replies, data.reply._id],
+                };
+              }
+            }
+            return comment;
+          }),
+        };
+      });
+
+      // Also add the reply to comments cache if it doesn't exist
+      queryClient.setQueryData(["comments"], (oldData: any) => {
+        if (!oldData?.data) {
+          return { data: [data.reply] };
+        }
+
+        if (!Array.isArray(oldData.data)) {
+          return { data: [data.reply, oldData.data] };
+        }
+
+        // Check if reply already exists as a comment
+        const exists = oldData.data.some(
+          (comment: any) =>
+            comment._id?.toString() === data.reply._id?.toString()
+        );
+
+        if (!exists) {
+          return {
+            ...oldData,
+            data: [...oldData.data, data.reply],
+          };
+        }
+
+        return oldData;
+      });
+
+      // Invalidate comments query to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
     });
     setSocket(newSocket);
     return () => {
