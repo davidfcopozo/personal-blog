@@ -11,6 +11,23 @@ export const useNotifications = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "mention":
+        return "🏷️";
+      case "comment":
+        return "💬";
+      case "reply":
+        return "↩️";
+      case "bookmark":
+        return "🔖";
+      case "like":
+        return "❤️";
+      default:
+        return "🔔";
+    }
+  };
+
   useEffect(() => {
     if (!socket) {
       console.log("❌ No socket available for notification listener");
@@ -51,9 +68,8 @@ export const useNotifications = () => {
         console.log("📊 Updating unread count from", prev, "to", prev + 1);
         return prev + 1;
       });
-
       toast({
-        title: "New Notification",
+        title: `${getNotificationIcon(notification.type)} New Notification`,
         description: notification.message,
         duration: 5000,
       });
