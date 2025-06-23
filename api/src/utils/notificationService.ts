@@ -287,17 +287,23 @@ export class NotificationService {
       relatedCommentId: commentId,
     });
   }
-
   async createCommentNotification(
     recipientId: ObjectId | string,
     senderId: ObjectId | string,
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
+    console.log("📬 Creating comment notification:", {
+      recipientId: recipientId.toString(),
+      senderId: senderId.toString(),
+      postId: postId.toString(),
+      commentId: commentId.toString(),
+    });
+
     const sender = await User.findById(senderId);
     const message = `${sender?.firstName} ${sender?.lastName} commented on your post`;
 
-    return this.createNotification({
+    const notification = await this.createNotification({
       recipientId,
       senderId,
       type: "comment",
@@ -305,18 +311,27 @@ export class NotificationService {
       relatedPostId: postId,
       relatedCommentId: commentId,
     });
-  }
 
+    console.log("✅ Comment notification created:", notification?._id);
+    return notification;
+  }
   async createReplyNotification(
     recipientId: ObjectId | string,
     senderId: ObjectId | string,
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
+    console.log("📬 Creating reply notification:", {
+      recipientId: recipientId.toString(),
+      senderId: senderId.toString(),
+      postId: postId.toString(),
+      commentId: commentId.toString(),
+    });
+
     const sender = await User.findById(senderId);
     const message = `${sender?.firstName} ${sender?.lastName} replied to your comment`;
 
-    return this.createNotification({
+    const notification = await this.createNotification({
       recipientId,
       senderId,
       type: "reply",
@@ -324,6 +339,9 @@ export class NotificationService {
       relatedPostId: postId,
       relatedCommentId: commentId,
     });
+
+    console.log("✅ Reply notification created:", notification?._id);
+    return notification;
   }
 
   async createBookmarkNotification(
@@ -445,25 +463,49 @@ export class NotificationService {
       });
     }
   }
-
-  async emitNewComment(postId: string, comment: any) {
+  async emitNewComment(postId: string, comment: any, postSlug: string) {
     if (this.io) {
+      console.log("📡 Emitting newComment socket event:", {
+        postId,
+        postSlug,
+        commentId: comment._id,
+        commentAuthor: comment.postedBy?._id || comment.postedBy,
+      });
+
       this.io.emit("newComment", {
         postId,
+        postSlug,
         comment,
         timestamp: new Date(),
       });
+    } else {
+      console.error("❌ Socket.io not available for emitting newComment");
     }
   }
-
-  async emitNewReply(postId: string, parentCommentId: string, reply: any) {
+  async emitNewReply(
+    postId: string,
+    parentCommentId: string,
+    reply: any,
+    postSlug: string
+  ) {
     if (this.io) {
+      console.log("📡 Emitting newReply socket event:", {
+        postId,
+        postSlug,
+        parentCommentId,
+        replyId: reply._id,
+        replyAuthor: reply.postedBy?._id || reply.postedBy,
+      });
+
       this.io.emit("newReply", {
         postId,
+        postSlug,
         parentCommentId,
         reply,
         timestamp: new Date(),
       });
+    } else {
+      console.error("❌ Socket.io not available for emitting newReply");
     }
   }
 }
