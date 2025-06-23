@@ -68,30 +68,52 @@ export const createReply = async (
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
-      if (
-        notificationService &&
-        comment &&
-        comment.postedBy &&
-        comment.postedBy._id.toString() !== userId
-      ) {
-        await notificationService.createReplyNotification(
-          comment.postedBy._id.toString(),
-          userId.toString(),
-          postId,
-          reply._id.toString()
-        );
-      }
 
-      // Emit new reply for real-time rendering
       if (notificationService) {
+        // Emit new reply for real-time rendering FIRST
         const populatedReply = await Comment.findById(reply._id).populate(
           "postedBy"
         );
+
+        if (!populatedReply) {
+          throw new BadRequest("Failed to populate the new reply.");
+        }
+
+        console.log("💬 Emitting new reply event:", {
+          postId,
+          postSlug: post.slug,
+          parentCommentId: parentId,
+          replyId: populatedReply._id,
+          replyAuthor: populatedReply.postedBy,
+        });
+
         await notificationService.emitNewReply(
           postId,
           parentId,
-          populatedReply
+          populatedReply,
+          post.slug
         );
+
+        // THEN create notification for comment owner
+        if (
+          comment &&
+          comment.postedBy &&
+          comment.postedBy._id.toString() !== userId
+        ) {
+          console.log("📬 Creating reply notification:", {
+            commentOwnerId: comment.postedBy._id.toString(),
+            replyAuthorId: userId.toString(),
+            postId,
+            replyId: reply._id.toString(),
+          });
+
+          await notificationService.createReplyNotification(
+            comment.postedBy._id.toString(),
+            userId.toString(),
+            postId,
+            reply._id.toString()
+          );
+        }
       }
 
       const mentionRegex = /@(\w+)/g;
