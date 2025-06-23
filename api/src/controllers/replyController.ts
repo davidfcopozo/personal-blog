@@ -64,7 +64,6 @@ export const createReply = async (
       },
       { new: true }
     );
-
     if (result?.modifiedCount === 1) {
       const notificationService: NotificationService = req.app.get(
         "notificationService"
@@ -80,6 +79,18 @@ export const createReply = async (
           userId.toString(),
           postId,
           reply._id.toString()
+        );
+      }
+
+      // Emit new reply for real-time rendering
+      if (notificationService) {
+        const populatedReply = await Comment.findById(reply._id).populate(
+          "postedBy"
+        );
+        await notificationService.emitNewReply(
+          postId,
+          parentId,
+          populatedReply
         );
       }
 
