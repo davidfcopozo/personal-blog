@@ -213,45 +213,46 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
         return post;
       });
-    }); // Handle real-time notifications
+    });
+
+    // Handle real-time notifications
     newSocket.on("notification", (notification) => {
       // The useNotifications hook will handle this
     });
 
     newSocket.on("commentLikeUpdate", (data) => {
       queryClient.setQueryData(["comments"], (oldData: any) => {
-        if (!oldData?.data || !Array.isArray(oldData.data)) {
+        if (!oldData || !Array.isArray(oldData)) {
           return oldData;
         }
 
-        return {
-          ...oldData,
-          data: oldData.data.map((comment: any) => {
-            if (comment._id?.toString() === data.commentId) {
-              const likes = comment.likes || [];
-              if (data.isLiked) {
-                if (!likes.includes(data.userId)) {
-                  return { ...comment, likes: [...likes, data.userId] };
-                }
-              } else {
-                return {
-                  ...comment,
-                  likes: likes.filter((id: string) => id !== data.userId),
-                };
+        return oldData.map((comment: any) => {
+          if (comment._id?.toString() === data.commentId) {
+            const likes = comment.likes || [];
+            if (data.isLiked) {
+              if (!likes.includes(data.userId)) {
+                return { ...comment, likes: [...likes, data.userId] };
               }
+            } else {
+              return {
+                ...comment,
+                likes: likes.filter((id: string) => id !== data.userId),
+              };
             }
-            return comment;
-          }),
-        };
+          }
+          return comment;
+        });
       });
 
       if (data.userId !== userId) {
-        const comment = queryClient
-          .getQueryData<any>(["comments"])
-          ?.data?.find(
-            (c: any) =>
-              c._id?.toString() === data.commentId && c.postedBy === userId
-          );
+        const comments = queryClient.getQueryData<any>(["comments"]);
+        const comment = comments?.find(
+          (c: any) =>
+            c._id?.toString() === data.commentId &&
+            (c.postedBy === userId ||
+              c.postedBy?._id === userId ||
+              c.postedBy?.toString() === userId)
+        );
 
         if (comment && data.isLiked) {
           toast({
@@ -262,6 +263,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
+
     newSocket.on("newComment", (data) => {
       // For ALL users (including author), add the new comment to the cache
       // This ensures everyone sees the comment immediately
@@ -307,7 +309,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           postOwnerId &&
           (postOwnerId === userId || postOwnerId.toString() === userId)
         ) {
-          console.log("📬 Showing notification to post owner");
           toast({
             title: `${getNotificationIcon("comment")} New Comment`,
             description: `Someone commented on your post`,
@@ -316,16 +317,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
-    newSocket.on("newReply", (data) => {
-      console.log("📡 Received newReply socket event:", {
-        postId: data.postId,
-        postSlug: data.postSlug,
-        parentCommentId: data.parentCommentId,
-        replyId: data.reply._id,
-        replyAuthor: data.reply.postedBy?._id || data.reply.postedBy,
-        currentUser: userId,
-      });
 
+    newSocket.on("newReply", (data) => {
       // For ALL users (including author), add the new reply to the cache
       // This ensures everyone sees the reply immediately
       queryClient.setQueryData(
@@ -336,11 +329,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           // Check if reply already exists to avoid duplicates
           const exists = oldData.find((r: any) => r._id === data.reply._id);
           if (exists) {
-            console.log("🔄 Reply already exists in cache, skipping");
             return oldData;
           }
 
-          console.log("✅ Adding new reply to cache");
           return [...oldData, data.reply];
         }
       );
@@ -353,7 +344,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           if (comment._id === data.parentCommentId) {
             const currentReplies = comment.replies || [];
             if (!currentReplies.includes(data.reply._id)) {
-              console.log("✅ Adding reply ID to parent comment replies array");
               return {
                 ...comment,
                 replies: [...currentReplies, data.reply._id],
@@ -366,13 +356,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
       // Show toast notification for reply author if it's their comment and they didn't create the reply
       if (data.reply.postedBy !== userId) {
-        const parentComment = queryClient.getQueryData<any>([
-          "comment",
-          data.parentCommentId,
-        ]);
+        // Check if current user is the parent comment author
+        const comments = queryClient.getQueryData<any>(["comments"]);
+        const parentComment = comments?.find(
+          (c: any) =>
+            c._id === data.parentCommentId &&
+            (c.postedBy === userId ||
+              c.postedBy?._id === userId ||
+              c.postedBy?.toString() === userId)
+        );
 
-        if (parentComment?.data?.postedBy === userId) {
-          console.log("📬 Showing notification to comment owner");
+        if (parentComment) {
           toast({
             title: `${getNotificationIcon("reply")} New Reply`,
             description: `Someone replied to your comment`,
