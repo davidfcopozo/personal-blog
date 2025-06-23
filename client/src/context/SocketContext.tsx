@@ -6,6 +6,7 @@ import { SocketContextType } from "@/typings/interfaces";
 import { useQueryClient } from "@tanstack/react-query";
 import { PostFetchType } from "@/typings/types";
 import { PostInterface } from "@/typings/interfaces";
+import { useToast } from "@/components/ui/use-toast";
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
@@ -29,6 +30,24 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "mention":
+        return "🏷️";
+      case "comment":
+        return "💬";
+      case "reply":
+        return "↩️";
+      case "bookmark":
+        return "🔖";
+      case "like":
+        return "❤️";
+      default:
+        return "🔔";
+    }
+  };
   const updatePostInCache = (
     postId: string,
     updateFn: (post: PostInterface) => PostInterface
@@ -161,6 +180,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
       updatePostInCache(data.postId, (post) => {
         console.log("Updating post:", post._id, "with like data:", data);
+
+        if (data.userId !== userId && post.postedBy === userId) {
+          toast({
+            title: `${getNotificationIcon("like")} Post Liked`,
+            description: `Someone liked your post: "${post.title}"`,
+            duration: 3000,
+          });
+        }
+
         const likes = post.likes || [];
         if (data.isLiked) {
           if (!likes.includes(data.userId)) {
@@ -198,6 +226,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       );
 
       updatePostInCache(data.postId, (post) => {
+        if (data.userId !== userId && post.postedBy === userId) {
+          toast({
+            title: `${getNotificationIcon("bookmark")} Post Bookmarked`,
+            description: `Someone bookmarked your post: "${post.title}"`,
+            duration: 3000,
+          });
+        }
+
         const bookmarks = post.bookmarks || [];
         if (data.isBookmarked) {
           if (!bookmarks.includes(data.userId)) {
@@ -212,9 +248,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         return post;
       });
     });
-
     newSocket.on("postCommentUpdate", (data) => {
       updatePostInCache(data.postId, (post) => {
+        if (
+          data.action === "add" &&
+          data.userId !== userId &&
+          post.postedBy === userId
+        ) {
+          toast({
+            title: `${getNotificationIcon("comment")} New Comment`,
+            description: `Someone commented on your post: "${post.title}"`,
+            duration: 3000,
+          });
+        }
+
         const comments = post.comments || [];
         if (data.action === "add") {
           if (!comments.includes(data.commentId)) {
@@ -228,6 +275,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
         return post;
       });
+    });
+
+    // Handle real-time notifications
+    newSocket.on("notification", (notification) => {
+      console.log("🔔 Received notification:", notification);
+      // The useNotifications hook will handle this
     });
 
     // Test the connection
