@@ -16,7 +16,7 @@ import { LogoIcon } from "./ui/icons";
 import { ModeToggle } from "./ui/mode-toggle";
 import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useToast } from "./ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
