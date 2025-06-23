@@ -70,22 +70,24 @@ const NotificationBell: React.FC = () => {
         return "🔔";
     }
   };
-
   const getNotificationLink = (notification: Notification) => {
     if (notification.relatedPost) {
       // Handle case where relatedPost might be an object with slug or _id
       if (typeof notification.relatedPost === "string") {
-        return `/blog/${notification.relatedPost}`;
+        // If it's just a string ID, fallback to notifications page
+        return "/notifications";
       } else if (
         typeof notification.relatedPost === "object" &&
-        notification.relatedPost.slug
+        notification.relatedPost.slug &&
+        notification.relatedPost.postedBy?.username
       ) {
-        return `/blog/${notification.relatedPost.slug}`;
+        return `/${notification.relatedPost.postedBy.username}/${notification.relatedPost.slug}`;
       } else if (
         typeof notification.relatedPost === "object" &&
         notification.relatedPost._id
       ) {
-        return `/blog/${notification.relatedPost._id}`;
+        // Fallback if we don't have username/slug but have _id
+        return "/notifications";
       }
     }
     // Fallback to notifications page
