@@ -17,14 +17,17 @@ export const getNotifications = async (
     if (unreadOnly === "true") {
       query.isRead = false;
     }
-
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
       .limit(Number(limit) * 1)
       .skip((Number(page) - 1) * Number(limit))
       .populate({
         path: "relatedPost",
-        select: "title slug",
+        select: "title slug postedBy",
+        populate: {
+          path: "postedBy",
+          select: "username",
+        },
       })
       .populate({
         path: "relatedComment",
