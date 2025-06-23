@@ -293,13 +293,6 @@ export class NotificationService {
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
-    console.log("📬 Creating comment notification:", {
-      recipientId: recipientId.toString(),
-      senderId: senderId.toString(),
-      postId: postId.toString(),
-      commentId: commentId.toString(),
-    });
-
     const sender = await User.findById(senderId);
     const message = `${sender?.firstName} ${sender?.lastName} commented on your post`;
 
@@ -312,7 +305,6 @@ export class NotificationService {
       relatedCommentId: commentId,
     });
 
-    console.log("✅ Comment notification created:", notification?._id);
     return notification;
   }
   async createReplyNotification(
@@ -321,13 +313,6 @@ export class NotificationService {
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
-    console.log("📬 Creating reply notification:", {
-      recipientId: recipientId.toString(),
-      senderId: senderId.toString(),
-      postId: postId.toString(),
-      commentId: commentId.toString(),
-    });
-
     const sender = await User.findById(senderId);
     const message = `${sender?.firstName} ${sender?.lastName} replied to your comment`;
 
@@ -340,7 +325,6 @@ export class NotificationService {
       relatedCommentId: commentId,
     });
 
-    console.log("✅ Reply notification created:", notification?._id);
     return notification;
   }
 
