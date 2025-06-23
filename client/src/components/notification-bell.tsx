@@ -43,7 +43,7 @@ const NotificationBell: React.FC = () => {
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
-      await markAsRead(notification.id);
+      await markAsRead(notification.id!);
     }
     setIsOpen(false);
   };
@@ -88,7 +88,6 @@ const NotificationBell: React.FC = () => {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      {" "}
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -108,7 +107,7 @@ const NotificationBell: React.FC = () => {
             </Badge>
           )}
         </Button>
-      </DropdownMenuTrigger>{" "}
+      </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80 max-h-96" align="end">
         <div className="flex items-center justify-between p-3 border-b">
           <h4 className="font-semibold">Notifications</h4>
@@ -149,53 +148,70 @@ const NotificationBell: React.FC = () => {
               No notifications yet
             </div>
           ) : (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`p-3 cursor-pointer transition-colors ${
-                  !notification.isRead ? "bg-blue-50 dark:bg-blue-950/20" : ""
-                }`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <Link
-                  href={getNotificationLink(notification)}
-                  className="flex items-start space-x-3 w-full"
+            notifications.map((notification, index) => {
+              const notificationId = notification.id || notification._id;
+
+              if (!notification || !notificationId) {
+                /* console.warn(
+                  `📋 Invalid notification at index ${index}:`,
+                  notification
+                ); */
+                return null;
+              }
+
+              return (
+                <DropdownMenuItem
+                  key={notificationId}
+                  className={`p-3 cursor-pointer transition-colors ${
+                    !notification.isRead ? "bg-blue-50 dark:bg-blue-950/20" : ""
+                  }`}
+                  onClick={() =>
+                    handleNotificationClick({
+                      ...notification,
+                      id: notificationId,
+                    })
+                  }
                 >
-                  <div className="flex-shrink-0">
-                    <span className="text-lg">
-                      {getNotificationIcon(notification.type)}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(notification.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0 flex items-center space-x-1">
-                    {!notification.isRead && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        deleteNotification(notification.id);
-                      }}
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </Link>
-              </DropdownMenuItem>
-            ))
+                  <Link
+                    href={getNotificationLink(notification)}
+                    className="flex items-start space-x-3 w-full"
+                  >
+                    <div className="flex-shrink-0">
+                      <span className="text-lg">
+                        {getNotificationIcon(notification.type)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(notification.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0 flex items-center space-x-1">
+                      {!notification.isRead && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      )}{" "}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          deleteNotification(notificationId);
+                        }}
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })
           )}
         </ScrollArea>
         {notifications.length > 0 && (
