@@ -10,6 +10,7 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     if (!socket) {
       console.log("❌ No socket available for notification listener");
@@ -28,10 +29,24 @@ export const useNotifications = () => {
           "📝 Adding notification to list, previous count:",
           prev.length
         );
+
+        // Check if notification already exists to prevent duplicates        // Deduplicate notifications based on id or _id
+        const exists = prev.some(
+          (n) => (n.id || n._id) === (notification.id || notification._id)
+        );
+        if (exists) {
+          console.log(
+            "📝 Notification already exists, skipping:",
+            notification.id || notification._id
+          );
+          return prev;
+        }
+
         const newList = [notification, ...prev];
         console.log("📝 New notifications list count:", newList.length);
         return newList;
       });
+
       setUnreadCount((prev) => {
         console.log("📊 Updating unread count from", prev, "to", prev + 1);
         return prev + 1;
@@ -52,7 +67,6 @@ export const useNotifications = () => {
       socket.off("notification", handleNotification);
     };
   }, [socket, toast]);
-
   const fetchNotifications = useCallback(
     async (page = 1, limit = 20, unreadOnly = false) => {
       setIsLoading(true);
@@ -68,33 +82,34 @@ export const useNotifications = () => {
           throw new Error("Failed to fetch notifications");
         }
         const data = await response.json();
-
-        console.log("📊 Fetched notifications data:", data);
-        console.log("📊 Current unread count before update:", unreadCount);
-
         if (page === 1) {
-          console.log(
-            "📝 Setting notifications (page 1):",
-            data.notifications.length,
-            "items"
+          // Deduplicate notifications based on id or _id
+          const uniqueNotifications = data.notifications.filter(
+            (notification: Notification, index: number, self: Notification[]) =>
+              index ===
+              self.findIndex(
+                (n) => (n.id || n._id) === (notification.id || notification._id)
+              )
           );
-          setNotifications(data.notifications);
+          setNotifications(uniqueNotifications);
         } else {
-          console.log(
-            "📝 Adding notifications (page",
-            page,
-            "):",
-            data.notifications.length,
-            "items"
-          );
-          setNotifications((prev) => [...prev, ...data.notifications]);
+          setNotifications((prev) => {
+            const combined = [...prev, ...data.notifications];
+            // Deduplicate the combined list based on id or _id
+            const uniqueNotifications = combined.filter(
+              (notification, index, self) =>
+                index ===
+                self.findIndex(
+                  (n) =>
+                    (n.id || n._id) === (notification.id || notification._id)
+                )
+            );
+            return uniqueNotifications;
+          });
         }
-
-        console.log("📊 Setting unread count to:", data.unreadCount);
         setUnreadCount(data.unreadCount);
         return data;
       } catch (error) {
-        console.error("Error fetching notifications:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -120,10 +135,9 @@ export const useNotifications = () => {
       if (!response.ok) {
         throw new Error("Failed to mark notification as read");
       }
-
       setNotifications((prev) =>
         prev.map((notification) =>
-          notification.id === notificationId
+          (notification.id || notification._id) === notificationId
             ? { ...notification, isRead: true }
             : notification
         )
@@ -172,9 +186,11 @@ export const useNotifications = () => {
         if (!response.ok) {
           throw new Error("Failed to delete notification");
         }
-
         setNotifications((prev) =>
-          prev.filter((notification) => notification.id !== notificationId)
+          prev.filter(
+            (notification) =>
+              (notification.id || notification._id) !== notificationId
+          )
         );
 
         // Decrease unread count if the deleted notification was unread
@@ -185,7 +201,6 @@ export const useNotifications = () => {
           setUnreadCount((prev) => Math.max(0, prev - 1));
         }
       } catch (error) {
-        console.error("Error deleting notification:", error);
         toast({
           variant: "destructive",
           title: "Error",
