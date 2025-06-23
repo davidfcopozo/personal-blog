@@ -119,7 +119,7 @@ export const useNotifications = () => {
         setIsLoading(false);
       }
     },
-    [toast, unreadCount]
+    [toast]
   );
 
   const markAsRead = useCallback(async (notificationId: string) => {
