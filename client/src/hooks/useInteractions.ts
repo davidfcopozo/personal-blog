@@ -372,19 +372,20 @@ export const useInteractions = (
         },
       }
     );
-  };  const createCommentMutation = usePostRequest({
+  };
+  const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
       console.log("🎉 Comment created successfully:", newComment);
-      
+
       // Update the comments cache with the new comment (for the author)
       queryClient.setQueryData<CommentInterface[]>(["comments"], (oldData) => {
         if (!oldData) return [newComment];
-        
+
         // Check if comment already exists to avoid duplicates
         const exists = oldData.find((c) => c._id === newComment._id);
         if (exists) return oldData;
-        
+
         return [...oldData, newComment];
       });
 
@@ -442,7 +443,8 @@ export const useInteractions = (
         description: errorMessage,
       });
     },
-  });  const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
+  });
+  const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
     requireAuth("comment", () => {
       createCommentMutation.mutate(
         { _id: postId, content: commentContent },
@@ -463,7 +465,8 @@ export const useInteractions = (
         }
       );
     });
-  };  const createReplyMutation = usePostRequest({
+  };
+  const createReplyMutation = usePostRequest({
     url: `/api/replies/${postId}`,
     onSuccess: (newReply: ReplyInterface) => {
       if (!newReply || !newReply.parentId || !newReply._id) {
@@ -476,11 +479,11 @@ export const useInteractions = (
         [`replies-${newReply.parentId}`],
         (oldReplies: ReplyInterface[] | undefined) => {
           if (!oldReplies) return [newReply];
-          
+
           // Check if reply already exists to avoid duplicates
           const exists = oldReplies.find((r) => r._id === newReply._id);
           if (exists) return oldReplies;
-          
+
           return [...oldReplies, newReply];
         }
       );

@@ -261,7 +261,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           });
         }
       }
-    });    newSocket.on("newComment", (data) => {
+    });
+    newSocket.on("newComment", (data) => {
       // For ALL users (including author), add the new comment to the cache
       // This ensures everyone sees the comment immediately
       queryClient.setQueryData<any>(["comments"], (oldData: any) => {

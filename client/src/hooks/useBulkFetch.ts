@@ -37,9 +37,11 @@ const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
 
     const results = await Promise.all(commentPromises);
     // Filter out null results (failed fetches)
-    return results.filter((comment): comment is CommentInterface => comment !== null);
+    return results.filter(
+      (comment): comment is CommentInterface => comment !== null
+    );
   };
-    const { data, error, isLoading, isFetching } = useQuery<CommentInterface[]>({
+  const { data, error, isLoading, isFetching } = useQuery<CommentInterface[]>({
     queryKey: [key, ids], // Include ids in query key so it refetches when ids change
     queryFn: fetchComments,
     refetchOnWindowFocus: false,
@@ -49,7 +51,11 @@ const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
     enabled: ids?.length > 0 || dependantItem,
     retry: (failureCount, error) => {
       // Don't retry on 404s, but retry on network errors
-      if (error && 'response' in error && (error as any).response?.status === 404) {
+      if (
+        error &&
+        "response" in error &&
+        (error as any).response?.status === 404
+      ) {
         return false;
       }
       return failureCount < 2;

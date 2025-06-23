@@ -462,7 +462,8 @@ export class NotificationService {
         timestamp: new Date(),
       });
     }
-  }  async emitNewComment(postId: string, comment: any, postSlug: string) {
+  }
+  async emitNewComment(postId: string, comment: any, postSlug: string) {
     if (this.io) {
       this.io.emit("newComment", {
         postId,
@@ -471,7 +472,8 @@ export class NotificationService {
         timestamp: new Date(),
       });
     }
-  }  async emitNewReply(
+  }
+  async emitNewReply(
     postId: string,
     parentCommentId: string,
     reply: any,
