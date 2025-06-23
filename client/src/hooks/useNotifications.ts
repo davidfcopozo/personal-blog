@@ -27,7 +27,6 @@ export const useNotifications = () => {
         return "🔔";
     }
   };
-
   useEffect(() => {
     if (!socket) {
       console.log("❌ No socket available for notification listener");
@@ -75,12 +74,60 @@ export const useNotifications = () => {
       });
     };
 
-    console.log("🔌 Setting up notification listener on socket");
+    const handleNotificationRead = (data: { notificationId: string }) => {
+      console.log(
+        "📖 Notification marked as read via socket:",
+        data.notificationId
+      );
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          (notification.id || notification._id) === data.notificationId
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    };
+
+    const handleNotificationDeleted = (data: { notificationId: string }) => {
+      console.log("🗑️ Notification deleted via socket:", data.notificationId);
+      setNotifications((prev) => {
+        const notification = prev.find(
+          (n) => (n.id || n._id) === data.notificationId
+        );
+        const newList = prev.filter(
+          (n) => (n.id || n._id) !== data.notificationId
+        );
+
+        // Update unread count if deleted notification was unread
+        if (notification && !notification.isRead) {
+          setUnreadCount((prevCount) => Math.max(0, prevCount - 1));
+        }
+
+        return newList;
+      });
+    };
+
+    const handleAllNotificationsRead = () => {
+      console.log("📖 All notifications marked as read via socket");
+      setNotifications((prev) =>
+        prev.map((notification) => ({ ...notification, isRead: true }))
+      );
+      setUnreadCount(0);
+    };
+
+    console.log("🔌 Setting up notification listeners on socket");
     socket.on("notification", handleNotification);
+    socket.on("notificationRead", handleNotificationRead);
+    socket.on("notificationDeleted", handleNotificationDeleted);
+    socket.on("allNotificationsRead", handleAllNotificationsRead);
 
     return () => {
-      console.log("🔌 Cleaning up notification listener");
+      console.log("🔌 Cleaning up notification listeners");
       socket.off("notification", handleNotification);
+      socket.off("notificationRead", handleNotificationRead);
+      socket.off("notificationDeleted", handleNotificationDeleted);
+      socket.off("allNotificationsRead", handleAllNotificationsRead);
     };
   }, [socket, toast]);
   const fetchNotifications = useCallback(
@@ -138,35 +185,75 @@ export const useNotifications = () => {
     [toast]
   );
 
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      const response = await fetch(
-        `/api/notifications/${notificationId}/read`,
-        {
-          method: "PATCH",
-          credentials: "include",
+  const markAsRead = useCallback(
+    async (notificationId: string) => {
+      console.log("📖 markAsRead called with ID:", notificationId);
+      try {
+        setNotifications((prev) =>
+          prev.map((notification) =>
+            (notification.id || notification._id) === notificationId
+              ? { ...notification, isRead: true }
+              : notification
+          )
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+
+        const response = await fetch(
+          `/api/notifications/${notificationId}/read`,
+          {
+            method: "PATCH",
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to mark notification as read");
+          setNotifications((prev) =>
+            prev.map((notification) =>
+              (notification.id || notification._id) === notificationId
+                ? { ...notification, isRead: false }
+                : notification
+            )
+          );
+          setUnreadCount((prev) => prev + 1);
+          return;
         }
-      );
 
-      if (!response.ok) {
-        throw new Error("Failed to mark notification as read");
+        console.log("📖 Notification marked as read on server");
+        console.log("📡 Emitting markNotificationAsRead socket event");
+        if (socket) {
+          socket.emit("markNotificationAsRead", { notificationId });
+          console.log("📡 Socket event emitted successfully");
+        } else {
+          console.warn("❌ No socket available to emit event");
+        }
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+        // Revert the optimistic update on error
+        setNotifications((prev) =>
+          prev.map((notification) =>
+            (notification.id || notification._id) === notificationId
+              ? { ...notification, isRead: false }
+              : notification
+          )
+        );
+        setUnreadCount((prev) => prev + 1);
       }
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          (notification.id || notification._id) === notificationId
-            ? { ...notification, isRead: true }
-            : notification
-        )
-      );
-
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  }, []);
+    },
+    [socket]
+  );
 
   const markAllAsRead = useCallback(async () => {
+    // Store current state for potential rollback
+    const originalNotifications = notifications;
+    const originalUnreadCount = unreadCount;
+
     try {
+      setNotifications((prev) =>
+        prev.map((notification) => ({ ...notification, isRead: true }))
+      );
+      setUnreadCount(0);
+
       const response = await fetch("/api/notifications/read-all", {
         method: "PATCH",
         credentials: "include",
@@ -176,32 +263,30 @@ export const useNotifications = () => {
         throw new Error("Failed to mark all notifications as read");
       }
 
-      setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, isRead: true }))
-      );
-
-      setUnreadCount(0);
+      // Emit socket event to sync with other components
+      if (socket) {
+        socket.emit("markAllNotificationsAsRead");
+      }
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
+      setNotifications(originalNotifications);
+      setUnreadCount(originalUnreadCount);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to mark all notifications as read",
       });
     }
-  }, [toast]);
+  }, [socket, toast, notifications, unreadCount]);
 
   const deleteNotification = useCallback(
     async (notificationId: string) => {
-      try {
-        const response = await fetch(`/api/notifications/${notificationId}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
+      // Find the notification before deleting to check if it was unread
+      const deletedNotification = notifications.find(
+        (n) => (n.id || n._id) === notificationId
+      );
 
-        if (!response.ok) {
-          throw new Error("Failed to delete notification");
-        }
+      try {
         setNotifications((prev) =>
           prev.filter(
             (notification) =>
@@ -210,13 +295,32 @@ export const useNotifications = () => {
         );
 
         // Decrease unread count if the deleted notification was unread
-        const deletedNotification = notifications.find(
-          (n) => n.id === notificationId
-        );
         if (deletedNotification && !deletedNotification.isRead) {
           setUnreadCount((prev) => Math.max(0, prev - 1));
         }
+
+        const response = await fetch(`/api/notifications/${notificationId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete notification");
+        }
+
+        // Emit socket event to sync with other components
+        if (socket) {
+          socket.emit("deleteNotification", { notificationId });
+        }
       } catch (error) {
+        console.error("Error deleting notification:", error);
+        // Revert the optimistic update on error
+        if (deletedNotification) {
+          setNotifications((prev) => [deletedNotification, ...prev]);
+          if (!deletedNotification.isRead) {
+            setUnreadCount((prev) => prev + 1);
+          }
+        }
         toast({
           variant: "destructive",
           title: "Error",
@@ -224,7 +328,7 @@ export const useNotifications = () => {
         });
       }
     },
-    [notifications, toast]
+    [notifications, socket, toast]
   );
 
   return {
