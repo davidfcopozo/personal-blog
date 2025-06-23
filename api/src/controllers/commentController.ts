@@ -44,28 +44,46 @@ export const createComment = async (
       },
       { new: true }
     );
-
     if (result?.modifiedCount === 1) {
       // Create notification for post author (if not commenting on own post)
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
-      if (notificationService) {
-        await notificationService.emitCommentUpdate(
-          postId,
-          comment._id.toString(),
-          "add"
-        );
 
-        // Emit new comment for real-time rendering
+      if (notificationService) {
+        // Emit new comment for real-time rendering FIRST
         const populatedComment = await Comment.findById(comment._id).populate(
           "postedBy"
         );
-        await notificationService.emitNewComment(postId, populatedComment);
 
+        if (!populatedComment) {
+          throw new NotFound("Failed to populate the new comment");
+        }
+        console.log("💬 Emitting new comment event:", {
+          postId,
+          postSlug: post.slug,
+          commentId: populatedComment._id,
+          commentAuthor: populatedComment.postedBy,
+        });
+
+        await notificationService.emitNewComment(
+          postId,
+          populatedComment,
+          post.slug
+        );
+
+        // THEN create notification for post owner
         const postOwnerId = (post.postedBy as any)?._id
           ? (post.postedBy as any)._id.toString()
           : post.postedBy.toString();
+
+        console.log("📬 Creating notification:", {
+          postOwnerId,
+          commentAuthorId: userId,
+          postId,
+          commentId: comment._id.toString(),
+          shouldCreate: postOwnerId !== userId,
+        });
 
         if (postOwnerId !== userId) {
           await notificationService.createCommentNotification(
