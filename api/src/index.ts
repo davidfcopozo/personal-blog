@@ -64,12 +64,18 @@ const startServer = async () => {
     });
     io.on("connection", (socket) => {
       console.log("User connected:", socket.id);
+      let userId: string | null = null;
 
-      socket.on("join", (userId) => {
-        socket.join(userId);
-        console.log(
-          `✅ User ${userId} joined their room with socket ${socket.id}`
-        );
+      socket.on("join", (joinUserId) => {
+        userId = joinUserId;
+        if (userId) {
+          socket.join(userId);
+          console.log(
+            `✅ User ${userId} joined their room with socket ${socket.id}`
+          );
+        } else {
+          console.warn(`❌ Tried to join room with invalid userId: ${userId}`);
+        }
 
         // Send a confirmation back to the user
         socket.emit("joinConfirmation", { userId, socketId: socket.id });
@@ -105,6 +111,49 @@ const startServer = async () => {
         console.log("🧪 Sending test notification to room:", data.userId);
         io.to(data.userId).emit("notification", testNotification);
         console.log("🧪 Test notification sent successfully");
+      });
+
+      // Handle notification synchronization events
+      socket.on("markNotificationAsRead", (data) => {
+        console.log(
+          "📖 Marking notification as read via socket:",
+          data.notificationId
+        );
+        console.log("👤 User ID:", userId);
+        if (userId) {
+          console.log("📡 Broadcasting notificationRead to room:", userId);
+          io.to(userId).emit("notificationRead", data);
+          console.log("📡 Broadcast completed");
+        } else {
+          console.warn("❌ No userId available for socket:", socket.id);
+        }
+      });
+
+      socket.on("deleteNotification", (data) => {
+        console.log(
+          "🗑️ Deleting notification via socket:",
+          data.notificationId
+        );
+        console.log("👤 User ID:", userId);
+        if (userId) {
+          console.log("📡 Broadcasting notificationDeleted to room:", userId);
+          io.to(userId).emit("notificationDeleted", data);
+          console.log("📡 Broadcast completed");
+        } else {
+          console.warn("❌ No userId available for socket:", socket.id);
+        }
+      });
+
+      socket.on("markAllNotificationsAsRead", () => {
+        console.log("📖 Marking all notifications as read via socket");
+        console.log("👤 User ID:", userId);
+        if (userId) {
+          console.log("📡 Broadcasting allNotificationsRead to room:", userId);
+          io.to(userId).emit("allNotificationsRead");
+          console.log("📡 Broadcast completed");
+        } else {
+          console.warn("❌ No userId available for socket:", socket.id);
+        }
       });
 
       socket.on("disconnect", () => {
