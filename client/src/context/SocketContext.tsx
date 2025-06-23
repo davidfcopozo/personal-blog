@@ -214,7 +214,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("postCommentUpdate", (data) => {
-      console.log("� Received comment update:", data);
       updatePostInCache(data.postId, (post) => {
         const comments = post.comments || [];
         if (data.action === "add") {
