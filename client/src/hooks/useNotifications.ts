@@ -29,44 +29,24 @@ export const useNotifications = () => {
   };
   useEffect(() => {
     if (!socket) {
-      console.log("❌ No socket available for notification listener");
       return;
     }
 
-    console.log(
-      "🔌 Socket available, setting up notification listener. Socket ID:",
-      socket.id
-    );
     const handleNotification = (notification: Notification) => {
-      console.log("📱 Received notification via Socket.IO:", notification);
-
       setNotifications((prev) => {
-        console.log(
-          "📝 Adding notification to list, previous count:",
-          prev.length
-        );
-
-        // Check if notification already exists to prevent duplicates        // Deduplicate notifications based on id or _id
+        // Deduplicate notifications based on id or _id
         const exists = prev.some(
           (n) => (n.id || n._id) === (notification.id || notification._id)
         );
         if (exists) {
-          console.log(
-            "📝 Notification already exists, skipping:",
-            notification.id || notification._id
-          );
           return prev;
         }
 
         const newList = [notification, ...prev];
-        console.log("📝 New notifications list count:", newList.length);
         return newList;
       });
 
-      setUnreadCount((prev) => {
-        console.log("📊 Updating unread count from", prev, "to", prev + 1);
-        return prev + 1;
-      });
+      setUnreadCount((prev) => prev + 1);
       toast({
         title: `${getNotificationIcon(notification.type)} New Notification`,
         description: notification.message,
@@ -75,10 +55,6 @@ export const useNotifications = () => {
     };
 
     const handleNotificationRead = (data: { notificationId: string }) => {
-      console.log(
-        "📖 Notification marked as read via socket:",
-        data.notificationId
-      );
       setNotifications((prev) =>
         prev.map((notification) =>
           (notification.id || notification._id) === data.notificationId
@@ -90,7 +66,6 @@ export const useNotifications = () => {
     };
 
     const handleNotificationDeleted = (data: { notificationId: string }) => {
-      console.log("🗑️ Notification deleted via socket:", data.notificationId);
       setNotifications((prev) => {
         const notification = prev.find(
           (n) => (n.id || n._id) === data.notificationId
@@ -109,21 +84,18 @@ export const useNotifications = () => {
     };
 
     const handleAllNotificationsRead = () => {
-      console.log("📖 All notifications marked as read via socket");
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, isRead: true }))
       );
       setUnreadCount(0);
     };
 
-    console.log("🔌 Setting up notification listeners on socket");
     socket.on("notification", handleNotification);
     socket.on("notificationRead", handleNotificationRead);
     socket.on("notificationDeleted", handleNotificationDeleted);
     socket.on("allNotificationsRead", handleAllNotificationsRead);
 
     return () => {
-      console.log("🔌 Cleaning up notification listeners");
       socket.off("notification", handleNotification);
       socket.off("notificationRead", handleNotificationRead);
       socket.off("notificationDeleted", handleNotificationDeleted);
@@ -184,11 +156,10 @@ export const useNotifications = () => {
     },
     [toast]
   );
-
   const markAsRead = useCallback(
     async (notificationId: string) => {
-      console.log("📖 markAsRead called with ID:", notificationId);
       try {
+        // Update local state immediately for responsiveness (optimistic update)
         setNotifications((prev) =>
           prev.map((notification) =>
             (notification.id || notification._id) === notificationId
@@ -208,24 +179,11 @@ export const useNotifications = () => {
 
         if (!response.ok) {
           throw new Error("Failed to mark notification as read");
-          setNotifications((prev) =>
-            prev.map((notification) =>
-              (notification.id || notification._id) === notificationId
-                ? { ...notification, isRead: false }
-                : notification
-            )
-          );
-          setUnreadCount((prev) => prev + 1);
-          return;
         }
 
-        console.log("📖 Notification marked as read on server");
-        console.log("📡 Emitting markNotificationAsRead socket event");
+        // Emit socket event to sync with other components
         if (socket) {
           socket.emit("markNotificationAsRead", { notificationId });
-          console.log("📡 Socket event emitted successfully");
-        } else {
-          console.warn("❌ No socket available to emit event");
         }
       } catch (error) {
         console.error("Error marking notification as read:", error);

@@ -73,24 +73,13 @@ const startServer = async () => {
           console.log(
             `✅ User ${userId} joined their room with socket ${socket.id}`
           );
-        } else {
-          console.warn(`❌ Tried to join room with invalid userId: ${userId}`);
         }
 
         // Send a confirmation back to the user
         socket.emit("joinConfirmation", { userId, socketId: socket.id });
       });
-      socket.on("test-notification", (data) => {
-        console.log("🧪 Test notification request:", data);
-        console.log(
-          "🏠 Available rooms:",
-          Object.keys(io.sockets.adapter.rooms)
-        );
-        console.log(
-          "👥 Clients in target room:",
-          io.sockets.adapter.rooms.get(data.userId)?.size || 0
-        );
 
+      socket.on("test-notification", (data) => {
         // Send a test notification back to the user's room
         const testNotification = {
           id: `test-${Date.now()}`,
@@ -108,51 +97,25 @@ const startServer = async () => {
           createdAt: new Date(),
         };
 
-        console.log("🧪 Sending test notification to room:", data.userId);
         io.to(data.userId).emit("notification", testNotification);
-        console.log("🧪 Test notification sent successfully");
       });
 
       // Handle notification synchronization events
       socket.on("markNotificationAsRead", (data) => {
-        console.log(
-          "📖 Marking notification as read via socket:",
-          data.notificationId
-        );
-        console.log("👤 User ID:", userId);
         if (userId) {
-          console.log("📡 Broadcasting notificationRead to room:", userId);
           io.to(userId).emit("notificationRead", data);
-          console.log("📡 Broadcast completed");
-        } else {
-          console.warn("❌ No userId available for socket:", socket.id);
         }
       });
 
       socket.on("deleteNotification", (data) => {
-        console.log(
-          "🗑️ Deleting notification via socket:",
-          data.notificationId
-        );
-        console.log("👤 User ID:", userId);
         if (userId) {
-          console.log("📡 Broadcasting notificationDeleted to room:", userId);
           io.to(userId).emit("notificationDeleted", data);
-          console.log("📡 Broadcast completed");
-        } else {
-          console.warn("❌ No userId available for socket:", socket.id);
         }
       });
 
       socket.on("markAllNotificationsAsRead", () => {
-        console.log("📖 Marking all notifications as read via socket");
-        console.log("👤 User ID:", userId);
         if (userId) {
-          console.log("📡 Broadcasting allNotificationsRead to room:", userId);
           io.to(userId).emit("allNotificationsRead");
-          console.log("📡 Broadcast completed");
-        } else {
-          console.warn("❌ No userId available for socket:", socket.id);
         }
       });
 
