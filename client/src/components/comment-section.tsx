@@ -4,11 +4,16 @@ import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface } from "@/typings/interfaces";
 import NestedComment from "./nested-comments";
 import { useEffect } from "react";
+import { useSocket } from "@/context/SocketContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CommentSection({
   comments,
   post,
 }: CommentSectionPropsType) {
+  const { socket } = useSocket();
+  const queryClient = useQueryClient();
+
   const { data: fetchedComments } = useBulkFetch({
     ids: comments?.length >= 1 ? comments : [],
     key: "comments",
@@ -23,6 +28,37 @@ export default function CommentSection({
       commentsSection?.focus();
     }
   }, [hash]);
+
+  // Listen for new comments and replies for this post
+  useEffect(() => {
+    if (!socket || !post) return;
+
+    const handleNewComment = (data: { postId: string; comment: any }) => {
+      if (data.postId === post._id) {
+        // Invalidate comments query to refetch and include the new comment
+        queryClient.invalidateQueries({ queryKey: ["comments"] });
+      }
+    };
+
+    const handleNewReply = (data: {
+      postId: string;
+      parentCommentId: string;
+      reply: any;
+    }) => {
+      if (data.postId === post._id) {
+        // Invalidate comments query to refetch and include the new reply
+        queryClient.invalidateQueries({ queryKey: ["comments"] });
+      }
+    };
+
+    socket.on("newComment", handleNewComment);
+    socket.on("newReply", handleNewReply);
+
+    return () => {
+      socket.off("newComment", handleNewComment);
+      socket.off("newReply", handleNewReply);
+    };
+  }, [socket, post, queryClient]);
 
   return (
     <section className="comment-section w-full max-w-7xl px-4 space-y-6 mb-8 sm:px-0">
