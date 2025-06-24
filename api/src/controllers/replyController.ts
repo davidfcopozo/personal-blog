@@ -23,19 +23,17 @@ export const createReply = async (
     const post: PostType = await Post.findById(postId);
 
     if (!post) {
-      throw new NotFound("The post you're trying to comment on does not exist");
+      throw new NotFound("The post you're trying to reply to does not exist");
     }
 
-    const comment: CommentType = await Comment.findById(parentId);
+    const comment: CommentType = await Comment.findById(parentId).populate(
+      "postedBy"
+    );
 
-    const comments = post?.comments;
-
-    if (!comments) {
-      throw new NotFound("No comments on this post yet");
-    }
-
-    if (!post?._id.equals(`${comment?.post}`)) {
-      throw new BadRequest("Something went wrong");
+    if (!comment) {
+      throw new NotFound(
+        "The comment you're trying to reply to does not exist"
+      );
     }
 
     const cleanContent = sanitizeContent(content);
@@ -50,7 +48,7 @@ export const createReply = async (
     });
 
     if (!reply) {
-      throw new BadRequest("Something went wrong");
+      throw new Error("Failed to create reply");
     }
 
     const result = await Comment.updateOne(
@@ -79,8 +77,6 @@ export const getReplies = async (
   } = req;
 
   try {
-    /*   await Reply.deleteMany();
-    await Comment.deleteMany(); */
     const comment: CommentType = await Comment.findById(commentId);
     const post: PostType = await Post.findById(postId);
 
@@ -135,20 +131,16 @@ export const getReplyById = async (
       throw new NotFound("This comment does not exist or has been deleted");
     }
 
-    //Check if the comment this reply belong to exist
     if (!comment) {
       throw new NotFound("This comment doesn't exist or has been deleted.");
     }
 
-    //Make sure to get the comments and replies of the posts they belong to
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("Something went wrong");
     }
 
-    //Get the given reply
     const reply = await Comment.findById(commentReply);
 
-    //Check if the given reply exist within the comments
     if (!reply) {
       throw new NotFound("This comment doesn't exist or has been deleted.");
     }
@@ -211,7 +203,6 @@ export const deleteReplyById = async (
       return nestedReplies;
     };
 
-    // Collect all nested reply IDs
     const allNestedReplyIds = await collectNestedReplyIds(replyId);
 
     const commentReply = comment.replies?.filter((reply) =>
@@ -233,12 +224,23 @@ export const deleteReplyById = async (
       { new: true }
     );
 
-    //If the reply id has been removed from the comment's replies array, also remove it from the comment collection
+    // If the reply id has been removed from the comment's replies array, also remove it from the comment collection
     if (result.modifiedCount === 1) {
-      // Delete the main reply and all its nested replies
       await Comment.deleteMany({
         _id: { $in: [...allNestedReplyIds, replyId] },
       });
+
+      // Emit socket event for real-time updates
+      const notificationService = req.app.get("notificationService");
+      if (notificationService) {
+        await notificationService.emitReplyDeleted(
+          replyId,
+          commentId,
+          postId,
+          userId,
+          [...allNestedReplyIds, replyId]
+        );
+      }
 
       res
         .status(StatusCodes.OK)

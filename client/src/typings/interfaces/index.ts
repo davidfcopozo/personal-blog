@@ -2,6 +2,12 @@ import { FormEvent, HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { AxiosError } from "axios";
 import { LucideIcon } from "lucide-react";
 import { AuthAction, PostType, UserType } from "../types";
+import { Socket } from "socket.io-client";
+
+export interface SocketContextType {
+  socket: Socket | null;
+  isConnected: boolean;
+}
 
 export interface BaseDocument {
   _id: string;
@@ -371,4 +377,53 @@ export interface NavigationGuardOptions {
   onSave?: () => Promise<void>;
   autoSave?: () => Promise<void>;
   enableDialog?: boolean;
+}
+
+export interface NotificationPreferencesInterface {
+  mentions: {
+    inApp: boolean;
+    email: boolean;
+  };
+  comments: {
+    inApp: boolean;
+    email: boolean;
+  };
+  replies: {
+    inApp: boolean;
+    email: boolean;
+  };
+  bookmarks: {
+    inApp: boolean;
+    email: boolean;
+  };
+  likes: {
+    inApp: boolean;
+    email: boolean;
+  };
+}
+
+export interface Notification {
+  id?: string;
+  _id?: string;
+  type: "mention" | "comment" | "reply" | "bookmark" | "like";
+  message: string;
+  sender: {
+    firstName: string;
+    lastName: string;
+    username: string;
+    avatar: string;
+  };
+  relatedPost?:
+    | string
+    | {
+        _id: string;
+        slug?: string;
+        title?: string;
+        postedBy?: {
+          username: string;
+        };
+      };
+  relatedComment?: string | { _id: string; content?: string };
+  isRead: boolean;
+  createdAt: string;
 }

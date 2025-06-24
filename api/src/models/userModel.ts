@@ -79,6 +79,23 @@ userSchema.pre("save", async function (this: UserInterface, next) {
   this.password = await bcrypt.hash(`${this.password}`, salt);
 });
 
+// Create default notification preferences after user is created
+userSchema.post("save", async function (user) {
+  if (user.isNew) {
+    const NotificationPreferences = mongoose.model("NotificationPreferences");
+    await NotificationPreferences.create({
+      userId: user._id,
+      preferences: {
+        mentions: { inApp: true, email: true },
+        comments: { inApp: true, email: true },
+        replies: { inApp: true, email: true },
+        bookmarks: { inApp: true, email: false },
+        likes: { inApp: true, email: false },
+      },
+    });
+  }
+});
+
 // Compare password with passwordHash
 userSchema.methods.comparePassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);

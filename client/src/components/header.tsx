@@ -16,12 +16,13 @@ import { LogoIcon } from "./ui/icons";
 import { ModeToggle } from "./ui/mode-toggle";
 import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useToast } from "./ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
+import NotificationBell from "./notification-bell";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
@@ -114,8 +115,10 @@ export function Header() {
         </div>
       </form>
       <nav className="ml-auto flex-col items-center gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
+        {" "}
         <div className="flex text-sm gap-2 items-center md:gap-4 lg:gap-5">
           <ModeToggle />
+          {status === "authenticated" && <NotificationBell />}
         </div>
         {/*    {(session?.user as { accessToken?: string })?.accessToken !==
           undefined && (

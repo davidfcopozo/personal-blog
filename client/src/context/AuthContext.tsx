@@ -19,7 +19,6 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
 }) => {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
-
   const {
     data: currentUser,
     refetch: refetchUser,
@@ -30,42 +29,50 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
     queryKey: ["currentUser"],
     queryFn: async () => {
       const session = await getSession();
-      if (session?.user?.id) {
-        const { data } = await axios.get(`/api/users/${session.user.id}`);
-        return data;
+      if (!session?.user?.id) {
+        return null;
       }
-      return null;
+      try {
+        const { data } = await axios.get(`/api/auth/me`);
+        return data;
+      } catch (error) {
+        return null;
+      }
     },
-    enabled: false,
+    enabled: true, // Enable automatic fetching
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
     const initializeAuth = async () => {
-      await refetchUser();
+      if (!currentUser && !isUserLoading) {
+        await refetchUser();
+      }
       setIsLoading(false);
     };
 
     initializeAuth();
-  }, [refetchUser]);
-
+  }, [currentUser, isUserLoading, refetchUser]);
   const login = async (credentials: { email: string; password: string }) => {
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
         ...credentials,
-        callbackUrl: "/",
+        redirect: false,
       });
-
       if (result?.error) {
         throw new Error(result.error);
       }
-
-      await refetchUser();
-    } finally {
+      setTimeout(async () => {
+        await refetchUser();
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
       setIsLoading(false);
+      throw error;
     }
   };
-
   const socialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
@@ -73,10 +80,13 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
       if (result?.error) {
         throw new Error(result.error);
       }
-
-      await refetchUser();
-    } finally {
+      setTimeout(async () => {
+        await refetchUser();
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
       setIsLoading(false);
+      throw error;
     }
   };
 

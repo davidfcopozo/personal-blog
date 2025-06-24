@@ -1,5 +1,6 @@
 import Comment from "../models/commentModel";
 import Post from "../models/postModel";
+import User from "../models/userModel";
 
 import { NextFunction, Response } from "express";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -8,6 +9,7 @@ import { NotFound } from "../errors/not-found";
 import { BadRequest } from "../errors/bad-request";
 import { CommentType, PostMongooseType, PostType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
+import { NotificationService } from "../utils/notificationService";
 
 export const createComment = async (
   req: RequestWithUserInfo | any,
@@ -21,7 +23,7 @@ export const createComment = async (
   } = req;
 
   try {
-    const post: PostType = await Post.findById(postId);
+    const post: PostType = await Post.findById(postId).populate("postedBy");
 
     if (!post) {
       throw new NotFound("The post you're trying to comment on does not exist");
@@ -35,7 +37,6 @@ export const createComment = async (
       postedBy: userId,
       post: postId,
     });
-
     const result = await Post.updateOne(
       { _id: postId },
       {
@@ -43,8 +44,61 @@ export const createComment = async (
       },
       { new: true }
     );
-
     if (result?.modifiedCount === 1) {
+      const notificationService: NotificationService = req.app.get(
+        "notificationService"
+      );
+
+      if (notificationService) {
+        const populatedComment = await Comment.findById(comment._id).populate(
+          "postedBy"
+        );
+
+        if (!populatedComment) {
+          throw new NotFound("Failed to populate the new comment");
+        }
+
+        await notificationService.emitNewComment(
+          postId,
+          populatedComment,
+          post.slug
+        );
+
+        const postOwnerId = (post.postedBy as any)?._id
+          ? (post.postedBy as any)._id.toString()
+          : post.postedBy.toString();
+
+        if (postOwnerId !== userId) {
+          await notificationService.createCommentNotification(
+            postOwnerId,
+            userId,
+            postId,
+            comment._id.toString()
+          );
+        }
+      }
+
+      const mentionRegex = /@(\w+)/g;
+      const mentions = cleanContent.match(mentionRegex);
+
+      if (mentions && notificationService) {
+        const uniqueMentions = [
+          ...new Set(mentions.map((mention) => mention.substring(1))),
+        ];
+
+        for (const username of uniqueMentions) {
+          const mentionedUser = await User.findOne({ username });
+          if (mentionedUser && mentionedUser._id.toString() !== userId) {
+            await notificationService.createMentionNotification(
+              mentionedUser._id,
+              userId,
+              postId,
+              comment._id.toString()
+            );
+          }
+        }
+      }
+
       res.status(StatusCodes.CREATED).json({ success: true, data: comment });
     }
   } catch (error) {
@@ -62,8 +116,6 @@ export const getComments = async (
   } = req;
 
   try {
-    /*   await Post.deleteMany();
-    await Comment.deleteMany(); */
     const post: PostType = await Post.findById(postId);
 
     if (!post) {
@@ -150,7 +202,6 @@ export const deleteCommentById = async (
       return nestedReplies;
     };
 
-    // Collect all nested reply IDs
     const allNestedReplyIds = await collectNestedReplyIds(commentId);
 
     // Remove comment from the post's comments array
@@ -159,19 +210,30 @@ export const deleteCommentById = async (
       { $pull: { comments: commentId } },
       { new: true }
     );
-
     if (result.modifiedCount === 1) {
-      // Delete the main comment
       await Comment.deleteOne({
         _id: commentId,
         postedBy: userId,
       });
 
-      // Delete all nested replies
       if (allNestedReplyIds.length > 0) {
         await Comment.deleteMany({
           _id: { $in: [...allNestedReplyIds, commentId] },
         });
+      }
+
+      // Emit socket event for real-time updates
+      const notificationService: NotificationService = req.app.get(
+        "notificationService"
+      );
+
+      if (notificationService) {
+        await notificationService.emitCommentDeleted(
+          commentId,
+          postId,
+          userId,
+          [...allNestedReplyIds, commentId]
+        );
       }
 
       res
@@ -200,21 +262,22 @@ export const toggleLike = async (
     const post = (await Post.findById(postId)) as PostMongooseType | null;
     const comment: CommentType = await Comment.findById({
       _id: commentId,
-    });
+    }).populate("postedBy");
 
     if (!comment) {
       throw new NotFound("No comments found");
     }
 
-    //If post's id is not equal to the post id the comment bolongs to, throw an error
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("This comment does not belong to this post");
     }
 
     const isLiked = comment.likes?.filter((like) => like.toString() === userId);
+    const notificationService: NotificationService = req.app.get(
+      "notificationService"
+    );
 
     if (isLiked?.length! < 1) {
-      // Add like to the comment's likes array property
       const result = await Comment.updateOne(
         { _id: comment._id },
         { $addToSet: { likes: userId } },
@@ -223,9 +286,37 @@ export const toggleLike = async (
 
       //If the comment id has been removed from the post's comment array, also remove it from the comment document
       if (result.modifiedCount === 1) {
-        res
-          .status(StatusCodes.OK)
-          .json({ success: true, msg: "You've liked this comment." });
+        // Emit socket event for real-time updates
+        if (notificationService) {
+          await notificationService.emitCommentLikeUpdate(
+            commentId,
+            userId,
+            true
+          );
+
+          // Create notification for comment author (if not liking own comment)
+          const commentOwnerId = (comment.postedBy as any)?._id
+            ? (comment.postedBy as any)._id.toString()
+            : comment.postedBy.toString();
+
+          if (commentOwnerId !== userId) {
+            await notificationService.createCommentLikeNotification(
+              commentOwnerId,
+              userId,
+              postId,
+              commentId
+            );
+          }
+        }
+
+        // Get updated comment with likes
+        const updatedComment = await Comment.findById(commentId);
+
+        res.status(StatusCodes.OK).json({
+          success: true,
+          msg: "You've liked this comment.",
+          data: updatedComment,
+        });
       } else {
         throw new BadRequest("Something went wrong, please try again!");
       }
@@ -238,9 +329,20 @@ export const toggleLike = async (
       );
 
       if (result.modifiedCount === 1) {
+        if (notificationService) {
+          await notificationService.emitCommentLikeUpdate(
+            commentId,
+            userId,
+            false
+          );
+        }
+
+        const updatedComment = await Comment.findById(commentId);
+
         res.status(StatusCodes.OK).json({
           success: true,
           msg: "You've disliked this comment.",
+          data: updatedComment,
         });
       } else {
         throw new BadRequest("Something went wrong, please try again!");
