@@ -376,8 +376,6 @@ export const useInteractions = (
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
-      console.log("🎉 Comment created successfully:", newComment);
-
       // Update the comments cache with the new comment (for the author)
       queryClient.setQueryData<CommentInterface[]>(["comments"], (oldData) => {
         if (!oldData) return [newComment];
@@ -469,18 +467,10 @@ export const useInteractions = (
   const createReplyMutation = usePostRequest({
     url: `/api/replies/${postId}`,
     onSuccess: (newReply: ReplyInterface) => {
-      console.log("🎉 Reply mutation onSuccess called with:", newReply);
-
       if (!newReply || !newReply.parentId || !newReply._id) {
         console.error("Reply data is incomplete:", newReply);
         return;
       }
-
-      console.log("📝 Updating author's cache with real reply data"); // Update the specific replies cache for the immediate parent
-      console.log(
-        "📌 Updating specific replies cache:",
-        `replies-${newReply.parentId}`
-      );
 
       // Find and update the correct query keys for the specific parent
       const queriesForParent = queryClient.getQueryCache().findAll({
@@ -495,32 +485,22 @@ export const useInteractions = (
         },
       });
 
-      console.log(
-        `📝 Found ${queriesForParent.length} matching parent queries for mutation`
-      );
       queriesForParent.forEach((query) => {
         queryClient.setQueryData(
           query.queryKey,
           (oldReplies: ReplyInterface[] | undefined) => {
-            console.log("🗂️ Old replies in mutation:", oldReplies);
             if (!oldReplies) return [newReply];
 
             // Check if reply already exists to avoid duplicates
             const exists = oldReplies.find((r) => r._id === newReply._id);
-            if (exists) {
-              console.log("⚠️ Reply already exists in mutation, skipping");
-              return oldReplies;
-            }
+            if (exists) return oldReplies;
 
-            const newData = [...oldReplies, newReply];
-            console.log("✅ New replies data in mutation:", newData);
-            return newData;
+            return [...oldReplies, newReply];
           }
         );
       });
 
       // Update the global replies cache
-      console.log("🌐 Updating global replies cache in mutation");
       queryClient.setQueryData(
         ["replies"],
         (oldReplies: ReplyInterface[] | undefined) => {
@@ -532,13 +512,10 @@ export const useInteractions = (
 
           return [...oldReplies, newReply];
         }
-      ); // Update the grandparent's replies cache if this is a nested reply
-      if (comment?.parentId) {
-        console.log(
-          "🔗 Updating grandparent replies cache:",
-          `replies-${comment.parentId}`
-        );
+      );
 
+      // Update the grandparent's replies cache if this is a nested reply
+      if (comment?.parentId) {
         const grandparentQueries = queryClient.getQueryCache().findAll({
           predicate: (query) => {
             const queryKey = query.queryKey;
@@ -551,9 +528,6 @@ export const useInteractions = (
           },
         });
 
-        console.log(
-          `📝 Found ${grandparentQueries.length} matching grandparent queries for mutation`
-        );
         grandparentQueries.forEach((query) => {
           queryClient.setQueryData(
             query.queryKey,
@@ -576,7 +550,6 @@ export const useInteractions = (
       }
 
       // Update the comments cache to include the new reply ID
-      console.log("💬 Updating comments cache in mutation");
       queryClient.setQueryData(
         ["comments"],
         (oldComments: CommentInterface[] | undefined) => {
@@ -588,10 +561,6 @@ export const useInteractions = (
             if (comment._id.toString() === newReply.parentId) {
               const currentReplies = comment.replies || [];
               if (!currentReplies.includes(`${newReply._id}`)) {
-                console.log(
-                  "📌 Adding reply ID to comment in mutation:",
-                  newReply._id
-                );
                 return {
                   ...comment,
                   replies: [...currentReplies, `${newReply._id}`],
@@ -605,8 +574,6 @@ export const useInteractions = (
 
       setReplyContent("");
 
-      console.log("✅ Reply mutation processing complete");
-
       // Success Toast
       toast({
         title: "Success",
@@ -614,7 +581,6 @@ export const useInteractions = (
       });
     },
     onError: (error) => {
-      console.error("❌ Reply mutation failed:", error);
       // Error toast
       toast({
         variant: "destructive",
