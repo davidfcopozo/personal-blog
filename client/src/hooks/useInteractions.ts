@@ -107,49 +107,34 @@ export const useInteractions = (
       setCommentLiked(userLikedComment);
       setCommentLikesCount(comment.likes?.length ?? 0);
     }
-  }, [comment, currentUser]);
-
+  }, [comment, currentUser]); // Watch for cache updates from socket events and update local state
   useEffect(() => {
-    if (!socket || !comment) return;
+    if (!comment?._id || !currentUser) return;
 
-    const handleCommentLikeUpdate = (data: {
-      commentId: string;
-      userId: string;
-      isLiked: boolean;
-    }) => {
-      if (data.commentId === comment._id) {
-        if (data.userId === currentUser) {
-          setCommentLiked(data.isLiked);
-        }
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event?.query?.queryKey?.[0] === "comments") {
+        const cachedComments = queryClient.getQueryData<any>(["comments"]);
+        if (cachedComments && Array.isArray(cachedComments)) {
+          const updatedComment = cachedComments.find(
+            (c: any) => c._id?.toString() === comment._id?.toString()
+          );
 
-        setCommentLikesCount((prev) => {
-          const currentLikes = comment.likes || [];
-          const userAlreadyLiked = currentLikes.includes(data.userId);
+          if (updatedComment) {
+            const userLiked =
+              updatedComment.likes?.some(
+                (like: string) => like.toString() === currentUser
+              ) ?? false;
+            const likesCount = updatedComment.likes?.length ?? 0;
 
-          if (data.isLiked && !userAlreadyLiked) {
-            return prev + 1;
-          } else if (!data.isLiked && userAlreadyLiked) {
-            return prev - 1;
-          }
-          return prev;
-        });
-
-        if (comment.likes) {
-          if (data.isLiked && !comment.likes.includes(data.userId)) {
-            comment.likes.push(data.userId);
-          } else if (!data.isLiked) {
-            comment.likes = comment.likes.filter((id) => id !== data.userId);
+            setCommentLiked(userLiked);
+            setCommentLikesCount(likesCount);
           }
         }
       }
-    };
+    });
 
-    socket.on("commentLikeUpdate", handleCommentLikeUpdate);
-
-    return () => {
-      socket.off("commentLikeUpdate", handleCommentLikeUpdate);
-    };
-  }, [socket, comment, currentUser]);
+    return unsubscribe;
+  }, [comment?._id, currentUser, queryClient, commentLiked, commentLikesCount]);
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
@@ -580,13 +565,41 @@ export const useInteractions = (
         description: "Your reply was successfully added.",
       });
     },
-    onError: (error) => {
-      // Error toast
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add reply",
-      });
+    onError: (error: any) => {
+      // Check if error indicates parent comment not found
+      const errorMsg = error?.response?.data?.message || error?.message || "";
+      const isParentNotFound =
+        errorMsg.toLowerCase().includes("not found") ||
+        errorMsg.toLowerCase().includes("deleted") ||
+        errorMsg.toLowerCase().includes("parent") ||
+        error?.response?.status === 404;
+
+      if (isParentNotFound) {
+        toast({
+          variant: "destructive",
+          title: "Comment Not Found",
+          description:
+            "The comment you're trying to reply to has been deleted or no longer exists.",
+        });
+
+        // Remove the parent comment from cache if it doesn't exist
+        if (comment?._id) {
+          queryClient.setQueryData(["comments"], (oldData: any) => {
+            if (!oldData || !Array.isArray(oldData)) {
+              return oldData;
+            }
+            return oldData.filter(
+              (c: any) => c._id?.toString() !== comment._id
+            );
+          });
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to add reply. Please try again.",
+        });
+      }
     },
   });
   const createReplyInteraction = ({ onError }: { onError?: () => void }) => {
@@ -603,70 +616,232 @@ export const useInteractions = (
       createReplyMutation.mutate(
         { parentId: comment._id, content: replyContent.trim() },
         {
-          onError: (error) => {
+          onError: (error: any) => {
             if (onError) onError();
 
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : "Failed to process the request. Please try again.";
+            // Check if error indicates parent comment not found
+            const errorMsg =
+              error?.response?.data?.message || error?.message || "";
+            const isParentNotFound =
+              errorMsg.toLowerCase().includes("not found") ||
+              errorMsg.toLowerCase().includes("deleted") ||
+              error?.response?.status === 404;
 
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: errorMessage,
-            });
+            if (isParentNotFound) {
+              toast({
+                variant: "destructive",
+                title: "Comment Not Found",
+                description:
+                  "The comment you're trying to reply to has been deleted or no longer exists.",
+              });
+
+              // Remove the parent comment from cache if it doesn't exist
+              queryClient.setQueryData(["comments"], (oldData: any) => {
+                if (!oldData || !Array.isArray(oldData)) {
+                  return oldData;
+                }
+                return oldData.filter(
+                  (c: any) => c._id?.toString() !== comment._id
+                );
+              });
+            } else {
+              const errorMessage =
+                errorMsg || "Failed to process the request. Please try again.";
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: errorMessage,
+              });
+            }
           },
         }
       );
     });
   };
+
   const likeCommentMutation = usePutRequest({
     url: `/api/comments/${postId}`,
-    onSuccess: (_, variables: { commentId: string }) => {
-      // No need to invalidate queries since we're using optimistic updates
+    onSuccess: (response: any, variables: { commentId: string }) => {
       toast({
         title: "Success",
         description: "Your action was successful.",
       });
     },
-    onError: (error, variables) => {
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "Failed to process the request. Please try again.";
+    onError: (error: any, variables, context: any) => {
+      // Revert optimistic update on error
+      if (context?.previousCommentsData) {
+        queryClient.setQueryData(["comments"], context.previousCommentsData);
+      }
+      if (context?.previousReplyCaches) {
+        // Restore reply caches
+        context.previousReplyCaches.forEach(({ queryKey, data }: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousRepliesData) {
+        queryClient.setQueryData(["replies"], context.previousRepliesData);
+      }
 
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
+      // Check if error indicates comment not found
+      const errorMsg = error?.response?.data?.message || error?.message || "";
+      const isCommentNotFound =
+        errorMsg.toLowerCase().includes("not found") ||
+        errorMsg.toLowerCase().includes("deleted") ||
+        error?.response?.status === 404;
+
+      if (isCommentNotFound) {
+        toast({
+          variant: "destructive",
+          title: "Comment Not Found",
+          description: "This comment has been deleted or no longer exists.",
+        });
+
+        // Remove the comment from cache if it doesn't exist
+        queryClient.setQueryData(["comments"], (oldData: any) => {
+          if (!oldData || !Array.isArray(oldData)) {
+            return oldData;
+          }
+          return oldData.filter(
+            (comment: any) => comment._id?.toString() !== variables.commentId
+          );
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to process the request. Please try again.",
+        });
+      }
+    },
+    onMutate: async (variables: { commentId: string }) => {
+      await queryClient.cancelQueries({ queryKey: ["comments"], exact: true });
+
+      const previousCommentsData = queryClient.getQueryData<any>(["comments"]);
+      const previousRepliesData = queryClient.getQueryData<any>(["replies"]);
+
+      // Store all reply cache data for rollback
+      const replyQueries = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            queryKey.length === 2 &&
+            typeof queryKey[0] === "string" &&
+            queryKey[0].startsWith("replies-") &&
+            Array.isArray(queryKey[1])
+          );
+        },
       });
+
+      const previousReplyCaches = replyQueries.map((query) => ({
+        queryKey: query.queryKey,
+        data: queryClient.getQueryData(query.queryKey),
+      }));
+
+      // Optimistically update the comments cache
+      queryClient.setQueryData(["comments"], (oldComments: any) => {
+        if (!oldComments || !Array.isArray(oldComments)) {
+          return oldComments;
+        }
+
+        return oldComments.map((comment: any) => {
+          if (comment._id?.toString() === variables.commentId) {
+            const userIdString = currentUser;
+            const isLiked = comment.likes?.some(
+              (like: string) => like.toString() === userIdString
+            );
+
+            return {
+              ...comment,
+              likes: isLiked
+                ? comment.likes?.filter(
+                    (like: string) => like.toString() !== userIdString
+                  ) || []
+                : [...(comment.likes || []), userIdString],
+            };
+          }
+          return comment;
+        });
+      });
+
+      // Optimistically update reply caches
+      replyQueries.forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
+          if (!oldReplies || !Array.isArray(oldReplies)) {
+            return oldReplies;
+          }
+
+          return oldReplies.map((reply: any) => {
+            if (reply._id?.toString() === variables.commentId) {
+              const userIdString = currentUser;
+              const isLiked = reply.likes?.some(
+                (like: string) => like.toString() === userIdString
+              );
+
+              return {
+                ...reply,
+                likes: isLiked
+                  ? reply.likes?.filter(
+                      (like: string) => like.toString() !== userIdString
+                    ) || []
+                  : [...(reply.likes || []), userIdString],
+              };
+            }
+            return reply;
+          });
+        });
+      });
+
+      // Optimistically update global replies cache
+      queryClient.setQueryData(["replies"], (oldReplies: any) => {
+        if (!oldReplies || !Array.isArray(oldReplies)) {
+          return oldReplies;
+        }
+
+        return oldReplies.map((reply: any) => {
+          if (reply._id?.toString() === variables.commentId) {
+            const userIdString = currentUser;
+            const isLiked = reply.likes?.some(
+              (like: string) => like.toString() === userIdString
+            );
+
+            return {
+              ...reply,
+              likes: isLiked
+                ? reply.likes?.filter(
+                    (like: string) => like.toString() !== userIdString
+                  ) || []
+                : [...(reply.likes || []), userIdString],
+            };
+          }
+          return reply;
+        });
+      });
+
+      return {
+        previousCommentsData,
+        previousReplyCaches,
+        previousRepliesData,
+      } as any;
     },
   });
-
   const likeCommentInteraction = (
     commentId: string,
     { onError }: { onError?: () => void }
   ) => {
+    // Prevent double clicks while mutation is in progress
+    if (likeCommentMutation.status === "pending") {
+      return;
+    }
+
     requireAuth("like", () => {
-      const previousLikedState = commentLiked;
-      const previousLikesCount = commentLikesCount;
-
-      setCommentLiked(!commentLiked);
-      setCommentLikesCount((prev) => (commentLiked ? prev - 1 : prev + 1));
-
       likeCommentMutation.mutate(
         { commentId },
         {
-          onError: () => {
-            setCommentLiked(previousLikedState);
-            setCommentLikesCount(previousLikesCount);
+          onError: (error: any) => {
             if (onError) onError();
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: "Failed to process the request. Please try again.",
-            });
+
+            // Error handling is done in the mutation's onError
           },
         }
       );
