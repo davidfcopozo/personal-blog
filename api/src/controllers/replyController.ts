@@ -290,14 +290,22 @@ export const deleteReplyById = async (
       { _id: comment._id },
       { $pull: { replies: replyId } },
       { new: true }
-    );
-
-    //If the reply id has been removed from the comment's replies array, also remove it from the comment collection
+    ); //If the reply id has been removed from the comment's replies array, also remove it from the comment collection
     if (result.modifiedCount === 1) {
       // Delete the main reply and all its nested replies
       await Comment.deleteMany({
         _id: { $in: [...allNestedReplyIds, replyId] },
-      });
+      }); // Emit socket event for real-time updates
+      const notificationService = req.app.get("notificationService");
+      if (notificationService) {
+        await notificationService.emitReplyDeleted(
+          replyId,
+          commentId,
+          postId,
+          userId,
+          [...allNestedReplyIds, replyId]
+        );
+      }
 
       res
         .status(StatusCodes.OK)
