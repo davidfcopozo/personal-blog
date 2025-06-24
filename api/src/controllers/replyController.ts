@@ -1,6 +1,5 @@
 import Comment from "../models/commentModel";
 import Post from "../models/postModel";
-import User from "../models/userModel";
 
 import { NextFunction, Response } from "express";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -8,7 +7,6 @@ import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
 import { PostType, CommentType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
-import { NotificationService } from "../utils/notificationService";
 
 export const createReply = async (
   req: RequestWithUserInfo | any,
