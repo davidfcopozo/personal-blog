@@ -18,26 +18,14 @@ export class NotificationService {
     try {
       // Don't send notification to self
       if (data.recipientId.toString() === data.senderId.toString()) {
-        console.log("🚫 Not sending notification to self");
         return null;
       }
-
-      console.log(
-        "🔍 Looking for notification preferences for user:",
-        data.recipientId
-      );
 
       let preferences = await NotificationPreferences.findOne({
         userId: data.recipientId,
       });
 
       if (!preferences) {
-        console.warn(
-          "⚠️ No notification preferences found for user:",
-          data.recipientId,
-          "- creating defaults"
-        );
-
         // Create default preferences if they don't exist
         preferences = await NotificationPreferences.create({
           userId: data.recipientId,
@@ -49,16 +37,6 @@ export class NotificationService {
             likes: { inApp: true, email: false },
           },
         });
-
-        console.log(
-          "✅ Created default notification preferences for user:",
-          data.recipientId
-        );
-      } else {
-        console.log(
-          "✅ Found notification preferences for user:",
-          data.recipientId
-        );
       }
 
       // Map NotificationType to preferences key
@@ -80,10 +58,6 @@ export class NotificationService {
       const typePrefs = preferences.preferences[typeKeyMap[data.type]]; // Create in-app notification if enabled
       let notification = null;
       if (typePrefs.inApp) {
-        console.log(
-          "✅ In-app notifications enabled, creating notification..."
-        );
-
         notification = await Notification.create({
           recipient: data.recipientId,
           sender: data.senderId,
@@ -93,14 +67,11 @@ export class NotificationService {
           relatedComment: data.relatedCommentId,
         });
 
-        console.log("📝 Notification created in database:", notification._id);
-
         await notification.populate({
           path: "sender",
           select: "firstName lastName username avatar",
         });
 
-        console.log("👤 Sender populated:", notification.sender);
         if (this.io) {
           const notificationData = {
             id: notification._id,
@@ -114,48 +85,11 @@ export class NotificationService {
           };
 
           const targetRoom = data.recipientId.toString();
-          console.log("🔔 Emitting notification to room:", targetRoom);
-          console.log(
-            "📧 Notification data:",
-            JSON.stringify(notificationData, null, 2)
-          );
-          console.log(
-            "🏠 Available rooms:",
-            Object.keys(this.io.sockets.adapter.rooms)
-          );
-          console.log(
-            "👥 Clients in target room:",
-            this.io.sockets.adapter.rooms.get(targetRoom)?.size || 0
-          );
-
-          // Also log all clients in all rooms for debugging
-          const rooms = this.io.sockets.adapter.rooms;
-          console.log("🗺️ All room details:");
-          for (const [roomName, roomData] of rooms) {
-            console.log(`  Room ${roomName}: ${roomData.size} clients`);
-          }
 
           this.io.to(targetRoom).emit("notification", notificationData);
-
-          console.log(
-            "✅ Notification emitted successfully to room:",
-            targetRoom
-          );
-        } else {
-          console.log("❌ No Socket.IO instance available for notification");
         }
-      } else {
-        console.log(
-          "🚫 In-app notifications disabled for this user and notification type"
-        );
-        console.log(
-          "📋 Preferences for",
-          typeKeyMap[data.type] + ":",
-          typePrefs
-        );
       }
 
-      // Send email notification if enabled
       if (typePrefs.email) {
         await this.sendEmailNotification(data);
       }
@@ -485,7 +419,8 @@ export class NotificationService {
         commentId,
         postId,
         userId,
-        allDeletedIds, // Include all nested reply IDs that were also deleted
+        // Include all nested reply IDs that were also deleted
+        allDeletedIds,
         timestamp: new Date(),
       });
     }
@@ -498,15 +433,6 @@ export class NotificationService {
     allDeletedIds: string[]
   ) {
     if (this.io) {
-      console.log("📡 Emitting replyDeleted socket event to all clients:", {
-        replyId,
-        parentId,
-        postId,
-        userId,
-        allDeletedIds,
-        connectedClients: this.io.engine.clientsCount,
-      });
-
       this.io.emit("replyDeleted", {
         replyId,
         parentId,
