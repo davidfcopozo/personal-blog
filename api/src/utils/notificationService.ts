@@ -473,4 +473,50 @@ export class NotificationService {
       });
     }
   }
+
+  async emitCommentDeleted(
+    commentId: string,
+    postId: string,
+    userId: string,
+    allDeletedIds: string[]
+  ) {
+    if (this.io) {
+      this.io.emit("commentDeleted", {
+        commentId,
+        postId,
+        userId,
+        allDeletedIds, // Include all nested reply IDs that were also deleted
+        timestamp: new Date(),
+      });
+    }
+  }
+  async emitReplyDeleted(
+    replyId: string,
+    parentId: string,
+    postId: string,
+    userId: string,
+    allDeletedIds: string[]
+  ) {
+    if (this.io) {
+      console.log("📡 Emitting replyDeleted socket event to all clients:", {
+        replyId,
+        parentId,
+        postId,
+        userId,
+        allDeletedIds,
+        connectedClients: this.io.engine.clientsCount,
+      });
+
+      this.io.emit("replyDeleted", {
+        replyId,
+        parentId,
+        postId,
+        userId,
+        allDeletedIds, // Include all nested reply IDs that were also deleted
+        timestamp: new Date(),
+      });
+    } else {
+      console.error("❌ Socket.io instance not available for emitReplyDeleted");
+    }
+  }
 }
