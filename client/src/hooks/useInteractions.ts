@@ -365,7 +365,6 @@ export const useInteractions = (
       queryClient.setQueryData<CommentInterface[]>(["comments"], (oldData) => {
         if (!oldData) return [newComment];
 
-        // Check if comment already exists to avoid duplicates
         const exists = oldData.find((c) => c._id === newComment._id);
         if (exists) return oldData;
 
@@ -415,6 +414,7 @@ export const useInteractions = (
 
       setCommentContent("");
     },
+
     onError: (error) => {
       const errorMessage =
         error &&
@@ -427,6 +427,7 @@ export const useInteractions = (
       });
     },
   });
+
   const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
     requireAuth("comment", () => {
       createCommentMutation.mutate(
@@ -449,11 +450,11 @@ export const useInteractions = (
       );
     });
   };
+
   const createReplyMutation = usePostRequest({
     url: `/api/replies/${postId}`,
     onSuccess: (newReply: ReplyInterface) => {
       if (!newReply || !newReply.parentId || !newReply._id) {
-        console.error("Reply data is incomplete:", newReply);
         return;
       }
 
@@ -476,7 +477,6 @@ export const useInteractions = (
           (oldReplies: ReplyInterface[] | undefined) => {
             if (!oldReplies) return [newReply];
 
-            // Check if reply already exists to avoid duplicates
             const exists = oldReplies.find((r) => r._id === newReply._id);
             if (exists) return oldReplies;
 
@@ -485,13 +485,11 @@ export const useInteractions = (
         );
       });
 
-      // Update the global replies cache
       queryClient.setQueryData(
         ["replies"],
         (oldReplies: ReplyInterface[] | undefined) => {
           if (!oldReplies) return [newReply];
 
-          // Check if reply already exists to avoid duplicates
           const exists = oldReplies.find((r) => r._id === newReply._id);
           if (exists) return oldReplies;
 
@@ -559,7 +557,6 @@ export const useInteractions = (
 
       setReplyContent("");
 
-      // Success Toast
       toast({
         title: "Success",
         description: "Your reply was successfully added.",
@@ -602,6 +599,7 @@ export const useInteractions = (
       }
     },
   });
+
   const createReplyInteraction = ({ onError }: { onError?: () => void }) => {
     if (!postId || !comment?._id || !replyContent.trim()) {
       toast({
@@ -619,7 +617,6 @@ export const useInteractions = (
           onError: (error: any) => {
             if (onError) onError();
 
-            // Check if error indicates parent comment not found
             const errorMsg =
               error?.response?.data?.message || error?.message || "";
             const isParentNotFound =
@@ -678,11 +675,11 @@ export const useInteractions = (
           queryClient.setQueryData(queryKey, data);
         });
       }
+
       if (context?.previousRepliesData) {
         queryClient.setQueryData(["replies"], context.previousRepliesData);
       }
 
-      // Check if error indicates comment not found
       const errorMsg = error?.response?.data?.message || error?.message || "";
       const isCommentNotFound =
         errorMsg.toLowerCase().includes("not found") ||
@@ -847,7 +844,7 @@ export const useInteractions = (
       );
     });
   };
-  /* Functions to export */
+
   const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     requireAuth("like", () => {
@@ -869,6 +866,7 @@ export const useInteractions = (
       });
     });
   };
+
   return {
     handleLikeClick,
     handleBookmarkClick,
