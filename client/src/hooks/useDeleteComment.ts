@@ -98,20 +98,33 @@ const useDeleteComment = (post?: PostType) => {
         queryClient.removeQueries({
           queryKey: [`replies-${variables.itemId}`],
         });
-      }
-
-      // Handle reply deletion
+      } // Handle reply deletion
       if (variables.key === "replies" && variables.parentId) {
         // 1. Update the immediate parent's replies cache
-        queryClient.setQueryData(
-          [`replies-${variables.parentId}`],
-          (oldReplies: ReplyInterface[]) => {
-            if (!oldReplies || !Array.isArray(oldReplies)) return oldReplies;
-            return oldReplies.filter(
-              (reply) => reply._id.toString() !== variables.itemId
+        // Find all query keys that match the pattern ["replies-${parentId}", ids]
+        const parentReplyCaches = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] === `replies-${variables.parentId}` &&
+              Array.isArray(queryKey[1])
             );
-          }
-        );
+          },
+        });
+
+        parentReplyCaches.forEach((query) => {
+          queryClient.setQueryData(
+            query.queryKey,
+            (oldReplies: ReplyInterface[]) => {
+              if (!oldReplies || !Array.isArray(oldReplies)) return oldReplies;
+              return oldReplies.filter(
+                (reply) => reply._id.toString() !== variables.itemId
+              );
+            }
+          );
+        });
 
         // 2. Update the parent comment's replies array in comments cache
         queryClient.setQueryData(
@@ -130,37 +143,60 @@ const useDeleteComment = (post?: PostType) => {
               return comment;
             });
           }
-        );
-
-        // 3. Get the parent comment to find grandparent ID
+        ); // 3. Get the parent comment to find grandparent ID
         const parentComment = queryClient
           .getQueryData<CommentInterface[]>(["comments"])
           ?.find((comment) => comment._id.toString() === variables.parentId);
 
         // 4. Update grandparent's replies cache if it exists
         if (parentComment?.parentId) {
-          queryClient.setQueryData(
-            [`replies-${parentComment.parentId}`],
-            (oldReplies: ReplyInterface[]) => {
-              if (!oldReplies || !Array.isArray(oldReplies)) return oldReplies;
-              return oldReplies.map((reply) => {
-                if (reply._id.toString() === variables.parentId) {
-                  return {
-                    ...reply,
-                    replies: (reply.replies || []).filter(
-                      (replyId) => replyId.toString() !== variables.itemId
-                    ),
-                  };
-                }
-                return reply;
-              });
-            }
-          );
-        }
+          const grandparentReplyCaches = queryClient.getQueryCache().findAll({
+            predicate: (query) => {
+              const queryKey = query.queryKey;
+              return (
+                Array.isArray(queryKey) &&
+                queryKey.length === 2 &&
+                queryKey[0] === `replies-${parentComment.parentId}` &&
+                Array.isArray(queryKey[1])
+              );
+            },
+          });
 
-        // 5. Remove the specific reply cache
-        queryClient.removeQueries({
-          queryKey: [`replies-${variables.itemId}`],
+          grandparentReplyCaches.forEach((query) => {
+            queryClient.setQueryData(
+              query.queryKey,
+              (oldReplies: ReplyInterface[]) => {
+                if (!oldReplies || !Array.isArray(oldReplies))
+                  return oldReplies;
+                return oldReplies.map((reply) => {
+                  if (reply._id.toString() === variables.parentId) {
+                    return {
+                      ...reply,
+                      replies: (reply.replies || []).filter(
+                        (replyId) => replyId.toString() !== variables.itemId
+                      ),
+                    };
+                  }
+                  return reply;
+                });
+              }
+            );
+          });
+        } // 5. Remove the specific reply cache
+        const deletedReplyCaches = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] === `replies-${variables.itemId}` &&
+              Array.isArray(queryKey[1])
+            );
+          },
+        });
+
+        deletedReplyCaches.forEach((query) => {
+          queryClient.removeQueries({ queryKey: query.queryKey });
         });
       }
 
@@ -183,8 +219,8 @@ const useDeleteComment = (post?: PostType) => {
       if (context) {
         const {
           previousComments,
-          previousReplies,
-          previousGrandparentReplies,
+          previousReplyCacheData,
+          previousGrandparentCacheData,
           previousPost,
         } = context;
 
@@ -192,25 +228,19 @@ const useDeleteComment = (post?: PostType) => {
           queryClient.setQueryData(["comments"], previousComments);
         }
 
-        if (variables.parentId && previousReplies) {
-          queryClient.setQueryData(
-            [`replies-${variables.parentId}`],
-            previousReplies
-          );
+        if (previousReplyCacheData && Array.isArray(previousReplyCacheData)) {
+          previousReplyCacheData.forEach(({ queryKey, data }: any) => {
+            queryClient.setQueryData(queryKey, data);
+          });
         }
 
-        if (variables.parentId && previousGrandparentReplies) {
-          // Find parent comment to get grandparent ID
-          const parentComment = previousComments?.find(
-            (comment: CommentInterface) =>
-              comment._id.toString() === variables.parentId
-          );
-          if (parentComment?.parentId) {
-            queryClient.setQueryData(
-              [`replies-${parentComment.parentId}`],
-              previousGrandparentReplies
-            );
-          }
+        if (
+          previousGrandparentCacheData &&
+          Array.isArray(previousGrandparentCacheData)
+        ) {
+          previousGrandparentCacheData.forEach(({ queryKey, data }: any) => {
+            queryClient.setQueryData(queryKey, data);
+          });
         }
 
         if (previousPost) {
@@ -239,28 +269,70 @@ const useDeleteComment = (post?: PostType) => {
       // Cancel all relevant queries
       await queryClient.cancelQueries({ queryKey: [variables.key] });
       if (variables.parentId) {
-        await queryClient.cancelQueries({
-          queryKey: [`replies-${variables.parentId}`],
+        // Find and cancel parent reply queries
+        const parentReplyCaches = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] === `replies-${variables.parentId}` &&
+              Array.isArray(queryKey[1])
+            );
+          },
         });
+
+        for (const query of parentReplyCaches) {
+          await queryClient.cancelQueries({ queryKey: query.queryKey });
+        }
+
         // Find and cancel grandparent queries
         const parentComment = queryClient
           .getQueryData<CommentInterface[]>(["comments"])
           ?.find((comment) => comment._id.toString() === variables.parentId);
         if (parentComment?.parentId) {
-          await queryClient.cancelQueries({
-            queryKey: [`replies-${parentComment.parentId}`],
+          const grandparentReplyCaches = queryClient.getQueryCache().findAll({
+            predicate: (query) => {
+              const queryKey = query.queryKey;
+              return (
+                Array.isArray(queryKey) &&
+                queryKey.length === 2 &&
+                queryKey[0] === `replies-${parentComment.parentId}` &&
+                Array.isArray(queryKey[1])
+              );
+            },
           });
+
+          for (const query of grandparentReplyCaches) {
+            await queryClient.cancelQueries({ queryKey: query.queryKey });
+          }
         }
       }
       if (post?.slug) {
         await queryClient.cancelQueries({ queryKey: ["post", post.slug] });
-      }
-
-      // Store previous states
+      } // Store previous states
       const previousComments = queryClient.getQueryData(["comments"]);
-      const previousReplies = variables.parentId
-        ? queryClient.getQueryData([`replies-${variables.parentId}`])
-        : null;
+
+      // Store previous reply cache data for rollback
+      const parentReplyCaches = variables.parentId
+        ? queryClient.getQueryCache().findAll({
+            predicate: (query) => {
+              const queryKey = query.queryKey;
+              return (
+                Array.isArray(queryKey) &&
+                queryKey.length === 2 &&
+                queryKey[0] === `replies-${variables.parentId}` &&
+                Array.isArray(queryKey[1])
+              );
+            },
+          })
+        : [];
+
+      const previousReplyCacheData = parentReplyCaches.map((query) => ({
+        queryKey: query.queryKey,
+        data: queryClient.getQueryData(query.queryKey),
+      }));
+
       const previousPost = post?.slug
         ? queryClient.getQueryData(["post", post.slug])
         : null;
@@ -269,9 +341,27 @@ const useDeleteComment = (post?: PostType) => {
       const parentComment = queryClient
         .getQueryData<CommentInterface[]>(["comments"])
         ?.find((comment) => comment._id.toString() === variables.parentId);
-      const previousGrandparentReplies = parentComment?.parentId
-        ? queryClient.getQueryData([`replies-${parentComment.parentId}`])
-        : null;
+
+      const grandparentReplyCaches = parentComment?.parentId
+        ? queryClient.getQueryCache().findAll({
+            predicate: (query) => {
+              const queryKey = query.queryKey;
+              return (
+                Array.isArray(queryKey) &&
+                queryKey.length === 2 &&
+                queryKey[0] === `replies-${parentComment.parentId}` &&
+                Array.isArray(queryKey[1])
+              );
+            },
+          })
+        : [];
+
+      const previousGrandparentCacheData = grandparentReplyCaches.map(
+        (query) => ({
+          queryKey: query.queryKey,
+          data: queryClient.getQueryData(query.queryKey),
+        })
+      );
 
       // Perform optimistic updates for reply deletion
       if (variables.key === "replies" && variables.parentId) {
@@ -327,13 +417,11 @@ const useDeleteComment = (post?: PostType) => {
         queryClient.removeQueries({
           queryKey: [`replies-${variables.itemId}`],
         });
-      }
-
-      // Return previous states for potential rollback
+      } // Return previous states for potential rollback
       return {
         previousComments,
-        previousReplies,
-        previousGrandparentReplies,
+        previousReplyCacheData,
+        previousGrandparentCacheData,
         previousPost,
       };
     },
