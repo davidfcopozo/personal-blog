@@ -31,13 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      {/* <head>
         <script
           src="//unpkg.com/react-scan/dist/auto.global.js"
           crossOrigin="anonymous"
           async
         ></script>
-      </head>
+      </head> */}
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased !pointer-events-auto",
