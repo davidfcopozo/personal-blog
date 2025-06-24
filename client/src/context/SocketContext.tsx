@@ -516,6 +516,208 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
+    newSocket.on("commentDeleted", (data) => {
+      const currentUserId = currentUser?._id || currentUser?.data?._id;
+
+      // Don't update cache for the user who deleted the comment (their cache is already updated optimistically)
+      if (data.userId !== currentUserId) {
+        // Remove the comment and all its nested replies from comments cache
+        queryClient.setQueryData(["comments"], (oldComments: any) => {
+          if (!oldComments || !Array.isArray(oldComments)) {
+            return oldComments;
+          }
+          return oldComments.filter(
+            (comment: any) =>
+              !data.allDeletedIds.includes(comment._id?.toString())
+          );
+        });
+
+        // Remove replies caches for all deleted items
+        data.allDeletedIds.forEach((deletedId: string) => {
+          queryClient.removeQueries({
+            queryKey: [`replies-${deletedId}`],
+          });
+        });
+
+        // Update global replies cache
+        queryClient.setQueryData(["replies"], (oldReplies: any) => {
+          if (!oldReplies || !Array.isArray(oldReplies)) {
+            return oldReplies;
+          }
+          return oldReplies.filter(
+            (reply: any) => !data.allDeletedIds.includes(reply._id?.toString())
+          );
+        });
+
+        // Update post comment count in posts cache
+        queryClient.setQueryData(["posts"], (oldPosts: any) => {
+          if (!oldPosts?.data || !Array.isArray(oldPosts.data)) {
+            return oldPosts;
+          }
+          return {
+            ...oldPosts,
+            data: oldPosts.data.map((post: any) => {
+              if (post._id?.toString() === data.postId) {
+                return {
+                  ...post,
+                  comments: (post.comments || []).filter(
+                    (commentId: string) => commentId !== data.commentId
+                  ),
+                };
+              }
+              return post;
+            }),
+          };
+        });
+
+        // Update individual post cache
+        const queries = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] === "post" &&
+              typeof queryKey[1] === "string"
+            );
+          },
+        });
+
+        queries.forEach((query) => {
+          queryClient.setQueryData(query.queryKey, (oldData: any) => {
+            if (
+              !oldData?.data ||
+              oldData.data._id?.toString() !== data.postId
+            ) {
+              return oldData;
+            }
+            return {
+              ...oldData,
+              data: {
+                ...oldData.data,
+                comments: (oldData.data.comments || []).filter(
+                  (commentId: string) => commentId !== data.commentId
+                ),
+              },
+            };
+          });
+        });
+      }
+    });
+    newSocket.on("replyDeleted", (data) => {
+      const currentUserId = currentUser?._id || currentUser?.data?._id;
+      // Update cache for ALL users including the one who deleted
+      // The optimistic update from useDeleteComment might not have worked properly
+
+      // Remove the reply from its parent's replies cache
+      // Find all query keys that match the pattern ["replies-${parentId}", ids]
+      const parentReplyCaches = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            queryKey.length === 2 &&
+            queryKey[0] === `replies-${data.parentId}` &&
+            Array.isArray(queryKey[1])
+          );
+        },
+      });
+
+      parentReplyCaches.forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
+          if (!oldReplies || !Array.isArray(oldReplies)) {
+            return oldReplies;
+          }
+          const filtered = oldReplies.filter(
+            (reply: any) => !data.allDeletedIds.includes(reply._id?.toString())
+          );
+
+          return filtered;
+        });
+      });
+
+      // Update the parent comment's replies array in comments cache
+      queryClient.setQueryData(["comments"], (oldComments: any) => {
+        if (!oldComments || !Array.isArray(oldComments)) {
+          return oldComments;
+        }
+        return oldComments.map((comment: any) => {
+          if (comment._id?.toString() === data.parentId) {
+            return {
+              ...comment,
+              replies: (comment.replies || []).filter(
+                (replyId: string) => !data.allDeletedIds.includes(replyId)
+              ),
+            };
+          }
+          return comment;
+        });
+      }); // Update grandparent replies cache if the parent is also a reply
+      const parentComment = queryClient
+        .getQueryData<any>(["comments"])
+        ?.find((c: any) => c._id?.toString() === data.parentId);
+
+      if (parentComment?.parentId) {
+        const grandparentReplyCaches = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] === `replies-${parentComment.parentId}` &&
+              Array.isArray(queryKey[1])
+            );
+          },
+        });
+
+        grandparentReplyCaches.forEach((query) => {
+          queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
+            if (!oldReplies || !Array.isArray(oldReplies)) {
+              return oldReplies;
+            }
+            return oldReplies.map((reply: any) => {
+              if (reply._id?.toString() === data.parentId) {
+                return {
+                  ...reply,
+                  replies: (reply.replies || []).filter(
+                    (replyId: string) => !data.allDeletedIds.includes(replyId)
+                  ),
+                };
+              }
+              return reply;
+            });
+          });
+        });
+      }
+
+      // Remove replies caches for all deleted items
+      data.allDeletedIds.forEach((deletedId: string) => {
+        const deletedReplyCaches = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] === `replies-${deletedId}` &&
+              Array.isArray(queryKey[1])
+            );
+          },
+        });
+
+        deletedReplyCaches.forEach((query) => {
+          queryClient.removeQueries({ queryKey: query.queryKey });
+        });
+      }); // Update global replies cache
+      queryClient.setQueryData(["replies"], (oldReplies: any) => {
+        if (!oldReplies || !Array.isArray(oldReplies)) {
+          return oldReplies;
+        }
+        return oldReplies.filter(
+          (reply: any) => !data.allDeletedIds.includes(reply._id?.toString())
+        );
+      });
+    });
+
     setSocket(newSocket);
     return () => {
       newSocket.close();
