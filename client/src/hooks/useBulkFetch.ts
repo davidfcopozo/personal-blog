@@ -29,20 +29,18 @@ const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
         }>(`${baseURL}${url}/${id}`);
         return data.data;
       } catch (error) {
-        // Log the error but don't fail the entire fetch
-        console.warn(`Failed to fetch comment/reply ${id}:`, error);
         return null;
       }
     });
 
     const results = await Promise.all(commentPromises);
-    // Filter out null results (failed fetches)
     return results.filter(
       (comment): comment is CommentInterface => comment !== null
     );
   };
+
   const { data, error, isLoading, isFetching } = useQuery<CommentInterface[]>({
-    queryKey: [key, ids], // Include ids in query key so it refetches when ids change
+    queryKey: [key, ids],
     queryFn: fetchComments,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -50,7 +48,6 @@ const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
     staleTime: 2 * 60 * 1000, // 2 minutes
     enabled: ids?.length > 0 || dependantItem,
     retry: (failureCount, error) => {
-      // Don't retry on 404s, but retry on network errors
       if (
         error &&
         "response" in error &&
