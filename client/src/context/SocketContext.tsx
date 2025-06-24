@@ -263,24 +263,31 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
-
     newSocket.on("newComment", (data) => {
-      // For ALL users (including author), add the new comment to the cache
-      // This ensures everyone sees the comment immediately
-      queryClient.setQueryData<any>(["comments"], (oldData: any) => {
-        if (!oldData) return [data.comment];
+      // Check if current user is the comment author
+      const currentUserId = currentUser?._id || currentUser?.data?._id;
+      const commentAuthorId =
+        data.comment.postedBy?._id || data.comment.postedBy;
+      const isCurrentUserAuthor = currentUserId === commentAuthorId;
 
-        // Check if comment already exists to avoid duplicates
-        const exists = oldData.find((c: any) => c._id === data.comment._id);
-        if (exists) {
-          return oldData;
-        }
+      // For OTHER users (not the comment author), add the new comment to the cache
+      // The author's cache will be updated by the mutation's onSuccess to avoid conflicts
+      if (!isCurrentUserAuthor) {
+        queryClient.setQueryData<any>(["comments"], (oldData: any) => {
+          if (!oldData) return [data.comment];
 
-        return [...oldData, data.comment];
-      });
+          // Check if comment already exists to avoid duplicates
+          const exists = oldData.find((c: any) => c._id === data.comment._id);
+          if (exists) {
+            return oldData;
+          }
+
+          return [...oldData, data.comment];
+        });
+      }
 
       // Show toast notification for post author if it's their post and they didn't create the comment
-      if (data.comment.postedBy !== userId) {
+      if (!isCurrentUserAuthor) {
         // Try to get post data from cache
         let postOwnerId = null;
 
@@ -307,7 +314,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         // Check if current user is the post owner
         if (
           postOwnerId &&
-          (postOwnerId === userId || postOwnerId.toString() === userId)
+          (postOwnerId === currentUserId ||
+            postOwnerId.toString() === currentUserId)
         ) {
           toast({
             title: `${getNotificationIcon("comment")} New Comment`,
@@ -318,22 +326,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
     });
     newSocket.on("newReply", (data) => {
-      console.log("🔔 Socket received newReply event:", data);
-
       // Check if current user is the reply author
       const currentUserId = currentUser?._id || currentUser?.data?._id;
       const replyAuthorId = data.reply.postedBy?._id || data.reply.postedBy;
       const isCurrentUserAuthor = currentUserId === replyAuthorId;
 
-      console.log("👤 Current user ID:", currentUserId);
-      console.log("✍️ Reply author ID:", replyAuthorId);
-      console.log("🔍 Is current user author?", isCurrentUserAuthor);
-
       // For OTHER users (not the reply author), add the new reply to the cache
       // The author's cache will be updated by the mutation's onSuccess to avoid conflicts
       if (!isCurrentUserAuthor) {
-        console.log("👥 Updating cache for non-author user");
-
         // Find and update the correct query key with IDs array
         const queriesForParent = queryClient.getQueryCache().findAll({
           predicate: (query) => {
@@ -347,33 +347,21 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           },
         });
 
-        console.log(
-          `📝 Found ${queriesForParent.length} matching queries for parent ${data.parentCommentId}`
-        );
-
         queriesForParent.forEach((query) => {
-          const [cacheKey, currentIds] = query.queryKey as [string, string[]];
-          console.log(`🔧 Updating query with key:`, query.queryKey);
-
           queryClient.setQueryData(query.queryKey, (oldData: any) => {
-            console.log("🗂️ Old replies data:", oldData);
             if (!oldData) return [data.reply];
 
             // Check if reply already exists to avoid duplicates
             const exists = oldData.find((r: any) => r._id === data.reply._id);
             if (exists) {
-              console.log("⚠️ Reply already exists, skipping");
               return oldData;
             }
 
-            const newData = [...oldData, data.reply];
-            console.log("✅ New replies data:", newData);
-            return newData;
+            return [...oldData, data.reply];
           });
         });
 
         // Update the global replies cache
-        console.log("🌐 Updating global replies cache");
         queryClient.setQueryData(["replies"], (oldReplies: any) => {
           if (!oldReplies) return [data.reply];
 
@@ -387,7 +375,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         });
 
         // Update the parent comment's replies array in the comments cache
-        console.log("💬 Updating comments cache");
         queryClient.setQueryData(["comments"], (oldComments: any) => {
           if (!oldComments) return oldComments;
 
@@ -395,7 +382,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
             if (comment._id === data.parentCommentId) {
               const currentReplies = comment.replies || [];
               if (!currentReplies.includes(data.reply._id)) {
-                console.log("📌 Adding reply ID to comment:", data.reply._id);
                 return {
                   ...comment,
                   replies: [...currentReplies, data.reply._id],
@@ -408,7 +394,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
         // If this is a nested reply, also update the grandparent's replies cache
         if (data.reply.parentType === "reply") {
-          console.log("🔗 Handling nested reply");
           // Find and update grandparent queries
           const grandparentQueries = queryClient.getQueryCache().findAll({
             predicate: (query) => {
@@ -444,12 +429,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
             });
           });
         }
-
-        console.log("✅ Socket newReply processing complete for non-author");
-      } else {
-        console.log(
-          "👤 Skipping socket cache update for reply author (will be handled by mutation)"
-        );
       }
 
       // Show toast notification for reply recipient if they didn't create the reply
