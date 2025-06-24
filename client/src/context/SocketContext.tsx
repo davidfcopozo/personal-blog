@@ -100,20 +100,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       });
     });
     if (!hasUpdated) {
-      // Fallback: invalidate queries to refetch if cache update failed
+      // Invalidate queries to refetch if cache update failed
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queries.forEach((query) => {
         queryClient.invalidateQueries({ queryKey: query.queryKey });
       });
     }
   };
+
   const updateCommentInCache = (
     commentId: string,
     updateFn: (comment: any) => any
   ) => {
     let hasUpdated = false;
 
-    // Update the main comments cache
     queryClient.setQueryData(["comments"], (oldData: any) => {
       if (!oldData || !Array.isArray(oldData)) {
         return oldData;
@@ -159,7 +159,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       });
     });
 
-    // Update global replies cache
     queryClient.setQueryData(["replies"], (oldData: any) => {
       if (!oldData || !Array.isArray(oldData)) {
         return oldData;
@@ -175,7 +174,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     if (!hasUpdated) {
-      // Fallback: invalidate queries to refetch if cache update failed
+      // Invalidate queries to refetch if cache update failed
       queryClient.invalidateQueries({ queryKey: ["comments"] });
       replyQueries.forEach((query) => {
         queryClient.invalidateQueries({ queryKey: query.queryKey });
@@ -183,10 +182,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       queryClient.invalidateQueries({ queryKey: ["replies"] });
     }
   };
+
   useEffect(() => {
     if (isAuthLoading) {
       return;
     }
+
     const userId = currentUser?._id || currentUser?.data?._id;
     if (!userId) {
       if (socket) {
@@ -196,26 +197,33 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
       return;
     }
+
     const apiUrl =
       process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT?.replace("/api/v1", "") ||
       "http://localhost:8000";
+
     const newSocket = io(apiUrl, {
       transports: ["websocket", "polling"],
       timeout: 20000,
       forceNew: true,
     });
+
     newSocket.on("connect", () => {
       setIsConnected(true);
       // Join user-specific room for receiving notifications
       newSocket.emit("join", userId);
     });
+
     newSocket.on("joinConfirmation", (data) => {});
+
     newSocket.on("disconnect", () => {
       setIsConnected(false);
     });
+
     newSocket.on("connect_error", () => {
       setIsConnected(false);
     });
+
     newSocket.on("postLikeUpdate", (data) => {
       updatePostInCache(data.postId, (post) => {
         if (data.userId !== userId && post.postedBy === userId) {
@@ -290,10 +298,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       });
     });
 
-    // Handle real-time notifications
     newSocket.on("notification", (notification) => {
       // The useNotifications hook will handle this
     });
+
     newSocket.on("commentLikeUpdate", (data) => {
       updateCommentInCache(data.commentId, (comment) => {
         const currentUserId = currentUser?._id || currentUser?.data?._id;
@@ -327,20 +335,18 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         return comment;
       });
     });
+
     newSocket.on("newComment", (data) => {
-      // Check if current user is the comment author
       const currentUserId = currentUser?._id || currentUser?.data?._id;
       const commentAuthorId =
         data.comment.postedBy?._id || data.comment.postedBy;
       const isCurrentUserAuthor = currentUserId === commentAuthorId;
 
-      // For OTHER users (not the comment author), add the new comment to the cache
-      // The author's cache will be updated by the mutation's onSuccess to avoid conflicts
+      // For OTHER users (not the comment author), add the new comment to the cache. The author's cache will be updated by the mutation's onSuccess to avoid conflicts
       if (!isCurrentUserAuthor) {
         queryClient.setQueryData<any>(["comments"], (oldData: any) => {
           if (!oldData) return [data.comment];
 
-          // Check if comment already exists to avoid duplicates
           const exists = oldData.find((c: any) => c._id === data.comment._id);
           if (exists) {
             return oldData;
@@ -352,10 +358,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
       // Show toast notification for post author if it's their post and they didn't create the comment
       if (!isCurrentUserAuthor) {
-        // Try to get post data from cache
         let postOwnerId = null;
 
-        // First try to get from individual post cache
         const singlePostData = queryClient.getQueryData<any>([
           "post",
           data.postSlug,
@@ -375,7 +379,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           }
         }
 
-        // Check if current user is the post owner
         if (
           postOwnerId &&
           (postOwnerId === currentUserId ||
@@ -389,14 +392,13 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
+
     newSocket.on("newReply", (data) => {
-      // Check if current user is the reply author
       const currentUserId = currentUser?._id || currentUser?.data?._id;
       const replyAuthorId = data.reply.postedBy?._id || data.reply.postedBy;
       const isCurrentUserAuthor = currentUserId === replyAuthorId;
 
-      // For OTHER users (not the reply author), add the new reply to the cache
-      // The author's cache will be updated by the mutation's onSuccess to avoid conflicts
+      // For OTHER users (not the reply author), add the new reply to the cache. The author's cache will be updated by the mutation's onSuccess to avoid conflicts
       if (!isCurrentUserAuthor) {
         // Find and update the correct query key with IDs array
         const queriesForParent = queryClient.getQueryCache().findAll({
@@ -415,7 +417,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           queryClient.setQueryData(query.queryKey, (oldData: any) => {
             if (!oldData) return [data.reply];
 
-            // Check if reply already exists to avoid duplicates
             const exists = oldData.find((r: any) => r._id === data.reply._id);
             if (exists) {
               return oldData;
@@ -425,11 +426,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           });
         });
 
-        // Update the global replies cache
         queryClient.setQueryData(["replies"], (oldReplies: any) => {
           if (!oldReplies) return [data.reply];
 
-          // Check if reply already exists to avoid duplicates
           const exists = oldReplies.find((r: any) => r._id === data.reply._id);
           if (exists) {
             return oldReplies;
@@ -519,9 +518,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     newSocket.on("commentDeleted", (data) => {
       const currentUserId = currentUser?._id || currentUser?.data?._id;
 
-      // Don't update cache for the user who deleted the comment (their cache is already updated optimistically)
       if (data.userId !== currentUserId) {
-        // Remove the comment and all its nested replies from comments cache
         queryClient.setQueryData(["comments"], (oldComments: any) => {
           if (!oldComments || !Array.isArray(oldComments)) {
             return oldComments;
@@ -532,14 +529,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           );
         });
 
-        // Remove replies caches for all deleted items
         data.allDeletedIds.forEach((deletedId: string) => {
           queryClient.removeQueries({
             queryKey: [`replies-${deletedId}`],
           });
         });
 
-        // Update global replies cache
         queryClient.setQueryData(["replies"], (oldReplies: any) => {
           if (!oldReplies || !Array.isArray(oldReplies)) {
             return oldReplies;
@@ -549,7 +544,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           );
         });
 
-        // Update post comment count in posts cache
         queryClient.setQueryData(["posts"], (oldPosts: any) => {
           if (!oldPosts?.data || !Array.isArray(oldPosts.data)) {
             return oldPosts;
@@ -604,10 +598,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         });
       }
     });
+
     newSocket.on("replyDeleted", (data) => {
       const currentUserId = currentUser?._id || currentUser?.data?._id;
       // Update cache for ALL users including the one who deleted
-      // The optimistic update from useDeleteComment might not have worked properly
 
       // Remove the reply from its parent's replies cache
       // Find all query keys that match the pattern ["replies-${parentId}", ids]
@@ -636,7 +630,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         });
       });
 
-      // Update the parent comment's replies array in comments cache
       queryClient.setQueryData(["comments"], (oldComments: any) => {
         if (!oldComments || !Array.isArray(oldComments)) {
           return oldComments;
@@ -652,7 +645,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           }
           return comment;
         });
-      }); // Update grandparent replies cache if the parent is also a reply
+      });
+
+      // Update grandparent replies cache if the parent is also a reply
       const parentComment = queryClient
         .getQueryData<any>(["comments"])
         ?.find((c: any) => c._id?.toString() === data.parentId);
@@ -707,7 +702,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         deletedReplyCaches.forEach((query) => {
           queryClient.removeQueries({ queryKey: query.queryKey });
         });
-      }); // Update global replies cache
+      });
+
       queryClient.setQueryData(["replies"], (oldReplies: any) => {
         if (!oldReplies || !Array.isArray(oldReplies)) {
           return oldReplies;
@@ -719,6 +715,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     setSocket(newSocket);
+
     return () => {
       newSocket.close();
     };
