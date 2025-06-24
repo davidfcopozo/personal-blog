@@ -319,11 +319,14 @@ export const toggleLike = async (
               commentId
             );
           }
-        }
+        } // Get updated comment with likes
+        const updatedComment = await Comment.findById(commentId);
 
-        res
-          .status(StatusCodes.OK)
-          .json({ success: true, msg: "You've liked this comment." });
+        res.status(StatusCodes.OK).json({
+          success: true,
+          msg: "You've liked this comment.",
+          data: updatedComment,
+        });
       } else {
         throw new BadRequest("Something went wrong, please try again!");
       }
@@ -343,11 +346,13 @@ export const toggleLike = async (
             userId,
             false
           );
-        }
+        } // Get updated comment with likes
+        const updatedComment = await Comment.findById(commentId);
 
         res.status(StatusCodes.OK).json({
           success: true,
           msg: "You've disliked this comment.",
+          data: updatedComment,
         });
       } else {
         throw new BadRequest("Something went wrong, please try again!");
