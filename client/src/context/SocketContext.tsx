@@ -99,13 +99,88 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         };
       });
     });
-
     if (!hasUpdated) {
       // Fallback: invalidate queries to refetch if cache update failed
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queries.forEach((query) => {
         queryClient.invalidateQueries({ queryKey: query.queryKey });
       });
+    }
+  };
+  const updateCommentInCache = (
+    commentId: string,
+    updateFn: (comment: any) => any
+  ) => {
+    let hasUpdated = false;
+
+    // Update the main comments cache
+    queryClient.setQueryData(["comments"], (oldData: any) => {
+      if (!oldData || !Array.isArray(oldData)) {
+        return oldData;
+      }
+      const updatedData = oldData.map((comment: any) => {
+        if (comment._id?.toString() === commentId) {
+          const updatedComment = updateFn(comment);
+          hasUpdated = true;
+          return updatedComment;
+        }
+        return comment;
+      });
+      return updatedData;
+    });
+
+    // Also update replies caches that might contain this comment
+    const replyQueries = queryClient.getQueryCache().findAll({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return (
+          Array.isArray(queryKey) &&
+          queryKey.length === 2 &&
+          typeof queryKey[0] === "string" &&
+          queryKey[0].startsWith("replies-") &&
+          Array.isArray(queryKey[1])
+        );
+      },
+    });
+
+    replyQueries.forEach((query) => {
+      queryClient.setQueryData(query.queryKey, (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map((reply: any) => {
+          if (reply._id?.toString() === commentId) {
+            const updatedReply = updateFn(reply);
+            hasUpdated = true;
+            return updatedReply;
+          }
+          return reply;
+        });
+      });
+    });
+
+    // Update global replies cache
+    queryClient.setQueryData(["replies"], (oldData: any) => {
+      if (!oldData || !Array.isArray(oldData)) {
+        return oldData;
+      }
+      return oldData.map((reply: any) => {
+        if (reply._id?.toString() === commentId) {
+          const updatedReply = updateFn(reply);
+          hasUpdated = true;
+          return updatedReply;
+        }
+        return reply;
+      });
+    });
+
+    if (!hasUpdated) {
+      // Fallback: invalidate queries to refetch if cache update failed
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      replyQueries.forEach((query) => {
+        queryClient.invalidateQueries({ queryKey: query.queryKey });
+      });
+      queryClient.invalidateQueries({ queryKey: ["replies"] });
     }
   };
   useEffect(() => {
@@ -219,49 +294,38 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     newSocket.on("notification", (notification) => {
       // The useNotifications hook will handle this
     });
-
     newSocket.on("commentLikeUpdate", (data) => {
-      queryClient.setQueryData(["comments"], (oldData: any) => {
-        if (!oldData || !Array.isArray(oldData)) {
-          return oldData;
-        }
+      updateCommentInCache(data.commentId, (comment) => {
+        const currentUserId = currentUser?._id || currentUser?.data?._id;
 
-        return oldData.map((comment: any) => {
-          if (comment._id?.toString() === data.commentId) {
-            const likes = comment.likes || [];
-            if (data.isLiked) {
-              if (!likes.includes(data.userId)) {
-                return { ...comment, likes: [...likes, data.userId] };
-              }
-            } else {
-              return {
-                ...comment,
-                likes: likes.filter((id: string) => id !== data.userId),
-              };
-            }
-          }
-          return comment;
-        });
-      });
-
-      if (data.userId !== userId) {
-        const comments = queryClient.getQueryData<any>(["comments"]);
-        const comment = comments?.find(
-          (c: any) =>
-            c._id?.toString() === data.commentId &&
-            (c.postedBy === userId ||
-              c.postedBy?._id === userId ||
-              c.postedBy?.toString() === userId)
-        );
-
-        if (comment && data.isLiked) {
+        // Show toast notification for comment owner if someone else liked their comment
+        if (
+          data.userId !== currentUserId &&
+          (comment.postedBy === currentUserId ||
+            comment.postedBy?._id === currentUserId ||
+            comment.postedBy?.toString() === currentUserId) &&
+          data.isLiked
+        ) {
           toast({
             title: `${getNotificationIcon("like")} Comment Liked`,
             description: "Someone liked your comment",
             duration: 3000,
           });
         }
-      }
+
+        const likes = comment.likes || [];
+        if (data.isLiked) {
+          if (!likes.includes(data.userId)) {
+            return { ...comment, likes: [...likes, data.userId] };
+          }
+        } else {
+          return {
+            ...comment,
+            likes: likes.filter((id: string) => id !== data.userId),
+          };
+        }
+        return comment;
+      });
     });
     newSocket.on("newComment", (data) => {
       // Check if current user is the comment author
