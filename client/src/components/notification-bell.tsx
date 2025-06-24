@@ -70,6 +70,7 @@ const NotificationBell: React.FC = () => {
         return "🔔";
     }
   };
+
   const getNotificationLink = (notification: Notification) => {
     if (notification.relatedPost) {
       // Handle case where relatedPost might be an object with slug or _id
@@ -99,13 +100,6 @@ const NotificationBell: React.FC = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {/* Connection status indicator */}
-          <div
-            className={`absolute -top-0.5 -left-0.5 h-2 w-2 rounded-full ${
-              isConnected ? "bg-green-500" : "bg-red-500"
-            }`}
-            title={isConnected ? "Connected" : "Disconnected"}
-          />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
