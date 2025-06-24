@@ -45,13 +45,11 @@ export const createComment = async (
       { new: true }
     );
     if (result?.modifiedCount === 1) {
-      // Create notification for post author (if not commenting on own post)
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
 
       if (notificationService) {
-        // Emit new comment for real-time rendering FIRST
         const populatedComment = await Comment.findById(comment._id).populate(
           "postedBy"
         );
@@ -59,12 +57,6 @@ export const createComment = async (
         if (!populatedComment) {
           throw new NotFound("Failed to populate the new comment");
         }
-        console.log("💬 Emitting new comment event:", {
-          postId,
-          postSlug: post.slug,
-          commentId: populatedComment._id,
-          commentAuthor: populatedComment.postedBy,
-        });
 
         await notificationService.emitNewComment(
           postId,
@@ -72,18 +64,9 @@ export const createComment = async (
           post.slug
         );
 
-        // THEN create notification for post owner
         const postOwnerId = (post.postedBy as any)?._id
           ? (post.postedBy as any)._id.toString()
           : post.postedBy.toString();
-
-        console.log("📬 Creating notification:", {
-          postOwnerId,
-          commentAuthorId: userId,
-          postId,
-          commentId: comment._id.toString(),
-          shouldCreate: postOwnerId !== userId,
-        });
 
         if (postOwnerId !== userId) {
           await notificationService.createCommentNotification(
@@ -95,7 +78,6 @@ export const createComment = async (
         }
       }
 
-      // Check for mentions in the comment content
       const mentionRegex = /@(\w+)/g;
       const mentions = cleanContent.match(mentionRegex);
 
@@ -134,8 +116,6 @@ export const getComments = async (
   } = req;
 
   try {
-    /*   await Post.deleteMany();
-    await Comment.deleteMany(); */
     const post: PostType = await Post.findById(postId);
 
     if (!post) {
@@ -222,7 +202,6 @@ export const deleteCommentById = async (
       return nestedReplies;
     };
 
-    // Collect all nested reply IDs
     const allNestedReplyIds = await collectNestedReplyIds(commentId);
 
     // Remove comment from the post's comments array
@@ -232,13 +211,11 @@ export const deleteCommentById = async (
       { new: true }
     );
     if (result.modifiedCount === 1) {
-      // Delete the main comment
       await Comment.deleteOne({
         _id: commentId,
         postedBy: userId,
       });
 
-      // Delete all nested replies
       if (allNestedReplyIds.length > 0) {
         await Comment.deleteMany({
           _id: { $in: [...allNestedReplyIds, commentId] },
@@ -249,6 +226,7 @@ export const deleteCommentById = async (
       const notificationService: NotificationService = req.app.get(
         "notificationService"
       );
+
       if (notificationService) {
         await notificationService.emitCommentDeleted(
           commentId,
@@ -290,7 +268,6 @@ export const toggleLike = async (
       throw new NotFound("No comments found");
     }
 
-    //If post's id is not equal to the post id the comment bolongs to, throw an error
     if (!post?._id.equals(comment?.post)) {
       throw new BadRequest("This comment does not belong to this post");
     }
@@ -301,7 +278,6 @@ export const toggleLike = async (
     );
 
     if (isLiked?.length! < 1) {
-      // Add like to the comment's likes array property
       const result = await Comment.updateOne(
         { _id: comment._id },
         { $addToSet: { likes: userId } },
@@ -331,7 +307,9 @@ export const toggleLike = async (
               commentId
             );
           }
-        } // Get updated comment with likes
+        }
+
+        // Get updated comment with likes
         const updatedComment = await Comment.findById(commentId);
 
         res.status(StatusCodes.OK).json({
@@ -351,14 +329,14 @@ export const toggleLike = async (
       );
 
       if (result.modifiedCount === 1) {
-        // Emit socket event for real-time updates
         if (notificationService) {
           await notificationService.emitCommentLikeUpdate(
             commentId,
             userId,
             false
           );
-        } // Get updated comment with likes
+        }
+
         const updatedComment = await Comment.findById(commentId);
 
         res.status(StatusCodes.OK).json({
