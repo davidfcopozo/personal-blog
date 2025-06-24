@@ -317,26 +317,66 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
       }
     });
-
     newSocket.on("newReply", (data) => {
-      // For ALL users (including author), add the new reply to the cache
+      console.log("🔔 Socket received newReply event:", data);
+
+      // For ALL users, add the new reply to the cache
       // This ensures everyone sees the reply immediately
-      queryClient.setQueryData(
-        [`replies-${data.parentCommentId}`],
-        (oldData: any) => {
+
+      // Find and update the correct query key with IDs array
+      const queriesForParent = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            queryKey.length === 2 &&
+            queryKey[0] === `replies-${data.parentCommentId}` &&
+            Array.isArray(queryKey[1])
+          );
+        },
+      });
+
+      console.log(
+        `📝 Found ${queriesForParent.length} matching queries for parent ${data.parentCommentId}`
+      );
+
+      queriesForParent.forEach((query) => {
+        const [cacheKey, currentIds] = query.queryKey as [string, string[]];
+        console.log(`🔧 Updating query with key:`, query.queryKey);
+
+        queryClient.setQueryData(query.queryKey, (oldData: any) => {
+          console.log("🗂️ Old replies data:", oldData);
           if (!oldData) return [data.reply];
 
           // Check if reply already exists to avoid duplicates
           const exists = oldData.find((r: any) => r._id === data.reply._id);
           if (exists) {
+            console.log("⚠️ Reply already exists, skipping");
             return oldData;
           }
 
-          return [...oldData, data.reply];
-        }
-      );
+          const newData = [...oldData, data.reply];
+          console.log("✅ New replies data:", newData);
+          return newData;
+        });
+      });
 
-      // Also update the parent comment's replies array in the comments cache for all users
+      // Update the global replies cache
+      console.log("🌐 Updating global replies cache");
+      queryClient.setQueryData(["replies"], (oldReplies: any) => {
+        if (!oldReplies) return [data.reply];
+
+        // Check if reply already exists to avoid duplicates
+        const exists = oldReplies.find((r: any) => r._id === data.reply._id);
+        if (exists) {
+          return oldReplies;
+        }
+
+        return [...oldReplies, data.reply];
+      });
+
+      // Update the parent comment's replies array in the comments cache
+      console.log("💬 Updating comments cache");
       queryClient.setQueryData(["comments"], (oldComments: any) => {
         if (!oldComments) return oldComments;
 
@@ -344,6 +384,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           if (comment._id === data.parentCommentId) {
             const currentReplies = comment.replies || [];
             if (!currentReplies.includes(data.reply._id)) {
+              console.log("📌 Adding reply ID to comment:", data.reply._id);
               return {
                 ...comment,
                 replies: [...currentReplies, data.reply._id],
@@ -354,16 +395,59 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         });
       });
 
-      // Show toast notification for reply author if it's their comment and they didn't create the reply
-      if (data.reply.postedBy !== userId) {
-        // Check if current user is the parent comment author
+      // If this is a nested reply, also update the grandparent's replies cache
+      if (data.reply.parentType === "reply") {
+        console.log("🔗 Handling nested reply");
+        // Find and update grandparent queries
+        const grandparentQueries = queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 2 &&
+              queryKey[0] ===
+                `replies-${data.reply.grandparentId || data.parentCommentId}` &&
+              Array.isArray(queryKey[1])
+            );
+          },
+        });
+
+        grandparentQueries.forEach((query) => {
+          queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
+            if (!oldReplies) return oldReplies;
+
+            return oldReplies.map((reply: any) => {
+              if (reply._id === data.parentCommentId) {
+                const currentReplies = reply.replies || [];
+                if (!currentReplies.includes(data.reply._id)) {
+                  return {
+                    ...reply,
+                    replies: [...currentReplies, data.reply._id],
+                  };
+                }
+              }
+              return reply;
+            });
+          });
+        });
+      }
+
+      console.log("✅ Socket newReply processing complete");
+
+      // Show toast notification for reply recipient if they didn't create the reply
+      const currentUserId = currentUser?._id || currentUser?.data?._id;
+      const replyAuthorId = data.reply.postedBy?._id || data.reply.postedBy;
+      const isCurrentUserAuthor = currentUserId === replyAuthorId;
+
+      if (!isCurrentUserAuthor) {
+        // Check if current user is the parent comment/reply author
         const comments = queryClient.getQueryData<any>(["comments"]);
         const parentComment = comments?.find(
           (c: any) =>
             c._id === data.parentCommentId &&
-            (c.postedBy === userId ||
-              c.postedBy?._id === userId ||
-              c.postedBy?.toString() === userId)
+            (c.postedBy === currentUserId ||
+              c.postedBy?._id === currentUserId ||
+              c.postedBy?.toString() === currentUserId?.toString())
         );
 
         if (parentComment) {
