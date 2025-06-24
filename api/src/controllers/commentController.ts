@@ -231,7 +231,6 @@ export const deleteCommentById = async (
       { $pull: { comments: commentId } },
       { new: true }
     );
-
     if (result.modifiedCount === 1) {
       // Delete the main comment
       await Comment.deleteOne({
@@ -244,6 +243,19 @@ export const deleteCommentById = async (
         await Comment.deleteMany({
           _id: { $in: [...allNestedReplyIds, commentId] },
         });
+      }
+
+      // Emit socket event for real-time updates
+      const notificationService: NotificationService = req.app.get(
+        "notificationService"
+      );
+      if (notificationService) {
+        await notificationService.emitCommentDeleted(
+          commentId,
+          postId,
+          userId,
+          [...allNestedReplyIds, commentId]
+        );
       }
 
       res
