@@ -3,10 +3,13 @@ import usePutRequest from "./usePutRequest";
 import { UserFetchType, UserType } from "@/typings/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthModal } from "./useAuthModal";
+import { useCallback, useRef } from "react";
 
 export const useFollowUser = (user: UserType) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const userId = useRef(user?._id).current;
+
   const {
     requireAuth,
     isOpen: isAuthModalOpen,
@@ -21,11 +24,11 @@ export const useFollowUser = (user: UserType) => {
 
   const isFollowed =
     currentUserData?.data?.following?.some(
-      (followingId) => followingId.toString() === user._id?.toString()
+      (followingId) => followingId.toString() === userId?.toString()
     ) ?? false;
 
   const toggleFollow = usePutRequest({
-    url: `/api/users/${user?._id}/follow`,
+    url: `/api/users/${userId}/follow`,
     onMutate: async (userId: string) => {
       // Cancel any ongoing queries to avoid conflicts
       await queryClient.cancelQueries({ queryKey: ["currentUser"] });
@@ -115,11 +118,12 @@ export const useFollowUser = (user: UserType) => {
       ]);
     },
   });
-  const handleFollowToggle = () => {
+  const handleFollowToggle = useCallback(() => {
     requireAuth("follow", () => {
-      toggleFollow.mutate(`${user._id}`);
+      toggleFollow.mutate(`${userId}`);
     });
-  };
+  }, [requireAuth, toggleFollow, userId]);
+
   return {
     handleFollowToggle,
     isPending: toggleFollow.status === "pending",
