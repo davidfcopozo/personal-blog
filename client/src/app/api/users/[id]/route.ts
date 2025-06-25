@@ -2,7 +2,13 @@ import axios from "axios";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+// Request deduplication cache
+const pendingRequests = new Map<string, Promise<any>>();
+
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
 
@@ -19,12 +25,34 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 
   try {
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/users/${id}`
-    );
+    if (pendingRequests.has(id)) {
+      const existingRequest = pendingRequests.get(id);
+      const result = await existingRequest;
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    return new Response(JSON.stringify(res.data), {
-      status: res.status,
+    // Create new request and cache the promise
+    const requestPromise = axios
+      .get(`${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/users/${id}`)
+      .then((res) => {
+        // Remove from cache after completion
+        pendingRequests.delete(id);
+        return res.data;
+      })
+      .catch((error) => {
+        // Remove from cache on error too
+        pendingRequests.delete(id);
+        throw error;
+      });
+
+    pendingRequests.set(id, requestPromise);
+    const result = await requestPromise;
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
@@ -40,7 +68,10 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 }
 
-export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
   const token = await getToken({

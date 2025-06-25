@@ -53,8 +53,15 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
     currentUser?.data?._id?.toString() === comment?.postedBy?.toString();
 
   const { data: postedBy } = useFetchRequest(
-    ["commentPostedBy"],
-    `/api/users/${comment?.postedBy}`
+    ["users", comment?.postedBy],
+    `/api/users/${comment?.postedBy}`,
+    {
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 15 * 60 * 1000, // 15 minutes
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    }
   );
 
   const {

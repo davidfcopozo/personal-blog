@@ -14,6 +14,7 @@ import { signIn, signOut } from "next-auth/react";
 import axios from "axios";
 import { AuthContextType } from "@/typings/types";
 import { useSessionUserId, clearSessionCache } from "@/hooks/useSessionUserId";
+import { getCachedRequest, clearCache } from "@/utils/request-cache";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 AuthContext.displayName = "AuthContext";
@@ -39,7 +40,13 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
         return null;
       }
       try {
-        const { data } = await axios.get(`/api/auth/me`);
+        const data = await getCachedRequest(
+          `current-user-${sessionUserId}`,
+          async () => {
+            const response = await axios.get(`/api/auth/me`);
+            return response.data;
+          }
+        );
         return data;
       } catch (error) {
         return null;
@@ -47,7 +54,12 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
     },
     enabled: !!sessionUserId,
     retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - increased from 5
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    networkMode: "always", // Always try to fetch, but use cache when possible
   });
 
   useEffect(() => {
@@ -74,6 +86,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
         }
         setTimeout(async () => {
           clearSessionCache(); // Clear cache so it gets refreshed with new session
+          clearCache();
           await refetchUser();
           setIsLoading(false);
         }, 1000);
@@ -94,7 +107,8 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
           throw new Error(result.error);
         }
         setTimeout(async () => {
-          clearSessionCache(); // Clear cache so it gets refreshed with new session
+          clearSessionCache();
+          clearCache();
           await refetchUser();
           setIsLoading(false);
         }, 1000);
@@ -113,6 +127,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
       await signOut({ callbackUrl: "/" });
       queryClient.setQueryData(["currentUser"], null);
       clearSessionCache();
+      clearCache();
     } finally {
       setIsLoading(false);
     }
