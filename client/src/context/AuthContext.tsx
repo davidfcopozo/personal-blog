@@ -10,10 +10,10 @@ import React, {
   useCallback,
 } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { getSession, signIn, signOut } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import axios from "axios";
 import { AuthContextType } from "@/typings/types";
-import { clearSessionCache } from "@/hooks/useSessionUserId";
+import { useSessionUserId, clearSessionCache } from "@/hooks/useSessionUserId";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 AuthContext.displayName = "AuthContext";
@@ -23,6 +23,9 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
 }) => {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
+  const { userId: sessionUserId, isLoading: isSessionLoading } =
+    useSessionUserId();
+
   const {
     data: currentUser,
     refetch: refetchUser,
@@ -30,10 +33,9 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
     isLoading: isUserLoading,
     isPending: isUserPending,
   } = useQuery({
-    queryKey: ["currentUser"],
+    queryKey: ["currentUser", sessionUserId],
     queryFn: async () => {
-      const session = await getSession();
-      if (!session?.user?.id) {
+      if (!sessionUserId) {
         return null;
       }
       try {
@@ -43,21 +45,22 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
         return null;
       }
     },
-    enabled: true, // Enable automatic fetching
+    enabled: !!sessionUserId,
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
     const initializeAuth = async () => {
-      if (!currentUser && !isUserLoading) {
+      if (!currentUser && !isUserLoading && !isSessionLoading) {
         await refetchUser();
       }
-      setIsLoading(false);
+      setIsLoading(isSessionLoading || isUserLoading);
     };
 
     initializeAuth();
-  }, [currentUser, isUserLoading, refetchUser]);
+  }, [currentUser, isUserLoading, isSessionLoading, refetchUser]);
+
   const login = useCallback(
     async (credentials: { email: string; password: string }) => {
       setIsLoading(true);
@@ -81,6 +84,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
     },
     [refetchUser]
   );
+
   const socialLogin = useCallback(
     async (provider: "github" | "google") => {
       setIsLoading(true);
@@ -108,7 +112,7 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
       await axios.get("/api/auth/logout");
       await signOut({ callbackUrl: "/" });
       queryClient.setQueryData(["currentUser"], null);
-      clearSessionCache(); // Clear the cached session when logging out
+      clearSessionCache();
     } finally {
       setIsLoading(false);
     }
