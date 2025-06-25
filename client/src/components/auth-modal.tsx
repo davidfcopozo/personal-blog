@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -27,9 +27,10 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { GitHubIcon2, GoogleIcon2 } from "./icons";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { ModalStep } from "@/typings/types";
 import { AuthModalProps } from "@/typings/interfaces";
+import { useSessionUserId, clearSessionCache } from "@/hooks/useSessionUserId";
 
 const actionConfig = {
   like: {
@@ -68,7 +69,7 @@ const actionConfig = {
   },
 };
 
-export function AuthModal({
+export const AuthModal = memo(function AuthModal({
   isOpen,
   onClose,
   action,
@@ -94,20 +95,21 @@ export function AuthModal({
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
 
+  const { userId: sessionUserId } = useSessionUserId();
+
   useEffect(() => {
     const checkAndRefreshSession = async () => {
       // Only check when modal is closed (after successful auth)
       if (isOpen) return;
 
-      const session = await getSession();
-      if (session?.user) {
+      if (sessionUserId) {
         // If we have a session but UI doesn&apos;t reflect it, refresh the auth context
         await refetchUser();
       }
     };
 
     checkAndRefreshSession();
-  }, [isOpen, refetchUser]);
+  }, [isOpen, refetchUser, sessionUserId]);
 
   const config = actionConfig[action];
   const IconComponent = config.icon;
@@ -697,4 +699,4 @@ export function AuthModal({
       </DialogContent>
     </Dialog>
   );
-}
+});

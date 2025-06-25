@@ -1,17 +1,25 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "./AuthContext";
 import { SocketContextType } from "@/typings/interfaces";
 import { useQueryClient } from "@tanstack/react-query";
 import { PostFetchType } from "@/typings/types";
 import { PostInterface } from "@/typings/interfaces";
 import { useToast } from "@/components/ui/use-toast";
+import { useSessionUserId } from "@/hooks/useSessionUserId";
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
 });
+SocketContext.displayName = "SocketContext";
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
@@ -26,7 +34,8 @@ interface SocketProviderProps {
 }
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
-  const { currentUser, isLoading: isAuthLoading } = useAuth();
+  const { userId: currentUserId, isLoading: isAuthLoading } =
+    useSessionUserId();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const queryClient = useQueryClient();
@@ -188,7 +197,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       return;
     }
 
-    const userId = currentUser?._id || currentUser?.data?._id;
+    const userId = currentUserId;
     if (!userId) {
       if (socket) {
         socket.close();
@@ -304,7 +313,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     newSocket.on("commentLikeUpdate", (data) => {
       updateCommentInCache(data.commentId, (comment) => {
-        const currentUserId = currentUser?._id || currentUser?.data?._id;
+        const currentUserIdLocal = currentUserId;
 
         // Show toast notification for comment owner if someone else liked their comment
         if (
@@ -337,10 +346,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("newComment", (data) => {
-      const currentUserId = currentUser?._id || currentUser?.data?._id;
+      const currentUserIdLocal = currentUserId;
       const commentAuthorId =
         data.comment.postedBy?._id || data.comment.postedBy;
-      const isCurrentUserAuthor = currentUserId === commentAuthorId;
+      const isCurrentUserAuthor = currentUserIdLocal === commentAuthorId;
 
       // For OTHER users (not the comment author), add the new comment to the cache. The author's cache will be updated by the mutation's onSuccess to avoid conflicts
       if (!isCurrentUserAuthor) {
@@ -381,8 +390,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
         if (
           postOwnerId &&
-          (postOwnerId === currentUserId ||
-            postOwnerId.toString() === currentUserId)
+          (postOwnerId === currentUserIdLocal ||
+            postOwnerId.toString() === currentUserIdLocal)
         ) {
           toast({
             title: `${getNotificationIcon("comment")} New Comment`,
@@ -394,9 +403,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("newReply", (data) => {
-      const currentUserId = currentUser?._id || currentUser?.data?._id;
+      const currentUserIdLocal = currentUserId;
       const replyAuthorId = data.reply.postedBy?._id || data.reply.postedBy;
-      const isCurrentUserAuthor = currentUserId === replyAuthorId;
+      const isCurrentUserAuthor = currentUserIdLocal === replyAuthorId;
 
       // For OTHER users (not the reply author), add the new reply to the cache. The author's cache will be updated by the mutation's onSuccess to avoid conflicts
       if (!isCurrentUserAuthor) {
@@ -501,9 +510,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         const parentComment = comments?.find(
           (c: any) =>
             c._id === data.parentCommentId &&
-            (c.postedBy === currentUserId ||
-              c.postedBy?._id === currentUserId ||
-              c.postedBy?.toString() === currentUserId?.toString())
+            (c.postedBy === currentUserIdLocal ||
+              c.postedBy?._id === currentUserIdLocal ||
+              c.postedBy?.toString() === currentUserIdLocal?.toString())
         );
 
         if (parentComment) {
@@ -516,9 +525,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
     });
     newSocket.on("commentDeleted", (data) => {
-      const currentUserId = currentUser?._id || currentUser?.data?._id;
+      const currentUserIdLocal = currentUserId;
 
-      if (data.userId !== currentUserId) {
+      if (data.userId !== currentUserIdLocal) {
         queryClient.setQueryData(["comments"], (oldComments: any) => {
           if (!oldComments || !Array.isArray(oldComments)) {
             return oldComments;
@@ -600,7 +609,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("replyDeleted", (data) => {
-      const currentUserId = currentUser?._id || currentUser?.data?._id;
       // Update cache for ALL users including the one who deleted
 
       // Remove the reply from its parent's replies cache
@@ -719,10 +727,18 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     return () => {
       newSocket.close();
     };
-  }, [currentUser?._id, currentUser?.data?._id, isAuthLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentUserId, isAuthLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const contextValue = useMemo(
+    () => ({
+      socket,
+      isConnected,
+    }),
+    [socket, isConnected]
+  );
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={contextValue}>
       {children}
     </SocketContext.Provider>
   );

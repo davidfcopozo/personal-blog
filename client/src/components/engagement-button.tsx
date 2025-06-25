@@ -1,7 +1,7 @@
 import { EngagementButtonProps } from "@/typings/interfaces";
-import React from "react";
+import React, { memo } from "react";
 
-export function EngagementButton({
+export const EngagementButton = memo(function EngagementButton({
   icon: Icon,
   count,
   label,
@@ -117,4 +117,4 @@ export function EngagementButton({
       )}
     </button>
   );
-}
+});

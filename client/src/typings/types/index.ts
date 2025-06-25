@@ -17,7 +17,6 @@ export type UseRefType = Record<
 
 export type BlogPostCardProps = {
   post: PostType;
-  slug?: string;
   key: string | number;
   className?: string;
 };

@@ -3,15 +3,22 @@ import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
 import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import { MouseEvent, useEffect, useRef, useState, useMemo } from "react";
+import {
+  MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   CommentInterface,
   PostInterface,
   ReplyInterface,
 } from "@/typings/interfaces";
-import { getSession } from "next-auth/react";
 import { useAuthModal } from "./useAuthModal";
 import { useSocket } from "@/context/SocketContext";
+import { useSessionUserId } from "./useSessionUserId";
 
 export const useInteractions = (
   post?: PostType,
@@ -21,6 +28,7 @@ export const useInteractions = (
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { socket } = useSocket();
+  const { userId: currentUserId } = useSessionUserId(); // Use cached session approach
   const [commentContent, setCommentContent] = useState<string>("");
   const {
     requireAuth,
@@ -29,7 +37,6 @@ export const useInteractions = (
     closeModal,
     handleSuccess,
   } = useAuthModal();
-  const [currentUser, setCurrentUser] = useState("");
   const cachedPostsData = queryClient.getQueryData<PostFetchType>(["posts"]);
   const cachedSinglePostData = queryClient.getQueryData<any>([
     "post",
@@ -66,18 +73,18 @@ export const useInteractions = (
     [currentPostData?.likes]
   );
   const liked = useMemo(() => {
-    if (!currentUser || !likes?.length) return false;
-    return likes.some((like: string) => like.toString() === currentUser);
-  }, [currentUser, likes]);
+    if (!currentUserId || !likes?.length) return false;
+    return likes.some((like: string) => like.toString() === currentUserId);
+  }, [currentUserId, likes]);
 
   const amountOfLikes = useMemo(() => likes.length, [likes]);
 
   const bookmarked = useMemo(() => {
-    if (!currentUser || !bookmarks?.length) return false;
+    if (!currentUserId || !bookmarks?.length) return false;
     return bookmarks.some(
-      (bookmark: string) => bookmark.toString() === currentUser
+      (bookmark: string) => bookmark.toString() === currentUserId
     );
-  }, [currentUser, bookmarks]);
+  }, [currentUserId, bookmarks]);
 
   const amountOfBookmarks = useMemo(() => bookmarks.length, [bookmarks]);
   const commentsCount = useMemo(
@@ -91,25 +98,16 @@ export const useInteractions = (
   const [replyContent, setReplyContent] = useState<string>("");
 
   useEffect(() => {
-    async function getUserId() {
-      const session = await getSession();
-      if (session?.user?.id) {
-        setCurrentUser(`${session.user.id}`);
-      }
-    }
-
-    getUserId();
-  }, []);
-  useEffect(() => {
-    if (comment && currentUser) {
+    if (comment && currentUserId) {
       const userLikedComment =
-        comment.likes?.some((like) => like.toString() === currentUser) ?? false;
+        comment.likes?.some((like) => like.toString() === currentUserId) ??
+        false;
       setCommentLiked(userLikedComment);
       setCommentLikesCount(comment.likes?.length ?? 0);
     }
-  }, [comment, currentUser]); // Watch for cache updates from socket events and update local state
+  }, [comment, currentUserId]); // Watch for cache updates from socket events and update local state
   useEffect(() => {
-    if (!comment?._id || !currentUser) return;
+    if (!comment?._id || !currentUserId) return;
 
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
       if (event?.query?.queryKey?.[0] === "comments") {
@@ -122,19 +120,21 @@ export const useInteractions = (
           if (updatedComment) {
             const userLiked =
               updatedComment.likes?.some(
-                (like: string) => like.toString() === currentUser
+                (like: string) => like.toString() === currentUserId
               ) ?? false;
             const likesCount = updatedComment.likes?.length ?? 0;
 
-            setCommentLiked(userLiked);
-            setCommentLikesCount(likesCount);
+            setCommentLiked((prev) => (prev !== userLiked ? userLiked : prev));
+            setCommentLikesCount((prev) =>
+              prev !== likesCount ? likesCount : prev
+            );
           }
         }
       }
     });
 
     return unsubscribe;
-  }, [comment?._id, currentUser, queryClient, commentLiked, commentLikesCount]);
+  }, [comment?._id, currentUserId, queryClient]);
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
@@ -186,7 +186,7 @@ export const useInteractions = (
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id?.toString() === variables.postId?.toString()) {
-              const userIdString = currentUser;
+              const userIdString = currentUserId;
               const isLiked = post.likes?.some(
                 (like) => like.toString() === userIdString
               );
@@ -209,7 +209,7 @@ export const useInteractions = (
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        const userIdString = currentUser;
+        const userIdString = currentUserId;
         const isLiked = oldPost.data.likes?.some(
           (like: string) => like.toString() === userIdString
         );
@@ -230,24 +230,24 @@ export const useInteractions = (
       return { previousPostsData, previousPostData } as any;
     },
   });
-  const likeInteraction = (
-    postId: string,
-    { onError }: { onError?: () => void }
-  ) => {
-    likeMutation.mutate(
-      { postId },
-      {
-        onError: (error) => {
-          if (onError) onError();
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to process the request. Please try again.",
-          });
-        },
-      }
-    );
-  };
+  const likeInteraction = useCallback(
+    (postId: string, { onError }: { onError?: () => void }) => {
+      likeMutation.mutate(
+        { postId },
+        {
+          onError: (error) => {
+            if (onError) onError();
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to process the request. Please try again.",
+            });
+          },
+        }
+      );
+    },
+    [likeMutation, toast]
+  );
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
     onSuccess: (_, variables: { postId: string }) => {
@@ -296,7 +296,7 @@ export const useInteractions = (
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id?.toString() === variables.postId?.toString()) {
-              const userIdString = currentUser;
+              const userIdString = currentUserId;
               const isBookmarked = post.bookmarks?.some(
                 (bookmark) => bookmark.toString() === userIdString
               );
@@ -319,7 +319,7 @@ export const useInteractions = (
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        const userIdString = currentUser;
+        const userIdString = currentUserId;
         const isBookmarked = oldPost.data.bookmarks?.some(
           (bookmark: string) => bookmark.toString() === userIdString
         );
@@ -340,24 +340,24 @@ export const useInteractions = (
       return { previousPostsData, previousPostData } as any;
     },
   });
-  const bookmarkInteraction = (
-    postId: string,
-    { onError }: { onError?: () => void }
-  ) => {
-    bookmarkMutation.mutate(
-      { postId },
-      {
-        onError: (error) => {
-          if (onError) onError();
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to process the request. Please try again.",
-          });
-        },
-      }
-    );
-  };
+  const bookmarkInteraction = useCallback(
+    (postId: string, { onError }: { onError?: () => void }) => {
+      bookmarkMutation.mutate(
+        { postId },
+        {
+          onError: (error) => {
+            if (onError) onError();
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to process the request. Please try again.",
+            });
+          },
+        }
+      );
+    },
+    [bookmarkMutation, toast]
+  );
   const createCommentMutation = usePostRequest({
     url: `/api/comments/${postId}`,
     onSuccess: (newComment) => {
@@ -743,7 +743,7 @@ export const useInteractions = (
 
         return oldComments.map((comment: any) => {
           if (comment._id?.toString() === variables.commentId) {
-            const userIdString = currentUser;
+            const userIdString = currentUserId;
             const isLiked = comment.likes?.some(
               (like: string) => like.toString() === userIdString
             );
@@ -770,7 +770,7 @@ export const useInteractions = (
 
           return oldReplies.map((reply: any) => {
             if (reply._id?.toString() === variables.commentId) {
-              const userIdString = currentUser;
+              const userIdString = currentUserId;
               const isLiked = reply.likes?.some(
                 (like: string) => like.toString() === userIdString
               );
@@ -797,7 +797,7 @@ export const useInteractions = (
 
         return oldReplies.map((reply: any) => {
           if (reply._id?.toString() === variables.commentId) {
-            const userIdString = currentUser;
+            const userIdString = currentUserId;
             const isLiked = reply.likes?.some(
               (like: string) => like.toString() === userIdString
             );
@@ -845,27 +845,37 @@ export const useInteractions = (
     });
   };
 
-  const handleLikeClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    requireAuth("like", () => {
+  const handleLikeClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      if (!currentUserId) {
+        requireAuth("like", () => {});
+        return;
+      }
       likeInteraction(`${post?._id}`, {
         onError: () => {
           console.error("Error handling like interaction");
         },
       });
-    });
-  };
+    },
+    [currentUserId, post?._id, likeInteraction, requireAuth]
+  );
 
-  const handleBookmarkClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    requireAuth("bookmark", () => {
+  const handleBookmarkClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      if (!currentUserId) {
+        requireAuth("bookmark", () => {});
+        return;
+      }
       bookmarkInteraction(`${post?._id}`, {
         onError: () => {
           console.error("Error handling bookmark interaction");
         },
       });
-    });
-  };
+    },
+    [currentUserId, post?._id, bookmarkInteraction, requireAuth]
+  );
 
   return {
     handleLikeClick,

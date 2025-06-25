@@ -15,8 +15,12 @@ import Link from "next/link";
 import { EngagementButton } from "./engagement-button";
 import { Card, CardFooter } from "./ui/card";
 import { AuthModal } from "./auth-modal";
+import { memo } from "react";
 
-export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
+export const BlogPostCard = memo(function BlogPostCard({
+  post,
+  className,
+}: BlogPostCardProps) {
   const { title, content, createdAt, coverImage, postedBy, slug } = post;
   const { username } = postedBy;
   const {
@@ -137,4 +141,4 @@ export const BlogPostCard = ({ post, className }: BlogPostCardProps) => {
       />
     </Card>
   );
-};
+});

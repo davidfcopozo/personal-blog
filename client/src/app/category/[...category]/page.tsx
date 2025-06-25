@@ -12,7 +12,9 @@ import { Search } from "lucide-react";
 import SearchResults from "@/components/search-results";
 import CategoriesSkeleton from "@/components/categories-skeleton";
 
-export default function Category(props: { params: Promise<{ category: string }> }) {
+export default function Category(props: {
+  params: Promise<{ category: string }>;
+}) {
   const params = use(props.params);
   const cat = decodeURI(params.category);
   const { toast } = useToast();
@@ -93,7 +95,6 @@ export default function Category(props: { params: Promise<{ category: string }> 
               <BlogPostCard
                 key={post._id.toString()}
                 post={post}
-                slug={post?.slug as string}
                 className={index === 0 ? "mt-8" : ""}
               />
             ))

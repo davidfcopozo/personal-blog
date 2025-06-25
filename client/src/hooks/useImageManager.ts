@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { storage } from "../../firebaseConfig";
 import {
@@ -15,27 +15,15 @@ import useDeleteImages from "./useDeleteImages";
 import useFetchRequest from "./useFetchRequest";
 import usePatchRequest from "./usePatchRequest";
 import { AxiosError } from "axios";
-import { getSession } from "next-auth/react";
+import { useSessionUserId } from "./useSessionUserId";
 import getImageHash from "@/utils/getImageHash";
 
 export const useImageManager = () => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const { userId: currentUserId } = useSessionUserId();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Get current user ID from session
-  useEffect(() => {
-    async function getUserId() {
-      const session = await getSession();
-      if (session?.user?.id) {
-        setCurrentUserId(`${session.user.id}`);
-      }
-    }
-
-    getUserId();
-  }, []);
 
   const currentUser = queryClient.getQueryData<{ data: UserType }>([
     "currentUser",
