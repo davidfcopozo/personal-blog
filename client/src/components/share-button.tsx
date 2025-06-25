@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, memo, useMemo } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +10,20 @@ import { Share2 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import { PostType } from "@/typings/types";
 
-export function ShareButton({ post }: { post: PostType }) {
+export const ShareButton = memo(function ShareButton({
+  post,
+}: {
+  post: PostType;
+}) {
   const { toast } = useToast();
 
   const [shareUrl, setShareUrl] = React.useState("");
 
+  const postSlug = useMemo(() => post.slug, [post.slug]);
+
   useEffect(() => {
-    setShareUrl(`${window.location.origin}/blog/${post.slug}`);
-  }, [post.slug]);
+    setShareUrl(`${window.location.origin}/blog/${postSlug}`);
+  }, [postSlug]);
 
   const shareOptions = [
     {
@@ -110,4 +116,4 @@ export function ShareButton({ post }: { post: PostType }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});
