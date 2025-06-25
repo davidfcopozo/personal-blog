@@ -3,16 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { CommentInterface, UseBulkFetchProps } from "@/typings/interfaces";
 
 const getBaseURL = () => {
-  if (typeof window !== "undefined") {
-    return (
-      process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT ||
-      `http://${window.location.hostname}:8000/api/v1`
-    );
-  }
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT ||
-    "http://localhost:8000/api/v1"
-  );
+  // Always use the Next.js API routes for proper CORS handling
+  return "/api";
 };
 
 const useBulkFetch = ({ ids, key, dependantItem, url }: UseBulkFetchProps) => {
