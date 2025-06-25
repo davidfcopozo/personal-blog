@@ -19,7 +19,6 @@ import {
 import { useAuthModal } from "./useAuthModal";
 import { useSocket } from "@/context/SocketContext";
 import { useSessionUserId } from "./useSessionUserId";
-import { useAuth } from "@/context/AuthContext";
 
 export const useInteractions = (
   post?: PostType,
@@ -125,21 +124,17 @@ export const useInteractions = (
               ) ?? false;
             const likesCount = updatedComment.likes?.length ?? 0;
 
-            setCommentLiked(userLiked);
-            setCommentLikesCount(likesCount);
+            setCommentLiked((prev) => (prev !== userLiked ? userLiked : prev));
+            setCommentLikesCount((prev) =>
+              prev !== likesCount ? likesCount : prev
+            );
           }
         }
       }
     });
 
     return unsubscribe;
-  }, [
-    comment?._id,
-    currentUserId,
-    queryClient,
-    commentLiked,
-    commentLikesCount,
-  ]);
+  }, [comment?._id, currentUserId, queryClient]);
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
@@ -853,29 +848,33 @@ export const useInteractions = (
   const handleLikeClick = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      requireAuth("like", () => {
-        likeInteraction(`${post?._id}`, {
-          onError: () => {
-            console.error("Error handling like interaction");
-          },
-        });
+      if (!currentUserId) {
+        requireAuth("like", () => {});
+        return;
+      }
+      likeInteraction(`${post?._id}`, {
+        onError: () => {
+          console.error("Error handling like interaction");
+        },
       });
     },
-    [requireAuth, likeInteraction, post?._id]
+    [currentUserId, post?._id, likeInteraction, requireAuth]
   );
 
   const handleBookmarkClick = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      requireAuth("bookmark", () => {
-        bookmarkInteraction(`${post?._id}`, {
-          onError: () => {
-            console.error("Error handling bookmark interaction");
-          },
-        });
+      if (!currentUserId) {
+        requireAuth("bookmark", () => {});
+        return;
+      }
+      bookmarkInteraction(`${post?._id}`, {
+        onError: () => {
+          console.error("Error handling bookmark interaction");
+        },
       });
     },
-    [requireAuth, bookmarkInteraction, post?._id]
+    [currentUserId, post?._id, bookmarkInteraction, requireAuth]
   );
 
   return {
