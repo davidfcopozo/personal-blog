@@ -6,13 +6,17 @@ import React, {
   useEffect,
   ReactNode,
   FC,
+  useMemo,
+  useCallback,
 } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getSession, signIn, signOut } from "next-auth/react";
 import axios from "axios";
 import { AuthContextType } from "@/typings/types";
+import { clearSessionCache } from "@/hooks/useSessionUserId";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+AuthContext.displayName = "AuthContext";
 
 export const AuthContextProvider: FC<{ children: ReactNode }> = ({
   children,
@@ -54,69 +58,89 @@ export const AuthContextProvider: FC<{ children: ReactNode }> = ({
 
     initializeAuth();
   }, [currentUser, isUserLoading, refetchUser]);
-  const login = async (credentials: { email: string; password: string }) => {
-    setIsLoading(true);
-    try {
-      const result = await signIn("credentials", {
-        ...credentials,
-        redirect: false,
-      });
-      if (result?.error) {
-        throw new Error(result.error);
-      }
-      setTimeout(async () => {
-        await refetchUser();
+  const login = useCallback(
+    async (credentials: { email: string; password: string }) => {
+      setIsLoading(true);
+      try {
+        const result = await signIn("credentials", {
+          ...credentials,
+          redirect: false,
+        });
+        if (result?.error) {
+          throw new Error(result.error);
+        }
+        setTimeout(async () => {
+          clearSessionCache(); // Clear cache so it gets refreshed with new session
+          await refetchUser();
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
         setIsLoading(false);
-      }, 1000);
-    } catch (error) {
-      setIsLoading(false);
-      throw error;
-    }
-  };
-  const socialLogin = async (provider: "github" | "google") => {
-    setIsLoading(true);
-    try {
-      const result = await signIn(provider, { redirect: false });
-      if (result?.error) {
-        throw new Error(result.error);
+        throw error;
       }
-      setTimeout(async () => {
-        await refetchUser();
+    },
+    [refetchUser]
+  );
+  const socialLogin = useCallback(
+    async (provider: "github" | "google") => {
+      setIsLoading(true);
+      try {
+        const result = await signIn(provider, { redirect: false });
+        if (result?.error) {
+          throw new Error(result.error);
+        }
+        setTimeout(async () => {
+          clearSessionCache(); // Clear cache so it gets refreshed with new session
+          await refetchUser();
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
         setIsLoading(false);
-      }, 1000);
-    } catch (error) {
-      setIsLoading(false);
-      throw error;
-    }
-  };
+        throw error;
+      }
+    },
+    [refetchUser]
+  );
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     setIsLoading(true);
     try {
       await axios.get("/api/auth/logout");
       await signOut({ callbackUrl: "/" });
       queryClient.setQueryData(["currentUser"], null);
+      clearSessionCache(); // Clear the cached session when logging out
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [queryClient]);
+
+  const contextValue = useMemo(
+    () => ({
+      currentUser,
+      isLoading,
+      login,
+      socialLogin,
+      logout,
+      isUserFetching,
+      isUserLoading,
+      isUserPending,
+      refetchUser,
+    }),
+    [
+      currentUser,
+      isLoading,
+      login,
+      socialLogin,
+      logout,
+      isUserFetching,
+      isUserLoading,
+      isUserPending,
+      refetchUser,
+    ]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        isLoading,
-        login,
-        socialLogin,
-        logout,
-        isUserFetching,
-        isUserLoading,
-        isUserPending,
-        refetchUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 
