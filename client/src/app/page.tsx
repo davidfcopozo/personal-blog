@@ -79,14 +79,16 @@ export default function Home() {
             new Date(String(b.createdAt ?? new Date())).getTime() -
             new Date(String(a.createdAt ?? new Date())).getTime()
         )
-        .map((post: PostType, index: { toString: () => any }) => (
-          <BlogPostCard
-            key={post?._id.toString() + index.toString()}
-            post={post}
-            slug={post?.slug as string}
-            className={index === 0 ? "mt-8" : ""}
-          />
-        ));
+        .map((post: PostType, index: { toString: () => any }) => {
+          const className = index === 0 ? "mt-8" : "";
+          return (
+            <BlogPostCard
+              key={post?._id.toString() + index.toString()}
+              post={post}
+              className={className}
+            />
+          );
+        });
   }, [posts]);
 
   return (
