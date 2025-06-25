@@ -6,7 +6,6 @@ import cors from "cors";
 import helmet from "helmet";
 import hpp from "hpp";
 import mongoSanitize from "express-mongo-sanitize";
-import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
@@ -16,6 +15,12 @@ import { errorHandlerMiddleware } from "./middleware/error-handler";
 import { notFound } from "./middleware/not-found";
 import path from "path";
 import { NotificationService } from "./utils/notificationService";
+import {
+  generalLimiter,
+  writeLimiter,
+  authLimiter,
+  readLimiter,
+} from "./utils/rateLimiterConfig";
 
 dotenv.config();
 
@@ -50,14 +55,28 @@ app.use(hpp()); //prevents http parameter pollution
 app.use(mongoSanitize()); //prevents nosql injections
 app.use(express.static(path.join(__dirname, "../public"))); //serves static files
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+app.use("/api", generalLimiter);
+
+app.use("/api/v1/auth", authLimiter);
+
+app.use("/api/v1/posts", readLimiter);
+
+app.use("/api/v1/comments", readLimiter);
+
+// Apply write limiter to specific HTTP methods
+app.use("/api/v1/posts", (req, res, next) => {
+  if (["POST", "PUT", "DELETE"].includes(req.method)) {
+    return writeLimiter(req, res, next);
+  }
+  next();
 });
 
-app.use(limiter); //limits requests
+app.use("/api/v1/comments", (req, res, next) => {
+  if (["POST", "PUT", "DELETE"].includes(req.method)) {
+    return writeLimiter(req, res, next);
+  }
+  next();
+});
 
 app.use("/", routes);
 
