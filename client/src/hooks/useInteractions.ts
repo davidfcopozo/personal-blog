@@ -852,13 +852,13 @@ export const useInteractions = (
         requireAuth("like", () => {});
         return;
       }
-      likeInteraction(`${post?._id}`, {
+      likeInteraction(`${postId}`, {
         onError: () => {
           console.error("Error handling like interaction");
         },
       });
     },
-    [currentUserId, post?._id, likeInteraction, requireAuth]
+    [currentUserId, postId, likeInteraction, requireAuth]
   );
 
   const handleBookmarkClick = useCallback(
@@ -868,13 +868,13 @@ export const useInteractions = (
         requireAuth("bookmark", () => {});
         return;
       }
-      bookmarkInteraction(`${post?._id}`, {
+      bookmarkInteraction(`${postId}`, {
         onError: () => {
           console.error("Error handling bookmark interaction");
         },
       });
     },
-    [currentUserId, post?._id, bookmarkInteraction, requireAuth]
+    [currentUserId, postId, bookmarkInteraction, requireAuth]
   );
 
   return {
