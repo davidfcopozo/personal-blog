@@ -6,7 +6,7 @@ import {
 } from "@/utils/formats";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { memo } from "react";
 import CommentSection from "./comment-section";
 import { UserType } from "@/typings/types";
 import ContentRenderer from "./ui/content-renderer";
@@ -22,7 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
-const BlogPost = ({
+const BlogPost = memo(function BlogPost({
   handleLikeClick,
   handleBookmarkClick,
   amountOfLikes,
@@ -30,7 +30,7 @@ const BlogPost = ({
   bookmarked,
   amountOfBookmarks,
   post,
-}: BlogPostProps) => {
+}: BlogPostProps) {
   const router = useRouter();
   const { currentUser } = useAuth();
 
@@ -295,6 +295,6 @@ const BlogPost = ({
       />
     </div>
   );
-};
+});
 
 export default BlogPost;
