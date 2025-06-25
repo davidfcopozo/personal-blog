@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Github, XIcon, Linkedin, Globe } from "lucide-react";
 import Image from "next/image";
 import { AuthorPanelProps, SocialMediaConfig } from "@/typings/interfaces";
@@ -28,7 +28,7 @@ const socialMediaConfig: Record<string, SocialMediaConfig> = {
   },
 };
 
-export function AuthorPanel({
+export const AuthorPanel = memo(function AuthorPanel({
   firstName,
   lastName,
   username,
@@ -138,4 +138,4 @@ export function AuthorPanel({
       </footer>
     </article>
   );
-}
+});
