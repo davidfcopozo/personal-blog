@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -68,7 +68,7 @@ const actionConfig = {
   },
 };
 
-export function AuthModal({
+export const AuthModal = memo(function AuthModal({
   isOpen,
   onClose,
   action,
@@ -697,4 +697,4 @@ export function AuthModal({
       </DialogContent>
     </Dialog>
   );
-}
+});
