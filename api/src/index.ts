@@ -30,7 +30,21 @@ app.use(express.urlencoded({ limit: "5mb", extended: true })); //transforms req.
 app.use(cookieParser(process.env.JWT_SECRET)); //parses cookies
 app.use(morgan("dev")); //logs requests
 app.use(bodyParser.json({ limit: "5mb" })); //parses json
-app.use(cors()); //allows cross origin requests
+
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["http://localhost:3000"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+); //allows cross origin requests
+
 app.use(helmet()); //sets various http headers for security
 app.use(hpp()); //prevents http parameter pollution
 app.use(mongoSanitize()); //prevents nosql injections
@@ -58,10 +72,12 @@ const startServer = async () => {
 
     const io = new SocketIOServer(httpServer, {
       cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:3000",
-        methods: ["GET", "POST"],
+        origin: allowedOrigins,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
       },
     });
+
     io.on("connection", (socket) => {
       console.log("User connected:", socket.id);
       let userId: string | null = null;
