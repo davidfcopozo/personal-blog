@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import ProfilePageSkeleton from "./profile-page-skeleton";
 import { useFollowUser } from "@/hooks/useFollowUser";
 import { AuthModal } from "./auth-modal";
+import { UserAvatar } from "./ui/user-avatar";
 
 const UserProfile = ({
   user,
@@ -104,13 +105,12 @@ const UserProfile = ({
                     </Link>
                   </div>
                 )}
-                <Avatar className="h-32 w-32 border-2 mb-4">
-                  <AvatarImage
-                    src={user?.avatar as string}
-                    alt={getFullName(user)}
-                  />
-                  <AvatarFallback>{getNameInitials(user)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  user={user}
+                  size="lg"
+                  className="h-32 w-32 border-2 mb-4"
+                  isLoading={isUserPending}
+                />
                 <div>
                   <div>
                     <h1 className="text-2xl font-bold ">{getFullName(user)}</h1>
