@@ -32,6 +32,7 @@ import RelativeTime from "./relative-time";
 import { EngagementButton } from "./engagement-button";
 import { AuthModal } from "./auth-modal";
 import { useAuth } from "@/context/AuthContext";
+import { UserAvatar } from "./ui/user-avatar";
 
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
@@ -52,7 +53,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
   const isCommentOwner =
     currentUser?.data?._id?.toString() === comment?.postedBy?.toString();
 
-  const { data: postedBy } = useFetchRequest(
+  const { data: postedBy, isLoading: isUserLoading } = useFetchRequest(
     ["users", comment?.postedBy],
     `/api/users/${comment?.postedBy}`,
     {
@@ -177,10 +178,11 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
             id={`${comment?._id}`}
             className="flex flex-1 items-start gap-2 px-4 pb-2 pt-4 border-[1px] rounded-md"
           >
-            <Avatar className="w-10 h-10 border">
-              <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback>{getNameInitials(postedBy?.data)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              user={postedBy?.data}
+              size="md"
+              isLoading={isUserLoading}
+            />
             <div className="grid gap-2 flex-1">
               <div className="flex ml-2 items-center gap-2">
                 <div className="font-medium">{getFullName(postedBy?.data)}</div>
