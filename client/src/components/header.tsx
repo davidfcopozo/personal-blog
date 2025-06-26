@@ -23,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PostType } from "@/typings/types";
 import { useRouter } from "next/navigation";
 import NotificationBell from "./notification-bell";
+import { UserAvatar } from "./ui/user-avatar";
 
 export function Header() {
   const { theme, systemTheme } = useTheme();
@@ -31,7 +32,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
   const posts = queryClient.getQueryData(["posts"]) as { data: PostType[] };
@@ -168,8 +169,17 @@ export function Header() {
             </Link>
           ) : (
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
+              <Button
+                variant="secondary"
+                size="icon"
+                className="rounded-full p-0 overflow-hidden"
+              >
+                <UserAvatar
+                  user={currentUser?.data}
+                  size="sm"
+                  className="border-0"
+                  isLoading={status === "loading"}
+                />
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>

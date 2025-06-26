@@ -16,6 +16,7 @@ import { EngagementButton } from "./engagement-button";
 import { Card, CardFooter } from "./ui/card";
 import { AuthModal } from "./auth-modal";
 import { memo } from "react";
+import { UserAvatar } from "./ui/user-avatar";
 
 export const BlogPostCard = memo(function BlogPostCard({
   post,
@@ -58,13 +59,7 @@ export const BlogPostCard = memo(function BlogPostCard({
         <div className="flex flex-1 flex-col p-5">
           <div className="mb-2 flex items-center gap-2">
             <Link href={`/${username}`} className="font-semibold">
-              <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src={postedBy?.avatar as string}
-                  alt={getFullName(postedBy)}
-                />
-                <AvatarFallback>{getNameInitials(postedBy)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar user={postedBy} size="sm" className="h-8 w-8" />
             </Link>
             <div className="text-sm">
               <Link href={`/${username}`} className="font-semibold">
