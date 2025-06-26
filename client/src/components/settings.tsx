@@ -10,6 +10,7 @@ import { useUpdateSettings } from "@/hooks/useUpdateSettings";
 import SkillsInterestsManager from "./SkillsInterestsManager";
 import { SettingsSkeleton } from "./settings-skeleton";
 import { Card } from "./ui/card";
+import { UserAvatar } from "./ui/user-avatar";
 
 export const Settings = () => {
   const {
@@ -85,12 +86,12 @@ export const Settings = () => {
           <div className="col-span-1 md:col-span-1">
             <Card className="bg-background shadow-md rounded-lg p-4">
               <div className="flex flex-col items-center justify-center mb-4">
-                <Avatar className="h-48 w-48 mb-4">
-                  <AvatarImage src="/placeholder-user.jpg" />
-                  <AvatarFallback className="text-lg font-bold">
-                    {getNameInitials(userData)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  user={userData}
+                  size="xl"
+                  className="mb-4"
+                  isLoading={isUserPending}
+                />
                 <div className="flex flex-col space-y-2 ">
                   <Button variant="default">Change picture</Button>
                   <Button type="button" variant="outline">
