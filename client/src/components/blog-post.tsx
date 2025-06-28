@@ -134,7 +134,7 @@ const BlogPost = memo(function BlogPost({
                     <div className="flex w-full justify-between items-center text-sm text-gray-400 lg:mb-6">
                       <div className="flex gap-2 items-center">
                         <Link
-                          href="/#"
+                          href={`/${postedBy?.username}`}
                           className="flex lg:hidden gap-2 items-center"
                         >
                           <Image
@@ -150,23 +150,27 @@ const BlogPost = memo(function BlogPost({
                         <div className="flex flex-col gap-1">
                           <div className="lg:hidden">
                             <Link
-                              href="/#"
-                              className="text-base font-semibold dark:text-white"
+                              href={`/${postedBy?.username}`}
+                              className="text-base font-semibold text-foreground hover:text-[--thread-border] transition-all duration-300"
                             >
                               {getFullName(postedBy as UserType)}
                             </Link>
-                            <span className="mx-2">•</span>
-                            <button
-                              className={`${
-                                isFollowed
-                                  ? "text-amber-500 hover:text-[--thread-border]"
-                                  : "text-[--thread-border] hover:text-amber-500"
-                              }`}
-                              disabled={isPending}
-                              onClick={handleFollowToggle}
-                            >
-                              {isFollowed ? "Following" : "Follow"}
-                            </button>
+                            {!isPostOwner && (
+                              <>
+                                <span className="mx-2">•</span>
+                                <button
+                                  className={`${
+                                    isFollowed
+                                      ? "text-amber-500 hover:text-[--thread-border]"
+                                      : "text-[--thread-border] hover:text-amber-500"
+                                  }`}
+                                  disabled={isPending}
+                                  onClick={handleFollowToggle}
+                                >
+                                  {isFollowed ? "Following" : "Follow"}
+                                </button>
+                              </>
+                            )}
                           </div>
                           <div className="flex items-center gap-1">
                             <span className="flex items-center gap-1">
@@ -282,6 +286,7 @@ const BlogPost = memo(function BlogPost({
                 handleFollowToggle={handleFollowToggle}
                 isPending={isPending}
                 isFollowed={isFollowed}
+                isPostOwner={isPostOwner}
               />
             </div>
           </div>
