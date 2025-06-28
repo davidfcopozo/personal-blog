@@ -33,6 +33,7 @@ import { EngagementButton } from "./engagement-button";
 import { AuthModal } from "./auth-modal";
 import { useAuth } from "@/context/AuthContext";
 import { UserAvatar } from "./ui/user-avatar";
+import Link from "next/link";
 
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
@@ -178,14 +179,24 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
             id={`${comment?._id}`}
             className="flex flex-1 items-start gap-2 px-4 pb-2 pt-4 border-[1px] rounded-md"
           >
-            <UserAvatar
-              user={postedBy?.data}
-              size="md"
-              isLoading={isUserLoading}
-            />
+            <Link
+              href={`/${postedBy?.data?.username}`}
+              className="flex-shrink-0"
+            >
+              <UserAvatar
+                user={postedBy?.data}
+                size="md"
+                isLoading={isUserLoading}
+              />
+            </Link>
             <div className="grid gap-2 flex-1">
               <div className="flex ml-2 items-center gap-2">
-                <div className="font-medium">{getFullName(postedBy?.data)}</div>
+                <Link
+                  href={`/${postedBy?.data?.username}`}
+                  className="font-medium text-foreground hover:text-[--thread-border] transition-all duration-300"
+                >
+                  {getFullName(postedBy?.data)}
+                </Link>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <RelativeTime createdAt={comment?.createdAt} />
                 </div>
