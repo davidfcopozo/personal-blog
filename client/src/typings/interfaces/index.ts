@@ -254,6 +254,7 @@ export interface AuthorPanelProps {
   handleFollowToggle: () => void;
   isFollowed: boolean;
   isPending: boolean;
+  isPostOwner?: boolean;
 }
 
 export interface ImageFile {
