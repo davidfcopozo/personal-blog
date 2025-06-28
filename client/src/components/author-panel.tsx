@@ -40,6 +40,7 @@ export const AuthorPanel = memo(function AuthorPanel({
   handleFollowToggle,
   isFollowed,
   isPending,
+  isPostOwner = false,
 }: AuthorPanelProps) {
   const fullName = `${firstName} ${lastName}`;
 
@@ -122,19 +123,21 @@ export const AuthorPanel = memo(function AuthorPanel({
       )}
 
       <footer className="mt-4">
-        <Button
-          onClick={handleFollowToggle}
-          disabled={isPending}
-          className={`${
-            isFollowed
-              ? "dark:text-amber-500 text-foreground dark:border-amber-500 border-foreground border-[1px] hover:bg-foreground hover:dark:text-background hover:text-background transition-all duration-300"
-              : "text-background hover:dark:bg-transparent hover:dark:text-amber-500 hover:bg-transparent hover:border-foreground hover:text-foreground transition-all duration-300 hover:dark:border-amber-500 hover:border-[1px]"
-          } w-full py-2 px-4 font-bold`}
-          aria-label={`Follow ${fullName}`}
-          variant={isFollowed ? "secondary" : "default"}
-        >
-          {isFollowed ? "Following" : "Follow"}
-        </Button>
+        {!isPostOwner && (
+          <Button
+            onClick={handleFollowToggle}
+            disabled={isPending}
+            className={`${
+              isFollowed
+                ? "dark:text-amber-500 text-foreground dark:border-amber-500 border-foreground border-[1px] hover:bg-foreground hover:dark:text-background hover:text-background transition-all duration-300"
+                : "text-background hover:dark:bg-transparent hover:dark:text-amber-500 hover:bg-transparent hover:border-foreground hover:text-foreground transition-all duration-300 hover:dark:border-amber-500 hover:border-[1px]"
+            } w-full py-2 px-4 font-bold`}
+            aria-label={`Follow ${fullName}`}
+            variant={isFollowed ? "secondary" : "default"}
+          >
+            {isFollowed ? "Following" : "Follow"}
+          </Button>
+        )}
       </footer>
     </article>
   );
