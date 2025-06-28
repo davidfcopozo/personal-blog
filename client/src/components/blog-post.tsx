@@ -286,6 +286,7 @@ const BlogPost = memo(function BlogPost({
                 handleFollowToggle={handleFollowToggle}
                 isPending={isPending}
                 isFollowed={isFollowed}
+                isPostOwner={isPostOwner}
               />
             </div>
           </div>
