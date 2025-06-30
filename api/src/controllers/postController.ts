@@ -113,7 +113,6 @@ export const getAllPosts = async (
         })
       );
     } else {
-      // No user, just add default interaction states
       enhancedPosts = posts.map((post) => ({
         ...(post as any).toObject(),
         isLiked: false,
@@ -140,7 +139,6 @@ export const getPostBySlugOrId = async (
   try {
     let post: PostType | null;
 
-    // Only find published posts for public access
     if (mongoose.Types.ObjectId.isValid(slugOrId)) {
       post = await Post.findOne({
         _id: slugOrId,
@@ -181,7 +179,6 @@ export const getPostBySlugOrId = async (
       console.error("Error recording post view:", error);
     });
 
-    // Add user interaction data if user is authenticated
     let enhancedPost = post;
     if (req.userId) {
       try {
@@ -237,7 +234,7 @@ export const getPostsByCategory = async (
 
     const posts: PostType[] = await Post.find({
       categories: cat._id,
-      status: "published", // Only show published posts
+      status: "published",
     }).populate("postedBy");
 
     if (posts.length < 1) {
@@ -367,10 +364,8 @@ export const updatePostBySlugOrId = async (
       categories,
     } = req.body;
 
-    // Initialize update operations
     const updateOperations: any = {};
 
-    // Handle regular fields only if they are provided
     const setFields: any = {};
     if (title !== undefined) setFields.title = title;
     if (content !== undefined) setFields.content = sanitizeContent(content);
@@ -383,12 +378,10 @@ export const updatePostBySlugOrId = async (
       setFields.coverImage = coverImage || process.env.DEFAULT_POST_IMAGE;
     }
 
-    // Only add $set if there are fields to set
     if (Object.keys(setFields).length > 0) {
       updateOperations.$set = setFields;
     }
 
-    // Handle tags and categories only if they are provided
     if (Array.isArray(tags)) {
       updateOperations.$set = {
         ...updateOperations.$set,
@@ -403,7 +396,6 @@ export const updatePostBySlugOrId = async (
       };
     }
 
-    // Perform a single atomic update
     const updatedPost = await Post.findOneAndUpdate(
       { _id: oldPost._id, postedBy: userId },
       updateOperations,
@@ -469,7 +461,6 @@ export const toggleLike = async (
     user: { userId },
   } = req;
 
-  // Additional validation
   if (!postId) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
@@ -547,7 +538,6 @@ export const toggleBookmark = async (
     user: { userId },
   } = req;
 
-  // Additional validation
   if (!postId) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
