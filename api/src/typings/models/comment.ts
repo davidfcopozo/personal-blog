@@ -6,7 +6,10 @@ export interface CommentInterface {
   post: mongoose.Types.ObjectId;
   parentId?: mongoose.Types.ObjectId;
   content: String;
-  likes?: mongoose.Types.ObjectId[];
   replies?: mongoose.Types.ObjectId[];
   isReply: Boolean;
+  // Virtual fields (not stored in DB)
+  likesCount?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
