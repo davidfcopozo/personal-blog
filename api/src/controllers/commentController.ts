@@ -51,9 +51,9 @@ export const createComment = async (
       );
 
       if (notificationService) {
-        const populatedComment = await Comment.findById(comment._id).populate(
-          "postedBy"
-        );
+        const populatedComment = await Comment.findById(comment._id)
+          .populate("postedBy")
+          .populate("likesCount");
 
         if (!populatedComment) {
           throw new NotFound("Failed to populate the new comment");
@@ -118,9 +118,20 @@ export const createComment = async (
         console.error("Error recording comment activity:", error);
       });
 
+      const commentWithAnalytics = await Comment.findById(comment._id)
+        .populate("likesCount")
+        .populate("postedBy", "username avatar");
+
+      if (!commentWithAnalytics) {
+        throw new BadRequest("Failed to create comment with analytics");
+      }
+
       res.status(StatusCodes.CREATED).json({
         success: true,
-        data: comment,
+        data: {
+          ...commentWithAnalytics.toJSON(),
+          isLiked: false,
+        },
       });
     }
   } catch (error) {
@@ -134,7 +145,8 @@ export const getComments = async (
   next: NextFunction
 ) => {
   const {
-    body: { postId },
+    params: { postId },
+    user,
   } = req;
 
   try {
@@ -144,15 +156,58 @@ export const getComments = async (
       throw new NotFound("This post doesn't exist");
     }
 
-    const comments = post?.comments?.length;
-
-    if (!comments) {
-      throw new NotFound("No comments on this post");
+    if (!post?.comments?.length) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        data: [],
+        message: "No comments on this post",
+      });
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: comments });
+    const comments = await Comment.find({ post: postId })
+      .populate("likesCount")
+      .populate("postedBy", "username avatar")
+      .populate({
+        path: "replies",
+        populate: [
+          {
+            path: "postedBy",
+            select: "username avatar",
+          },
+          {
+            path: "likesCount",
+          },
+        ],
+      })
+      .sort({ createdAt: -1 });
+
+    let commentsWithInteractions = comments.map((comment) =>
+      (comment as any).toJSON()
+    );
+
+    if (user?.userId) {
+      // Check which comments the user has liked
+      commentsWithInteractions = await Promise.all(
+        commentsWithInteractions.map(async (comment) => {
+          const isLiked = await AnalyticsService.hasUserLikedComment(
+            comment._id,
+            user.userId
+          );
+          return {
+            ...comment,
+            isLiked,
+          };
+        })
+      );
+    }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      data: commentsWithInteractions,
+      count: commentsWithInteractions.length,
+    });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -163,16 +218,33 @@ export const getCommentById = async (
 ) => {
   const {
     params: { id: commentId },
+    user,
   } = req;
 
   try {
-    const comment: CommentType = await Comment.findById(commentId);
+    const comment: CommentType = await Comment.findById(commentId)
+      .populate("likesCount")
+      .populate("postedBy", "username avatar");
 
     if (!comment) {
       throw new NotFound("No comments found");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: comment });
+    let commentWithInteractions = (comment as any).toJSON();
+    if (user?.userId) {
+      const isLiked = await AnalyticsService.hasUserLikedComment(
+        commentId,
+        user.userId
+      );
+      commentWithInteractions = {
+        ...commentWithInteractions,
+        isLiked,
+      };
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: commentWithInteractions });
   } catch (error) {
     next(error);
   }
@@ -335,7 +407,11 @@ export const toggleLike = async (
       msg: result.liked
         ? "You've liked this comment."
         : "You've disliked this comment.",
-      data: result,
+      data: {
+        ...result,
+        commentId,
+        userId,
+      },
     });
   } catch (error) {
     next(error);
