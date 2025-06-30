@@ -1,16 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
-import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
+import { PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import {
-  MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from "react";
+import { MouseEvent, useEffect, useState, useMemo, useCallback } from "react";
 import {
   CommentInterface,
   PostInterface,
@@ -24,7 +17,23 @@ export const useInteractions = (
   post?: PostType,
   comment?: CommentInterface
 ) => {
-  const postId = useRef(post?._id).current;
+  // Get postId dynamically instead of using useRef
+  const postId = useMemo(() => post?._id, [post?._id]);
+
+  // Debug logging to help identify the issue
+  useEffect(() => {
+    if (post) {
+      console.log("useInteractions - Post data:", {
+        postExists: !!post,
+        postId: post._id,
+        postSlug: post.slug,
+        postTitle: post.title,
+      });
+    } else {
+      console.log("useInteractions - No post data provided");
+    }
+  }, [post]);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { socket } = useSocket();
@@ -359,7 +368,7 @@ export const useInteractions = (
     [bookmarkMutation, toast]
   );
   const createCommentMutation = usePostRequest({
-    url: `/api/comments/${postId}`,
+    url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (newComment) => {
       // Update the comments cache with the new comment (for the author)
       queryClient.setQueryData<CommentInterface[]>(["comments"], (oldData) => {
@@ -429,6 +438,16 @@ export const useInteractions = (
   });
 
   const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
+    if (!postId) {
+      console.error("PostId is undefined, cannot create comment");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Post information is missing. Please refresh the page.",
+      });
+      return;
+    }
+
     requireAuth("comment", () => {
       createCommentMutation.mutate(
         { _id: postId, content: commentContent },
@@ -452,7 +471,7 @@ export const useInteractions = (
   };
 
   const createReplyMutation = usePostRequest({
-    url: `/api/replies/${postId}`,
+    url: postId ? `/api/replies/${postId}` : "",
     onSuccess: (newReply: ReplyInterface) => {
       if (!newReply || !newReply.parentId || !newReply._id) {
         return;
@@ -657,7 +676,7 @@ export const useInteractions = (
   };
 
   const likeCommentMutation = usePutRequest({
-    url: `/api/comments/${postId}`,
+    url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (response: any, variables: { commentId: string }) => {
       toast({
         title: "Success",
@@ -852,13 +871,22 @@ export const useInteractions = (
         requireAuth("like", () => {});
         return;
       }
-      likeInteraction(`${postId}`, {
+      if (!postId) {
+        console.error("PostId is undefined, cannot like post");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Post information is missing. Please refresh the page.",
+        });
+        return;
+      }
+      likeInteraction(postId, {
         onError: () => {
           console.error("Error handling like interaction");
         },
       });
     },
-    [currentUserId, postId, likeInteraction, requireAuth]
+    [currentUserId, postId, likeInteraction, requireAuth, toast]
   );
 
   const handleBookmarkClick = useCallback(
@@ -868,13 +896,22 @@ export const useInteractions = (
         requireAuth("bookmark", () => {});
         return;
       }
-      bookmarkInteraction(`${postId}`, {
+      if (!postId) {
+        console.error("PostId is undefined, cannot bookmark post");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Post information is missing. Please refresh the page.",
+        });
+        return;
+      }
+      bookmarkInteraction(postId, {
         onError: () => {
           console.error("Error handling bookmark interaction");
         },
       });
     },
-    [currentUserId, postId, bookmarkInteraction, requireAuth]
+    [currentUserId, postId, bookmarkInteraction, requireAuth, toast]
   );
 
   return {
