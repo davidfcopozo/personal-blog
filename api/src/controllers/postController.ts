@@ -64,12 +64,15 @@ export const createPost = async (
 };
 
 export const getAllPosts = async (
-  _: RequestWithUserInfo | any,
+  req: RequestWithUserInfo | any,
   res: Response,
   next: NextFunction
 ) => {
   const posts: PostType[] = await Post.find({ status: "published" })
     .populate("postedBy")
+    .populate("likesCount")
+    .populate("bookmarksCount")
+    .populate("viewsCount")
     .sort("createdAt");
 
   try {
@@ -77,9 +80,52 @@ export const getAllPosts = async (
       throw new NotFound("Posts not found");
     }
 
-    res
-      .status(StatusCodes.OK)
-      .json({ success: true, data: posts, count: posts.length });
+    let enhancedPosts = posts;
+    if (req.userId) {
+      enhancedPosts = await Promise.all(
+        posts.map(async (post) => {
+          if (!post || !post._id) {
+            return post;
+          }
+
+          try {
+            const interactions = await AnalyticsService.getUserPostInteractions(
+              post._id.toString(),
+              req.userId
+            );
+
+            return {
+              ...(post as any).toObject(),
+              isLiked: interactions.liked,
+              isBookmarked: interactions.bookmarked,
+            };
+          } catch (error) {
+            console.error(
+              `Error getting interactions for post ${post._id}:`,
+              error
+            );
+            return {
+              ...(post as any).toObject(),
+              isLiked: false,
+              isBookmarked: false,
+            };
+          }
+        })
+      );
+    } else {
+      // No user, just add default interaction states
+      enhancedPosts = posts.map((post) => ({
+        ...(post as any).toObject(),
+        isLiked: false,
+        isBookmarked: false,
+      }));
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: enhancedPosts,
+      count: enhancedPosts.length,
+    });
   } catch (err) {
     return next(err);
   }
@@ -99,12 +145,20 @@ export const getPostBySlugOrId = async (
       post = await Post.findOne({
         _id: slugOrId,
         status: "published",
-      }).populate("postedBy");
+      })
+        .populate("postedBy")
+        .populate("likesCount")
+        .populate("bookmarksCount")
+        .populate("viewsCount");
     } else {
       post = await Post.findOne({
         slug: slugOrId,
         status: "published",
-      }).populate("postedBy");
+      })
+        .populate("postedBy")
+        .populate("likesCount")
+        .populate("bookmarksCount")
+        .populate("viewsCount");
     }
 
     if (!post) {
@@ -127,7 +181,40 @@ export const getPostBySlugOrId = async (
       console.error("Error recording post view:", error);
     });
 
-    res.status(StatusCodes.OK).json({ success: true, data: post });
+    // Add user interaction data if user is authenticated
+    let enhancedPost = post;
+    if (req.userId) {
+      try {
+        const interactions = await AnalyticsService.getUserPostInteractions(
+          post._id.toString(),
+          req.userId
+        );
+
+        enhancedPost = {
+          ...(post as any).toObject(),
+          isLiked: interactions.liked,
+          isBookmarked: interactions.bookmarked,
+        };
+      } catch (error) {
+        console.error(
+          `Error getting interactions for post ${post._id}:`,
+          error
+        );
+        enhancedPost = {
+          ...(post as any).toObject(),
+          isLiked: false,
+          isBookmarked: false,
+        };
+      }
+    } else {
+      enhancedPost = {
+        ...(post as any).toObject(),
+        isLiked: false,
+        isBookmarked: false,
+      };
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, data: enhancedPost });
   } catch (err) {
     return next(err);
   }
@@ -377,36 +464,25 @@ export const toggleLike = async (
   res: Response,
   next: NextFunction
 ) => {
-  // Debug logging
-  console.log("🔍 toggleLike Debug Info:");
-  console.log("📍 Request body:", req.body);
-  console.log("📍 Request params:", req.params);
-  console.log("📍 User info:", req.user);
-
   const {
     body: { postId },
     user: { userId },
   } = req;
 
-  // Additional validation and debugging
+  // Additional validation
   if (!postId) {
-    console.log("❌ PostId is missing from request body:", req.body);
     return res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
       message: "PostId is required in request body",
-      receivedBody: req.body,
     });
   }
 
   if (!userId) {
-    console.log("❌ UserId is missing from request user:", req.user);
     return res.status(StatusCodes.UNAUTHORIZED).json({
       success: false,
       message: "User authentication required",
     });
   }
-
-  console.log("📍 Extracted - PostId:", postId, "UserId:", userId);
 
   try {
     const post: PostType = await Post.findById(postId).populate("postedBy");
@@ -432,12 +508,6 @@ export const toggleLike = async (
       (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
 
     if (notificationService) {
-      console.log(
-        "📤 About to emit like update for post:",
-        postId,
-        "user:",
-        userId
-      );
       await notificationService.emitLikeUpdate(postId, userId, result.liked);
 
       if (postOwnerId !== userId && result.liked) {
@@ -448,7 +518,8 @@ export const toggleLike = async (
         );
       }
     } else {
-      console.log("❌ No notification service available");
+      // No notification service available for real-time updates
+      return;
     }
 
     return res.status(StatusCodes.OK).json({
@@ -456,7 +527,11 @@ export const toggleLike = async (
       msg: result.liked
         ? "You've liked this post."
         : "You've disliked this post.",
-      data: result,
+      data: {
+        ...result,
+        postId,
+        userId,
+      },
     });
   } catch (error) {
     return next(error);
@@ -468,36 +543,25 @@ export const toggleBookmark = async (
   res: Response,
   next: NextFunction
 ) => {
-  // Debug logging
-  console.log("🔍 toggleBookmark Debug Info:");
-  console.log("📍 Request body:", req.body);
-  console.log("📍 Request params:", req.params);
-  console.log("📍 User info:", req.user);
-
   const {
     body: { postId },
     user: { userId },
   } = req;
 
-  // Additional validation and debugging
+  // Additional validation
   if (!postId) {
-    console.log("❌ PostId is missing from request body:", req.body);
     return res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
       message: "PostId is required in request body",
-      receivedBody: req.body,
     });
   }
 
   if (!userId) {
-    console.log("❌ UserId is missing from request user:", req.user);
     return res.status(StatusCodes.UNAUTHORIZED).json({
       success: false,
       message: "User authentication required",
     });
   }
-
-  console.log("📍 Extracted - PostId:", postId, "UserId:", userId);
 
   try {
     const post: PostType = await Post.findById(postId).populate("postedBy");
@@ -543,7 +607,11 @@ export const toggleBookmark = async (
       msg: result.bookmarked
         ? "You've bookmarked this post."
         : "You've unbookmarked this post.",
-      data: result,
+      data: {
+        ...result,
+        postId,
+        userId,
+      },
     });
   } catch (error) {
     return next(error);
