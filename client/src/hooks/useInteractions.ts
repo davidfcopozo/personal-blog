@@ -85,11 +85,9 @@ export const useInteractions = (
     [currentPostData?.comments]
   );
 
-  // Get the most up-to-date comment data from cache
   const currentCommentData = useMemo(() => {
     if (!comment?._id) return comment;
 
-    // First try to get from comments cache
     const cachedCommentsData = queryClient.getQueryData<CommentInterface[]>([
       "comments",
     ]);
@@ -100,7 +98,6 @@ export const useInteractions = (
       if (updatedComment) return updatedComment;
     }
 
-    // Then try to get from replies cache
     const repliesQueries = queryClient.getQueryCache().findAll({
       predicate: (query) => {
         const queryKey = query.queryKey;
@@ -126,7 +123,6 @@ export const useInteractions = (
       }
     }
 
-    // Also check global replies cache
     const globalRepliesData = queryClient.getQueryData<ReplyInterface[]>([
       "replies",
     ]);
@@ -137,7 +133,6 @@ export const useInteractions = (
       if (updatedReply) return updatedReply;
     }
 
-    // Fallback to the original comment prop
     return comment;
   }, [comment, queryClient]);
 
@@ -157,8 +152,7 @@ export const useInteractions = (
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
     onSuccess: (response: any, variables: { postId: string }) => {
-      // Don't invalidate - the optimistic update should be correct
-      // and the server response confirms the action
+      //  the optimistic update should be correct and the server response confirms the action
       toast({
         title: "Success",
         description: response?.data?.liked
@@ -265,8 +259,7 @@ export const useInteractions = (
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
     onSuccess: (response: any, variables: { postId: string }) => {
-      // Don't invalidate - the optimistic update should be correct
-      // and the server response confirms the action
+      // Don't invalidate - the optimistic update should be correct and the server response confirms the action
       toast({
         title: "Success",
         description: response?.data?.bookmarked
@@ -681,8 +674,7 @@ export const useInteractions = (
   const likeCommentMutation = usePutRequest({
     url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (response: any, variables: { commentId: string }) => {
-      // Don't invalidate - the optimistic update should be correct
-      // and the server response confirms the action
+      //  the optimistic update should be correct and the server response confirms the action
       toast({
         title: "Success",
         description: response?.data?.liked
