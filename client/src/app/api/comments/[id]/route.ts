@@ -2,7 +2,10 @@ import axios from "axios";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
-export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
 
@@ -14,8 +17,22 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 
   try {
+    const token = await getToken({
+      req: req,
+      secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
+    });
+
+    const headers: any = {
+      "Content-Type": "application/json",
+    };
+
+    if (token?.accessToken) {
+      headers.Authorization = `Bearer ${token.accessToken}`;
+    }
+
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${id}`
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/comments/${id}`,
+      { headers }
     );
 
     return new Response(JSON.stringify(res.data), {
@@ -35,7 +52,10 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 }
 
-export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id } = params;
   const token = await getToken({
@@ -81,7 +101,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   }
 }
 
-export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const { id: postId } = params;
   const token = await getToken({
