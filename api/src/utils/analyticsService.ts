@@ -749,4 +749,82 @@ export class AnalyticsService {
       throw error;
     }
   }
+
+  static async hasUserLikedComment(
+    commentId: string,
+    userId: string
+  ): Promise<boolean> {
+    try {
+      if (!commentId || !Types.ObjectId.isValid(commentId)) {
+        return false;
+      }
+
+      if (!userId || !Types.ObjectId.isValid(userId)) {
+        return false;
+      }
+
+      const like = await CommentLike.findOne({
+        comment: commentId,
+        user: userId,
+        isActive: true,
+      });
+
+      return !!like;
+    } catch (error) {
+      console.error("Error checking comment like status:", error);
+      return false;
+    }
+  }
+
+  static async hasUserLikedPost(
+    postId: string,
+    userId: string
+  ): Promise<boolean> {
+    try {
+      if (!postId || !Types.ObjectId.isValid(postId)) {
+        return false;
+      }
+
+      if (!userId || !Types.ObjectId.isValid(userId)) {
+        return false;
+      }
+
+      const like = await PostLike.findOne({
+        post: postId,
+        user: userId,
+        isActive: true,
+      });
+
+      return !!like;
+    } catch (error) {
+      console.error("Error checking post like status:", error);
+      return false;
+    }
+  }
+
+  static async hasUserBookmarkedPost(
+    postId: string,
+    userId: string
+  ): Promise<boolean> {
+    try {
+      if (!postId || !Types.ObjectId.isValid(postId)) {
+        return false;
+      }
+
+      if (!userId || !Types.ObjectId.isValid(userId)) {
+        return false;
+      }
+
+      const bookmark = await PostBookmark.findOne({
+        post: postId,
+        user: userId,
+        isActive: true,
+      });
+
+      return !!bookmark;
+    } catch (error) {
+      console.error("Error checking post bookmark status:", error);
+      return false;
+    }
+  }
 }
