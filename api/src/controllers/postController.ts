@@ -3,14 +3,14 @@ import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
 import { NotFound, BadRequest, Unauthenticated } from "../errors/index";
-import { PostType, UserType } from "../typings/types";
+import { PostType } from "../typings/types";
 import { slugValidator } from "../utils/validators";
-import User from "../models/userModel";
 import mongoose from "mongoose";
 import { sanitizeContent } from "../utils/sanitize-content";
 import { CategoryInterface } from "../typings/models/category";
 import Category from "../models/categoryModel";
 import { NotificationService } from "../utils/notificationService";
+import { AnalyticsService } from "../utils/analyticsService";
 
 export const createPost = async (
   req: RequestWithUserInfo | any,
@@ -110,6 +110,22 @@ export const getPostBySlugOrId = async (
     if (!post) {
       throw new NotFound("Post not found");
     }
+
+    const userId = req.user?.userId;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get("User-Agent");
+    const referrer = req.get("Referrer");
+
+    AnalyticsService.recordPostView({
+      postId: post._id.toString(),
+      userId,
+      ipAddress,
+      userAgent,
+      referrer,
+      source: referrer ? "referral" : "direct",
+    }).catch((error) => {
+      console.error("Error recording post view:", error);
+    });
 
     res.status(StatusCodes.OK).json({ success: true, data: post });
   } catch (err) {
@@ -361,113 +377,89 @@ export const toggleLike = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Debug logging
+  console.log("🔍 toggleLike Debug Info:");
+  console.log("📍 Request body:", req.body);
+  console.log("📍 Request params:", req.params);
+  console.log("📍 User info:", req.user);
+
   const {
     body: { postId },
     user: { userId },
   } = req;
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // Additional validation and debugging
+  if (!postId) {
+    console.log("❌ PostId is missing from request body:", req.body);
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "PostId is required in request body",
+      receivedBody: req.body,
+    });
+  }
+
+  if (!userId) {
+    console.log("❌ UserId is missing from request user:", req.user);
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      message: "User authentication required",
+    });
+  }
+
+  console.log("📍 Extracted - PostId:", postId, "UserId:", userId);
+
   try {
-    const post: PostType = await Post.findById(postId)
-      .populate("postedBy")
-      .session(session);
-    const user: UserType = await User.findById(userId).session(session);
+    const post: PostType = await Post.findById(postId).populate("postedBy");
 
     if (!post) {
       throw new NotFound("This post doesn't exist or has been deleted");
     }
 
-    if (!user) {
-      throw new Unauthenticated("Unauthenticated: No token provided");
-    }
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get("User-Agent");
 
-    const isLiked = user?.likes?.filter((like) => like.toString() === postId);
+    const result = await AnalyticsService.togglePostLike(
+      postId,
+      userId,
+      ipAddress,
+      userAgent
+    );
 
-    if (isLiked?.length! < 1) {
-      // Add like to the post's likes array property
-      const postResult = await Post.updateOne(
-        { _id: post._id },
-        { $addToSet: { likes: userId } },
-        { session }
+    const notificationService: NotificationService = req.app.get(
+      "notificationService"
+    );
+    const postOwnerId =
+      (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
+
+    if (notificationService) {
+      console.log(
+        "📤 About to emit like update for post:",
+        postId,
+        "user:",
+        userId
       );
-      const userResult = await User.updateOne(
-        { _id: user._id },
-        { $addToSet: { likes: postId } },
-        { session }
-      );
+      await notificationService.emitLikeUpdate(postId, userId, result.liked);
 
-      await session.commitTransaction();
-      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
-        const notificationService: NotificationService = req.app.get(
-          "notificationService"
+      if (postOwnerId !== userId && result.liked) {
+        await notificationService.createLikeNotification(
+          postOwnerId,
+          userId,
+          postId
         );
-        const postOwnerId =
-          (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
-        if (notificationService) {
-          console.log(
-            "📤 About to emit like update for post:",
-            postId,
-            "user:",
-            userId
-          );
-          await notificationService.emitLikeUpdate(postId, userId, true);
-
-          if (postOwnerId !== userId) {
-            await notificationService.createLikeNotification(
-              postOwnerId,
-              userId,
-              postId
-            );
-          }
-        } else {
-          console.log("❌ No notification service available");
-        }
-
-        res
-          .status(StatusCodes.OK)
-          .json({ success: true, msg: "You've liked this post." });
-      } else {
-        await session.abortTransaction();
-        throw new BadRequest("Something went wrong, please try again!");
       }
     } else {
-      // Remove like from the post's likes array property
-      const postResult = await Post.updateOne(
-        { _id: post._id },
-        { $pull: { likes: userId } },
-        { new: true }
-      );
-
-      const userResult = await User.updateOne(
-        { _id: user._id },
-        { $pull: { likes: postId } },
-        { new: true }
-      );
-
-      await session.commitTransaction();
-      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
-        const notificationService: NotificationService = req.app.get(
-          "notificationService"
-        );
-
-        if (notificationService) {
-          await notificationService.emitLikeUpdate(postId, userId, false);
-        }
-
-        res.status(StatusCodes.OK).json({
-          success: true,
-          msg: "You've disliked this post.",
-        });
-      } else {
-        await session.abortTransaction();
-        throw new BadRequest("Something went wrong, please try again!");
-      }
+      console.log("❌ No notification service available");
     }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      msg: result.liked
+        ? "You've liked this post."
+        : "You've disliked this post.",
+      data: result,
+    });
   } catch (error) {
-    next(error);
-  } finally {
-    session.endSession();
+    return next(error);
   }
 };
 
@@ -476,105 +468,85 @@ export const toggleBookmark = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Debug logging
+  console.log("🔍 toggleBookmark Debug Info:");
+  console.log("📍 Request body:", req.body);
+  console.log("📍 Request params:", req.params);
+  console.log("📍 User info:", req.user);
+
   const {
     body: { postId },
     user: { userId },
   } = req;
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // Additional validation and debugging
+  if (!postId) {
+    console.log("❌ PostId is missing from request body:", req.body);
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "PostId is required in request body",
+      receivedBody: req.body,
+    });
+  }
+
+  if (!userId) {
+    console.log("❌ UserId is missing from request user:", req.user);
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      message: "User authentication required",
+    });
+  }
+
+  console.log("📍 Extracted - PostId:", postId, "UserId:", userId);
+
   try {
-    const post: PostType = await Post.findById(postId)
-      .populate("postedBy")
-      .session(session);
-    const user: UserType = await User.findById(userId).session(session);
+    const post: PostType = await Post.findById(postId).populate("postedBy");
 
     if (!post) {
       throw new NotFound("This post doesn't exist or has been deleted");
     }
 
-    if (!user) {
-      throw new Unauthenticated("Unauthenticated: No token provided");
-    }
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get("User-Agent");
 
-    const isBookmarked = user?.bookmarks?.filter(
-      (bookmark) => bookmark.toString() === postId
+    const result = await AnalyticsService.togglePostBookmark(
+      postId,
+      userId,
+      ipAddress,
+      userAgent
     );
 
-    if (isBookmarked?.length! < 1) {
-      // Add bookmark to the post's bookmark array property
-      const postResult = await Post.updateOne(
-        { _id: post._id },
-        { $addToSet: { bookmarks: userId } },
-        { session }
-      );
-      const userResult = await User.updateOne(
-        { _id: user._id },
-        { $addToSet: { bookmarks: postId } },
-        { session }
+    const notificationService: NotificationService = req.app.get(
+      "notificationService"
+    );
+    const postOwnerId =
+      (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
+
+    if (notificationService) {
+      await notificationService.emitBookmarkUpdate(
+        postId,
+        userId,
+        result.bookmarked
       );
 
-      await session.commitTransaction();
-      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
-        const notificationService: NotificationService = req.app.get(
-          "notificationService"
+      if (postOwnerId !== userId && result.bookmarked) {
+        await notificationService.createBookmarkNotification(
+          postOwnerId,
+          userId,
+          postId
         );
-        const postOwnerId =
-          (post.postedBy as any)?._id?.toString() || post.postedBy.toString();
-
-        if (notificationService) {
-          await notificationService.emitBookmarkUpdate(postId, userId, true);
-
-          if (postOwnerId !== userId) {
-            await notificationService.createBookmarkNotification(
-              postOwnerId,
-              userId,
-              postId
-            );
-          }
-        }
-
-        res
-          .status(StatusCodes.OK)
-          .json({ success: true, msg: "You've bookmarked this post." });
-      } else {
-        throw new BadRequest("Something went wrong, please try again!");
-      }
-    } else {
-      // Remove bookmark from the post's bookmark array property
-      const postResult = await Post.updateOne(
-        { _id: post._id },
-        { $pull: { bookmarks: userId } },
-        { new: true }
-      );
-
-      const userResult = await User.updateOne(
-        { _id: user._id },
-        { $pull: { bookmarks: postId } },
-        { new: true }
-      );
-
-      await session.commitTransaction();
-      if (postResult.modifiedCount === 1 && userResult.modifiedCount === 1) {
-        const notificationService: NotificationService = req.app.get(
-          "notificationService"
-        );
-
-        if (notificationService) {
-          await notificationService.emitBookmarkUpdate(postId, userId, false);
-        }
-
-        res.status(StatusCodes.OK).json({
-          success: true,
-          msg: "You've unbookmarked this post.",
-        });
-      } else {
-        await session.abortTransaction();
-        throw new BadRequest("Something went wrong, please try again!");
       }
     }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      msg: result.bookmarked
+        ? "You've bookmarked this post."
+        : "You've unbookmarked this post.",
+      data: result,
+    });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
