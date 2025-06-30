@@ -7,6 +7,7 @@ import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
 import { PostType, CommentType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
+import { AnalyticsService } from "../utils/analyticsService";
 
 export const createReply = async (
   req: RequestWithUserInfo | any,
@@ -111,6 +112,7 @@ export const getReplyById = async (
 ) => {
   const {
     params: { id: postId, commentId, replyId },
+    user,
   } = req;
 
   try {
@@ -139,13 +141,34 @@ export const getReplyById = async (
       throw new BadRequest("Something went wrong");
     }
 
-    const reply = await Comment.findById(commentReply);
+    const reply = await Comment.findById(commentReply)
+      .populate("likesCount")
+      .populate("postedBy", "username avatar");
 
     if (!reply) {
       throw new NotFound("This comment doesn't exist or has been deleted.");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: reply });
+    let replyWithInteractions = (reply as any).toJSON();
+    if (user?.userId) {
+      const isLiked = await AnalyticsService.hasUserLikedComment(
+        replyId,
+        user.userId
+      );
+      replyWithInteractions = {
+        ...replyWithInteractions,
+        isLiked,
+      };
+    } else {
+      replyWithInteractions = {
+        ...replyWithInteractions,
+        isLiked: false,
+      };
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: replyWithInteractions });
   } catch (error) {
     next(error);
   }
