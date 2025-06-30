@@ -20,20 +20,6 @@ export const useInteractions = (
   // Get postId dynamically instead of using useRef
   const postId = useMemo(() => post?._id, [post?._id]);
 
-  // Debug logging to help identify the issue
-  useEffect(() => {
-    if (post) {
-      console.log("useInteractions - Post data:", {
-        postExists: !!post,
-        postId: post._id,
-        postSlug: post.slug,
-        postTitle: post.title,
-      });
-    } else {
-      console.log("useInteractions - No post data provided");
-    }
-  }, [post]);
-
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { socket } = useSocket();
@@ -74,45 +60,41 @@ export const useInteractions = (
   }, [cachedPostsData, cachedSinglePostData, post, postId]);
 
   const bookmarks = useMemo(
-    () => currentPostData?.bookmarks ?? [],
-    [currentPostData?.bookmarks]
+    () => currentPostData?.bookmarksCount ?? 0,
+    [currentPostData?.bookmarksCount]
   );
   const likes = useMemo(
-    () => currentPostData?.likes ?? [],
-    [currentPostData?.likes]
+    () => currentPostData?.likesCount ?? 0,
+    [currentPostData?.likesCount]
   );
   const liked = useMemo(() => {
-    if (!currentUserId || !likes?.length) return false;
-    return likes.some((like: string) => like.toString() === currentUserId);
-  }, [currentUserId, likes]);
+    if (!currentUserId) return false;
+    return currentPostData?.isLiked ?? false;
+  }, [currentUserId, currentPostData?.isLiked]);
 
-  const amountOfLikes = useMemo(() => likes.length, [likes]);
+  const amountOfLikes = useMemo(() => likes, [likes]);
 
   const bookmarked = useMemo(() => {
-    if (!currentUserId || !bookmarks?.length) return false;
-    return bookmarks.some(
-      (bookmark: string) => bookmark.toString() === currentUserId
-    );
-  }, [currentUserId, bookmarks]);
+    if (!currentUserId) return false;
+    return currentPostData?.isBookmarked ?? false;
+  }, [currentUserId, currentPostData?.isBookmarked]);
 
-  const amountOfBookmarks = useMemo(() => bookmarks.length, [bookmarks]);
+  const amountOfBookmarks = useMemo(() => bookmarks, [bookmarks]);
   const commentsCount = useMemo(
     () => currentPostData?.comments?.length ?? 0,
     [currentPostData?.comments]
   );
   const [commentLiked, setCommentLiked] = useState<boolean>(false);
   const [commentLikesCount, setCommentLikesCount] = useState<number>(
-    comment?.likes?.length ?? 0
+    comment?.likesCount ?? 0
   );
   const [replyContent, setReplyContent] = useState<string>("");
 
   useEffect(() => {
     if (comment && currentUserId) {
-      const userLikedComment =
-        comment.likes?.some((like) => like.toString() === currentUserId) ??
-        false;
+      const userLikedComment = comment.isLiked ?? false;
       setCommentLiked(userLikedComment);
-      setCommentLikesCount(comment.likes?.length ?? 0);
+      setCommentLikesCount(comment.likesCount ?? 0);
     }
   }, [comment, currentUserId]); // Watch for cache updates from socket events and update local state
   useEffect(() => {
@@ -127,11 +109,8 @@ export const useInteractions = (
           );
 
           if (updatedComment) {
-            const userLiked =
-              updatedComment.likes?.some(
-                (like: string) => like.toString() === currentUserId
-              ) ?? false;
-            const likesCount = updatedComment.likes?.length ?? 0;
+            const userLiked = updatedComment.isLiked ?? false;
+            const likesCount = updatedComment.likesCount ?? 0;
 
             setCommentLiked((prev) => (prev !== userLiked ? userLiked : prev));
             setCommentLikesCount((prev) =>
@@ -149,10 +128,14 @@ export const useInteractions = (
   };
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
-    onSuccess: (_, variables: { postId: string }) => {
+    onSuccess: (response: any, variables: { postId: string }) => {
+      // Don't invalidate - the optimistic update should be correct
+      // and the server response confirms the action
       toast({
         title: "Success",
-        description: "Your action was successful.",
+        description: response?.data?.liked
+          ? "You've liked this post."
+          : "You've unliked this post.",
       });
     },
     onError: (error, _, context: any) => {
@@ -195,18 +178,15 @@ export const useInteractions = (
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id?.toString() === variables.postId?.toString()) {
-              const userIdString = currentUserId;
-              const isLiked = post.likes?.some(
-                (like) => like.toString() === userIdString
-              );
+              const currentIsLiked = post.isLiked ?? false;
+              const currentLikesCount = post.likesCount ?? 0;
 
               return {
                 ...post,
-                likes: isLiked
-                  ? post.likes?.filter(
-                      (like) => like.toString() !== userIdString
-                    ) || []
-                  : [...(post.likes || []), userIdString],
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
               };
             }
             return post;
@@ -218,20 +198,17 @@ export const useInteractions = (
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        const userIdString = currentUserId;
-        const isLiked = oldPost.data.likes?.some(
-          (like: string) => like.toString() === userIdString
-        );
+        const currentIsLiked = oldPost.data.isLiked ?? false;
+        const currentLikesCount = oldPost.data.likesCount ?? 0;
 
         return {
           ...oldPost,
           data: {
             ...oldPost.data,
-            likes: isLiked
-              ? oldPost.data.likes?.filter(
-                  (like: string) => like.toString() !== userIdString
-                ) || []
-              : [...(oldPost.data.likes || []), userIdString],
+            isLiked: !currentIsLiked,
+            likesCount: currentIsLiked
+              ? currentLikesCount - 1
+              : currentLikesCount + 1,
           },
         };
       });
@@ -259,10 +236,14 @@ export const useInteractions = (
   );
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
-    onSuccess: (_, variables: { postId: string }) => {
+    onSuccess: (response: any, variables: { postId: string }) => {
+      // Don't invalidate - the optimistic update should be correct
+      // and the server response confirms the action
       toast({
         title: "Success",
-        description: "Your action was successful.",
+        description: response?.data?.bookmarked
+          ? "You've bookmarked this post."
+          : "You've unbookmarked this post.",
       });
     },
     onError: (error, _, context: any) => {
@@ -305,18 +286,15 @@ export const useInteractions = (
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id?.toString() === variables.postId?.toString()) {
-              const userIdString = currentUserId;
-              const isBookmarked = post.bookmarks?.some(
-                (bookmark) => bookmark.toString() === userIdString
-              );
+              const currentIsBookmarked = post.isBookmarked ?? false;
+              const currentBookmarksCount = post.bookmarksCount ?? 0;
 
               return {
                 ...post,
-                bookmarks: isBookmarked
-                  ? post.bookmarks?.filter(
-                      (bookmark) => bookmark.toString() !== userIdString
-                    ) || []
-                  : [...(post.bookmarks || []), userIdString],
+                isBookmarked: !currentIsBookmarked,
+                bookmarksCount: currentIsBookmarked
+                  ? currentBookmarksCount - 1
+                  : currentBookmarksCount + 1,
               };
             }
             return post;
@@ -328,20 +306,17 @@ export const useInteractions = (
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        const userIdString = currentUserId;
-        const isBookmarked = oldPost.data.bookmarks?.some(
-          (bookmark: string) => bookmark.toString() === userIdString
-        );
+        const currentIsBookmarked = oldPost.data.isBookmarked ?? false;
+        const currentBookmarksCount = oldPost.data.bookmarksCount ?? 0;
 
         return {
           ...oldPost,
           data: {
             ...oldPost.data,
-            bookmarks: isBookmarked
-              ? oldPost.data.bookmarks?.filter(
-                  (bookmark: string) => bookmark.toString() !== userIdString
-                ) || []
-              : [...(oldPost.data.bookmarks || []), userIdString],
+            isBookmarked: !currentIsBookmarked,
+            bookmarksCount: currentIsBookmarked
+              ? currentBookmarksCount - 1
+              : currentBookmarksCount + 1,
           },
         };
       });
@@ -678,9 +653,13 @@ export const useInteractions = (
   const likeCommentMutation = usePutRequest({
     url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (response: any, variables: { commentId: string }) => {
+      // Don't invalidate - the optimistic update should be correct
+      // and the server response confirms the action
       toast({
         title: "Success",
-        description: "Your action was successful.",
+        description: response?.data?.liked
+          ? "You've liked this comment."
+          : "You've unliked this comment.",
       });
     },
     onError: (error: any, variables, context: any) => {
@@ -762,18 +741,15 @@ export const useInteractions = (
 
         return oldComments.map((comment: any) => {
           if (comment._id?.toString() === variables.commentId) {
-            const userIdString = currentUserId;
-            const isLiked = comment.likes?.some(
-              (like: string) => like.toString() === userIdString
-            );
+            const currentIsLiked = comment.isLiked ?? false;
+            const currentLikesCount = comment.likesCount ?? 0;
 
             return {
               ...comment,
-              likes: isLiked
-                ? comment.likes?.filter(
-                    (like: string) => like.toString() !== userIdString
-                  ) || []
-                : [...(comment.likes || []), userIdString],
+              isLiked: !currentIsLiked,
+              likesCount: currentIsLiked
+                ? currentLikesCount - 1
+                : currentLikesCount + 1,
             };
           }
           return comment;
@@ -789,18 +765,15 @@ export const useInteractions = (
 
           return oldReplies.map((reply: any) => {
             if (reply._id?.toString() === variables.commentId) {
-              const userIdString = currentUserId;
-              const isLiked = reply.likes?.some(
-                (like: string) => like.toString() === userIdString
-              );
+              const currentIsLiked = reply.isLiked ?? false;
+              const currentLikesCount = reply.likesCount ?? 0;
 
               return {
                 ...reply,
-                likes: isLiked
-                  ? reply.likes?.filter(
-                      (like: string) => like.toString() !== userIdString
-                    ) || []
-                  : [...(reply.likes || []), userIdString],
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
               };
             }
             return reply;
@@ -816,18 +789,15 @@ export const useInteractions = (
 
         return oldReplies.map((reply: any) => {
           if (reply._id?.toString() === variables.commentId) {
-            const userIdString = currentUserId;
-            const isLiked = reply.likes?.some(
-              (like: string) => like.toString() === userIdString
-            );
+            const currentIsLiked = reply.isLiked ?? false;
+            const currentLikesCount = reply.likesCount ?? 0;
 
             return {
               ...reply,
-              likes: isLiked
-                ? reply.likes?.filter(
-                    (like: string) => like.toString() !== userIdString
-                  ) || []
-                : [...(reply.likes || []), userIdString],
+              isLiked: !currentIsLiked,
+              likesCount: currentIsLiked
+                ? currentLikesCount - 1
+                : currentLikesCount + 1,
             };
           }
           return reply;
