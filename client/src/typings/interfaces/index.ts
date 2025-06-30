@@ -40,6 +40,10 @@ export interface PostInterface extends BaseDocument {
   coverImage?: string;
   likes?: string[];
   bookmarks?: string[];
+  likesCount: number;
+  bookmarksCount: number;
+  isLiked?: boolean;
+  isBookmarked?: boolean;
   tags?: string[];
   categories?: CategoryInterface[];
   visits?: number;
@@ -145,6 +149,8 @@ export interface CommentInterface {
   content: string;
   replies: string[];
   likes: string[];
+  likesCount: number;
+  isLiked?: boolean;
   createdAt: Date;
   updatedAt: Date;
   isReply: boolean;
