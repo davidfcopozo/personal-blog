@@ -518,7 +518,6 @@ export const toggleLike = async (
         );
       }
     } else {
-      // No notification service available for real-time updates
       return;
     }
 
