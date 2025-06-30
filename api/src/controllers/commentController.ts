@@ -10,6 +10,7 @@ import { BadRequest } from "../errors/bad-request";
 import { CommentType, PostMongooseType, PostType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
 import { NotificationService } from "../utils/notificationService";
+import { AnalyticsService } from "../utils/analyticsService";
 
 export const createComment = async (
   req: RequestWithUserInfo | any,
@@ -99,7 +100,28 @@ export const createComment = async (
         }
       }
 
-      res.status(StatusCodes.CREATED).json({ success: true, data: comment });
+      // Record user activity for comment creation
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get("User-Agent");
+
+      AnalyticsService.recordUserActivity({
+        userId,
+        action: "comment",
+        resourceType: "post",
+        resourceId: postId,
+        metadata: {
+          commentId: comment._id.toString(),
+        },
+        ipAddress,
+        userAgent,
+      }).catch((error) => {
+        console.error("Error recording comment activity:", error);
+      });
+
+      res.status(StatusCodes.CREATED).json({
+        success: true,
+        data: comment,
+      });
     }
   } catch (error) {
     next(error);
@@ -272,82 +294,49 @@ export const toggleLike = async (
       throw new BadRequest("This comment does not belong to this post");
     }
 
-    const isLiked = comment.likes?.filter((like) => like.toString() === userId);
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get("User-Agent");
+
+    const result = await AnalyticsService.toggleCommentLike(
+      commentId,
+      userId,
+      ipAddress,
+      userAgent
+    );
+
     const notificationService: NotificationService = req.app.get(
       "notificationService"
     );
 
-    if (isLiked?.length! < 1) {
-      const result = await Comment.updateOne(
-        { _id: comment._id },
-        { $addToSet: { likes: userId } },
-        { new: true }
+    if (notificationService) {
+      await notificationService.emitCommentLikeUpdate(
+        commentId,
+        userId,
+        result.liked
       );
 
-      //If the comment id has been removed from the post's comment array, also remove it from the comment document
-      if (result.modifiedCount === 1) {
-        // Emit socket event for real-time updates
-        if (notificationService) {
-          await notificationService.emitCommentLikeUpdate(
-            commentId,
-            userId,
-            true
-          );
+      // Create notification for comment author (if not liking own comment)
+      const commentOwnerId = (comment.postedBy as any)?._id
+        ? (comment.postedBy as any)._id.toString()
+        : comment.postedBy.toString();
 
-          // Create notification for comment author (if not liking own comment)
-          const commentOwnerId = (comment.postedBy as any)?._id
-            ? (comment.postedBy as any)._id.toString()
-            : comment.postedBy.toString();
-
-          if (commentOwnerId !== userId) {
-            await notificationService.createCommentLikeNotification(
-              commentOwnerId,
-              userId,
-              postId,
-              commentId
-            );
-          }
-        }
-
-        // Get updated comment with likes
-        const updatedComment = await Comment.findById(commentId);
-
-        res.status(StatusCodes.OK).json({
-          success: true,
-          msg: "You've liked this comment.",
-          data: updatedComment,
-        });
-      } else {
-        throw new BadRequest("Something went wrong, please try again!");
-      }
-    } else {
-      // Remove like from the comment's likes array property
-      const result = await Comment.updateOne(
-        { _id: comment._id },
-        { $pull: { likes: userId } },
-        { new: true }
-      );
-
-      if (result.modifiedCount === 1) {
-        if (notificationService) {
-          await notificationService.emitCommentLikeUpdate(
-            commentId,
-            userId,
-            false
-          );
-        }
-
-        const updatedComment = await Comment.findById(commentId);
-
-        res.status(StatusCodes.OK).json({
-          success: true,
-          msg: "You've disliked this comment.",
-          data: updatedComment,
-        });
-      } else {
-        throw new BadRequest("Something went wrong, please try again!");
+      if (commentOwnerId !== userId && result.liked) {
+        await notificationService.createCommentLikeNotification(
+          commentOwnerId,
+          userId,
+          postId,
+          commentId
+        );
       }
     }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: result.liked
+        ? "You've liked this comment."
+        : "You've disliked this comment.",
+      data: result,
+    });
   } catch (error) {
     next(error);
   }
