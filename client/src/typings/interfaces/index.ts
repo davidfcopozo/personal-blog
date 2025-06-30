@@ -164,6 +164,8 @@ export interface ReplyInterface {
   parentId: string;
   replies: string[];
   likes: string[];
+  likesCount: number;
+  isLiked?: boolean;
   createdAt: Date;
   updatedAt: Date;
   isReply: boolean;
