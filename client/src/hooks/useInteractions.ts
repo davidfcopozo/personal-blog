@@ -84,45 +84,73 @@ export const useInteractions = (
     () => currentPostData?.comments?.length ?? 0,
     [currentPostData?.comments]
   );
-  const [commentLiked, setCommentLiked] = useState<boolean>(false);
-  const [commentLikesCount, setCommentLikesCount] = useState<number>(
-    comment?.likesCount ?? 0
-  );
-  const [replyContent, setReplyContent] = useState<string>("");
 
-  useEffect(() => {
-    if (comment && currentUserId) {
-      const userLikedComment = comment.isLiked ?? false;
-      setCommentLiked(userLikedComment);
-      setCommentLikesCount(comment.likesCount ?? 0);
+  // Get the most up-to-date comment data from cache
+  const currentCommentData = useMemo(() => {
+    if (!comment?._id) return comment;
+
+    // First try to get from comments cache
+    const cachedCommentsData = queryClient.getQueryData<CommentInterface[]>([
+      "comments",
+    ]);
+    if (cachedCommentsData && Array.isArray(cachedCommentsData)) {
+      const updatedComment = cachedCommentsData.find(
+        (c: CommentInterface) => c._id?.toString() === comment._id?.toString()
+      );
+      if (updatedComment) return updatedComment;
     }
-  }, [comment, currentUserId]); // Watch for cache updates from socket events and update local state
-  useEffect(() => {
-    if (!comment?._id || !currentUserId) return;
 
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (event?.query?.queryKey?.[0] === "comments") {
-        const cachedComments = queryClient.getQueryData<any>(["comments"]);
-        if (cachedComments && Array.isArray(cachedComments)) {
-          const updatedComment = cachedComments.find(
-            (c: any) => c._id?.toString() === comment._id?.toString()
-          );
-
-          if (updatedComment) {
-            const userLiked = updatedComment.isLiked ?? false;
-            const likesCount = updatedComment.likesCount ?? 0;
-
-            setCommentLiked((prev) => (prev !== userLiked ? userLiked : prev));
-            setCommentLikesCount((prev) =>
-              prev !== likesCount ? likesCount : prev
-            );
-          }
-        }
-      }
+    // Then try to get from replies cache
+    const repliesQueries = queryClient.getQueryCache().findAll({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return (
+          Array.isArray(queryKey) &&
+          queryKey.length === 2 &&
+          typeof queryKey[0] === "string" &&
+          queryKey[0].startsWith("replies-") &&
+          Array.isArray(queryKey[1])
+        );
+      },
     });
 
-    return unsubscribe;
-  }, [comment?._id, currentUserId, queryClient]);
+    for (const query of repliesQueries) {
+      const repliesData = queryClient.getQueryData<ReplyInterface[]>(
+        query.queryKey
+      );
+      if (repliesData && Array.isArray(repliesData)) {
+        const updatedReply = repliesData.find(
+          (r: ReplyInterface) => r._id?.toString() === comment._id?.toString()
+        );
+        if (updatedReply) return updatedReply;
+      }
+    }
+
+    // Also check global replies cache
+    const globalRepliesData = queryClient.getQueryData<ReplyInterface[]>([
+      "replies",
+    ]);
+    if (globalRepliesData && Array.isArray(globalRepliesData)) {
+      const updatedReply = globalRepliesData.find(
+        (r: ReplyInterface) => r._id?.toString() === comment._id?.toString()
+      );
+      if (updatedReply) return updatedReply;
+    }
+
+    // Fallback to the original comment prop
+    return comment;
+  }, [comment, queryClient]);
+
+  const commentLiked = useMemo(() => {
+    if (!currentUserId || !currentCommentData) return false;
+    return currentCommentData?.isLiked ?? false;
+  }, [currentUserId, currentCommentData]);
+
+  const commentLikesCount = useMemo(() => {
+    return currentCommentData?.likesCount ?? 0;
+  }, [currentCommentData]);
+
+  const [replyContent, setReplyContent] = useState<string>("");
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
