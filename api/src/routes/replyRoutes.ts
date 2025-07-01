@@ -1,6 +1,7 @@
 import express from "express";
 const router = express.Router();
 import { auth } from "../middleware/auth";
+import { optionalAuth } from "../middleware/optional-auth";
 import {
   createReply,
   getReplies,
@@ -12,7 +13,7 @@ router.route("/").get(getReplies);
 router.route("/:id").post(auth, createReply);
 router
   .route("/:id/:commentId/:replyId")
-  .get(getReplyById)
+  .get(optionalAuth, getReplyById)
   .delete(auth, deleteReplyById);
 
 export default router;
