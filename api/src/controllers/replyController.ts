@@ -61,7 +61,42 @@ export const createReply = async (
     );
 
     if (result?.modifiedCount === 1) {
-      res.status(StatusCodes.CREATED).json({ success: true, data: reply });
+      // Record user activity for reply creation
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get("User-Agent");
+
+      AnalyticsService.recordUserActivity({
+        userId,
+        // Replies are treated as comments in analytics
+        action: "comment",
+        resourceType: "post",
+        resourceId: postId,
+        metadata: {
+          commentId: reply._id.toString(),
+          parentCommentId: parentId,
+          isReply: true,
+        },
+        ipAddress,
+        userAgent,
+      }).catch((error) => {
+        console.error("Error recording reply activity:", error);
+      });
+
+      const replyWithAnalytics = await Comment.findById(reply._id)
+        .populate("likesCount")
+        .populate("postedBy", "username avatar");
+
+      if (!replyWithAnalytics) {
+        throw new BadRequest("Failed to create reply with analytics");
+      }
+
+      res.status(StatusCodes.CREATED).json({
+        success: true,
+        data: {
+          ...replyWithAnalytics.toJSON(),
+          isLiked: false,
+        },
+      });
     }
   } catch (error) {
     next(error);
