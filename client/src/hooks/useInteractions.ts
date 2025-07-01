@@ -97,7 +97,9 @@ export const useInteractions = (
       const updatedComment = cachedCommentsData.find(
         (c: CommentInterface) => c._id?.toString() === comment._id?.toString()
       );
-      if (updatedComment) return updatedComment;
+      if (updatedComment) {
+        return updatedComment;
+      }
     }
 
     // If it's a reply, check the replies cache
@@ -108,16 +110,33 @@ export const useInteractions = (
       const updatedReply = globalRepliesData.find(
         (r: ReplyInterface) => r._id?.toString() === comment._id?.toString()
       );
-      if (updatedReply) return updatedReply;
+      if (updatedReply) {
+        console.log("🔍 Found reply in replies cache:", {
+          id: updatedReply._id,
+          isLiked: updatedReply.isLiked,
+          likesCount: updatedReply.likesCount,
+        });
+        return updatedReply;
+      }
     }
 
     // Fallback to the original comment prop
+    console.log("⚠️ Using original comment prop:", {
+      id: comment._id,
+      isLiked: comment.isLiked,
+      likesCount: comment.likesCount,
+      hasIsLikedProperty: comment.hasOwnProperty("isLiked"),
+      allKeys: Object.keys(comment),
+    });
     return comment;
   }, [comment, queryClient]);
 
   const commentLiked = useMemo(() => {
-    if (!currentUserId || !currentCommentData) return false;
-    return currentCommentData?.isLiked ?? false;
+    if (!currentUserId || !currentCommentData) {
+      return false;
+    }
+    const liked = currentCommentData?.isLiked ?? false;
+    return liked;
   }, [currentUserId, currentCommentData]);
 
   const commentLikesCount = useMemo(() => {
