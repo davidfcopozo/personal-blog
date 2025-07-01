@@ -3,14 +3,13 @@ import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
 import { PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import { MouseEvent, useEffect, useState, useMemo, useCallback } from "react";
+import { MouseEvent, useState, useMemo, useCallback } from "react";
 import {
   CommentInterface,
   PostInterface,
   ReplyInterface,
 } from "@/typings/interfaces";
 import { useAuthModal } from "./useAuthModal";
-import { useSocket } from "@/context/SocketContext";
 import { useSessionUserId } from "./useSessionUserId";
 
 export const useInteractions = (
@@ -22,7 +21,6 @@ export const useInteractions = (
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { socket } = useSocket();
   const { userId: currentUserId } = useSessionUserId(); // Use cached session approach
   const [commentContent, setCommentContent] = useState<string>("");
   const {
@@ -63,10 +61,12 @@ export const useInteractions = (
     () => currentPostData?.bookmarksCount ?? 0,
     [currentPostData?.bookmarksCount]
   );
+
   const likes = useMemo(
     () => currentPostData?.likesCount ?? 0,
     [currentPostData?.likesCount]
   );
+
   const liked = useMemo(() => {
     if (!currentUserId) return false;
     return currentPostData?.isLiked ?? false;
@@ -80,6 +80,7 @@ export const useInteractions = (
   }, [currentUserId, currentPostData?.isBookmarked]);
 
   const amountOfBookmarks = useMemo(() => bookmarks, [bookmarks]);
+
   const commentsCount = useMemo(
     () => currentPostData?.comments?.length ?? 0,
     [currentPostData?.comments]
@@ -91,6 +92,7 @@ export const useInteractions = (
     const cachedCommentsData = queryClient.getQueryData<CommentInterface[]>([
       "comments",
     ]);
+
     if (cachedCommentsData && Array.isArray(cachedCommentsData)) {
       const updatedComment = cachedCommentsData.find(
         (c: CommentInterface) => c._id?.toString() === comment._id?.toString()
@@ -98,31 +100,7 @@ export const useInteractions = (
       if (updatedComment) return updatedComment;
     }
 
-    const repliesQueries = queryClient.getQueryCache().findAll({
-      predicate: (query) => {
-        const queryKey = query.queryKey;
-        return (
-          Array.isArray(queryKey) &&
-          queryKey.length === 2 &&
-          typeof queryKey[0] === "string" &&
-          queryKey[0].startsWith("replies-") &&
-          Array.isArray(queryKey[1])
-        );
-      },
-    });
-
-    for (const query of repliesQueries) {
-      const repliesData = queryClient.getQueryData<ReplyInterface[]>(
-        query.queryKey
-      );
-      if (repliesData && Array.isArray(repliesData)) {
-        const updatedReply = repliesData.find(
-          (r: ReplyInterface) => r._id?.toString() === comment._id?.toString()
-        );
-        if (updatedReply) return updatedReply;
-      }
-    }
-
+    // If it's a reply, check the replies cache
     const globalRepliesData = queryClient.getQueryData<ReplyInterface[]>([
       "replies",
     ]);
@@ -133,6 +111,7 @@ export const useInteractions = (
       if (updatedReply) return updatedReply;
     }
 
+    // Fallback to the original comment prop
     return comment;
   }, [comment, queryClient]);
 
@@ -674,7 +653,7 @@ export const useInteractions = (
   const likeCommentMutation = usePutRequest({
     url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (response: any, variables: { commentId: string }) => {
-      //  the optimistic update should be correct and the server response confirms the action
+      // Don't do additional updates here - the optimistic update should be correct
       toast({
         title: "Success",
         description: response?.data?.liked
@@ -731,6 +710,8 @@ export const useInteractions = (
     onMutate: async (variables: { commentId: string }) => {
       await queryClient.cancelQueries({ queryKey: ["comments"], exact: true });
 
+      await queryClient.cancelQueries({ queryKey: ["replies"], exact: true });
+
       const previousCommentsData = queryClient.getQueryData<any>(["comments"]);
       const previousRepliesData = queryClient.getQueryData<any>(["replies"]);
 
@@ -759,30 +740,52 @@ export const useInteractions = (
           return oldComments;
         }
 
-        return oldComments.map((comment: any) => {
-          if (comment._id?.toString() === variables.commentId) {
-            const currentIsLiked = comment.isLiked ?? false;
-            const currentLikesCount = comment.likesCount ?? 0;
+        const foundInCommentsCache = oldComments.find(
+          (c: any) => c._id?.toString() === variables.commentId
+        );
 
-            return {
+        if (foundInCommentsCache) {
+          return oldComments.map((comment: any) => {
+            if (comment._id?.toString() === variables.commentId) {
+              const currentIsLiked = comment.isLiked ?? false;
+              const currentLikesCount = comment.likesCount ?? 0;
+
+              return {
+                ...comment,
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
+              };
+            }
+            return comment;
+          });
+        } else if (comment?._id?.toString() === variables.commentId) {
+          // If the comment wasn't found in cache, add it with liked state
+          return [
+            ...oldComments,
+            {
               ...comment,
-              isLiked: !currentIsLiked,
-              likesCount: currentIsLiked
-                ? currentLikesCount - 1
-                : currentLikesCount + 1,
-            };
-          }
-          return comment;
-        });
+              isLiked: true,
+              likesCount: (comment.likesCount ?? 0) + 1,
+            },
+          ];
+        }
+
+        return oldComments;
       });
 
-      // Optimistically update reply caches
-      replyQueries.forEach((query) => {
-        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
-          if (!oldReplies || !Array.isArray(oldReplies)) {
-            return oldReplies;
-          }
+      // Optimistically update global replies cache
+      queryClient.setQueryData(["replies"], (oldReplies: any) => {
+        if (!oldReplies || !Array.isArray(oldReplies)) {
+          return oldReplies;
+        }
 
+        const foundInRepliesCache = oldReplies.find(
+          (r: any) => r._id?.toString() === variables.commentId
+        );
+
+        if (foundInRepliesCache) {
           return oldReplies.map((reply: any) => {
             if (reply._id?.toString() === variables.commentId) {
               const currentIsLiked = reply.isLiked ?? false;
@@ -798,30 +801,19 @@ export const useInteractions = (
             }
             return reply;
           });
-        });
-      });
-
-      // Optimistically update global replies cache
-      queryClient.setQueryData(["replies"], (oldReplies: any) => {
-        if (!oldReplies || !Array.isArray(oldReplies)) {
-          return oldReplies;
+        } else if (comment?._id?.toString() === variables.commentId) {
+          // If the reply wasn't found in cache, add it with liked state
+          return [
+            ...oldReplies,
+            {
+              ...comment,
+              isLiked: true,
+              likesCount: (comment.likesCount ?? 0) + 1,
+            },
+          ];
         }
 
-        return oldReplies.map((reply: any) => {
-          if (reply._id?.toString() === variables.commentId) {
-            const currentIsLiked = reply.isLiked ?? false;
-            const currentLikesCount = reply.likesCount ?? 0;
-
-            return {
-              ...reply,
-              isLiked: !currentIsLiked,
-              likesCount: currentIsLiked
-                ? currentLikesCount - 1
-                : currentLikesCount + 1,
-            };
-          }
-          return reply;
-        });
+        return oldReplies;
       });
 
       return {
