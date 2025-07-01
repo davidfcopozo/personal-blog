@@ -128,13 +128,48 @@ export const getReplies = async (
       throw new BadRequest("Something went wrong");
     }
 
-    const replies = comment?.replies;
+    const replyIds = comment?.replies;
 
-    if (!replies?.length) {
+    if (!replyIds?.length) {
       throw new NotFound("No replies on this comment yet");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: replies });
+    const replies = await Comment.find({ _id: { $in: replyIds } })
+      .populate("likesCount")
+      .populate("postedBy", "username avatar")
+      .sort({ createdAt: 1 });
+
+    let repliesWithInteractions = replies.map((reply) =>
+      (reply as any).toJSON()
+    );
+
+    if (req.userId) {
+      // Check which replies the user has liked
+      repliesWithInteractions = await Promise.all(
+        repliesWithInteractions.map(async (reply) => {
+          const isLiked = await AnalyticsService.hasUserLikedComment(
+            reply._id,
+            req.userId
+          );
+          return {
+            ...reply,
+            isLiked,
+          };
+        })
+      );
+    } else {
+      // Ensure isLiked is always present for consistency
+      repliesWithInteractions = repliesWithInteractions.map((reply) => ({
+        ...reply,
+        isLiked: false,
+      }));
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: repliesWithInteractions,
+      count: repliesWithInteractions.length,
+    });
   } catch (error) {
     next(error);
   }
@@ -147,7 +182,6 @@ export const getReplyById = async (
 ) => {
   const {
     params: { id: postId, commentId, replyId },
-    user,
   } = req;
 
   try {
@@ -185,10 +219,10 @@ export const getReplyById = async (
     }
 
     let replyWithInteractions = (reply as any).toJSON();
-    if (user?.userId) {
+    if (req.userId) {
       const isLiked = await AnalyticsService.hasUserLikedComment(
         replyId,
-        user.userId
+        req.userId
       );
       replyWithInteractions = {
         ...replyWithInteractions,
