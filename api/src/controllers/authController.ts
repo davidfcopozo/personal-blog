@@ -270,8 +270,6 @@ export const oAuth = async (
       accessToken: token,
     });
   } catch (error) {
-    /* console.log("ERROR FROM API", error); */
-
     next(error);
   }
 };

@@ -8,11 +8,15 @@ export interface PostInterface {
   slug: string;
   postedBy: mongoose.Schema.Types.ObjectId;
   coverImage?: string;
-  likes?: mongoose.Schema.Types.ObjectId[];
-  bookmarks?: mongoose.Schema.Types.ObjectId[];
   tags?: string[];
   categories?: CategoryInterface[];
   visits?: number;
   comments?: mongoose.Schema.Types.ObjectId[];
   status: "draft" | "published" | "unpublished";
+  // Virtual fields (not stored in DB)
+  likesCount?: number;
+  bookmarksCount?: number;
+  viewsCount?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

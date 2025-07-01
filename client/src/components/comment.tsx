@@ -247,7 +247,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                   <EngagementButton
                     icon={Heart}
                     count={commentLikesCount}
-                    label="Like post"
+                    label="Like comment"
                     onClick={handleLikeClick}
                     iconStyles={`!h-5 !w-5 ${
                       commentLiked ? "text-pink-500" : "hover:stroke-pink-500"

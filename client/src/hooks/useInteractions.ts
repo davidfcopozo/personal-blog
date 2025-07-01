@@ -1,33 +1,26 @@
 import { useQueryClient } from "@tanstack/react-query";
 import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
-import { CommentFetchType, PostFetchType, PostType } from "@/typings/types";
+import { PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import {
-  MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from "react";
+import { MouseEvent, useState, useMemo, useCallback } from "react";
 import {
   CommentInterface,
   PostInterface,
   ReplyInterface,
 } from "@/typings/interfaces";
 import { useAuthModal } from "./useAuthModal";
-import { useSocket } from "@/context/SocketContext";
 import { useSessionUserId } from "./useSessionUserId";
 
 export const useInteractions = (
   post?: PostType,
   comment?: CommentInterface
 ) => {
-  const postId = useRef(post?._id).current;
+  // Get postId dynamically instead of using useRef
+  const postId = useMemo(() => post?._id, [post?._id]);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { socket } = useSocket();
   const { userId: currentUserId } = useSessionUserId(); // Use cached session approach
   const [commentContent, setCommentContent] = useState<string>("");
   const {
@@ -65,85 +58,104 @@ export const useInteractions = (
   }, [cachedPostsData, cachedSinglePostData, post, postId]);
 
   const bookmarks = useMemo(
-    () => currentPostData?.bookmarks ?? [],
-    [currentPostData?.bookmarks]
+    () => currentPostData?.bookmarksCount ?? 0,
+    [currentPostData?.bookmarksCount]
   );
-  const likes = useMemo(
-    () => currentPostData?.likes ?? [],
-    [currentPostData?.likes]
-  );
-  const liked = useMemo(() => {
-    if (!currentUserId || !likes?.length) return false;
-    return likes.some((like: string) => like.toString() === currentUserId);
-  }, [currentUserId, likes]);
 
-  const amountOfLikes = useMemo(() => likes.length, [likes]);
+  const likes = useMemo(
+    () => currentPostData?.likesCount ?? 0,
+    [currentPostData?.likesCount]
+  );
+
+  const liked = useMemo(() => {
+    if (!currentUserId) return false;
+    return currentPostData?.isLiked ?? false;
+  }, [currentUserId, currentPostData?.isLiked]);
+
+  const amountOfLikes = useMemo(() => likes, [likes]);
 
   const bookmarked = useMemo(() => {
-    if (!currentUserId || !bookmarks?.length) return false;
-    return bookmarks.some(
-      (bookmark: string) => bookmark.toString() === currentUserId
-    );
-  }, [currentUserId, bookmarks]);
+    if (!currentUserId) return false;
+    return currentPostData?.isBookmarked ?? false;
+  }, [currentUserId, currentPostData?.isBookmarked]);
 
-  const amountOfBookmarks = useMemo(() => bookmarks.length, [bookmarks]);
+  const amountOfBookmarks = useMemo(() => bookmarks, [bookmarks]);
+
   const commentsCount = useMemo(
     () => currentPostData?.comments?.length ?? 0,
     [currentPostData?.comments]
   );
-  const [commentLiked, setCommentLiked] = useState<boolean>(false);
-  const [commentLikesCount, setCommentLikesCount] = useState<number>(
-    comment?.likes?.length ?? 0
-  );
-  const [replyContent, setReplyContent] = useState<string>("");
 
-  useEffect(() => {
-    if (comment && currentUserId) {
-      const userLikedComment =
-        comment.likes?.some((like) => like.toString() === currentUserId) ??
-        false;
-      setCommentLiked(userLikedComment);
-      setCommentLikesCount(comment.likes?.length ?? 0);
-    }
-  }, [comment, currentUserId]); // Watch for cache updates from socket events and update local state
-  useEffect(() => {
-    if (!comment?._id || !currentUserId) return;
+  const currentCommentData = useMemo(() => {
+    if (!comment?._id) return comment;
 
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (event?.query?.queryKey?.[0] === "comments") {
-        const cachedComments = queryClient.getQueryData<any>(["comments"]);
-        if (cachedComments && Array.isArray(cachedComments)) {
-          const updatedComment = cachedComments.find(
-            (c: any) => c._id?.toString() === comment._id?.toString()
-          );
+    const cachedCommentsData = queryClient.getQueryData<CommentInterface[]>([
+      "comments",
+    ]);
 
-          if (updatedComment) {
-            const userLiked =
-              updatedComment.likes?.some(
-                (like: string) => like.toString() === currentUserId
-              ) ?? false;
-            const likesCount = updatedComment.likes?.length ?? 0;
-
-            setCommentLiked((prev) => (prev !== userLiked ? userLiked : prev));
-            setCommentLikesCount((prev) =>
-              prev !== likesCount ? likesCount : prev
-            );
-          }
-        }
+    if (cachedCommentsData && Array.isArray(cachedCommentsData)) {
+      const updatedComment = cachedCommentsData.find(
+        (c: CommentInterface) => c._id?.toString() === comment._id?.toString()
+      );
+      if (updatedComment) {
+        return updatedComment;
       }
-    });
+    }
 
-    return unsubscribe;
-  }, [comment?._id, currentUserId, queryClient]);
+    // If it's a reply, check the replies cache
+    const globalRepliesData = queryClient.getQueryData<ReplyInterface[]>([
+      "replies",
+    ]);
+    if (globalRepliesData && Array.isArray(globalRepliesData)) {
+      const updatedReply = globalRepliesData.find(
+        (r: ReplyInterface) => r._id?.toString() === comment._id?.toString()
+      );
+      if (updatedReply) {
+        console.log("🔍 Found reply in replies cache:", {
+          id: updatedReply._id,
+          isLiked: updatedReply.isLiked,
+          likesCount: updatedReply.likesCount,
+        });
+        return updatedReply;
+      }
+    }
+
+    // Fallback to the original comment prop
+    console.log("⚠️ Using original comment prop:", {
+      id: comment._id,
+      isLiked: comment.isLiked,
+      likesCount: comment.likesCount,
+      hasIsLikedProperty: comment.hasOwnProperty("isLiked"),
+      allKeys: Object.keys(comment),
+    });
+    return comment;
+  }, [comment, queryClient]);
+
+  const commentLiked = useMemo(() => {
+    if (!currentUserId || !currentCommentData) {
+      return false;
+    }
+    const liked = currentCommentData?.isLiked ?? false;
+    return liked;
+  }, [currentUserId, currentCommentData]);
+
+  const commentLikesCount = useMemo(() => {
+    return currentCommentData?.likesCount ?? 0;
+  }, [currentCommentData]);
+
+  const [replyContent, setReplyContent] = useState<string>("");
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
-    onSuccess: (_, variables: { postId: string }) => {
+    onSuccess: (response: any, variables: { postId: string }) => {
+      //  the optimistic update should be correct and the server response confirms the action
       toast({
         title: "Success",
-        description: "Your action was successful.",
+        description: response?.data?.liked
+          ? "You've liked this post."
+          : "You've unliked this post.",
       });
     },
     onError: (error, _, context: any) => {
@@ -186,18 +198,15 @@ export const useInteractions = (
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id?.toString() === variables.postId?.toString()) {
-              const userIdString = currentUserId;
-              const isLiked = post.likes?.some(
-                (like) => like.toString() === userIdString
-              );
+              const currentIsLiked = post.isLiked ?? false;
+              const currentLikesCount = post.likesCount ?? 0;
 
               return {
                 ...post,
-                likes: isLiked
-                  ? post.likes?.filter(
-                      (like) => like.toString() !== userIdString
-                    ) || []
-                  : [...(post.likes || []), userIdString],
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
               };
             }
             return post;
@@ -209,20 +218,17 @@ export const useInteractions = (
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        const userIdString = currentUserId;
-        const isLiked = oldPost.data.likes?.some(
-          (like: string) => like.toString() === userIdString
-        );
+        const currentIsLiked = oldPost.data.isLiked ?? false;
+        const currentLikesCount = oldPost.data.likesCount ?? 0;
 
         return {
           ...oldPost,
           data: {
             ...oldPost.data,
-            likes: isLiked
-              ? oldPost.data.likes?.filter(
-                  (like: string) => like.toString() !== userIdString
-                ) || []
-              : [...(oldPost.data.likes || []), userIdString],
+            isLiked: !currentIsLiked,
+            likesCount: currentIsLiked
+              ? currentLikesCount - 1
+              : currentLikesCount + 1,
           },
         };
       });
@@ -250,10 +256,13 @@ export const useInteractions = (
   );
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
-    onSuccess: (_, variables: { postId: string }) => {
+    onSuccess: (response: any, variables: { postId: string }) => {
+      // Don't invalidate - the optimistic update should be correct and the server response confirms the action
       toast({
         title: "Success",
-        description: "Your action was successful.",
+        description: response?.data?.bookmarked
+          ? "You've bookmarked this post."
+          : "You've unbookmarked this post.",
       });
     },
     onError: (error, _, context: any) => {
@@ -296,18 +305,15 @@ export const useInteractions = (
           ...oldPosts,
           data: oldPosts.data.map((post: PostInterface) => {
             if (post._id?.toString() === variables.postId?.toString()) {
-              const userIdString = currentUserId;
-              const isBookmarked = post.bookmarks?.some(
-                (bookmark) => bookmark.toString() === userIdString
-              );
+              const currentIsBookmarked = post.isBookmarked ?? false;
+              const currentBookmarksCount = post.bookmarksCount ?? 0;
 
               return {
                 ...post,
-                bookmarks: isBookmarked
-                  ? post.bookmarks?.filter(
-                      (bookmark) => bookmark.toString() !== userIdString
-                    ) || []
-                  : [...(post.bookmarks || []), userIdString],
+                isBookmarked: !currentIsBookmarked,
+                bookmarksCount: currentIsBookmarked
+                  ? currentBookmarksCount - 1
+                  : currentBookmarksCount + 1,
               };
             }
             return post;
@@ -319,20 +325,17 @@ export const useInteractions = (
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
-        const userIdString = currentUserId;
-        const isBookmarked = oldPost.data.bookmarks?.some(
-          (bookmark: string) => bookmark.toString() === userIdString
-        );
+        const currentIsBookmarked = oldPost.data.isBookmarked ?? false;
+        const currentBookmarksCount = oldPost.data.bookmarksCount ?? 0;
 
         return {
           ...oldPost,
           data: {
             ...oldPost.data,
-            bookmarks: isBookmarked
-              ? oldPost.data.bookmarks?.filter(
-                  (bookmark: string) => bookmark.toString() !== userIdString
-                ) || []
-              : [...(oldPost.data.bookmarks || []), userIdString],
+            isBookmarked: !currentIsBookmarked,
+            bookmarksCount: currentIsBookmarked
+              ? currentBookmarksCount - 1
+              : currentBookmarksCount + 1,
           },
         };
       });
@@ -359,7 +362,7 @@ export const useInteractions = (
     [bookmarkMutation, toast]
   );
   const createCommentMutation = usePostRequest({
-    url: `/api/comments/${postId}`,
+    url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (newComment) => {
       // Update the comments cache with the new comment (for the author)
       queryClient.setQueryData<CommentInterface[]>(["comments"], (oldData) => {
@@ -429,6 +432,16 @@ export const useInteractions = (
   });
 
   const createCommentInteraction = ({ onError }: { onError?: () => void }) => {
+    if (!postId) {
+      console.error("PostId is undefined, cannot create comment");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Post information is missing. Please refresh the page.",
+      });
+      return;
+    }
+
     requireAuth("comment", () => {
       createCommentMutation.mutate(
         { _id: postId, content: commentContent },
@@ -452,7 +465,7 @@ export const useInteractions = (
   };
 
   const createReplyMutation = usePostRequest({
-    url: `/api/replies/${postId}`,
+    url: postId ? `/api/replies/${postId}` : "",
     onSuccess: (newReply: ReplyInterface) => {
       if (!newReply || !newReply.parentId || !newReply._id) {
         return;
@@ -657,11 +670,14 @@ export const useInteractions = (
   };
 
   const likeCommentMutation = usePutRequest({
-    url: `/api/comments/${postId}`,
+    url: postId ? `/api/comments/${postId}` : "",
     onSuccess: (response: any, variables: { commentId: string }) => {
+      // Don't do additional updates here - the optimistic update should be correct
       toast({
         title: "Success",
-        description: "Your action was successful.",
+        description: response?.data?.liked
+          ? "You've liked this comment."
+          : "You've unliked this comment.",
       });
     },
     onError: (error: any, variables, context: any) => {
@@ -713,6 +729,8 @@ export const useInteractions = (
     onMutate: async (variables: { commentId: string }) => {
       await queryClient.cancelQueries({ queryKey: ["comments"], exact: true });
 
+      await queryClient.cancelQueries({ queryKey: ["replies"], exact: true });
+
       const previousCommentsData = queryClient.getQueryData<any>(["comments"]);
       const previousRepliesData = queryClient.getQueryData<any>(["replies"]);
 
@@ -741,52 +759,44 @@ export const useInteractions = (
           return oldComments;
         }
 
-        return oldComments.map((comment: any) => {
-          if (comment._id?.toString() === variables.commentId) {
-            const userIdString = currentUserId;
-            const isLiked = comment.likes?.some(
-              (like: string) => like.toString() === userIdString
-            );
+        const foundInCommentsCache = oldComments.find(
+          (c: any) => c._id?.toString() === variables.commentId
+        );
 
-            return {
-              ...comment,
-              likes: isLiked
-                ? comment.likes?.filter(
-                    (like: string) => like.toString() !== userIdString
-                  ) || []
-                : [...(comment.likes || []), userIdString],
-            };
-          }
-          return comment;
-        });
-      });
-
-      // Optimistically update reply caches
-      replyQueries.forEach((query) => {
-        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
-          if (!oldReplies || !Array.isArray(oldReplies)) {
-            return oldReplies;
-          }
-
-          return oldReplies.map((reply: any) => {
-            if (reply._id?.toString() === variables.commentId) {
-              const userIdString = currentUserId;
-              const isLiked = reply.likes?.some(
-                (like: string) => like.toString() === userIdString
-              );
+        if (foundInCommentsCache) {
+          return oldComments.map((comment: any) => {
+            if (comment._id?.toString() === variables.commentId) {
+              const currentIsLiked = comment.isLiked ?? false;
+              const currentLikesCount = comment.likesCount ?? 0;
 
               return {
-                ...reply,
-                likes: isLiked
-                  ? reply.likes?.filter(
-                      (like: string) => like.toString() !== userIdString
-                    ) || []
-                  : [...(reply.likes || []), userIdString],
+                ...comment,
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
               };
             }
-            return reply;
+            return comment;
           });
-        });
+        } else if (comment?._id?.toString() === variables.commentId) {
+          // If comment not in cache, use the original prop to determine current state
+          const currentIsLiked = comment.isLiked ?? false;
+          const currentLikesCount = comment.likesCount ?? 0;
+
+          return [
+            ...oldComments,
+            {
+              ...comment,
+              isLiked: !currentIsLiked,
+              likesCount: currentIsLiked
+                ? currentLikesCount - 1
+                : currentLikesCount + 1,
+            },
+          ];
+        }
+
+        return oldComments;
       });
 
       // Optimistically update global replies cache
@@ -795,23 +805,91 @@ export const useInteractions = (
           return oldReplies;
         }
 
-        return oldReplies.map((reply: any) => {
-          if (reply._id?.toString() === variables.commentId) {
-            const userIdString = currentUserId;
-            const isLiked = reply.likes?.some(
-              (like: string) => like.toString() === userIdString
-            );
+        const foundInRepliesCache = oldReplies.find(
+          (r: any) => r._id?.toString() === variables.commentId
+        );
 
-            return {
-              ...reply,
-              likes: isLiked
-                ? reply.likes?.filter(
-                    (like: string) => like.toString() !== userIdString
-                  ) || []
-                : [...(reply.likes || []), userIdString],
-            };
+        if (foundInRepliesCache) {
+          return oldReplies.map((reply: any) => {
+            if (reply._id?.toString() === variables.commentId) {
+              const currentIsLiked = reply.isLiked ?? false;
+              const currentLikesCount = reply.likesCount ?? 0;
+
+              return {
+                ...reply,
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
+              };
+            }
+            return reply;
+          });
+        } else if (comment?._id?.toString() === variables.commentId) {
+          // If reply not in cache, use the original prop to determine current state
+          const currentIsLiked = comment.isLiked ?? false;
+          const currentLikesCount = comment.likesCount ?? 0;
+
+          return [
+            ...oldReplies,
+            {
+              ...comment,
+              isLiked: !currentIsLiked,
+              likesCount: currentIsLiked
+                ? currentLikesCount - 1
+                : currentLikesCount + 1,
+            },
+          ];
+        }
+
+        return oldReplies;
+      });
+
+      // Optimistically update individual reply caches
+      replyQueries.forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
+          if (!oldReplies || !Array.isArray(oldReplies)) {
+            return oldReplies;
           }
-          return reply;
+
+          const foundInThisCache = oldReplies.find(
+            (r: any) => r._id?.toString() === variables.commentId
+          );
+
+          if (foundInThisCache) {
+            return oldReplies.map((reply: any) => {
+              if (reply._id?.toString() === variables.commentId) {
+                const currentIsLiked = reply.isLiked ?? false;
+                const currentLikesCount = reply.likesCount ?? 0;
+
+                return {
+                  ...reply,
+                  isLiked: !currentIsLiked,
+                  likesCount: currentIsLiked
+                    ? currentLikesCount - 1
+                    : currentLikesCount + 1,
+                };
+              }
+              return reply;
+            });
+          } else if (comment?._id?.toString() === variables.commentId) {
+            // If reply not in this specific cache, add it using the original prop
+            const currentIsLiked = comment.isLiked ?? false;
+            const currentLikesCount = comment.likesCount ?? 0;
+
+            return [
+              ...oldReplies,
+              {
+                ...comment,
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
+              },
+            ];
+          }
+
+          return oldReplies;
         });
       });
 
@@ -852,13 +930,22 @@ export const useInteractions = (
         requireAuth("like", () => {});
         return;
       }
-      likeInteraction(`${postId}`, {
+      if (!postId) {
+        console.error("PostId is undefined, cannot like post");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Post information is missing. Please refresh the page.",
+        });
+        return;
+      }
+      likeInteraction(postId, {
         onError: () => {
           console.error("Error handling like interaction");
         },
       });
     },
-    [currentUserId, postId, likeInteraction, requireAuth]
+    [currentUserId, postId, likeInteraction, requireAuth, toast]
   );
 
   const handleBookmarkClick = useCallback(
@@ -868,13 +955,22 @@ export const useInteractions = (
         requireAuth("bookmark", () => {});
         return;
       }
-      bookmarkInteraction(`${postId}`, {
+      if (!postId) {
+        console.error("PostId is undefined, cannot bookmark post");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Post information is missing. Please refresh the page.",
+        });
+        return;
+      }
+      bookmarkInteraction(postId, {
         onError: () => {
           console.error("Error handling bookmark interaction");
         },
       });
     },
-    [currentUserId, postId, bookmarkInteraction, requireAuth]
+    [currentUserId, postId, bookmarkInteraction, requireAuth, toast]
   );
 
   return {

@@ -47,8 +47,6 @@ const userSchema = new Schema<UserInterface>(
     verifiedAt: { type: Date },
     passwordVerificationToken: { type: String, default: "" },
     passwordTokenExpirationDate: { type: Date, default: null },
-    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     topicsOfInterest: {
       type: [{ type: mongoose.Types.ObjectId, ref: "Topic" }],
     },

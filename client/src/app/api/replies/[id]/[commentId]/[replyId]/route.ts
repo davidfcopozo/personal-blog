@@ -17,8 +17,22 @@ export async function GET(
   }
 
   try {
+    const token = await getToken({
+      req: req,
+      secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
+    });
+
+    const headers: any = {
+      "Content-Type": "application/json",
+    };
+
+    if (token?.accessToken) {
+      headers.Authorization = `Bearer ${token.accessToken}`;
+    }
+
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/replies/${id}/${commentId}/${replyId}`
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/replies/${id}/${commentId}/${replyId}`,
+      { headers }
     );
 
     return new Response(JSON.stringify(res.data), {

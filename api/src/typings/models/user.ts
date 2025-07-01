@@ -25,8 +25,6 @@ export interface UserInterface extends Document, ModelMethods {
   accessToken: String | null;
   passwordVerificationToken: String | null;
   passwordTokenExpirationDate: Date | null;
-  bookmarks?: ObjectId[];
-  likes?: ObjectId[];
   avatar?: String;
   provider: String;
   topicsOfInterest?: TopicInterface[];

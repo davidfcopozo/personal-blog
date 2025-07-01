@@ -7,6 +7,7 @@ import { StatusCodes } from "http-status-codes";
 import { BadRequest, NotFound } from "../errors/index";
 import { PostType, CommentType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
+import { AnalyticsService } from "../utils/analyticsService";
 
 export const createReply = async (
   req: RequestWithUserInfo | any,
@@ -60,7 +61,42 @@ export const createReply = async (
     );
 
     if (result?.modifiedCount === 1) {
-      res.status(StatusCodes.CREATED).json({ success: true, data: reply });
+      // Record user activity for reply creation
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get("User-Agent");
+
+      AnalyticsService.recordUserActivity({
+        userId,
+        // Replies are treated as comments in analytics
+        action: "comment",
+        resourceType: "post",
+        resourceId: postId,
+        metadata: {
+          commentId: reply._id.toString(),
+          parentCommentId: parentId,
+          isReply: true,
+        },
+        ipAddress,
+        userAgent,
+      }).catch((error) => {
+        console.error("Error recording reply activity:", error);
+      });
+
+      const replyWithAnalytics = await Comment.findById(reply._id)
+        .populate("likesCount")
+        .populate("postedBy", "username avatar");
+
+      if (!replyWithAnalytics) {
+        throw new BadRequest("Failed to create reply with analytics");
+      }
+
+      res.status(StatusCodes.CREATED).json({
+        success: true,
+        data: {
+          ...replyWithAnalytics.toJSON(),
+          isLiked: false,
+        },
+      });
     }
   } catch (error) {
     next(error);
@@ -92,13 +128,48 @@ export const getReplies = async (
       throw new BadRequest("Something went wrong");
     }
 
-    const replies = comment?.replies;
+    const replyIds = comment?.replies;
 
-    if (!replies?.length) {
+    if (!replyIds?.length) {
       throw new NotFound("No replies on this comment yet");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: replies });
+    const replies = await Comment.find({ _id: { $in: replyIds } })
+      .populate("likesCount")
+      .populate("postedBy", "username avatar")
+      .sort({ createdAt: 1 });
+
+    let repliesWithInteractions = replies.map((reply) =>
+      (reply as any).toJSON()
+    );
+
+    if (req.userId) {
+      // Check which replies the user has liked
+      repliesWithInteractions = await Promise.all(
+        repliesWithInteractions.map(async (reply) => {
+          const isLiked = await AnalyticsService.hasUserLikedComment(
+            reply._id,
+            req.userId
+          );
+          return {
+            ...reply,
+            isLiked,
+          };
+        })
+      );
+    } else {
+      // Ensure isLiked is always present for consistency
+      repliesWithInteractions = repliesWithInteractions.map((reply) => ({
+        ...reply,
+        isLiked: false,
+      }));
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: repliesWithInteractions,
+      count: repliesWithInteractions.length,
+    });
   } catch (error) {
     next(error);
   }
@@ -139,13 +210,34 @@ export const getReplyById = async (
       throw new BadRequest("Something went wrong");
     }
 
-    const reply = await Comment.findById(commentReply);
+    const reply = await Comment.findById(commentReply)
+      .populate("likesCount")
+      .populate("postedBy", "username avatar");
 
     if (!reply) {
       throw new NotFound("This comment doesn't exist or has been deleted.");
     }
 
-    res.status(StatusCodes.OK).json({ success: true, data: reply });
+    let replyWithInteractions = (reply as any).toJSON();
+    if (req.userId) {
+      const isLiked = await AnalyticsService.hasUserLikedComment(
+        replyId,
+        req.userId
+      );
+      replyWithInteractions = {
+        ...replyWithInteractions,
+        isLiked,
+      };
+    } else {
+      replyWithInteractions = {
+        ...replyWithInteractions,
+        isLiked: false,
+      };
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: replyWithInteractions });
   } catch (error) {
     next(error);
   }

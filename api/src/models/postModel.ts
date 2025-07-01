@@ -25,8 +25,7 @@ const postSchema = new Schema<PostInterface>(
         return value;
       },
     },
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
     tags: [{ type: String }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     status: {
@@ -39,6 +38,45 @@ const postSchema = new Schema<PostInterface>(
   },
   { timestamps: true }
 );
+
+postSchema.virtual("likesCount", {
+  ref: "PostLike",
+  localField: "_id",
+  foreignField: "post",
+  count: true,
+  match: { isActive: true },
+  justOne: false,
+});
+
+postSchema.virtual("bookmarksCount", {
+  ref: "PostBookmark",
+  localField: "_id",
+  foreignField: "post",
+  count: true,
+  match: { isActive: true },
+  justOne: false,
+});
+
+postSchema.virtual("viewsCount", {
+  ref: "PostView",
+  localField: "_id",
+  foreignField: "post",
+  count: true,
+  justOne: false,
+});
+
+postSchema.methods.populateAnalytics = async function () {
+  await this.populate([
+    { path: "likesCount" },
+    { path: "bookmarksCount" },
+    { path: "viewsCount" },
+  ]);
+  return this;
+};
+
+// Ensure virtual fields are serialized
+postSchema.set("toJSON", { virtuals: true });
+postSchema.set("toObject", { virtuals: true });
 
 //prefetch categories
 postSchema.pre("find", function (next) {
