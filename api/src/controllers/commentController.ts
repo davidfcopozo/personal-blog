@@ -146,7 +146,6 @@ export const getComments = async (
 ) => {
   const {
     params: { postId },
-    user,
   } = req;
 
   try {
@@ -185,20 +184,50 @@ export const getComments = async (
       (comment as any).toJSON()
     );
 
-    if (user?.userId) {
-      // Check which comments the user has liked
+    if (req.userId) {
+      // Check which comments and replies the user has liked
       commentsWithInteractions = await Promise.all(
         commentsWithInteractions.map(async (comment) => {
           const isLiked = await AnalyticsService.hasUserLikedComment(
             comment._id,
-            user.userId
+            req.userId
           );
+
+          // Also check if the user has liked any replies
+          let repliesWithLikes = comment.replies;
+          if (comment.replies && comment.replies.length > 0) {
+            repliesWithLikes = await Promise.all(
+              comment.replies.map(async (reply: any) => {
+                const replyIsLiked = await AnalyticsService.hasUserLikedComment(
+                  reply._id,
+                  req.userId
+                );
+                return {
+                  ...reply,
+                  isLiked: replyIsLiked,
+                };
+              })
+            );
+          }
+
           return {
             ...comment,
             isLiked,
+            replies: repliesWithLikes,
           };
         })
       );
+    } else {
+      // Ensure isLiked is always present for consistency with frontend
+      commentsWithInteractions = commentsWithInteractions.map((comment) => ({
+        ...comment,
+        isLiked: false,
+        replies:
+          comment.replies?.map((reply: any) => ({
+            ...reply,
+            isLiked: false,
+          })) || [],
+      }));
     }
 
     return res.status(StatusCodes.OK).json({
@@ -218,7 +247,6 @@ export const getCommentById = async (
 ) => {
   const {
     params: { id: commentId },
-    user,
   } = req;
 
   try {
@@ -231,14 +259,19 @@ export const getCommentById = async (
     }
 
     let commentWithInteractions = (comment as any).toJSON();
-    if (user?.userId) {
+    if (req.userId) {
       const isLiked = await AnalyticsService.hasUserLikedComment(
         commentId,
-        user.userId
+        req.userId
       );
       commentWithInteractions = {
         ...commentWithInteractions,
         isLiked,
+      };
+    } else {
+      commentWithInteractions = {
+        ...commentWithInteractions,
+        isLiked: false,
       };
     }
 
