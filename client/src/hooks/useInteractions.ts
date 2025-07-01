@@ -780,13 +780,18 @@ export const useInteractions = (
             return comment;
           });
         } else if (comment?._id?.toString() === variables.commentId) {
-          // If the comment wasn't found in cache, add it with liked state
+          // If comment not in cache, use the original prop to determine current state
+          const currentIsLiked = comment.isLiked ?? false;
+          const currentLikesCount = comment.likesCount ?? 0;
+          
           return [
             ...oldComments,
             {
               ...comment,
-              isLiked: true,
-              likesCount: (comment.likesCount ?? 0) + 1,
+              isLiked: !currentIsLiked,
+              likesCount: currentIsLiked
+                ? currentLikesCount - 1
+                : currentLikesCount + 1,
             },
           ];
         }
@@ -821,18 +826,69 @@ export const useInteractions = (
             return reply;
           });
         } else if (comment?._id?.toString() === variables.commentId) {
-          // If the reply wasn't found in cache, add it with liked state
+          // If reply not in cache, use the original prop to determine current state
+          const currentIsLiked = comment.isLiked ?? false;
+          const currentLikesCount = comment.likesCount ?? 0;
+          
           return [
             ...oldReplies,
             {
               ...comment,
-              isLiked: true,
-              likesCount: (comment.likesCount ?? 0) + 1,
+              isLiked: !currentIsLiked,
+              likesCount: currentIsLiked
+                ? currentLikesCount - 1
+                : currentLikesCount + 1,
             },
           ];
         }
 
         return oldReplies;
+      });
+
+      // Optimistically update individual reply caches
+      replyQueries.forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
+          if (!oldReplies || !Array.isArray(oldReplies)) {
+            return oldReplies;
+          }
+
+          const foundInThisCache = oldReplies.find((r: any) => r._id?.toString() === variables.commentId);
+          
+          if (foundInThisCache) {
+            return oldReplies.map((reply: any) => {
+              if (reply._id?.toString() === variables.commentId) {
+                const currentIsLiked = reply.isLiked ?? false;
+                const currentLikesCount = reply.likesCount ?? 0;
+
+                return {
+                  ...reply,
+                  isLiked: !currentIsLiked,
+                  likesCount: currentIsLiked
+                    ? currentLikesCount - 1
+                    : currentLikesCount + 1,
+                };
+              }
+              return reply;
+            });
+          } else if (comment?._id?.toString() === variables.commentId) {
+            // If reply not in this specific cache, add it using the original prop
+            const currentIsLiked = comment.isLiked ?? false;
+            const currentLikesCount = comment.likesCount ?? 0;
+            
+            return [
+              ...oldReplies,
+              {
+                ...comment,
+                isLiked: !currentIsLiked,
+                likesCount: currentIsLiked
+                  ? currentLikesCount - 1
+                  : currentLikesCount + 1,
+              },
+            ];
+          }
+          
+          return oldReplies;
+        });
       });
 
       return {
