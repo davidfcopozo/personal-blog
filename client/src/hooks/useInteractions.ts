@@ -783,7 +783,7 @@ export const useInteractions = (
           // If comment not in cache, use the original prop to determine current state
           const currentIsLiked = comment.isLiked ?? false;
           const currentLikesCount = comment.likesCount ?? 0;
-          
+
           return [
             ...oldComments,
             {
@@ -829,7 +829,7 @@ export const useInteractions = (
           // If reply not in cache, use the original prop to determine current state
           const currentIsLiked = comment.isLiked ?? false;
           const currentLikesCount = comment.likesCount ?? 0;
-          
+
           return [
             ...oldReplies,
             {
@@ -852,8 +852,10 @@ export const useInteractions = (
             return oldReplies;
           }
 
-          const foundInThisCache = oldReplies.find((r: any) => r._id?.toString() === variables.commentId);
-          
+          const foundInThisCache = oldReplies.find(
+            (r: any) => r._id?.toString() === variables.commentId
+          );
+
           if (foundInThisCache) {
             return oldReplies.map((reply: any) => {
               if (reply._id?.toString() === variables.commentId) {
@@ -874,7 +876,7 @@ export const useInteractions = (
             // If reply not in this specific cache, add it using the original prop
             const currentIsLiked = comment.isLiked ?? false;
             const currentLikesCount = comment.likesCount ?? 0;
-            
+
             return [
               ...oldReplies,
               {
@@ -886,7 +888,7 @@ export const useInteractions = (
               },
             ];
           }
-          
+
           return oldReplies;
         });
       });
