@@ -87,7 +87,6 @@ export const useInteractions = (
     [currentPostData?.comments]
   );
 
-  // TEMPORARY FIX: Disable cache checking to prevent infinite loops
   // Simply use the comment prop directly - optimistic updates should handle most cases
   const currentCommentData = useMemo(() => {
     return comment;
