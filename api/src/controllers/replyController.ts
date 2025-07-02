@@ -206,19 +206,18 @@ export const getReplies = async (
     );
 
     if (req.userId) {
-      // Check which replies the user has liked
-      repliesWithInteractions = await Promise.all(
-        repliesWithInteractions.map(async (reply) => {
-          const isLiked = await AnalyticsService.hasUserLikedComment(
-            reply._id,
-            req.userId
-          );
-          return {
-            ...reply,
-            isLiked,
-          };
-        })
+      // Batch fetch like statuses for all replies to avoid N+1 query problem
+      const replyIds = repliesWithInteractions.map((reply) => reply._id);
+      const likeStatuses = await AnalyticsService.getUserLikeStatusForComments(
+        replyIds,
+        req.userId
       );
+
+      // Map the like statuses back to replies
+      repliesWithInteractions = repliesWithInteractions.map((reply) => ({
+        ...reply,
+        isLiked: likeStatuses[reply._id] || false,
+      }));
     } else {
       // Ensure isLiked is always present for consistency
       repliesWithInteractions = repliesWithInteractions.map((reply) => ({
@@ -272,29 +271,11 @@ export const getReplyById = async (
       throw new BadRequest("Something went wrong");
     }
 
-    const reply = await Comment.findById(commentReply)
-      .populate("likesCount")
-      .populate("postedBy", "username avatar");
+    const replyWithInteractions =
+      await AnalyticsService.getUpdatedCommentWithLikes(replyId, req.userId);
 
-    if (!reply) {
-      throw new NotFound("This comment doesn't exist or has been deleted.");
-    }
-
-    let replyWithInteractions = (reply as any).toJSON();
-    if (req.userId) {
-      const isLiked = await AnalyticsService.hasUserLikedComment(
-        replyId,
-        req.userId
-      );
-      replyWithInteractions = {
-        ...replyWithInteractions,
-        isLiked,
-      };
-    } else {
-      replyWithInteractions = {
-        ...replyWithInteractions,
-        isLiked: false,
-      };
+    if (!replyWithInteractions) {
+      throw new NotFound("This reply doesn't exist or has been deleted.");
     }
 
     res

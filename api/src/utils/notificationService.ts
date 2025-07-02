@@ -370,13 +370,23 @@ export class NotificationService {
   async emitCommentLikeUpdate(
     commentId: string,
     userId: string,
-    isLiked: boolean
+    isLiked: boolean,
+    isReply: boolean = false,
+    parentCommentId?: string
   ) {
     if (this.io) {
+      // Prevent duplicate emissions
+      const emissionKey = `${commentId}-${userId}-${isLiked}`;
+      if (this.isDuplicateEmission("commentLikeUpdate", emissionKey)) {
+        return;
+      }
+
       this.io.emit("commentLikeUpdate", {
         commentId,
         userId,
         isLiked,
+        isReply,
+        parentCommentId,
         timestamp: new Date(),
       });
     }
@@ -444,5 +454,22 @@ export class NotificationService {
     } else {
       console.error("❌ Socket.io instance not available for emitReplyDeleted");
     }
+  }
+
+  // Cache to prevent duplicate socket events
+  private recentEmissions = new Map<string, number>();
+
+  private isDuplicateEmission(eventType: string, key: string): boolean {
+    const fullKey = `${eventType}:${key}`;
+    const now = Date.now();
+    const lastEmission = this.recentEmissions.get(fullKey);
+
+    if (lastEmission && now - lastEmission < 500) {
+      // 500ms cooldown
+      return true;
+    }
+
+    this.recentEmissions.set(fullKey, now);
+    return false;
   }
 }
