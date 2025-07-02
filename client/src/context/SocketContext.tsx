@@ -234,70 +234,70 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("postLikeUpdate", (data) => {
-      // Only update cache for OTHER users' actions, not the current user's
-      if (data.userId !== userId) {
-        updatePostInCache(data.postId, (post) => {
-          if (post.postedBy === userId) {
-            toast({
-              title: `${getNotificationIcon("like")} Post Liked`,
-              description: `Someone liked your post: "${post.title}"`,
-              duration: 3000,
-            });
-          }
-          const likes = post.likes || [];
-          const currentLikesCount = post.likesCount || 0;
+      // Update cache for ALL users to ensure real-time updates
+      updatePostInCache(data.postId, (post) => {
+        if (post.postedBy === userId && data.userId !== userId) {
+          toast({
+            title: `${getNotificationIcon("like")} Post Liked`,
+            description: `Someone liked your post: "${post.title}"`,
+            duration: 3000,
+          });
+        }
+        const likes = post.likes || [];
+        const currentLikesCount = post.likesCount || 0;
 
-          if (data.isLiked) {
-            if (!likes.includes(data.userId)) {
-              return {
-                ...post,
-                likes: [...likes, data.userId],
-                likesCount: currentLikesCount + 1,
-              };
-            }
-          } else {
+        if (data.isLiked) {
+          if (!likes.includes(data.userId)) {
             return {
               ...post,
-              likes: likes.filter((id) => id !== data.userId),
-              likesCount: Math.max(0, currentLikesCount - 1),
+              likes: [...likes, data.userId],
+              likesCount: currentLikesCount + 1,
+              isLiked: data.userId === userId ? true : post.isLiked,
             };
           }
-          return post;
-        });
-      }
+        } else {
+          return {
+            ...post,
+            likes: likes.filter((id) => id !== data.userId),
+            likesCount: Math.max(0, currentLikesCount - 1),
+            isLiked: data.userId === userId ? false : post.isLiked,
+          };
+        }
+        return post;
+      });
     });
     newSocket.on("postBookmarkUpdate", (data) => {
-      // Only update cache for OTHER users' actions, not the current user's
-      if (data.userId !== userId) {
-        updatePostInCache(data.postId, (post) => {
-          if (post.postedBy === userId) {
-            toast({
-              title: `${getNotificationIcon("bookmark")} Post Bookmarked`,
-              description: `Someone bookmarked your post: "${post.title}"`,
-              duration: 3000,
-            });
-          }
-          const bookmarks = post.bookmarks || [];
-          const currentBookmarksCount = post.bookmarksCount || 0;
+      // Update cache for ALL users to ensure real-time updates
+      updatePostInCache(data.postId, (post) => {
+        if (post.postedBy === userId && data.userId !== userId) {
+          toast({
+            title: `${getNotificationIcon("bookmark")} Post Bookmarked`,
+            description: `Someone bookmarked your post: "${post.title}"`,
+            duration: 3000,
+          });
+        }
+        const bookmarks = post.bookmarks || [];
+        const currentBookmarksCount = post.bookmarksCount || 0;
 
-          if (data.isBookmarked) {
-            if (!bookmarks.includes(data.userId)) {
-              return {
-                ...post,
-                bookmarks: [...bookmarks, data.userId],
-                bookmarksCount: currentBookmarksCount + 1,
-              };
-            }
-          } else {
+        if (data.isBookmarked) {
+          if (!bookmarks.includes(data.userId)) {
             return {
               ...post,
-              bookmarks: bookmarks.filter((id) => id !== data.userId),
-              bookmarksCount: Math.max(0, currentBookmarksCount - 1),
+              bookmarks: [...bookmarks, data.userId],
+              bookmarksCount: currentBookmarksCount + 1,
+              isBookmarked: data.userId === userId ? true : post.isBookmarked,
             };
           }
-          return post;
-        });
-      }
+        } else {
+          return {
+            ...post,
+            bookmarks: bookmarks.filter((id) => id !== data.userId),
+            bookmarksCount: Math.max(0, currentBookmarksCount - 1),
+            isBookmarked: data.userId === userId ? false : post.isBookmarked,
+          };
+        }
+        return post;
+      });
     });
     newSocket.on("postCommentUpdate", (data) => {
       updatePostInCache(data.postId, (post) => {
@@ -332,44 +332,44 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("commentLikeUpdate", (data) => {
-      // Only update cache for OTHER users' actions, not the current user's
-      if (data.userId !== currentUserId) {
-        updateCommentInCache(data.commentId, (comment) => {
-          // Show toast notification for comment owner if someone else liked their comment
-          if (
-            (comment.postedBy === currentUserId ||
-              comment.postedBy?._id === currentUserId ||
-              comment.postedBy?.toString() === currentUserId) &&
-            data.isLiked
-          ) {
-            toast({
-              title: `${getNotificationIcon("like")} Comment Liked`,
-              description: "Someone liked your comment",
-              duration: 3000,
-            });
-          }
+      // Update cache for ALL users to ensure real-time updates
+      updateCommentInCache(data.commentId, (comment) => {
+        if (
+          (comment.postedBy === currentUserId ||
+            comment.postedBy?._id === currentUserId ||
+            comment.postedBy?.toString() === currentUserId) &&
+          data.isLiked &&
+          data.userId !== currentUserId
+        ) {
+          toast({
+            title: `${getNotificationIcon("like")} Comment Liked`,
+            description: "Someone liked your comment",
+            duration: 3000,
+          });
+        }
 
-          const likes = comment.likes || [];
-          const currentLikesCount = comment.likesCount || 0;
+        const likes = comment.likes || [];
+        const currentLikesCount = comment.likesCount || 0;
 
-          if (data.isLiked) {
-            if (!likes.includes(data.userId)) {
-              return {
-                ...comment,
-                likes: [...likes, data.userId],
-                likesCount: currentLikesCount + 1,
-              };
-            }
-          } else {
+        if (data.isLiked) {
+          if (!likes.includes(data.userId)) {
             return {
               ...comment,
-              likes: likes.filter((id: string) => id !== data.userId),
-              likesCount: Math.max(0, currentLikesCount - 1),
+              likes: [...likes, data.userId],
+              likesCount: currentLikesCount + 1,
+              isLiked: data.userId === currentUserId ? true : comment.isLiked,
             };
           }
-          return comment;
-        });
-      }
+        } else {
+          return {
+            ...comment,
+            likes: likes.filter((id: string) => id !== data.userId),
+            likesCount: Math.max(0, currentLikesCount - 1),
+            isLiked: data.userId === currentUserId ? false : comment.isLiked,
+          };
+        }
+        return comment;
+      });
     });
 
     newSocket.on("newComment", (data) => {
