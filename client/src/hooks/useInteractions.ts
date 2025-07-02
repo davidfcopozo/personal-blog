@@ -23,6 +23,7 @@ export const useInteractions = (
   const queryClient = useQueryClient();
   const { userId: currentUserId } = useSessionUserId(); // Use cached session approach
   const [commentContent, setCommentContent] = useState<string>("");
+
   const {
     requireAuth,
     isOpen: isAuthModalOpen,
@@ -86,50 +87,11 @@ export const useInteractions = (
     [currentPostData?.comments]
   );
 
+  // TEMPORARY FIX: Disable cache checking to prevent infinite loops
+  // Simply use the comment prop directly - optimistic updates should handle most cases
   const currentCommentData = useMemo(() => {
-    if (!comment?._id) return comment;
-
-    const cachedCommentsData = queryClient.getQueryData<CommentInterface[]>([
-      "comments",
-    ]);
-
-    if (cachedCommentsData && Array.isArray(cachedCommentsData)) {
-      const updatedComment = cachedCommentsData.find(
-        (c: CommentInterface) => c._id?.toString() === comment._id?.toString()
-      );
-      if (updatedComment) {
-        return updatedComment;
-      }
-    }
-
-    // If it's a reply, check the replies cache
-    const globalRepliesData = queryClient.getQueryData<ReplyInterface[]>([
-      "replies",
-    ]);
-    if (globalRepliesData && Array.isArray(globalRepliesData)) {
-      const updatedReply = globalRepliesData.find(
-        (r: ReplyInterface) => r._id?.toString() === comment._id?.toString()
-      );
-      if (updatedReply) {
-        console.log("🔍 Found reply in replies cache:", {
-          id: updatedReply._id,
-          isLiked: updatedReply.isLiked,
-          likesCount: updatedReply.likesCount,
-        });
-        return updatedReply;
-      }
-    }
-
-    // Fallback to the original comment prop
-    console.log("⚠️ Using original comment prop:", {
-      id: comment._id,
-      isLiked: comment.isLiked,
-      likesCount: comment.likesCount,
-      hasIsLikedProperty: comment.hasOwnProperty("isLiked"),
-      allKeys: Object.keys(comment),
-    });
     return comment;
-  }, [comment, queryClient]);
+  }, [comment]);
 
   const commentLiked = useMemo(() => {
     if (!currentUserId || !currentCommentData) {
@@ -779,23 +741,9 @@ export const useInteractions = (
             }
             return comment;
           });
-        } else if (comment?._id?.toString() === variables.commentId) {
-          // If comment not in cache, use the original prop to determine current state
-          const currentIsLiked = comment.isLiked ?? false;
-          const currentLikesCount = comment.likesCount ?? 0;
-
-          return [
-            ...oldComments,
-            {
-              ...comment,
-              isLiked: !currentIsLiked,
-              likesCount: currentIsLiked
-                ? currentLikesCount - 1
-                : currentLikesCount + 1,
-            },
-          ];
         }
 
+        // Don't add to cache if not found - avoid duplicates
         return oldComments;
       });
 
@@ -825,23 +773,9 @@ export const useInteractions = (
             }
             return reply;
           });
-        } else if (comment?._id?.toString() === variables.commentId) {
-          // If reply not in cache, use the original prop to determine current state
-          const currentIsLiked = comment.isLiked ?? false;
-          const currentLikesCount = comment.likesCount ?? 0;
-
-          return [
-            ...oldReplies,
-            {
-              ...comment,
-              isLiked: !currentIsLiked,
-              likesCount: currentIsLiked
-                ? currentLikesCount - 1
-                : currentLikesCount + 1,
-            },
-          ];
         }
 
+        // Don't add to cache if not found - avoid duplicates
         return oldReplies;
       });
 
@@ -872,23 +806,9 @@ export const useInteractions = (
               }
               return reply;
             });
-          } else if (comment?._id?.toString() === variables.commentId) {
-            // If reply not in this specific cache, add it using the original prop
-            const currentIsLiked = comment.isLiked ?? false;
-            const currentLikesCount = comment.likesCount ?? 0;
-
-            return [
-              ...oldReplies,
-              {
-                ...comment,
-                isLiked: !currentIsLiked,
-                likesCount: currentIsLiked
-                  ? currentLikesCount - 1
-                  : currentLikesCount + 1,
-              },
-            ];
           }
 
+          // Don't add to cache if not found - avoid duplicates
           return oldReplies;
         });
       });
