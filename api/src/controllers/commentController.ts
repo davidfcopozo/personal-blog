@@ -1,6 +1,7 @@
 import Comment from "../models/commentModel";
 import Post from "../models/postModel";
 import User from "../models/userModel";
+import { v4 as uuidv4 } from "uuid";
 
 import { NextFunction, Response } from "express";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -11,6 +12,35 @@ import { CommentType, PostMongooseType, PostType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
 import { NotificationService } from "../utils/notificationService";
 import { AnalyticsService } from "../utils/analyticsService";
+
+// Cache for preventing duplicate like requests
+const likeRequestCache = new Map<string, number>();
+const requestCountCache = new Map<string, number>();
+
+const isDuplicateLikeRequest = (userId: string, commentId: string): boolean => {
+  const key = `${userId}-${commentId}`;
+  const now = Date.now();
+  const lastRequest = likeRequestCache.get(key);
+
+  // Count requests per minute
+  const countKey = `count-${key}-${Math.floor(now / 60000)}`;
+  const currentCount = requestCountCache.get(countKey) || 0;
+
+  if (currentCount > 10) {
+    // Max 10 requests per minute
+    return true;
+  }
+
+  requestCountCache.set(countKey, currentCount + 1);
+
+  if (lastRequest && now - lastRequest < 1000) {
+    // 1 second cooldown
+    return true;
+  }
+
+  likeRequestCache.set(key, now);
+  return false;
+};
 
 export const createComment = async (
   req: RequestWithUserInfo | any,
@@ -168,6 +198,8 @@ export const getComments = async (
       .populate("postedBy", "username avatar")
       .populate({
         path: "replies",
+        // Limit replies to prevent performance issues
+        options: { limit: 50 },
         populate: [
           {
             path: "postedBy",
@@ -178,45 +210,47 @@ export const getComments = async (
           },
         ],
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(100);
 
     let commentsWithInteractions = comments.map((comment) =>
       (comment as any).toJSON()
     );
 
     if (req.userId) {
-      // Check which comments and replies the user has liked
-      commentsWithInteractions = await Promise.all(
-        commentsWithInteractions.map(async (comment) => {
-          const isLiked = await AnalyticsService.hasUserLikedComment(
-            comment._id,
-            req.userId
-          );
-
-          // Also check if the user has liked any replies
-          let repliesWithLikes = comment.replies;
-          if (comment.replies && comment.replies.length > 0) {
-            repliesWithLikes = await Promise.all(
-              comment.replies.map(async (reply: any) => {
-                const replyIsLiked = await AnalyticsService.hasUserLikedComment(
-                  reply._id,
-                  req.userId
-                );
-                return {
-                  ...reply,
-                  isLiked: replyIsLiked,
-                };
-              })
-            );
-          }
-
-          return {
-            ...comment,
-            isLiked,
-            replies: repliesWithLikes,
-          };
-        })
+      const allCommentIds = commentsWithInteractions.map(
+        (comment) => comment._id
       );
+      const allReplyIds = commentsWithInteractions.flatMap((comment) =>
+        comment.replies ? comment.replies.map((reply: any) => reply._id) : []
+      );
+
+      const allIds = [...allCommentIds, ...allReplyIds];
+
+      // Batch fetch all like statuses to avoid N+1 query problem
+      const likeStatuses = await AnalyticsService.getUserLikeStatusForComments(
+        allIds,
+        req.userId
+      );
+
+      // Map the results back to comments and replies
+      commentsWithInteractions = commentsWithInteractions.map((comment) => {
+        const isLiked = likeStatuses[comment._id] || false;
+
+        let repliesWithLikes = comment.replies;
+        if (comment.replies && comment.replies.length > 0) {
+          repliesWithLikes = comment.replies.map((reply: any) => ({
+            ...reply,
+            isLiked: likeStatuses[reply._id] || false,
+          }));
+        }
+
+        return {
+          ...comment,
+          isLiked,
+          replies: repliesWithLikes,
+        };
+      });
     } else {
       // Ensure isLiked is always present for consistency with frontend
       commentsWithInteractions = commentsWithInteractions.map((comment) => ({
@@ -250,29 +284,15 @@ export const getCommentById = async (
   } = req;
 
   try {
-    const comment: CommentType = await Comment.findById(commentId)
-      .populate("likesCount")
-      .populate("postedBy", "username avatar");
-
-    if (!comment) {
-      throw new NotFound("No comments found");
+    if (!commentId) {
+      throw new BadRequest("Comment ID is required");
     }
 
-    let commentWithInteractions = (comment as any).toJSON();
-    if (req.userId) {
-      const isLiked = await AnalyticsService.hasUserLikedComment(
-        commentId,
-        req.userId
-      );
-      commentWithInteractions = {
-        ...commentWithInteractions,
-        isLiked,
-      };
-    } else {
-      commentWithInteractions = {
-        ...commentWithInteractions,
-        isLiked: false,
-      };
+    const commentWithInteractions =
+      await AnalyticsService.getUpdatedCommentWithLikes(commentId, req.userId);
+
+    if (!commentWithInteractions) {
+      throw new NotFound("No comments found");
     }
 
     res
@@ -381,29 +401,76 @@ export const toggleLike = async (
 ) => {
   const {
     body: { commentId },
-    params: { id: postId },
+    params: { id: postId, replyId },
     user: { userId },
   } = req;
 
   try {
+    const requestId = uuidv4();
+    console.log(
+      `[${requestId}] Processing like request for comment ${
+        replyId || commentId
+      } by user ${userId}`
+    );
+
+    const targetCommentId = replyId || commentId;
+
+    if (!targetCommentId) {
+      throw new BadRequest("Comment ID or Reply ID is required");
+    }
+
     const post = (await Post.findById(postId)) as PostMongooseType | null;
     const comment: CommentType = await Comment.findById({
-      _id: commentId,
+      _id: targetCommentId,
     }).populate("postedBy");
 
     if (!comment) {
       throw new NotFound("No comments found");
     }
 
-    if (!post?._id.equals(comment?.post)) {
-      throw new BadRequest("This comment does not belong to this post");
+    // For replies, check if the reply belongs to the correct post
+    if (replyId) {
+      if (!post?._id.equals(comment?.post)) {
+        throw new BadRequest("This reply does not belong to this post");
+      }
+    } else {
+      if (!post?._id.equals(comment?.post)) {
+        throw new BadRequest("This comment does not belong to this post");
+      }
+    }
+
+    if (isDuplicateLikeRequest(userId, targetCommentId)) {
+      console.log(
+        `[${requestId}] Duplicate request detected for ${targetCommentId}`
+      );
+
+      const currentComment = await AnalyticsService.getUpdatedCommentWithLikes(
+        targetCommentId,
+        userId
+      );
+
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        msg: "Request already processed",
+        data: {
+          action: "duplicate",
+          liked: currentComment?.isLiked || false,
+          commentId: targetCommentId,
+          userId,
+          isReply: !!replyId,
+          isDuplicate: true,
+          requestId,
+          updatedComment: currentComment,
+          timestamp: Date.now(),
+        },
+      });
     }
 
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.get("User-Agent");
 
     const result = await AnalyticsService.toggleCommentLike(
-      commentId,
+      targetCommentId,
       userId,
       ipAddress,
       userAgent
@@ -414,13 +481,21 @@ export const toggleLike = async (
     );
 
     if (notificationService) {
+      let parentCommentId;
+
+      if (replyId) {
+        const replyComment = await Comment.findById(replyId);
+        parentCommentId = replyComment?.parentId?.toString();
+      }
+
       await notificationService.emitCommentLikeUpdate(
-        commentId,
+        targetCommentId,
         userId,
-        result.liked
+        result.liked,
+        !!replyId,
+        parentCommentId
       );
 
-      // Create notification for comment author (if not liking own comment)
       const commentOwnerId = (comment.postedBy as any)?._id
         ? (comment.postedBy as any)._id.toString()
         : comment.postedBy.toString();
@@ -430,24 +505,41 @@ export const toggleLike = async (
           commentOwnerId,
           userId,
           postId,
-          commentId
+          targetCommentId
         );
       }
     }
 
-    res.status(StatusCodes.OK).json({
+    return res.status(StatusCodes.OK).json({
       success: true,
       msg: result.liked
-        ? "You've liked this comment."
-        : "You've disliked this comment.",
+        ? `You've liked this ${replyId ? "reply" : "comment"}.`
+        : `You've disliked this ${replyId ? "reply" : "comment"}.`,
       data: {
-        ...result,
-        commentId,
+        action: result.action,
+        liked: result.liked,
+        commentId: targetCommentId,
         userId,
+        isReply: !!replyId,
+        parentCommentId: replyId ? comment.parentId?.toString() : undefined,
+        updatedComment: await AnalyticsService.getUpdatedCommentWithLikes(
+          targetCommentId,
+          userId
+        ),
+        // Add unique identifiers to help frontend avoid duplicate processing
+        timestamp: Date.now(),
+        requestId,
+        responseId: `${targetCommentId}-${userId}-${Date.now()}`,
+        // Add metadata to help frontend debug
+        metadata: {
+          isReply: !!replyId,
+          parentId: replyId ? comment.parentId?.toString() : null,
+          likeCount: comment.likesCount || 0,
+        },
       },
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
