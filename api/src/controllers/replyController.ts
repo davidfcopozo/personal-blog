@@ -1,5 +1,6 @@
 import Comment from "../models/commentModel";
 import Post from "../models/postModel";
+import User from "../models/userModel";
 
 import { NextFunction, Response } from "express";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -8,6 +9,7 @@ import { BadRequest, NotFound } from "../errors/index";
 import { PostType, CommentType } from "../typings/types";
 import { sanitizeContent } from "../utils/sanitize-content";
 import { AnalyticsService } from "../utils/analyticsService";
+import { NotificationService } from "../utils/notificationService";
 
 export const createReply = async (
   req: RequestWithUserInfo | any,
@@ -61,6 +63,66 @@ export const createReply = async (
     );
 
     if (result?.modifiedCount === 1) {
+      const notificationService: NotificationService = req.app.get(
+        "notificationService"
+      );
+
+      if (notificationService) {
+        const populatedReply = await Comment.findById(reply._id)
+          .populate("postedBy")
+          .populate("likesCount");
+
+        if (!populatedReply) {
+          throw new NotFound("Failed to populate the new reply");
+        }
+
+        const post = await Post.findById(postId);
+        if (post?.slug) {
+          await notificationService.emitNewReply(
+            postId,
+            parentId,
+            populatedReply,
+            post.slug
+          );
+        }
+
+        // Notify the owner of the comment/reply being replied to (don't notify self)
+        const commentOwnerId = (comment.postedBy as any)?._id
+          ? (comment.postedBy as any)._id.toString()
+          : comment.postedBy.toString();
+
+        if (commentOwnerId !== userId) {
+          await notificationService.createReplyNotification(
+            commentOwnerId,
+            userId,
+            postId,
+            reply._id.toString()
+          );
+        }
+      }
+
+      // Handle mentions in reply content
+      const mentionRegex = /@(\w+)/g;
+      const mentions = cleanContent.match(mentionRegex);
+
+      if (mentions && notificationService) {
+        const uniqueMentions = [
+          ...new Set(mentions.map((mention) => mention.substring(1))),
+        ];
+
+        for (const username of uniqueMentions) {
+          const mentionedUser = await User.findOne({ username });
+          if (mentionedUser && mentionedUser._id.toString() !== userId) {
+            await notificationService.createMentionNotification(
+              mentionedUser._id,
+              userId,
+              postId,
+              reply._id.toString()
+            );
+          }
+        }
+      }
+
       // Record user activity for reply creation
       const ipAddress = req.ip || req.connection.remoteAddress;
       const userAgent = req.get("User-Agent");
