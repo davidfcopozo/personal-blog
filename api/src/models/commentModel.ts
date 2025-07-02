@@ -17,7 +17,7 @@ const commentSchema = new mongoose.Schema<CommentInterface>(
       required: [true, "Comment cannot be empty"],
     },
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
-    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reply" }],
+    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
 
     isReply: { type: Boolean, required: true, default: false },
   },
