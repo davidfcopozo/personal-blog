@@ -3,7 +3,8 @@ import PostLike from "../models/postLikeModel";
 import PostBookmark from "../models/postBookmarkModel";
 import CommentLike from "../models/commentLikeModel";
 import UserActivity from "../models/userActivityModel";
-import { Types } from "mongoose";
+import Comment from "../models/commentModel";
+import mongoose, { Types } from "mongoose";
 
 // Rate limiting configuration
 const RATE_LIMITS = {
@@ -264,6 +265,8 @@ export class AnalyticsService {
     ipAddress?: string,
     userAgent?: string
   ) {
+    const session = await mongoose.startSession();
+
     try {
       if (!commentId || !Types.ObjectId.isValid(commentId)) {
         throw new Error("Invalid comment ID provided");
@@ -272,43 +275,65 @@ export class AnalyticsService {
       if (!userId || !Types.ObjectId.isValid(userId)) {
         throw new Error("Invalid user ID provided");
       }
+      const comment = await Comment.findById(commentId);
+      if (!comment) {
+        throw new Error("Comment not found");
+      }
 
       const sanitizedIpAddress = ipAddress?.substring(0, 45);
       const sanitizedUserAgent = userAgent?.substring(0, 500);
 
-      const existingLike = await CommentLike.findOne({
-        comment: commentId,
-        user: userId,
-      });
+      let result;
 
-      let action: "like" | "unlike";
-
-      if (existingLike) {
-        existingLike.isActive = !existingLike.isActive;
-        await existingLike.save();
-        action = existingLike.isActive ? "like" : "unlike";
-      } else {
-        await CommentLike.create({
+      await session.withTransaction(async () => {
+        const existingLike = await CommentLike.findOne({
           comment: commentId,
           user: userId,
-          isActive: true,
-        });
-        action = "like";
-      }
+        }).session(session);
 
-      await this.recordUserActivity({
-        userId,
-        action,
-        resourceType: "comment",
-        resourceId: commentId,
-        ipAddress: sanitizedIpAddress,
-        userAgent: sanitizedUserAgent,
+        let action: "like" | "unlike";
+
+        if (existingLike) {
+          existingLike.isActive = !existingLike.isActive;
+          await existingLike.save({ session });
+          action = existingLike.isActive ? "like" : "unlike";
+        } else {
+          await CommentLike.create(
+            [
+              {
+                comment: commentId,
+                user: userId,
+                isActive: true,
+              },
+            ],
+            { session }
+          );
+          action = "like";
+        }
+
+        result = { action, liked: action === "like" };
       });
 
-      return { action, liked: action === "like" };
+      // Record activity outside of transaction to prevent blocking
+      setImmediate(() => {
+        this.recordUserActivity({
+          userId,
+          action: result!.action,
+          resourceType: "comment",
+          resourceId: commentId,
+          ipAddress: sanitizedIpAddress,
+          userAgent: sanitizedUserAgent,
+        }).catch((error) => {
+          console.error("Error recording user activity:", error);
+        });
+      });
+
+      return result!;
     } catch (error) {
       console.error("Error toggling comment like:", error);
       throw error;
+    } finally {
+      await session.endSession();
     }
   }
 
@@ -825,6 +850,80 @@ export class AnalyticsService {
     } catch (error) {
       console.error("Error checking post bookmark status:", error);
       return false;
+    }
+  }
+
+  static async getUserLikeStatusForComments(
+    commentIds: string[],
+    userId: string
+  ): Promise<Record<string, boolean>> {
+    try {
+      if (!commentIds.length || !userId || !Types.ObjectId.isValid(userId)) {
+        return {};
+      }
+
+      const validCommentIds = commentIds.filter(
+        (id) => id && Types.ObjectId.isValid(id)
+      );
+
+      if (!validCommentIds.length) {
+        return {};
+      }
+
+      const likes = await CommentLike.find({
+        comment: { $in: validCommentIds },
+        user: userId,
+        isActive: true,
+      }).select("comment");
+
+      // Create a map of commentId -> true for liked comments
+      const likeMap: Record<string, boolean> = {};
+
+      // Initialize all comments as not liked
+      validCommentIds.forEach((id) => {
+        likeMap[id] = false;
+      });
+
+      // Mark liked comments as true
+      likes.forEach((like) => {
+        likeMap[like.comment.toString()] = true;
+      });
+
+      return likeMap;
+    } catch (error) {
+      return {};
+    }
+  }
+
+  static async getUpdatedCommentWithLikes(
+    commentId: string,
+    userId?: string
+  ): Promise<any> {
+    try {
+      const comment = await Comment.findById(commentId)
+        .populate("likesCount")
+        .populate("postedBy", "username avatar");
+
+      if (!comment) {
+        return null;
+      }
+
+      const commentData = (comment as any).toJSON();
+
+      if (userId) {
+        const isLiked = await this.hasUserLikedComment(commentId, userId);
+        return {
+          ...commentData,
+          isLiked,
+        };
+      }
+
+      return {
+        ...commentData,
+        isLiked: false,
+      };
+    } catch (error) {
+      return null;
     }
   }
 }
