@@ -3,7 +3,7 @@ import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
 import { PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import { MouseEvent, useState, useMemo, useCallback } from "react";
+import { MouseEvent, useState, useMemo, useCallback, useEffect } from "react";
 import {
   CommentInterface,
   PostInterface,
@@ -11,6 +11,7 @@ import {
 } from "@/typings/interfaces";
 import { useAuthModal } from "./useAuthModal";
 import { useSessionUserId } from "./useSessionUserId";
+import { useSocket } from "@/context/SocketContext";
 
 export const useInteractions = (
   post?: PostType,
@@ -21,7 +22,8 @@ export const useInteractions = (
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { userId: currentUserId } = useSessionUserId(); // Use cached session approach
+  const { userId: currentUserId } = useSessionUserId();
+  const { socket } = useSocket();
   const [commentContent, setCommentContent] = useState<string>("");
 
   const {
@@ -89,8 +91,19 @@ export const useInteractions = (
 
   // Simply use the comment prop directly - optimistic updates should handle most cases
   const currentCommentData = useMemo(() => {
+    // Try to get the most up-to-date comment data from cache first
+    const cachedComments = queryClient.getQueryData<CommentInterface[]>([
+      "comments",
+    ]);
+    if (cachedComments && comment?._id) {
+      const cachedComment = cachedComments.find((c) => c._id === comment._id);
+      if (cachedComment) {
+        return cachedComment;
+      }
+    }
+
     return comment;
-  }, [comment]);
+  }, [comment, queryClient]);
 
   const commentLiked = useMemo(() => {
     if (!currentUserId || !currentCommentData) {
@@ -891,6 +904,57 @@ export const useInteractions = (
     },
     [currentUserId, postId, bookmarkInteraction, requireAuth, toast]
   );
+
+  // Real-time updates via socket events
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePostLikeUpdate = (data: any) => {
+      if (data.userId !== currentUserId && postId && data.postId === postId) {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["post", post?.slug] });
+      }
+    };
+
+    const handlePostBookmarkUpdate = (data: any) => {
+      if (data.userId !== currentUserId && postId && data.postId === postId) {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["post", post?.slug] });
+      }
+    };
+
+    const handleCommentLikeUpdate = (data: any) => {
+      if (
+        data.userId !== currentUserId &&
+        comment &&
+        data.commentId === comment._id
+      ) {
+        queryClient.invalidateQueries({ queryKey: ["comments"] });
+        queryClient.invalidateQueries({ queryKey: ["replies"] });
+      }
+    };
+
+    const handlePostCommentUpdate = (data: any) => {
+      // Always invalidate for new comments since they come from other users
+      if (postId && data.postId === postId) {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["post", post?.slug] });
+      }
+    };
+
+    // Subscribe to socket events
+    socket.on("postLikeUpdate", handlePostLikeUpdate);
+    socket.on("postBookmarkUpdate", handlePostBookmarkUpdate);
+    socket.on("commentLikeUpdate", handleCommentLikeUpdate);
+    socket.on("postCommentUpdate", handlePostCommentUpdate);
+
+    return () => {
+      socket.off("postLikeUpdate", handlePostLikeUpdate);
+      socket.off("postBookmarkUpdate", handlePostBookmarkUpdate);
+      socket.off("commentLikeUpdate", handleCommentLikeUpdate);
+      socket.off("postCommentUpdate", handlePostCommentUpdate);
+    };
+  }, [socket, queryClient, postId, post?.slug, comment, currentUserId]);
 
   return {
     handleLikeClick,
