@@ -23,6 +23,8 @@ export const useNotifications = () => {
         return "🔖";
       case "like":
         return "❤️";
+      case "follow":
+        return "👤";
       default:
         return "🔔";
     }
@@ -33,6 +35,9 @@ export const useNotifications = () => {
     }
 
     const handleNotification = (notification: Notification) => {
+      console.log("🔔 useNotifications received notification:", notification);
+
+      // Add notification to state regardless of type
       setNotifications((prev) => {
         // Deduplicate notifications based on id or _id
         const exists = prev.some(
@@ -47,6 +52,10 @@ export const useNotifications = () => {
       });
 
       setUnreadCount((prev) => prev + 1);
+
+      // We display toast for all notification types here
+      // The "follow" toast will be shown from the followUpdate handler
+      // which has better data for showing the right context
       toast({
         title: `${getNotificationIcon(notification.type)} New Notification`,
         description: notification.message,
