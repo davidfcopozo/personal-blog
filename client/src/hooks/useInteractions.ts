@@ -501,8 +501,90 @@ export const useInteractions = (
 
   const likeCommentMutation = usePutRequest({
     url: postId ? `/api/comments/${postId}` : "",
+    onMutate: async (variables: { commentId: string }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["comments"] });
+      await queryClient.cancelQueries({ queryKey: ["replies"] });
+
+      // Snapshot the previous values
+      const previousComments = queryClient.getQueryData(["comments"]);
+      const previousReplies = queryClient.getQueryData(["replies"]);
+
+      // Function to optimistically update a comment
+      const optimisticallyUpdateComment = (comment: any) => {
+        if (comment._id?.toString() === variables.commentId) {
+          const currentLikesCount = comment.likesCount || 0;
+          const currentIsLiked = comment.isLiked || false;
+          const likes = comment.likes || [];
+
+          if (currentIsLiked) {
+            // Currently liked, so unlike it
+            return {
+              ...comment,
+              isLiked: false,
+              likesCount: Math.max(0, currentLikesCount - 1),
+              likes: likes.filter((id: string) => id !== currentUserId),
+            };
+          } else {
+            // Currently not liked, so like it
+            return {
+              ...comment,
+              isLiked: true,
+              likesCount: currentLikesCount + 1,
+              likes:
+                currentUserId && !likes.includes(currentUserId)
+                  ? [...likes, currentUserId]
+                  : likes,
+            };
+          }
+        }
+        return comment;
+      };
+
+      // Optimistically update comments cache
+      queryClient.setQueryData(["comments"], (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map(optimisticallyUpdateComment);
+      });
+
+      // Optimistically update replies cache
+      queryClient.setQueryData(["replies"], (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map(optimisticallyUpdateComment);
+      });
+
+      // Also update specific reply caches
+      const replyQueries = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            queryKey.length >= 2 &&
+            (queryKey[0] === "replies" ||
+              (typeof queryKey[0] === "string" &&
+                queryKey[0].startsWith("replies-")))
+          );
+        },
+      });
+
+      replyQueries.forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldData: any) => {
+          if (!oldData || !Array.isArray(oldData)) {
+            return oldData;
+          }
+          return oldData.map(optimisticallyUpdateComment);
+        });
+      });
+
+      // Return a context object with the snapshotted values
+      return { previousComments, previousReplies } as any;
+    },
     onSuccess: (response: any, variables: { commentId: string }) => {
-      // The socket event will handle cache updates, just show success toast
+      // The socket event will handle the final cache updates for all users
       toast({
         title: "Success",
         description: response?.data?.liked
@@ -510,7 +592,14 @@ export const useInteractions = (
           : "You've unliked this comment.",
       });
     },
-    onError: (error: any, variables) => {
+    onError: (error: any, variables, context: any) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(["comments"], context.previousComments);
+      }
+      if (context?.previousReplies) {
+        queryClient.setQueryData(["replies"], context.previousReplies);
+      }
+
       const errorMsg = error?.response?.data?.message || error?.message || "";
       const isCommentNotFound =
         errorMsg.toLowerCase().includes("not found") ||
