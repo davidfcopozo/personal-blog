@@ -26,19 +26,41 @@ const isDuplicateLikeRequest = (userId: string, commentId: string): boolean => {
   const countKey = `count-${key}-${Math.floor(now / 60000)}`;
   const currentCount = requestCountCache.get(countKey) || 0;
 
-  if (currentCount > 10) {
-    // Max 10 requests per minute
+  if (currentCount > 15) {
     return true;
   }
 
   requestCountCache.set(countKey, currentCount + 1);
 
-  if (lastRequest && now - lastRequest < 1000) {
-    // 1 second cooldown
+  if (lastRequest && now - lastRequest < 300) {
+    // 300ms cooldown - allow faster toggling
     return true;
   }
 
   likeRequestCache.set(key, now);
+
+  // Clean up old cache entries to prevent memory leaks
+  if (likeRequestCache.size > 1000) {
+    // Remove entries older than 5 minutes
+    const cutoff = now - 300000;
+    for (const [cacheKey, timestamp] of likeRequestCache.entries()) {
+      if (timestamp < cutoff) {
+        likeRequestCache.delete(cacheKey);
+      }
+    }
+  }
+
+  // Clean up request count cache
+  if (requestCountCache.size > 1000) {
+    const currentMinute = Math.floor(now / 60000);
+    for (const [cacheKey] of requestCountCache.entries()) {
+      const keyMinute = parseInt(cacheKey.split("-").pop() || "0");
+      if (currentMinute - keyMinute > 2) {
+        requestCountCache.delete(cacheKey);
+      }
+    }
+  }
+
   return false;
 };
 
