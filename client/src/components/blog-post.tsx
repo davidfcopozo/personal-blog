@@ -161,13 +161,19 @@ const BlogPost = memo(function BlogPost({
                                 <button
                                   className={`${
                                     isFollowed
-                                      ? "text-amber-500 hover:text-[--thread-border]"
+                                      ? "text-amber-500 hover:text-[--thread-border] following-button"
                                       : "text-[--thread-border] hover:text-amber-500"
                                   }`}
                                   disabled={isPending}
                                   onClick={handleFollowToggle}
+                                  data-following={isFollowed ? "true" : "false"}
                                 >
-                                  {isFollowed ? "Following" : "Follow"}
+                                  <span className="follow-text">
+                                    {isFollowed ? "Following" : "Follow"}
+                                  </span>
+                                  <span className="unfollow-text hidden">
+                                    Unfollow
+                                  </span>
                                 </button>
                               </>
                             )}
