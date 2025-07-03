@@ -409,12 +409,16 @@ export interface NotificationPreferencesInterface {
     inApp: boolean;
     email: boolean;
   };
+  follows: {
+    inApp: boolean;
+    email: boolean;
+  };
 }
 
 export interface Notification {
   id?: string;
   _id?: string;
-  type: "mention" | "comment" | "reply" | "bookmark" | "like";
+  type: "mention" | "comment" | "reply" | "bookmark" | "like" | "follow";
   message: string;
   sender: {
     firstName: string;
