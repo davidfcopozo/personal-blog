@@ -6,7 +6,8 @@ export type NotificationType =
   | "comment"
   | "reply"
   | "bookmark"
-  | "like";
+  | "like"
+  | "follow";
 
 export interface NotificationInterface extends Document {
   _id: ObjectId;
@@ -42,6 +43,10 @@ export interface NotificationPreferencesInterface extends Document {
       email: boolean;
     };
     likes: {
+      inApp: boolean;
+      email: boolean;
+    };
+    follows: {
       inApp: boolean;
       email: boolean;
     };
