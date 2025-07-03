@@ -138,16 +138,43 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       return updatedData;
     });
 
-    // Also update replies caches that might contain this comment
+    const postCommentQueries = queryClient.getQueryCache().findAll({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return (
+          Array.isArray(queryKey) &&
+          queryKey.length >= 2 &&
+          queryKey[0] === "comments" &&
+          typeof queryKey[1] === "string"
+        );
+      },
+    });
+
+    postCommentQueries.forEach((query) => {
+      queryClient.setQueryData(query.queryKey, (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map((comment: any) => {
+          if (comment._id?.toString() === commentId) {
+            const updatedComment = updateFn(comment);
+            hasUpdated = true;
+            return updatedComment;
+          }
+          return comment;
+        });
+      });
+    });
+
     const replyQueries = queryClient.getQueryCache().findAll({
       predicate: (query) => {
         const queryKey = query.queryKey;
         return (
           Array.isArray(queryKey) &&
-          queryKey.length === 2 &&
-          typeof queryKey[0] === "string" &&
-          queryKey[0].startsWith("replies-") &&
-          Array.isArray(queryKey[1])
+          queryKey.length >= 2 &&
+          (queryKey[0] === "replies" ||
+            (typeof queryKey[0] === "string" &&
+              queryKey[0].startsWith("replies-")))
         );
       },
     });
@@ -183,12 +210,18 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     if (!hasUpdated) {
-      // Invalidate queries to refetch if cache update failed
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-      replyQueries.forEach((query) => {
-        queryClient.invalidateQueries({ queryKey: query.queryKey });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            (queryKey[0] === "comments" ||
+              queryKey[0] === "replies" ||
+              (typeof queryKey[0] === "string" &&
+                queryKey[0].startsWith("replies-")))
+          );
+        },
       });
-      queryClient.invalidateQueries({ queryKey: ["replies"] });
     }
   };
 
@@ -234,8 +267,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("postLikeUpdate", (data) => {
+      // Update cache for ALL users to ensure real-time updates
       updatePostInCache(data.postId, (post) => {
-        if (data.userId !== userId && post.postedBy === userId) {
+        if (post.postedBy === userId && data.userId !== userId) {
           toast({
             title: `${getNotificationIcon("like")} Post Liked`,
             description: `Someone liked your post: "${post.title}"`,
@@ -243,22 +277,32 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           });
         }
         const likes = post.likes || [];
+        const currentLikesCount = post.likesCount || 0;
+
         if (data.isLiked) {
           if (!likes.includes(data.userId)) {
-            return { ...post, likes: [...likes, data.userId] };
+            return {
+              ...post,
+              likes: [...likes, data.userId],
+              likesCount: currentLikesCount + 1,
+              isLiked: data.userId === userId ? true : post.isLiked,
+            };
           }
         } else {
           return {
             ...post,
             likes: likes.filter((id) => id !== data.userId),
+            likesCount: Math.max(0, currentLikesCount - 1),
+            isLiked: data.userId === userId ? false : post.isLiked,
           };
         }
         return post;
       });
     });
     newSocket.on("postBookmarkUpdate", (data) => {
+      // Update cache for ALL users to ensure real-time updates
       updatePostInCache(data.postId, (post) => {
-        if (data.userId !== userId && post.postedBy === userId) {
+        if (post.postedBy === userId && data.userId !== userId) {
           toast({
             title: `${getNotificationIcon("bookmark")} Post Bookmarked`,
             description: `Someone bookmarked your post: "${post.title}"`,
@@ -266,14 +310,23 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           });
         }
         const bookmarks = post.bookmarks || [];
+        const currentBookmarksCount = post.bookmarksCount || 0;
+
         if (data.isBookmarked) {
           if (!bookmarks.includes(data.userId)) {
-            return { ...post, bookmarks: [...bookmarks, data.userId] };
+            return {
+              ...post,
+              bookmarks: [...bookmarks, data.userId],
+              bookmarksCount: currentBookmarksCount + 1,
+              isBookmarked: data.userId === userId ? true : post.isBookmarked,
+            };
           }
         } else {
           return {
             ...post,
             bookmarks: bookmarks.filter((id) => id !== data.userId),
+            bookmarksCount: Math.max(0, currentBookmarksCount - 1),
+            isBookmarked: data.userId === userId ? false : post.isBookmarked,
           };
         }
         return post;
@@ -312,16 +365,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("commentLikeUpdate", (data) => {
+      // Update cache for ALL users to ensure real-time updates
       updateCommentInCache(data.commentId, (comment) => {
-        const currentUserIdLocal = currentUserId;
-
-        // Show toast notification for comment owner if someone else liked their comment
+        // Show toast notification if someone liked the current user's comment
         if (
-          data.userId !== currentUserId &&
           (comment.postedBy === currentUserId ||
             comment.postedBy?._id === currentUserId ||
             comment.postedBy?.toString() === currentUserId) &&
-          data.isLiked
+          data.isLiked &&
+          data.userId !== currentUserId
         ) {
           toast({
             title: `${getNotificationIcon("like")} Comment Liked`,
@@ -331,17 +383,33 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         }
 
         const likes = comment.likes || [];
+        const currentLikesCount = comment.likesCount || 0;
+
         if (data.isLiked) {
+          // User liked the comment
           if (!likes.includes(data.userId)) {
-            return { ...comment, likes: [...likes, data.userId] };
+            return {
+              ...comment,
+              likes: [...likes, data.userId],
+              likesCount: currentLikesCount + 1,
+              isLiked: data.userId === currentUserId ? true : comment.isLiked,
+            };
+          } else {
+            // User already liked it, just update isLiked if it's the current user
+            return {
+              ...comment,
+              isLiked: data.userId === currentUserId ? true : comment.isLiked,
+            };
           }
         } else {
+          // User unliked the comment
           return {
             ...comment,
             likes: likes.filter((id: string) => id !== data.userId),
+            likesCount: Math.max(0, currentLikesCount - 1),
+            isLiked: data.userId === currentUserId ? false : comment.isLiked,
           };
         }
-        return comment;
       });
     });
 

@@ -3,7 +3,7 @@ import CommentBox from "./comment-box";
 import useBulkFetch from "@/hooks/useBulkFetch";
 import { CommentInterface } from "@/typings/interfaces";
 import NestedComment from "./nested-comments";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function CommentSection({
@@ -12,12 +12,23 @@ export default function CommentSection({
 }: CommentSectionPropsType) {
   const queryClient = useQueryClient();
 
-  // Get comments from the cache directly
-  const cachedComments = queryClient.getQueryData<CommentInterface[]>([
-    "comments",
-  ]);
+  const [cachedComments, setCachedComments] = useState<CommentInterface[]>(
+    () => queryClient.getQueryData<CommentInterface[]>(["comments"]) || []
+  );
 
-  // Fallback to useBulkFetch if no cached comments are available
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event.query.queryKey[0] === "comments") {
+        const newData = queryClient.getQueryData<CommentInterface[]>([
+          "comments",
+        ]);
+        setCachedComments(newData || []);
+      }
+    });
+
+    return unsubscribe;
+  }, [queryClient]);
+
   const { data: fetchedComments, isLoading } = useBulkFetch({
     ids:
       (!cachedComments || cachedComments.length === 0) && comments?.length >= 1
@@ -27,7 +38,6 @@ export default function CommentSection({
     url: `/comments`,
   });
 
-  // Initialize the comments cache with fetched data
   useEffect(() => {
     if (
       fetchedComments &&
@@ -41,8 +51,6 @@ export default function CommentSection({
     }
   }, [fetchedComments, cachedComments, queryClient]);
 
-  // Use cached comments if available, otherwise use fetched comments
-  // Filter to only show comments for this specific post
   const allComments = cachedComments?.length ? cachedComments : fetchedComments;
   const displayComments = allComments?.filter(
     (comment: CommentInterface) =>
@@ -66,12 +74,12 @@ export default function CommentSection({
         <h2 id="comments-section" className="text-2xl font-bold">
           Comments
         </h2>
-        <CommentBox post={post} />{" "}
+        <CommentBox post={post} />
         <div className="grid gap-6">
           {displayComments && displayComments.length >= 1 ? (
             displayComments
               .sort(
-                (a, b) =>
+                (a: CommentInterface, b: CommentInterface) =>
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               )

@@ -464,12 +464,22 @@ export class NotificationService {
     const now = Date.now();
     const lastEmission = this.recentEmissions.get(fullKey);
 
-    if (lastEmission && now - lastEmission < 500) {
-      // 500ms cooldown
+    if (lastEmission && now - lastEmission < 200) {
       return true;
     }
 
     this.recentEmissions.set(fullKey, now);
+
+    // Clean up old entries to prevent memory leaks
+    if (this.recentEmissions.size > 1000) {
+      const cutoff = now - 5000;
+      for (const [key, timestamp] of this.recentEmissions.entries()) {
+        if (timestamp < cutoff) {
+          this.recentEmissions.delete(key);
+        }
+      }
+    }
+
     return false;
   }
 }

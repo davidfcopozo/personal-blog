@@ -3,7 +3,7 @@ import usePutRequest from "./usePutRequest";
 import { useToast } from "@/components/ui/use-toast";
 import { PostFetchType, PostType } from "@/typings/types";
 import usePostRequest from "./usePostRequest";
-import { MouseEvent, useState, useMemo, useCallback } from "react";
+import { MouseEvent, useState, useMemo, useCallback, useEffect } from "react";
 import {
   CommentInterface,
   PostInterface,
@@ -11,6 +11,7 @@ import {
 } from "@/typings/interfaces";
 import { useAuthModal } from "./useAuthModal";
 import { useSessionUserId } from "./useSessionUserId";
+import { useSocket } from "@/context/SocketContext";
 
 export const useInteractions = (
   post?: PostType,
@@ -21,7 +22,8 @@ export const useInteractions = (
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { userId: currentUserId } = useSessionUserId(); // Use cached session approach
+  const { userId: currentUserId } = useSessionUserId();
+  const { socket } = useSocket();
   const [commentContent, setCommentContent] = useState<string>("");
 
   const {
@@ -43,7 +45,6 @@ export const useInteractions = (
       return cachedSinglePostData.data;
     }
 
-    // Then try posts list cache
     if (
       cachedPostsData?.data &&
       Array.isArray(cachedPostsData.data) &&
@@ -54,7 +55,6 @@ export const useInteractions = (
       );
     }
 
-    // Fallback to the original post prop
     return post;
   }, [cachedPostsData, cachedSinglePostData, post, postId]);
 
@@ -89,8 +89,18 @@ export const useInteractions = (
 
   // Simply use the comment prop directly - optimistic updates should handle most cases
   const currentCommentData = useMemo(() => {
+    const cachedComments = queryClient.getQueryData<CommentInterface[]>([
+      "comments",
+    ]);
+    if (cachedComments && comment?._id) {
+      const cachedComment = cachedComments.find((c) => c._id === comment._id);
+      if (cachedComment) {
+        return cachedComment;
+      }
+    }
+
     return comment;
-  }, [comment]);
+  }, [comment, queryClient]);
 
   const commentLiked = useMemo(() => {
     if (!currentUserId || !currentCommentData) {
@@ -108,10 +118,11 @@ export const useInteractions = (
   const handleReplyContentChange = (content: string) => {
     setReplyContent(content);
   };
+
   const likeMutation = usePutRequest({
     url: "/api/posts/like",
     onSuccess: (response: any, variables: { postId: string }) => {
-      //  the optimistic update should be correct and the server response confirms the action
+      // The socket event will handle cache updates, just show success toast
       toast({
         title: "Success",
         description: response?.data?.liked
@@ -119,82 +130,12 @@ export const useInteractions = (
           : "You've unliked this post.",
       });
     },
-    onError: (error, _, context: any) => {
-      // Revert optimistic update on error
-      if (context?.previousPostsData) {
-        queryClient.setQueryData(["posts"], context.previousPostsData);
-      }
-      if (context?.previousPostData) {
-        queryClient.setQueryData(
-          ["post", post?.slug],
-          context.previousPostData
-        );
-      }
-
+    onError: (error) => {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to process the request. Please try again.",
       });
-    },
-    onMutate: async (variables: { postId: string }) => {
-      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
-      await queryClient.cancelQueries({ queryKey: ["post", post?.slug] });
-
-      const previousPostsData = queryClient.getQueryData<PostFetchType>([
-        "posts",
-      ]);
-      const previousPostData = queryClient.getQueryData<any>([
-        "post",
-        post?.slug,
-      ]);
-
-      // Optimistically update the posts cache
-      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!oldPosts?.data || !Array.isArray(oldPosts.data)) {
-          return oldPosts;
-        }
-
-        return {
-          ...oldPosts,
-          data: oldPosts.data.map((post: PostInterface) => {
-            if (post._id?.toString() === variables.postId?.toString()) {
-              const currentIsLiked = post.isLiked ?? false;
-              const currentLikesCount = post.likesCount ?? 0;
-
-              return {
-                ...post,
-                isLiked: !currentIsLiked,
-                likesCount: currentIsLiked
-                  ? currentLikesCount - 1
-                  : currentLikesCount + 1,
-              };
-            }
-            return post;
-          }),
-        };
-      });
-
-      // Optimistically update the single post cache
-      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
-        if (!oldPost?.data) return oldPost;
-
-        const currentIsLiked = oldPost.data.isLiked ?? false;
-        const currentLikesCount = oldPost.data.likesCount ?? 0;
-
-        return {
-          ...oldPost,
-          data: {
-            ...oldPost.data,
-            isLiked: !currentIsLiked,
-            likesCount: currentIsLiked
-              ? currentLikesCount - 1
-              : currentLikesCount + 1,
-          },
-        };
-      });
-
-      return { previousPostsData, previousPostData } as any;
     },
   });
   const likeInteraction = useCallback(
@@ -218,7 +159,7 @@ export const useInteractions = (
   const bookmarkMutation = usePutRequest({
     url: "/api/posts/bookmark",
     onSuccess: (response: any, variables: { postId: string }) => {
-      // Don't invalidate - the optimistic update should be correct and the server response confirms the action
+      // The socket event will handle cache updates, just show success toast
       toast({
         title: "Success",
         description: response?.data?.bookmarked
@@ -226,82 +167,12 @@ export const useInteractions = (
           : "You've unbookmarked this post.",
       });
     },
-    onError: (error, _, context: any) => {
-      // Revert optimistic update on error
-      if (context?.previousPostsData) {
-        queryClient.setQueryData(["posts"], context.previousPostsData);
-      }
-      if (context?.previousPostData) {
-        queryClient.setQueryData(
-          ["post", post?.slug],
-          context.previousPostData
-        );
-      }
-
+    onError: (error) => {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to process the request. Please try again.",
       });
-    },
-    onMutate: async (variables: { postId: string }) => {
-      await queryClient.cancelQueries({ queryKey: ["posts"], exact: true });
-      await queryClient.cancelQueries({ queryKey: ["post", post?.slug] });
-
-      const previousPostsData = queryClient.getQueryData<PostFetchType>([
-        "posts",
-      ]);
-      const previousPostData = queryClient.getQueryData<any>([
-        "post",
-        post?.slug,
-      ]);
-
-      // Optimistically update the posts cache
-      queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
-        if (!oldPosts?.data || !Array.isArray(oldPosts.data)) {
-          return oldPosts;
-        }
-
-        return {
-          ...oldPosts,
-          data: oldPosts.data.map((post: PostInterface) => {
-            if (post._id?.toString() === variables.postId?.toString()) {
-              const currentIsBookmarked = post.isBookmarked ?? false;
-              const currentBookmarksCount = post.bookmarksCount ?? 0;
-
-              return {
-                ...post,
-                isBookmarked: !currentIsBookmarked,
-                bookmarksCount: currentIsBookmarked
-                  ? currentBookmarksCount - 1
-                  : currentBookmarksCount + 1,
-              };
-            }
-            return post;
-          }),
-        };
-      });
-
-      // Optimistically update the single post cache
-      queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
-        if (!oldPost?.data) return oldPost;
-
-        const currentIsBookmarked = oldPost.data.isBookmarked ?? false;
-        const currentBookmarksCount = oldPost.data.bookmarksCount ?? 0;
-
-        return {
-          ...oldPost,
-          data: {
-            ...oldPost.data,
-            isBookmarked: !currentIsBookmarked,
-            bookmarksCount: currentIsBookmarked
-              ? currentBookmarksCount - 1
-              : currentBookmarksCount + 1,
-          },
-        };
-      });
-
-      return { previousPostsData, previousPostData } as any;
     },
   });
   const bookmarkInteraction = useCallback(
@@ -335,7 +206,6 @@ export const useInteractions = (
         return [...oldData, newComment];
       });
 
-      // Update posts cache to increment comment count
       queryClient.setQueryData(["posts"], (oldPosts: PostFetchType) => {
         if (!oldPosts?.data) return oldPosts;
         const postList = Array.isArray(oldPosts.data)
@@ -358,7 +228,6 @@ export const useInteractions = (
         };
       });
 
-      // Update single post cache if it exists
       queryClient.setQueryData(["post", post?.slug], (oldPost: any) => {
         if (!oldPost?.data) return oldPost;
 
@@ -632,8 +501,90 @@ export const useInteractions = (
 
   const likeCommentMutation = usePutRequest({
     url: postId ? `/api/comments/${postId}` : "",
+    onMutate: async (variables: { commentId: string }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["comments"] });
+      await queryClient.cancelQueries({ queryKey: ["replies"] });
+
+      // Snapshot the previous values
+      const previousComments = queryClient.getQueryData(["comments"]);
+      const previousReplies = queryClient.getQueryData(["replies"]);
+
+      // Function to optimistically update a comment
+      const optimisticallyUpdateComment = (comment: any) => {
+        if (comment._id?.toString() === variables.commentId) {
+          const currentLikesCount = comment.likesCount || 0;
+          const currentIsLiked = comment.isLiked || false;
+          const likes = comment.likes || [];
+
+          if (currentIsLiked) {
+            // Currently liked, so unlike it
+            return {
+              ...comment,
+              isLiked: false,
+              likesCount: Math.max(0, currentLikesCount - 1),
+              likes: likes.filter((id: string) => id !== currentUserId),
+            };
+          } else {
+            // Currently not liked, so like it
+            return {
+              ...comment,
+              isLiked: true,
+              likesCount: currentLikesCount + 1,
+              likes:
+                currentUserId && !likes.includes(currentUserId)
+                  ? [...likes, currentUserId]
+                  : likes,
+            };
+          }
+        }
+        return comment;
+      };
+
+      // Optimistically update comments cache
+      queryClient.setQueryData(["comments"], (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map(optimisticallyUpdateComment);
+      });
+
+      // Optimistically update replies cache
+      queryClient.setQueryData(["replies"], (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map(optimisticallyUpdateComment);
+      });
+
+      // Also update specific reply caches
+      const replyQueries = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            queryKey.length >= 2 &&
+            (queryKey[0] === "replies" ||
+              (typeof queryKey[0] === "string" &&
+                queryKey[0].startsWith("replies-")))
+          );
+        },
+      });
+
+      replyQueries.forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldData: any) => {
+          if (!oldData || !Array.isArray(oldData)) {
+            return oldData;
+          }
+          return oldData.map(optimisticallyUpdateComment);
+        });
+      });
+
+      // Return a context object with the snapshotted values
+      return { previousComments, previousReplies } as any;
+    },
     onSuccess: (response: any, variables: { commentId: string }) => {
-      // Don't do additional updates here - the optimistic update should be correct
+      // The socket event will handle the final cache updates for all users
       toast({
         title: "Success",
         description: response?.data?.liked
@@ -642,19 +593,11 @@ export const useInteractions = (
       });
     },
     onError: (error: any, variables, context: any) => {
-      // Revert optimistic update on error
-      if (context?.previousCommentsData) {
-        queryClient.setQueryData(["comments"], context.previousCommentsData);
+      if (context?.previousComments) {
+        queryClient.setQueryData(["comments"], context.previousComments);
       }
-      if (context?.previousReplyCaches) {
-        // Restore reply caches
-        context.previousReplyCaches.forEach(({ queryKey, data }: any) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-
-      if (context?.previousRepliesData) {
-        queryClient.setQueryData(["replies"], context.previousRepliesData);
+      if (context?.previousReplies) {
+        queryClient.setQueryData(["replies"], context.previousReplies);
       }
 
       const errorMsg = error?.response?.data?.message || error?.message || "";
@@ -686,137 +629,6 @@ export const useInteractions = (
           description: "Failed to process the request. Please try again.",
         });
       }
-    },
-    onMutate: async (variables: { commentId: string }) => {
-      await queryClient.cancelQueries({ queryKey: ["comments"], exact: true });
-
-      await queryClient.cancelQueries({ queryKey: ["replies"], exact: true });
-
-      const previousCommentsData = queryClient.getQueryData<any>(["comments"]);
-      const previousRepliesData = queryClient.getQueryData<any>(["replies"]);
-
-      // Store all reply cache data for rollback
-      const replyQueries = queryClient.getQueryCache().findAll({
-        predicate: (query) => {
-          const queryKey = query.queryKey;
-          return (
-            Array.isArray(queryKey) &&
-            queryKey.length === 2 &&
-            typeof queryKey[0] === "string" &&
-            queryKey[0].startsWith("replies-") &&
-            Array.isArray(queryKey[1])
-          );
-        },
-      });
-
-      const previousReplyCaches = replyQueries.map((query) => ({
-        queryKey: query.queryKey,
-        data: queryClient.getQueryData(query.queryKey),
-      }));
-
-      // Optimistically update the comments cache
-      queryClient.setQueryData(["comments"], (oldComments: any) => {
-        if (!oldComments || !Array.isArray(oldComments)) {
-          return oldComments;
-        }
-
-        const foundInCommentsCache = oldComments.find(
-          (c: any) => c._id?.toString() === variables.commentId
-        );
-
-        if (foundInCommentsCache) {
-          return oldComments.map((comment: any) => {
-            if (comment._id?.toString() === variables.commentId) {
-              const currentIsLiked = comment.isLiked ?? false;
-              const currentLikesCount = comment.likesCount ?? 0;
-
-              return {
-                ...comment,
-                isLiked: !currentIsLiked,
-                likesCount: currentIsLiked
-                  ? currentLikesCount - 1
-                  : currentLikesCount + 1,
-              };
-            }
-            return comment;
-          });
-        }
-
-        // Don't add to cache if not found - avoid duplicates
-        return oldComments;
-      });
-
-      // Optimistically update global replies cache
-      queryClient.setQueryData(["replies"], (oldReplies: any) => {
-        if (!oldReplies || !Array.isArray(oldReplies)) {
-          return oldReplies;
-        }
-
-        const foundInRepliesCache = oldReplies.find(
-          (r: any) => r._id?.toString() === variables.commentId
-        );
-
-        if (foundInRepliesCache) {
-          return oldReplies.map((reply: any) => {
-            if (reply._id?.toString() === variables.commentId) {
-              const currentIsLiked = reply.isLiked ?? false;
-              const currentLikesCount = reply.likesCount ?? 0;
-
-              return {
-                ...reply,
-                isLiked: !currentIsLiked,
-                likesCount: currentIsLiked
-                  ? currentLikesCount - 1
-                  : currentLikesCount + 1,
-              };
-            }
-            return reply;
-          });
-        }
-
-        // Don't add to cache if not found - avoid duplicates
-        return oldReplies;
-      });
-
-      // Optimistically update individual reply caches
-      replyQueries.forEach((query) => {
-        queryClient.setQueryData(query.queryKey, (oldReplies: any) => {
-          if (!oldReplies || !Array.isArray(oldReplies)) {
-            return oldReplies;
-          }
-
-          const foundInThisCache = oldReplies.find(
-            (r: any) => r._id?.toString() === variables.commentId
-          );
-
-          if (foundInThisCache) {
-            return oldReplies.map((reply: any) => {
-              if (reply._id?.toString() === variables.commentId) {
-                const currentIsLiked = reply.isLiked ?? false;
-                const currentLikesCount = reply.likesCount ?? 0;
-
-                return {
-                  ...reply,
-                  isLiked: !currentIsLiked,
-                  likesCount: currentIsLiked
-                    ? currentLikesCount - 1
-                    : currentLikesCount + 1,
-                };
-              }
-              return reply;
-            });
-          }
-
-          // Don't add to cache if not found - avoid duplicates
-          return oldReplies;
-        });
-      });
-
-      return {
-        previousCommentsData,
-        previousReplyCaches,
-        previousRepliesData,
-      } as any;
     },
   });
   const likeCommentInteraction = (
@@ -891,6 +703,26 @@ export const useInteractions = (
     },
     [currentUserId, postId, bookmarkInteraction, requireAuth, toast]
   );
+
+  // Real-time updates via socket events are now handled entirely by SocketContext. No need for query invalidation here since SocketContext updates cache for all users
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePostCommentUpdate = (data: any) => {
+      // Always invalidate for new comments (all users need to see new comments)
+      if (postId && data.postId === postId) {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["post", post?.slug] });
+      }
+    };
+
+    // Only subscribe to comment updates since SocketContext handles likes/bookmarks
+    socket.on("postCommentUpdate", handlePostCommentUpdate);
+
+    return () => {
+      socket.off("postCommentUpdate", handlePostCommentUpdate);
+    };
+  }, [socket, queryClient, postId, post?.slug, comment, currentUserId]);
 
   return {
     handleLikeClick,
