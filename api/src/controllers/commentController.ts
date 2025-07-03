@@ -429,12 +429,6 @@ export const toggleLike = async (
 
   try {
     const requestId = uuidv4();
-    console.log(
-      `[${requestId}] Processing like request for comment ${
-        replyId || commentId
-      } by user ${userId}`
-    );
-
     const targetCommentId = replyId || commentId;
 
     if (!targetCommentId) {
@@ -462,10 +456,6 @@ export const toggleLike = async (
     }
 
     if (isDuplicateLikeRequest(userId, targetCommentId)) {
-      console.log(
-        `[${requestId}] Duplicate request detected for ${targetCommentId}`
-      );
-
       const currentComment = await AnalyticsService.getUpdatedCommentWithLikes(
         targetCommentId,
         userId
