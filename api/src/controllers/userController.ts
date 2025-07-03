@@ -12,6 +12,7 @@ import Topic from "../models/topicModel";
 import Category from "../models/categoryModel";
 import Image from "../models/imageModel";
 import { DuplicatedResource } from "../errors/duplicated-resource";
+import { NotificationService } from "../utils/notificationService";
 
 const sensitiveDataToExclude = process.env.SENSITIVE_DATA_TO_EXCLUDE;
 
@@ -257,6 +258,26 @@ export const toggleFollowUser = async (
       updateFollowers.modifiedCount !== 1
     ) {
       throw new BadRequest("Failed to update following status");
+    }
+
+    // Get notification service and emit events
+    const notificationService: NotificationService = req.app.get(
+      "notificationService"
+    );
+
+    if (notificationService) {
+      await notificationService.emitFollowUpdate(
+        userToFollowId,
+        userId,
+        !isFollowing
+      );
+
+      if (!isFollowing) {
+        await notificationService.createFollowNotification(
+          userToFollowId,
+          userId
+        );
+      }
     }
 
     await session.commitTransaction();
