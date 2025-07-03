@@ -10,7 +10,7 @@ import React, {
 import { io, Socket } from "socket.io-client";
 import { SocketContextType } from "@/typings/interfaces";
 import { useQueryClient } from "@tanstack/react-query";
-import { PostFetchType } from "@/typings/types";
+import { PostFetchType, UserFetchType } from "@/typings/types";
 import { PostInterface } from "@/typings/interfaces";
 import { useToast } from "@/components/ui/use-toast";
 import { useSessionUserId } from "@/hooks/useSessionUserId";
@@ -53,6 +53,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         return "🔖";
       case "like":
         return "❤️";
+      case "follow":
+        return "👤";
       default:
         return "🔔";
     }
@@ -788,6 +790,195 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           (reply: any) => !data.allDeletedIds.includes(reply._id?.toString())
         );
       });
+    });
+
+    newSocket.on("followUpdate", (data) => {
+      // Update cache for ALL users to ensure real-time updates
+      const { followedUserId, followingUserId, isFollowing } = data;
+      console.log("🔄 Follow update received:", {
+        followedUserId,
+        followingUserId,
+        isFollowing,
+        currentUserId,
+        isCurrentUserFollowing: followingUserId === currentUserId,
+        isCurrentUserFollowed: followedUserId === currentUserId,
+      });
+
+      // Update the current user's following list if they are the one following/unfollowing
+      queryClient.setQueryData<UserFetchType>(
+        ["currentUser"],
+        (oldData: UserFetchType | undefined) => {
+          if (
+            !oldData?.data ||
+            oldData.data._id?.toString() !== followingUserId
+          ) {
+            return oldData;
+          }
+          const following = oldData.data.following || [];
+          const alreadyFollowing = following.some(
+            (id) => id.toString() === followedUserId.toString()
+          );
+
+          const newFollowing = isFollowing
+            ? alreadyFollowing
+              ? following
+              : [...following, followedUserId]
+            : following.filter(
+                (id: string) => id.toString() !== followedUserId.toString()
+              );
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              following: newFollowing,
+            },
+          };
+        }
+      );
+
+      // Update all user profile queries (user-*) and post author data
+      const userQueries = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            (queryKey[0] === "user-" ||
+              (queryKey[0] === "post" && queryKey.length === 2) ||
+              queryKey[0] === "posts")
+          );
+        },
+      });
+
+      userQueries.forEach((query) => {
+        const queryKey = query.queryKey;
+        // Update direct user queries (e.g., user profile)
+        if (
+          typeof queryKey[0] === "string" &&
+          queryKey[0].startsWith("user-")
+        ) {
+          queryClient.setQueryData(queryKey, (oldData: any) => {
+            if (
+              !oldData?.data ||
+              oldData.data._id?.toString() !== followedUserId
+            ) {
+              return oldData;
+            }
+
+            const followers = oldData.data.followers || [];
+            const alreadyFollower = followers.some(
+              (id: string) => id.toString() === followingUserId.toString()
+            );
+
+            const newFollowers = isFollowing
+              ? alreadyFollower
+                ? followers
+                : [...followers, followingUserId]
+              : followers.filter(
+                  (id: string) => id.toString() !== followingUserId.toString()
+                );
+
+            return {
+              ...oldData,
+              data: {
+                ...oldData.data,
+                followers: newFollowers,
+                isFollowed: isFollowing,
+              },
+            };
+          });
+        }
+
+        // Update post author data
+        if (queryKey[0] === "post" || queryKey[0] === "posts") {
+          queryClient.setQueryData(queryKey, (oldData: any) => {
+            if (!oldData?.data) return oldData;
+
+            const updatePostData = (post: any) => {
+              if (post?.postedBy?._id?.toString() === followedUserId) {
+                const followers = post.postedBy.followers || [];
+                const alreadyFollower = followers.some(
+                  (id: string) => id.toString() === followingUserId.toString()
+                );
+
+                const newFollowers = isFollowing
+                  ? alreadyFollower
+                    ? followers
+                    : [...followers, followingUserId]
+                  : followers.filter(
+                      (id: string) =>
+                        id.toString() !== followingUserId.toString()
+                    );
+
+                return {
+                  ...post,
+                  postedBy: {
+                    ...post.postedBy,
+                    followers: newFollowers,
+                    isFollowed: isFollowing,
+                  },
+                };
+              }
+              return post;
+            };
+
+            if (!Array.isArray(oldData.data)) {
+              return {
+                ...oldData,
+                data: updatePostData(oldData.data),
+              };
+            }
+
+            return {
+              ...oldData,
+              data: oldData.data.map((post: any) => updatePostData(post)),
+            };
+          });
+        }
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+
+      // Find all user-* queries to invalidate them
+      const allUserQueries = queryClient.getQueryCache().findAll({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            typeof queryKey[0] === "string" &&
+            queryKey[0].startsWith("user-")
+          );
+        },
+      });
+
+      allUserQueries.forEach((query) => {
+        queryClient.invalidateQueries({ queryKey: query.queryKey });
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+      // Then scheduled refresh for components that might be slow to update
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+        allUserQueries.forEach((query) => {
+          queryClient.invalidateQueries({ queryKey: query.queryKey });
+        });
+        queryClient.invalidateQueries({ queryKey: ["post"] });
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+      }, 300);
+
+      if (
+        isFollowing &&
+        followedUserId === currentUserId &&
+        followingUserId !== currentUserId
+      ) {
+        toast({
+          title: `${getNotificationIcon("follow")} New Follower`,
+          description: "Someone started following you",
+          duration: 3000,
+        });
+      }
     });
 
     setSocket(newSocket);
