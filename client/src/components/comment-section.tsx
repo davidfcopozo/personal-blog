@@ -12,12 +12,10 @@ export default function CommentSection({
 }: CommentSectionPropsType) {
   const queryClient = useQueryClient();
 
-  // Use reactive state for cached comments
   const [cachedComments, setCachedComments] = useState<CommentInterface[]>(
     () => queryClient.getQueryData<CommentInterface[]>(["comments"]) || []
   );
 
-  // Subscribe to cache changes
   useEffect(() => {
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
       if (event.query.queryKey[0] === "comments") {
@@ -31,7 +29,6 @@ export default function CommentSection({
     return unsubscribe;
   }, [queryClient]);
 
-  // Fallback to useBulkFetch if no cached comments are available
   const { data: fetchedComments, isLoading } = useBulkFetch({
     ids:
       (!cachedComments || cachedComments.length === 0) && comments?.length >= 1
@@ -77,7 +74,7 @@ export default function CommentSection({
         <h2 id="comments-section" className="text-2xl font-bold">
           Comments
         </h2>
-        <CommentBox post={post} />{" "}
+        <CommentBox post={post} />
         <div className="grid gap-6">
           {displayComments && displayComments.length >= 1 ? (
             displayComments
