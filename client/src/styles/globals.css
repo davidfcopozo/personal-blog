@@ -310,3 +310,11 @@
   border-radius: 0.25rem;
   color: hsl(var(--foreground));
 }
+
+.following-button:hover .follow-text {
+  display: none;
+}
+
+.following-button:hover .unfollow-text {
+  display: inline;
+}
