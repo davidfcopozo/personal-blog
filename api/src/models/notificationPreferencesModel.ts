@@ -32,6 +32,10 @@ const notificationPreferencesSchema =
           inApp: { type: Boolean, default: true },
           email: { type: Boolean, default: false },
         },
+        follows: {
+          inApp: { type: Boolean, default: true },
+          email: { type: Boolean, default: false },
+        },
       },
     },
     { timestamps: true }
