@@ -22,6 +22,7 @@ const NotificationPreferences: React.FC = () => {
       replies: { inApp: true, email: true },
       bookmarks: { inApp: true, email: false },
       likes: { inApp: true, email: false },
+      follows: { inApp: true, email: false },
     });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -124,6 +125,11 @@ const NotificationPreferences: React.FC = () => {
       key: "likes" as const,
       title: "Likes",
       description: "When someone likes your posts",
+    },
+    {
+      key: "follows" as const,
+      title: "Follows",
+      description: "When someone follows you",
     },
   ];
 
