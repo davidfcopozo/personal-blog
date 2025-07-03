@@ -138,16 +138,43 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       return updatedData;
     });
 
-    // Also update replies caches that might contain this comment
+    const postCommentQueries = queryClient.getQueryCache().findAll({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return (
+          Array.isArray(queryKey) &&
+          queryKey.length >= 2 &&
+          queryKey[0] === "comments" &&
+          typeof queryKey[1] === "string"
+        );
+      },
+    });
+
+    postCommentQueries.forEach((query) => {
+      queryClient.setQueryData(query.queryKey, (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) {
+          return oldData;
+        }
+        return oldData.map((comment: any) => {
+          if (comment._id?.toString() === commentId) {
+            const updatedComment = updateFn(comment);
+            hasUpdated = true;
+            return updatedComment;
+          }
+          return comment;
+        });
+      });
+    });
+
     const replyQueries = queryClient.getQueryCache().findAll({
       predicate: (query) => {
         const queryKey = query.queryKey;
         return (
           Array.isArray(queryKey) &&
-          queryKey.length === 2 &&
-          typeof queryKey[0] === "string" &&
-          queryKey[0].startsWith("replies-") &&
-          Array.isArray(queryKey[1])
+          queryKey.length >= 2 &&
+          (queryKey[0] === "replies" ||
+            (typeof queryKey[0] === "string" &&
+              queryKey[0].startsWith("replies-")))
         );
       },
     });
@@ -183,12 +210,18 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     if (!hasUpdated) {
-      // Invalidate queries to refetch if cache update failed
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-      replyQueries.forEach((query) => {
-        queryClient.invalidateQueries({ queryKey: query.queryKey });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return (
+            Array.isArray(queryKey) &&
+            (queryKey[0] === "comments" ||
+              queryKey[0] === "replies" ||
+              (typeof queryKey[0] === "string" &&
+                queryKey[0].startsWith("replies-")))
+          );
+        },
       });
-      queryClient.invalidateQueries({ queryKey: ["replies"] });
     }
   };
 
@@ -334,6 +367,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     newSocket.on("commentLikeUpdate", (data) => {
       // Update cache for ALL users to ensure real-time updates
       updateCommentInCache(data.commentId, (comment) => {
+        // Show toast notification if someone liked the current user's comment
         if (
           (comment.postedBy === currentUserId ||
             comment.postedBy?._id === currentUserId ||
@@ -352,6 +386,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         const currentLikesCount = comment.likesCount || 0;
 
         if (data.isLiked) {
+          // User liked the comment
           if (!likes.includes(data.userId)) {
             return {
               ...comment,
@@ -359,8 +394,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
               likesCount: currentLikesCount + 1,
               isLiked: data.userId === currentUserId ? true : comment.isLiked,
             };
+          } else {
+            // User already liked it, just update isLiked if it's the current user
+            return {
+              ...comment,
+              isLiked: data.userId === currentUserId ? true : comment.isLiked,
+            };
           }
         } else {
+          // User unliked the comment
           return {
             ...comment,
             likes: likes.filter((id: string) => id !== data.userId),
@@ -368,7 +410,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
             isLiked: data.userId === currentUserId ? false : comment.isLiked,
           };
         }
-        return comment;
       });
     });
 
