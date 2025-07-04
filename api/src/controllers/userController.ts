@@ -225,19 +225,20 @@ export const updateUserById = async (
       }
     }
 
-    // Construct fields to update
-    let fieldsToUpdate: Partial<UserType> = {
-      firstName,
-      lastName,
-      avatar,
-      bio,
-      title,
-      username,
-      website,
-      socialMediaProfiles,
-      technologies: skillsIds,
-      topicsOfInterest: interestsIds,
-    };
+    let fieldsToUpdate: Partial<UserType> = {};
+
+    if (firstName !== undefined) fieldsToUpdate.firstName = firstName;
+    if (lastName !== undefined) fieldsToUpdate.lastName = lastName;
+    if (avatar !== undefined) fieldsToUpdate.avatar = avatar;
+    if (bio !== undefined) fieldsToUpdate.bio = bio;
+    if (title !== undefined) fieldsToUpdate.title = title;
+    if (username !== undefined) fieldsToUpdate.username = username;
+    if (website !== undefined) fieldsToUpdate.website = website;
+    if (socialMediaProfiles !== undefined)
+      fieldsToUpdate.socialMediaProfiles = socialMediaProfiles;
+    if (skillsIds !== undefined) fieldsToUpdate.technologies = skillsIds;
+    if (interestsIds !== undefined)
+      fieldsToUpdate.topicsOfInterest = interestsIds;
 
     const updatedUser: UserType = await User.findOneAndUpdate(
       { _id: user.role === "admin" ? userIdParam : userId },
