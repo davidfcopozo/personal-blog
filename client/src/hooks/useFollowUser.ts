@@ -118,7 +118,7 @@ export const useFollowUser = (user: UserType) => {
         handleFollowUpdate as EventListener
       );
     };
-  }, [userId, user.username]);
+  }, [userId, user?.username]);
 
   useEffect(() => {
     if (isMutatingRef.current) {
