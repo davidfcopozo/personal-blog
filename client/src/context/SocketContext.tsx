@@ -54,7 +54,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       case "like":
         return "❤️";
       case "follow":
-        return "👤";
+        return "🤝";
       default:
         return "🔔";
     }
@@ -361,9 +361,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         return post;
       });
     });
-
     newSocket.on("notification", (notification) => {
-      // The useNotifications hook will handle this
+      if (notification.recipient === currentUserId) {
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      }
+      // The notification will be processed by the useNotifications hook
     });
 
     newSocket.on("commentLikeUpdate", (data) => {
@@ -804,6 +806,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         isCurrentUserFollowed: followedUserId === currentUserId,
       });
 
+      // Emit a custom event to notify useFollowUser hook that socket event was received
+      if (followingUserId === currentUserId) {
+        window.dispatchEvent(
+          new CustomEvent("followUpdateReceived", {
+            detail: { followedUserId, isFollowing },
+          })
+        );
+      }
+
       // Update the current user's following list if they are the one following/unfollowing
       queryClient.setQueryData<UserFetchType>(
         ["currentUser"],
@@ -895,20 +906,40 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
             if (!oldData?.data) return oldData;
 
             const updatePostData = (post: any) => {
-              if (post?.postedBy?._id?.toString() === followedUserId) {
-                const followers = post.postedBy.followers || [];
-                const alreadyFollower = followers.some(
-                  (id: string) => id.toString() === followingUserId.toString()
-                );
+              if (!post?.postedBy || !post?.postedBy?._id) {
+                return post;
+              }
+
+              const postedById = post.postedBy._id?.toString
+                ? post.postedBy._id.toString()
+                : String(post.postedBy._id);
+
+              if (postedById === followedUserId) {
+                const followers = Array.isArray(post.postedBy.followers)
+                  ? post.postedBy.followers
+                  : [];
+
+                const alreadyFollower = followers.some((id: string) => {
+                  const followerId = id?.toString ? id.toString() : String(id);
+                  const followingId = followingUserId?.toString
+                    ? followingUserId.toString()
+                    : String(followingUserId);
+                  return followerId === followingId;
+                });
 
                 const newFollowers = isFollowing
                   ? alreadyFollower
                     ? followers
                     : [...followers, followingUserId]
-                  : followers.filter(
-                      (id: string) =>
-                        id.toString() !== followingUserId.toString()
-                    );
+                  : followers.filter((id: string) => {
+                      const followerId = id?.toString
+                        ? id.toString()
+                        : String(id);
+                      const followingId = followingUserId?.toString
+                        ? followingUserId.toString()
+                        : String(followingUserId);
+                      return followerId !== followingId;
+                    });
 
                 return {
                   ...post,
@@ -973,11 +1004,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         followedUserId === currentUserId &&
         followingUserId !== currentUserId
       ) {
-        toast({
-          title: `${getNotificationIcon("follow")} New Follower`,
-          description: "Someone started following you",
-          duration: 3000,
-        });
       }
     });
 
