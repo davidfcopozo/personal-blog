@@ -361,12 +361,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         return post;
       });
     });
-    newSocket.on("notification", (notification) => {
-      if (notification.recipient === currentUserId) {
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      }
-      // The notification will be processed by the useNotifications hook
-    });
+    newSocket.on("notification", (notification) => {});
 
     newSocket.on("commentLikeUpdate", (data) => {
       // Update cache for ALL users to ensure real-time updates
