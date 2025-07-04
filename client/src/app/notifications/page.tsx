@@ -41,7 +41,7 @@ const NotificationsPage: React.FC = () => {
       case "like":
         return "❤️";
       case "follow":
-        return "👤";
+        return "🤝";
       default:
         return "🔔";
     }
