@@ -48,37 +48,20 @@ export const useUpdateSettings = () => {
         interests: userData.topicsOfInterest || [],
       });
     }
-  }, [userData]);
+  }, [userData, currentUser]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { mutate, status, error } = usePatchRequest({
     url: `/api/users/${id}`,
-    onSuccess: () => {
+    onSuccess: (updatedUserData: UserType) => {
       toast({
         variant: "default",
         title: "User updated successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       refetchUser();
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        username: "",
-        bio: "",
-        website: "",
-        socialMediaProfiles: {
-          x: "",
-          instagram: "",
-          github: "",
-          linkedIn: "",
-          dribble: "",
-        },
-        skills: [],
-        interests: [],
-      });
     },
     onError: () => {
       toast({
@@ -87,15 +70,6 @@ export const useUpdateSettings = () => {
         description: error?.message || "Please try again",
       });
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-    },
-    onMutate: async (updatedData: InputFieldsProps) => {
-      await queryClient.cancelQueries({ queryKey: ["currentUser"] });
-      const previousData = queryClient.getQueryData(["currentUser"]);
-      queryClient.setQueryData(["currentUser"], (oldData: any) => ({
-        ...(oldData as object),
-        ...updatedData,
-      }));
-      return { previousData };
     },
   });
 
@@ -122,39 +96,76 @@ export const useUpdateSettings = () => {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // Filter socialMediaProfiles to remove empty or whitespace-only values
-    const filteredSocialMediaProfiles =
-      formData.socialMediaProfiles &&
-      typeof formData.socialMediaProfiles === "object"
-        ? Object.fromEntries(
-            Object.entries(formData.socialMediaProfiles).filter(
-              ([_, value]) =>
-                value && typeof value === "string" && value.trim() !== ""
-            )
-          )
-        : {};
+    if (!userData) return;
 
-    const fieldsToUpdate: InputFieldsProps = {
-      ...formData,
-      skills: formData?.skills,
-      interests: formData?.interests,
-    };
+    const fieldsToUpdate: Partial<InputFieldsProps> = {};
 
-    for (const key in formData) {
-      if (key === "socialMediaProfiles") {
-      } else if (!formData[key as keyof InputFieldsProps]) {
-        // Remove empty values
-        delete fieldsToUpdate[key as keyof InputFieldsProps];
-      }
+    if (formData.firstName !== (userData.firstName || "")) {
+      fieldsToUpdate.firstName = formData.firstName;
+    }
+    if (formData.lastName !== (userData.lastName || "")) {
+      fieldsToUpdate.lastName = formData.lastName;
+    }
+    if (formData.email !== (userData.email || "")) {
+      fieldsToUpdate.email = formData.email;
+    }
+    if (formData.username !== (userData.username || "")) {
+      fieldsToUpdate.username = formData.username;
+    }
+    if (formData.bio !== (userData.bio || "")) {
+      fieldsToUpdate.bio = formData.bio;
+    }
+    if (formData.website !== (userData.website || "")) {
+      fieldsToUpdate.website = formData.website;
     }
 
-    if (Object.keys(filteredSocialMediaProfiles).length > 0) {
+    const currentSocials = userData.socialMediaProfiles || {};
+    const formSocials = formData.socialMediaProfiles || {};
+
+    const socialMediaChanged =
+      formSocials.x !== (currentSocials.x || "") ||
+      formSocials.instagram !== (currentSocials.instagram || "") ||
+      formSocials.github !== (currentSocials.github || "") ||
+      formSocials.linkedIn !== (currentSocials.linkedIn || "") ||
+      formSocials.dribble !== (currentSocials.dribble || "");
+
+    if (socialMediaChanged) {
+      // Filter socialMediaProfiles to remove empty or whitespace-only values
+      const filteredSocialMediaProfiles = Object.fromEntries(
+        Object.entries(formSocials).filter(
+          ([_, value]) =>
+            value && typeof value === "string" && value.trim() !== ""
+        )
+      );
       fieldsToUpdate.socialMediaProfiles = filteredSocialMediaProfiles;
+    }
+
+    const currentSkills = userData.technologies || [];
+    const currentInterests = userData.topicsOfInterest || [];
+
+    const skillsChanged =
+      JSON.stringify(formData.skills.map((s) => s._id).sort()) !==
+      JSON.stringify(currentSkills.map((s: any) => s._id).sort());
+    const interestsChanged =
+      JSON.stringify(formData.interests.map((i) => i._id).sort()) !==
+      JSON.stringify(currentInterests.map((i: any) => i._id).sort());
+
+    if (skillsChanged) {
+      fieldsToUpdate.skills = formData.skills;
+    }
+    if (interestsChanged) {
+      fieldsToUpdate.interests = formData.interests;
     }
 
     // Only submit if there are fields to update
     if (Object.keys(fieldsToUpdate).length > 0) {
       mutate(fieldsToUpdate);
+    } else {
+      toast({
+        variant: "default",
+        title: "No changes detected",
+        description: "Make some changes before saving",
+      });
     }
   };
 
