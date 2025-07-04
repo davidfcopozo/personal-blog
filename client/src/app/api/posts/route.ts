@@ -17,6 +17,12 @@ export async function GET(req: NextRequest) {
       headers.Authorization = `Bearer ${token.accessToken}`;
     }
 
+    if (token?.sub) {
+      headers["X-User-ID"] = token.sub;
+    } else {
+      console.log("❌ No token or token.sub found for posts request");
+    }
+
     const res = await axios.get(
       `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/posts`,
       { headers }
