@@ -78,6 +78,7 @@ export class NotificationService {
         if (this.io) {
           const notificationData = {
             id: notification._id,
+            recipient: notification.recipient,
             type: notification.type,
             message: notification.message,
             sender: notification.sender,
@@ -322,15 +323,32 @@ export class NotificationService {
     recipientId: ObjectId | string,
     senderId: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `${sender?.firstName} ${sender?.lastName} started following you`;
+    const existingNotification = await Notification.findOne({
+      recipient: recipientId,
+      sender: senderId,
+      type: "follow",
+      createdAt: { $gte: new Date(Date.now() - 60000) },
+    });
 
-    return this.createNotification({
+    if (existingNotification) {
+      return existingNotification;
+    }
+
+    const sender = await User.findById(senderId);
+    if (!sender) {
+      return null;
+    }
+
+    const message = `${sender.firstName} ${sender.lastName} started following you`;
+
+    const notification = await this.createNotification({
       recipientId,
       senderId,
       type: "follow",
       message,
     });
+
+    return notification;
   }
 
   async emitPostUpdate(
@@ -347,6 +365,7 @@ export class NotificationService {
       });
     }
   }
+
   async emitLikeUpdate(postId: string, userId: string, isLiked: boolean) {
     if (this.io) {
       this.io.emit("postLikeUpdate", {
