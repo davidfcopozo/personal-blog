@@ -129,13 +129,17 @@ export const AuthorPanel = memo(function AuthorPanel({
             disabled={isPending}
             className={`${
               isFollowed
-                ? "dark:text-amber-500 text-foreground dark:border-amber-500 border-foreground border-[1px] hover:bg-foreground hover:dark:text-background hover:text-background transition-all duration-300"
+                ? "dark:text-amber-500 text-foreground dark:border-amber-500 border-foreground border-[1px] hover:bg-foreground hover:dark:text-background hover:text-background transition-all duration-300 following-button"
                 : "text-background hover:dark:bg-transparent hover:dark:text-amber-500 hover:bg-transparent hover:border-foreground hover:text-foreground transition-all duration-300 hover:dark:border-amber-500 hover:border-[1px]"
             } w-full py-2 px-4 font-bold`}
             aria-label={`Follow ${fullName}`}
             variant={isFollowed ? "secondary" : "default"}
+            data-following={isFollowed ? "true" : "false"}
           >
-            {isFollowed ? "Following" : "Follow"}
+            <span className="follow-text">
+              {isFollowed ? "Following" : "Follow"}
+            </span>
+            <span className="unfollow-text hidden">Unfollow</span>
           </Button>
         )}
       </footer>

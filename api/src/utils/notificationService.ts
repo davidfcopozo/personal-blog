@@ -35,6 +35,7 @@ export class NotificationService {
             replies: { inApp: true, email: true },
             bookmarks: { inApp: true, email: false },
             likes: { inApp: true, email: false },
+            follows: { inApp: true, email: false },
           },
         });
       }
@@ -45,7 +46,8 @@ export class NotificationService {
         | "comments"
         | "replies"
         | "bookmarks"
-        | "likes";
+        | "likes"
+        | "follows";
 
       const typeKeyMap: Record<NotificationType, PreferenceKey> = {
         mention: "mentions",
@@ -53,6 +55,7 @@ export class NotificationService {
         reply: "replies",
         bookmark: "bookmarks",
         like: "likes",
+        follow: "follows",
       };
 
       const typePrefs = preferences.preferences[typeKeyMap[data.type]]; // Create in-app notification if enabled
@@ -75,6 +78,7 @@ export class NotificationService {
         if (this.io) {
           const notificationData = {
             id: notification._id,
+            recipient: notification.recipient,
             type: notification.type,
             message: notification.message,
             sender: notification.sender,
@@ -315,6 +319,38 @@ export class NotificationService {
     });
   }
 
+  async createFollowNotification(
+    recipientId: ObjectId | string,
+    senderId: ObjectId | string
+  ) {
+    const existingNotification = await Notification.findOne({
+      recipient: recipientId,
+      sender: senderId,
+      type: "follow",
+      createdAt: { $gte: new Date(Date.now() - 60000) },
+    });
+
+    if (existingNotification) {
+      return existingNotification;
+    }
+
+    const sender = await User.findById(senderId);
+    if (!sender) {
+      return null;
+    }
+
+    const message = `${sender.firstName} ${sender.lastName} started following you`;
+
+    const notification = await this.createNotification({
+      recipientId,
+      senderId,
+      type: "follow",
+      message,
+    });
+
+    return notification;
+  }
+
   async emitPostUpdate(
     postId: string,
     updateType: "like" | "bookmark" | "comment",
@@ -329,6 +365,7 @@ export class NotificationService {
       });
     }
   }
+
   async emitLikeUpdate(postId: string, userId: string, isLiked: boolean) {
     if (this.io) {
       this.io.emit("postLikeUpdate", {
@@ -453,6 +490,30 @@ export class NotificationService {
       });
     } else {
       console.error("❌ Socket.io instance not available for emitReplyDeleted");
+    }
+  }
+
+  async emitFollowUpdate(
+    followedUserId: string,
+    followingUserId: string,
+    isFollowing: boolean
+  ) {
+    if (this.io) {
+      console.log("🔄 Emitting followUpdate:", {
+        followedUserId,
+        followingUserId,
+        isFollowing,
+        timestamp: new Date(),
+      });
+
+      this.io.emit("followUpdate", {
+        followedUserId,
+        followingUserId,
+        isFollowing,
+        timestamp: new Date(),
+      });
+    } else {
+      console.error("❌ Socket.io instance not available for emitFollowUpdate");
     }
   }
 

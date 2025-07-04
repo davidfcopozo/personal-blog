@@ -66,6 +66,8 @@ const NotificationBell: React.FC = () => {
         return "🔖";
       case "like":
         return "❤️";
+      case "follow":
+        return "🤝";
       default:
         return "🔔";
     }

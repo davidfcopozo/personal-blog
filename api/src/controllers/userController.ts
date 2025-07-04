@@ -12,6 +12,7 @@ import Topic from "../models/topicModel";
 import Category from "../models/categoryModel";
 import Image from "../models/imageModel";
 import { DuplicatedResource } from "../errors/duplicated-resource";
+import { NotificationService } from "../utils/notificationService";
 
 const sensitiveDataToExclude = process.env.SENSITIVE_DATA_TO_EXCLUDE;
 
@@ -44,7 +45,12 @@ export const getUserById = async (
 ) => {
   const {
     params: { id: userId },
+    user: { userId: currentUserId } = { userId: null },
+    headers,
   } = req;
+
+  const headerUserId =
+    headers["x-user-id"] || headers["X-User-ID"] || headers["X-User-Id"];
 
   try {
     const user: UserType = await User.findById(userId)
@@ -55,6 +61,28 @@ export const getUserById = async (
 
     if (!user) {
       throw new NotFound("User not found");
+    }
+
+    // Add isFollowed property for the requesting user
+    const requestingUserId = currentUserId || headerUserId;
+
+    if (requestingUserId) {
+      // Check if the current user is following this user
+      const currentUser = await User.findById(requestingUserId)
+        .select("following")
+        .lean();
+
+      if (currentUser && currentUser.following) {
+        const isFollowed = (currentUser.following as any[]).some(
+          (id: any) => id.toString() === user._id.toString()
+        );
+
+        (user as any).isFollowed = isFollowed;
+      } else {
+        (user as any).isFollowed = false;
+      }
+    } else {
+      (user as any).isFollowed = false;
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
@@ -70,7 +98,12 @@ export const getUserByUsername = async (
 ) => {
   const {
     params: { username },
+    user: { userId: currentUserId } = { userId: null },
+    headers,
   } = req;
+
+  const headerUserId =
+    headers["x-user-id"] || headers["X-User-ID"] || headers["X-User-Id"];
 
   try {
     if (!isValidUsername(username)) {
@@ -85,6 +118,26 @@ export const getUserByUsername = async (
 
     if (!user) {
       throw new NotFound("User not found");
+    }
+
+    const requestingUserId = currentUserId || headerUserId;
+
+    if (requestingUserId) {
+      const currentUser = await User.findById(requestingUserId)
+        .select("following")
+        .lean();
+
+      if (currentUser && currentUser.following) {
+        const isFollowed = (currentUser.following as any[]).some(
+          (id: any) => id.toString() === user._id.toString()
+        );
+
+        (user as any).isFollowed = isFollowed;
+      } else {
+        (user as any).isFollowed = false;
+      }
+    } else {
+      (user as any).isFollowed = false;
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
@@ -257,6 +310,28 @@ export const toggleFollowUser = async (
       updateFollowers.modifiedCount !== 1
     ) {
       throw new BadRequest("Failed to update following status");
+    }
+
+    // Get notification service and emit events
+    const notificationService: NotificationService = req.app.get(
+      "notificationService"
+    );
+
+    if (notificationService) {
+      await notificationService.emitFollowUpdate(
+        userToFollowId,
+        userId,
+        !isFollowing
+      );
+
+      if (!isFollowing) {
+        await notificationService.createFollowNotification(
+          userToFollowId,
+          userId
+        );
+      }
+    } else {
+      console.error(`❌ NotificationService not available in toggleFollowUser`);
     }
 
     await session.commitTransaction();

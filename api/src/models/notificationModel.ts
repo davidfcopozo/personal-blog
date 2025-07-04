@@ -16,7 +16,7 @@ const notificationSchema = new Schema<NotificationInterface>(
     },
     type: {
       type: String,
-      enum: ["mention", "comment", "reply", "bookmark", "like"],
+      enum: ["mention", "comment", "reply", "bookmark", "like", "follow"],
       required: true,
     },
     message: {

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSocket } from "@/context/SocketContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Notification } from "@/typings/interfaces";
@@ -10,6 +10,10 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Use refs to avoid dependency issues in useEffect
+  const recentNotificationsRef = useRef(new Set<string>());
+  const toastShownRef = useRef(new Set<string>());
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -23,6 +27,8 @@ export const useNotifications = () => {
         return "🔖";
       case "like":
         return "❤️";
+      case "follow":
+        return "🤝";
       default:
         return "🔔";
     }
@@ -33,12 +39,30 @@ export const useNotifications = () => {
     }
 
     const handleNotification = (notification: Notification) => {
+      const notificationId = notification.id || notification._id;
+      const senderId =
+        (notification.sender as any)?._id || notification.sender.username;
+      const recipientId = (notification as any).recipient || "";
+      const dedupeKey = `${notification.type}-${senderId}-${notification.message}-${recipientId}`;
+
+      // Check for recent duplicates (within last 10 seconds)
+      if (recentNotificationsRef.current.has(dedupeKey)) {
+        return;
+      }
+
+      recentNotificationsRef.current.add(dedupeKey);
+
+      // Clean up old entries after 10 seconds
+      setTimeout(() => {
+        recentNotificationsRef.current.delete(dedupeKey);
+      }, 10000);
+
+      // Add notification to state regardless of type
       setNotifications((prev) => {
-        // Deduplicate notifications based on id or _id
-        const exists = prev.some(
-          (n) => (n.id || n._id) === (notification.id || notification._id)
-        );
-        if (exists) {
+        const notificationId = notification.id || notification._id;
+        const existsById = prev.some((n) => (n.id || n._id) === notificationId);
+
+        if (existsById) {
           return prev;
         }
 
@@ -47,6 +71,17 @@ export const useNotifications = () => {
       });
 
       setUnreadCount((prev) => prev + 1);
+
+      if (toastShownRef.current.has(dedupeKey)) {
+        return;
+      }
+
+      toastShownRef.current.add(dedupeKey);
+
+      setTimeout(() => {
+        toastShownRef.current.delete(dedupeKey);
+      }, 10000);
+
       toast({
         title: `${getNotificationIcon(notification.type)} New Notification`,
         description: notification.message,

@@ -137,19 +137,23 @@ const UserProfile = ({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={`outline-none px-0 text-xs  hover:bg-transparent hover:text-amber-500 ${
+                          className={`outline-none px-0 text-xs hover:bg-transparent hover:text-amber-500 ${
                             user?.followers?.some(
                               (id: any) =>
                                 id.toString() ===
                                 currentUser?.data?._id.toString()
                             )
-                              ? "text-amber-500"
+                              ? "text-amber-500 following-button"
                               : ""
                           }`}
                           onClick={handleFollowToggle}
                           disabled={isPending}
+                          data-following={isFollowed ? "true" : "false"}
                         >
-                          {isFollowed ? "Following" : "Follow"}
+                          <span className="follow-text">
+                            {isFollowed ? "Following" : "Follow"}
+                          </span>
+                          <span className="unfollow-text hidden">Unfollow</span>
                         </Button>
                       </div>
                     )}

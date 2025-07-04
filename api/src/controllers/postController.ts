@@ -1,4 +1,5 @@
 import Post from "../models/postModel";
+import User from "../models/userModel";
 import { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RequestWithUserInfo } from "../typings/models/user";
@@ -68,6 +69,11 @@ export const getAllPosts = async (
   res: Response,
   next: NextFunction
 ) => {
+  const { user: { userId: currentUserId } = { userId: null }, headers } = req;
+
+  const headerUserId =
+    headers["x-user-id"] || headers["X-User-ID"] || headers["X-User-Id"];
+
   const posts: PostType[] = await Post.find({ status: "published" })
     .populate("postedBy")
     .populate("likesCount")
@@ -78,6 +84,21 @@ export const getAllPosts = async (
   try {
     if (posts.length < 1) {
       throw new NotFound("Posts not found");
+    }
+
+    const requestingUserId = currentUserId || headerUserId;
+    let currentUserFollowing: string[] = [];
+
+    if (requestingUserId) {
+      const currentUser = await User.findById(requestingUserId)
+        .select("following")
+        .lean();
+
+      if (currentUser && currentUser.following) {
+        currentUserFollowing = (currentUser.following as any[]).map((id) =>
+          id.toString()
+        );
+      }
     }
 
     let enhancedPosts = posts;
@@ -94,30 +115,62 @@ export const getAllPosts = async (
               req.userId
             );
 
-            return {
+            const postObject = {
               ...(post as any).toObject(),
               isLiked: interactions.liked,
               isBookmarked: interactions.bookmarked,
             };
+
+            if (postObject.postedBy && requestingUserId) {
+              const authorId = postObject.postedBy._id?.toString();
+              postObject.postedBy.isFollowed =
+                currentUserFollowing.includes(authorId);
+            } else if (postObject.postedBy) {
+              postObject.postedBy.isFollowed = false;
+            }
+
+            return postObject;
           } catch (error) {
             console.error(
               `Error getting interactions for post ${post._id}:`,
               error
             );
-            return {
+            const postObject = {
               ...(post as any).toObject(),
               isLiked: false,
               isBookmarked: false,
             };
+
+            if (postObject.postedBy && requestingUserId) {
+              const authorId = postObject.postedBy._id?.toString();
+              postObject.postedBy.isFollowed =
+                currentUserFollowing.includes(authorId);
+            } else if (postObject.postedBy) {
+              postObject.postedBy.isFollowed = false;
+            }
+
+            return postObject;
           }
         })
       );
     } else {
-      enhancedPosts = posts.map((post) => ({
-        ...(post as any).toObject(),
-        isLiked: false,
-        isBookmarked: false,
-      }));
+      enhancedPosts = posts.map((post) => {
+        const postObject = {
+          ...(post as any).toObject(),
+          isLiked: false,
+          isBookmarked: false,
+        };
+
+        if (postObject.postedBy && requestingUserId) {
+          const authorId = postObject.postedBy._id?.toString();
+          postObject.postedBy.isFollowed =
+            currentUserFollowing.includes(authorId);
+        } else if (postObject.postedBy) {
+          postObject.postedBy.isFollowed = false;
+        }
+
+        return postObject;
+      });
     }
 
     res.status(StatusCodes.OK).json({
@@ -136,6 +189,11 @@ export const getPostBySlugOrId = async (
   next: NextFunction
 ) => {
   const { slugOrId } = req.params;
+  const { user: { userId: currentUserId } = { userId: null }, headers } = req;
+
+  const headerUserId =
+    headers["x-user-id"] || headers["X-User-ID"] || headers["X-User-Id"];
+
   try {
     let post: PostType | null;
 
@@ -209,6 +267,29 @@ export const getPostBySlugOrId = async (
         isLiked: false,
         isBookmarked: false,
       };
+    }
+
+    const requestingUserId = currentUserId || headerUserId;
+
+    if (requestingUserId && enhancedPost.postedBy) {
+      const currentUser = await User.findById(requestingUserId)
+        .select("following")
+        .lean();
+
+      if (currentUser && currentUser.following) {
+        const isFollowed = (currentUser.following as any[]).some(
+          (id: any) =>
+            id.toString() === (enhancedPost.postedBy as any)._id.toString()
+        );
+
+        (enhancedPost.postedBy as any).isFollowed = isFollowed;
+      } else {
+        (enhancedPost.postedBy as any).isFollowed = false;
+      }
+    } else {
+      if (enhancedPost.postedBy) {
+        (enhancedPost.postedBy as any).isFollowed = false;
+      }
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: enhancedPost });
