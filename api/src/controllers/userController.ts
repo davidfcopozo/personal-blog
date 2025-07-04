@@ -330,6 +330,8 @@ export const toggleFollowUser = async (
           userId
         );
       }
+    } else {
+      console.error(`❌ NotificationService not available in toggleFollowUser`);
     }
 
     await session.commitTransaction();
