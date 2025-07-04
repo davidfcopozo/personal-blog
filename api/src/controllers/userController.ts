@@ -45,6 +45,7 @@ export const getUserById = async (
 ) => {
   const {
     params: { id: userId },
+    user: { userId: currentUserId } = { userId: null },
   } = req;
 
   try {
@@ -56,6 +57,22 @@ export const getUserById = async (
 
     if (!user) {
       throw new NotFound("User not found");
+    }
+
+    // Add isFollowed property for the requesting user
+    if (currentUserId) {
+      // Check if the current user is following this user
+      const currentUser = await User.findById(currentUserId)
+        .select("following")
+        .lean();
+
+      if (currentUser && currentUser.following) {
+        const isFollowed = (currentUser.following as any[]).some(
+          (id: any) => id.toString() === user._id.toString()
+        );
+
+        (user as any).isFollowed = isFollowed;
+      }
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
@@ -71,6 +88,7 @@ export const getUserByUsername = async (
 ) => {
   const {
     params: { username },
+    user: { userId: currentUserId } = { userId: null },
   } = req;
 
   try {
@@ -86,6 +104,20 @@ export const getUserByUsername = async (
 
     if (!user) {
       throw new NotFound("User not found");
+    }
+
+    if (currentUserId) {
+      const currentUser = await User.findById(currentUserId)
+        .select("following")
+        .lean();
+
+      if (currentUser && currentUser.following) {
+        const isFollowed = (currentUser.following as any[]).some(
+          (id: any) => id.toString() === user._id.toString()
+        );
+
+        (user as any).isFollowed = isFollowed;
+      }
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
