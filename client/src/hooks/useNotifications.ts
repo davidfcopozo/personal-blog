@@ -62,14 +62,7 @@ export const useNotifications = () => {
         const notificationId = notification.id || notification._id;
         const existsById = prev.some((n) => (n.id || n._id) === notificationId);
 
-        // Also check by content to catch duplicate notifications with different IDs
-        const existsByContent = prev.some((n) => {
-          const nSenderId = (n.sender as any)?._id || n.sender.username;
-          const nKey = `${n.type}-${nSenderId}-${n.message}`;
-          return nKey === dedupeKey.split("-").slice(0, 3).join("-");
-        });
-
-        if (existsById || existsByContent) {
+        if (existsById) {
           return prev;
         }
 
