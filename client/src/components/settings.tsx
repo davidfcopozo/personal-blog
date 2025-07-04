@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getFullName, getNameInitials } from "@/utils/formats";
+import { getFullName } from "@/utils/formats";
 import SocialsForm from "./socials-form";
 import PersonalInfoForm from "./personal-info-form";
 import { useUpdateSettings } from "@/hooks/useUpdateSettings";
@@ -11,6 +11,10 @@ import SkillsInterestsManager from "./SkillsInterestsManager";
 import { SettingsSkeleton } from "./settings-skeleton";
 import { Card } from "./ui/card";
 import { UserAvatar } from "./ui/user-avatar";
+import { useImageManager } from "@/hooks/useImageManager";
+import { useToast } from "@/components/ui/use-toast";
+import usePatchRequest from "@/hooks/usePatchRequest";
+import { ImageUploadModal } from "./image-upload-modal";
 
 export const Settings = () => {
   const {
@@ -21,6 +25,60 @@ export const Settings = () => {
     userData,
     isUserPending,
   } = useUpdateSettings();
+
+  const { toast } = useToast();
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const {
+    uploadImage,
+    deleteImage,
+    updateImageMetadata,
+    userImages,
+    isLoadingImages,
+    uploading,
+  } = useImageManager();
+
+  // Hook for updating user avatar
+  const { mutate: updateAvatar } = usePatchRequest({
+    url: `/api/users/${userData?._id}`,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
+      // The useUpdateSettings hook will automatically refetch user data
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to update profile picture: ${error.message}`,
+      });
+    },
+  });
+
+  const handleImageSelect = (imageUrl: string) => {
+    // Update user avatar with selected image
+    updateAvatar({ avatar: imageUrl });
+    setIsImageModalOpen(false);
+  };
+
+  const handleChangePicture = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const handleDeletePicture = () => {
+    if (!userData?.avatar) {
+      toast({
+        variant: "destructive",
+        title: "No picture to delete",
+        description: "You don't have a profile picture set",
+      });
+      return;
+    }
+
+    // Update user avatar to null/default
+    updateAvatar({ avatar: null });
+  };
 
   if (isUserPending) return <SettingsSkeleton />;
 
@@ -93,8 +151,19 @@ export const Settings = () => {
                   isLoading={isUserPending}
                 />
                 <div className="flex flex-col space-y-2 ">
-                  <Button variant="default">Change picture</Button>
-                  <Button type="button" variant="outline">
+                  <Button
+                    variant="default"
+                    onClick={handleChangePicture}
+                    disabled={uploading}
+                  >
+                    {uploading ? "Uploading..." : "Change picture"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDeletePicture}
+                    disabled={uploading || !userData?.avatar}
+                  >
                     Delete picture
                   </Button>
                 </div>
@@ -113,6 +182,19 @@ export const Settings = () => {
           </div>
         </div>
       </div>
+
+      {/* Image Upload Modal */}
+      <ImageUploadModal
+        isImageUploadModalOpen={isImageModalOpen}
+        openImageUploadModal={() => setIsImageModalOpen(!isImageModalOpen)}
+        onInsertImage={handleImageSelect}
+        handleImageUpload={uploadImage}
+        images={userImages}
+        onDeleteImage={deleteImage}
+        onUpdate={updateImageMetadata}
+        isLoadingImages={isLoadingImages}
+        buttonText="Set as Profile Picture"
+      />
     </div>
   );
 };
