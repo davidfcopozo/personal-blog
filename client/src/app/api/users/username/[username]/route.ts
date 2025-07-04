@@ -2,7 +2,10 @@ import axios from "axios";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function GET(req: NextRequest, props: { params: Promise<{ username: string }> }) {
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ username: string }> }
+) {
   const params = await props.params;
   const { username } = params;
 
@@ -19,8 +22,25 @@ export async function GET(req: NextRequest, props: { params: Promise<{ username:
   }
 
   try {
+    const token = await getToken({
+      req,
+      secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
+    });
+
+    const headers: any = {
+      "Content-Type": "application/json",
+    };
+
+    // If user is authenticated, pass the user ID in headers
+    if (token?.sub) {
+      headers["X-User-ID"] = token.sub;
+    } else {
+      console.log("❌ No token or token.sub found");
+    }
+
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/users/username/${username}`
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/users/username/${username}`,
+      { headers }
     );
 
     return new Response(JSON.stringify(res.data), {
