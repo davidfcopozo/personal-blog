@@ -46,7 +46,11 @@ export const getUserById = async (
   const {
     params: { id: userId },
     user: { userId: currentUserId } = { userId: null },
+    headers,
   } = req;
+
+  const headerUserId =
+    headers["x-user-id"] || headers["X-User-ID"] || headers["X-User-Id"];
 
   try {
     const user: UserType = await User.findById(userId)
@@ -60,9 +64,11 @@ export const getUserById = async (
     }
 
     // Add isFollowed property for the requesting user
-    if (currentUserId) {
+    const requestingUserId = currentUserId || headerUserId;
+
+    if (requestingUserId) {
       // Check if the current user is following this user
-      const currentUser = await User.findById(currentUserId)
+      const currentUser = await User.findById(requestingUserId)
         .select("following")
         .lean();
 
@@ -72,7 +78,11 @@ export const getUserById = async (
         );
 
         (user as any).isFollowed = isFollowed;
+      } else {
+        (user as any).isFollowed = false;
       }
+    } else {
+      (user as any).isFollowed = false;
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
@@ -89,7 +99,11 @@ export const getUserByUsername = async (
   const {
     params: { username },
     user: { userId: currentUserId } = { userId: null },
+    headers,
   } = req;
+
+  const headerUserId =
+    headers["x-user-id"] || headers["X-User-ID"] || headers["X-User-Id"];
 
   try {
     if (!isValidUsername(username)) {
@@ -106,8 +120,10 @@ export const getUserByUsername = async (
       throw new NotFound("User not found");
     }
 
-    if (currentUserId) {
-      const currentUser = await User.findById(currentUserId)
+    const requestingUserId = currentUserId || headerUserId;
+
+    if (requestingUserId) {
+      const currentUser = await User.findById(requestingUserId)
         .select("following")
         .lean();
 
@@ -117,7 +133,11 @@ export const getUserByUsername = async (
         );
 
         (user as any).isFollowed = isFollowed;
+      } else {
+        (user as any).isFollowed = false;
       }
+    } else {
+      (user as any).isFollowed = false;
     }
 
     res.status(StatusCodes.OK).json({ success: true, data: user });
