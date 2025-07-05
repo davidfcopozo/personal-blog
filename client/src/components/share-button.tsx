@@ -7,12 +7,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Facebook,
-  Twitter,
   Linkedin,
   Mail,
   Link,
   Share2,
   MessageCircle,
+  XIcon,
 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import { PostType } from "@/typings/types";
@@ -39,7 +39,7 @@ export const ShareButton = memo(function ShareButton({
   const handleShare = (
     shareType:
       | "facebook"
-      | "twitter"
+      | "x"
       | "linkedin"
       | "email"
       | "copy-link"
@@ -102,14 +102,14 @@ export const ShareButton = memo(function ShareButton({
       },
     },
     {
-      name: "Twitter",
-      icon: Twitter,
+      name: "X (former Twitter)",
+      icon: XIcon,
       action: () => {
-        const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(
           post.title
         )}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(twitterShareUrl, "_blank");
-        handleShare("twitter");
+        window.open(xShareUrl, "_blank");
+        handleShare("x");
       },
     },
     {
