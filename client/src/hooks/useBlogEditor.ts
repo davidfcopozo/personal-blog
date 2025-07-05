@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
 import { UpdatePostPayload, UserType } from "@/typings/types";
 import usePatchRequest from "./usePatchRequest";
+import { clearCache } from "@/utils/request-cache";
 import { arraysEqual } from "@/utils/formats";
 
 export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
@@ -123,6 +124,13 @@ export const useBlogEditor = ({ initialPost, slug }: UseBlogEditorProps) => {
     url: `/api/posts/${initialPost?._id}`,
     onSuccess: (updatePostData, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"], exact: true });
+
+      if (slug) {
+        queryClient.invalidateQueries({
+          queryKey: ["preview-post", slug],
+        });
+        clearCache(`/api/posts/preview/${slug}`);
+      }
 
       // Update lastSavedData to current state to reset change indicator
       setLastSavedData({
