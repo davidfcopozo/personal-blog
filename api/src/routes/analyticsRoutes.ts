@@ -5,6 +5,7 @@ import {
   togglePostBookmark,
   toggleCommentLike,
   getPostAnalytics,
+  getPostShareAnalytics,
   getCommentAnalytics,
   getUserAnalytics,
   getUserPostInteractions,
@@ -18,6 +19,7 @@ router.post("/posts/:postId/views", recordPostView);
 router.post("/posts/:postId/like", auth, togglePostLike);
 router.post("/posts/:postId/bookmark", auth, togglePostBookmark);
 router.get("/posts/:postId/analytics", getPostAnalytics);
+router.get("/posts/:postId/shares", getPostShareAnalytics);
 router.get("/posts/:postId/interactions", auth, getUserPostInteractions);
 
 router.post("/comments/:commentId/like", auth, toggleCommentLike);
