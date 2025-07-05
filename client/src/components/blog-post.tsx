@@ -120,14 +120,16 @@ const BlogPost = memo(function BlogPost({
           <main className="order-1 lg:order-2 lg:flex-1">
             <article className="rounded-lg overflow-hidden mt-6">
               <div className="flex flex-col">
-                <div className="w-full order-2 lg:order-1 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
-                  <Image
-                    src={post.coverImage as string}
-                    alt="Blog Cover"
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                </div>
+                {post.coverImage && (
+                  <div className="w-full order-2 lg:order-1 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
+                    <Image
+                      src={post.coverImage as string}
+                      alt="Blog Cover"
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                )}
                 <div className="order-1 mx-auto w-[90%] lg:mx-0 lg:w-full lg:order-2 flex flex-col gap-4 p-4">
                   {/* METADATA */}
                   <div className="flex flex-col md:gap-4 order-2 lg:order-1 gap-2 items-center pt-4 lg:pt-0">
