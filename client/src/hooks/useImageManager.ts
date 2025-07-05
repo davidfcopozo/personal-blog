@@ -16,6 +16,7 @@ import useFetchRequest from "./useFetchRequest";
 import usePatchRequest from "./usePatchRequest";
 import { AxiosError } from "axios";
 import { useSessionUserId } from "./useSessionUserId";
+import { clearCache } from "@/utils/request-cache";
 import getImageHash from "@/utils/getImageHash";
 
 export const useImageManager = () => {
@@ -25,10 +26,26 @@ export const useImageManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const currentUser = queryClient.getQueryData<{ data: UserType }>([
-    "currentUser",
-  ]);
+  const getCurrentUser = useCallback(() => {
+    const queryCache = queryClient.getQueryCache();
+    const currentUserQueries = queryCache.findAll({
+      predicate: (query) => {
+        return (
+          Array.isArray(query.queryKey) && query.queryKey[0] === "currentUser"
+        );
+      },
+    });
 
+    for (const query of currentUserQueries) {
+      const data = queryClient.getQueryData<{ data: UserType }>(query.queryKey);
+      if (data && data.data && data.data._id) {
+        return data;
+      }
+    }
+    return null;
+  }, [queryClient]);
+
+  const currentUser = getCurrentUser();
   const userId = currentUser?.data?._id || currentUserId;
 
   const {
@@ -41,11 +58,12 @@ export const useImageManager = () => {
   );
 
   const { mutate: storeImageMetadata } = usePostRequest({
-    url: currentUserId ? `/api/users/${currentUserId}/images` : "",
+    url: userId ? `/api/users/${userId}/images` : "",
     onSuccess: () => {
-      if (currentUserId) {
+      if (userId) {
+        clearCache(`/api/users/${userId}/images`);
         queryClient.invalidateQueries({
-          queryKey: ["user-images", currentUserId],
+          queryKey: ["user-images", userId],
         });
       }
       toast({
@@ -61,19 +79,20 @@ export const useImageManager = () => {
       });
     },
     onMutate: async (data) => {
-      await queryClient.cancelQueries({ queryKey: ["user-images"] });
-      const previousData = queryClient.getQueryData(["user-images"]);
+      await queryClient.cancelQueries({ queryKey: ["user-images", userId] });
+      const previousData = queryClient.getQueryData(["user-images", userId]);
       return { previousData };
     },
   });
 
   const { mutate: deleteImageMetadata, error: deleteImageError } =
     useDeleteImages({
-      url: currentUserId ? `/api/users/${currentUserId}/images` : "",
+      url: userId ? `/api/users/${userId}/images` : "",
       onSuccess: () => {
-        if (currentUserId) {
+        if (userId) {
+          clearCache(`/api/users/${userId}/images`);
           queryClient.invalidateQueries({
-            queryKey: ["user-images", currentUserId],
+            queryKey: ["user-images", userId],
           });
         }
         toast({
@@ -91,9 +110,13 @@ export const useImageManager = () => {
     });
 
   const { mutate: updateImageMutation } = usePatchRequest({
-    url: `/api/users/${currentUserId}/images`,
+    url: `/api/users/${userId}/images`,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-images"] });
+      if (userId) {
+        // Clear the request cache first
+        clearCache(`/api/users/${userId}/images`);
+        queryClient.invalidateQueries({ queryKey: ["user-images", userId] });
+      }
       toast({
         title: "Success",
         description: "Image updated successfully",
@@ -116,10 +139,10 @@ export const useImageManager = () => {
           updates,
         });
 
-        // Refresh the image data after update
-        if (currentUserId) {
+        if (userId) {
+          clearCache(`/api/users/${userId}/images`);
           queryClient.invalidateQueries({
-            queryKey: ["user-images", currentUserId],
+            queryKey: ["user-images", userId],
           });
         }
       } catch (error) {
@@ -133,7 +156,7 @@ export const useImageManager = () => {
         throw error;
       }
     },
-    [updateImageMutation, toast, currentUserId, queryClient]
+    [updateImageMutation, toast, userId, queryClient]
   );
 
   const uploadImage = useCallback(
@@ -148,9 +171,8 @@ export const useImageManager = () => {
       }
 
       setUploading(true);
-      const currentUser = queryClient.getQueryData<{ data: UserType }>([
-        "currentUser",
-      ]);
+
+      const currentUser = getCurrentUser();
 
       if (!currentUser) {
         setUploading(false);
@@ -264,7 +286,7 @@ export const useImageManager = () => {
         throw error;
       }
     },
-    [queryClient, toast, storeImageMetadata, userImagesData, uploading]
+    [getCurrentUser, toast, storeImageMetadata, userImagesData, uploading]
   );
 
   const deleteImage = useCallback(
@@ -280,9 +302,7 @@ export const useImageManager = () => {
 
       setDeleting(true);
 
-      const currentUser = queryClient.getQueryData<{ data: UserType }>([
-        "currentUser",
-      ]);
+      const currentUser = getCurrentUser();
 
       if (!currentUser) {
         setDeleting(false);
@@ -345,7 +365,7 @@ export const useImageManager = () => {
         console.error("Image deletion error:", error);
       }
     },
-    [queryClient, deleteImageMetadata, userImagesData, toast]
+    [getCurrentUser, deleteImageMetadata, userImagesData, toast]
   );
 
   const getImageDimensions = (
