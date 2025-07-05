@@ -26,7 +26,7 @@ const postShareSchema = new mongoose.Schema<PostShareInterface>(
       enum: [
         "native",
         "facebook",
-        "twitter",
+        "x",
         "linkedin",
         "copy-link",
         "whatsapp",

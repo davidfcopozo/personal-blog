@@ -9,7 +9,7 @@ export interface PostShareInterface extends Document {
   shareType:
     | "native"
     | "facebook"
-    | "twitter"
+    | "x"
     | "linkedin"
     | "copy-link"
     | "whatsapp"

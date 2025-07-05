@@ -267,7 +267,7 @@ export class AnalyticsService {
     shareType:
       | "native"
       | "facebook"
-      | "twitter"
+      | "x"
       | "linkedin"
       | "copy-link"
       | "whatsapp"
