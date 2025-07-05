@@ -173,9 +173,13 @@ export const useImageManager = () => {
       setUploading(true);
 
       const currentUser = getCurrentUser();
-
       if (!currentUser) {
         setUploading(false);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please ensure you are logged in and try again.",
+        });
         throw new Error("User not authenticated");
       }
 
@@ -190,20 +194,17 @@ export const useImageManager = () => {
       try {
         const hash = await getImageHash(file);
 
-        // Check if there's a matching ongoing or completed upload
-        const uploadingOrExists = userImagesData?.data.some(
-          (img: ImageInterface) => img.hash === hash
-        );
-        if (uploadingOrExists) {
-          setUploading(false);
-          toast({
-            title: "Duplicate or existing upload",
-            description: "This image is already being uploaded or exists.",
-          });
-          throw new Error("Duplicate or existing upload");
+        if (userId) {
+          clearCache(`/api/users/${userId}/images`);
         }
+        await refetchImages();
 
-        const existingImages = userImagesData?.data || [];
+        // Get fresh image data after refetch
+        const currentImages = queryClient.getQueryData<{
+          data: ImageInterface[];
+        }>(["user-images", userId]);
+        const existingImages = currentImages?.data || [];
+
         const duplicateImage = existingImages.find(
           (image: ImageInterface) => image.hash === hash
         );
@@ -286,7 +287,15 @@ export const useImageManager = () => {
         throw error;
       }
     },
-    [getCurrentUser, toast, storeImageMetadata, userImagesData, uploading]
+    [
+      getCurrentUser,
+      queryClient,
+      refetchImages,
+      toast,
+      storeImageMetadata,
+      uploading,
+      userId,
+    ]
   );
 
   const deleteImage = useCallback(
