@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName } from "@/utils/formats";
@@ -13,8 +13,9 @@ import { Card } from "./ui/card";
 import { UserAvatar } from "./ui/user-avatar";
 import { useImageManager } from "@/hooks/useImageManager";
 import { useToast } from "@/components/ui/use-toast";
-import usePatchRequest from "@/hooks/usePatchRequest";
 import { ImageUploadModal } from "./image-upload-modal";
+import { UserType } from "@/typings/types";
+import { useAvatarUpdate } from "@/hooks/useAvatarUpdate";
 
 export const Settings = () => {
   const {
@@ -24,10 +25,22 @@ export const Settings = () => {
     handleSubmit,
     userData,
     isUserPending,
+    refetchUser,
   } = useUpdateSettings();
 
   const { toast } = useToast();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [localUserData, setLocalUserData] = useState<
+    UserType | null | undefined
+  >(userData);
+  const [pendingAvatarUpdate, setPendingAvatarUpdate] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    setLocalUserData(userData);
+  }, [userData]);
+
   const {
     uploadImage,
     deleteImage,
@@ -37,28 +50,23 @@ export const Settings = () => {
     uploading,
   } = useImageManager();
 
-  // Hook for updating user avatar
-  const { mutate: updateAvatar } = usePatchRequest({
-    url: `/api/users/${userData?._id}`,
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully",
-      });
-      // The useUpdateSettings hook will automatically refetch user data
-    },
-    onError: (error: any) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to update profile picture: ${error.message}`,
-      });
-    },
-  });
+  const { changeAvatar, deleteAvatar, isUpdating } = useAvatarUpdate(
+    userData?._id,
+    () => {
+      refetchUser();
+    }
+  );
 
   const handleImageSelect = (imageUrl: string) => {
+    console.log("handleImageSelect - setting avatar to:", imageUrl);
+
+    setLocalUserData((prev) => {
+      const newData = prev ? { ...prev, avatar: imageUrl } : prev;
+      return newData;
+    });
+
     // Update user avatar with selected image
-    updateAvatar({ avatar: imageUrl });
+    changeAvatar(imageUrl);
     setIsImageModalOpen(false);
   };
 
@@ -76,8 +84,14 @@ export const Settings = () => {
       return;
     }
 
-    // Update user avatar to null/default
-    updateAvatar({ avatar: null });
+    setPendingAvatarUpdate("");
+
+    setLocalUserData((prev) => {
+      const newData = prev ? { ...prev, avatar: undefined } : prev;
+      return newData;
+    });
+
+    deleteAvatar();
   };
 
   if (isUserPending) return <SettingsSkeleton />;
@@ -145,7 +159,7 @@ export const Settings = () => {
             <Card className="bg-background shadow-md rounded-lg p-4">
               <div className="flex flex-col items-center justify-center mb-4">
                 <UserAvatar
-                  user={userData}
+                  user={localUserData || userData}
                   size="xl"
                   className="mb-4"
                   isLoading={isUserPending}
@@ -154,28 +168,36 @@ export const Settings = () => {
                   <Button
                     variant="default"
                     onClick={handleChangePicture}
-                    disabled={uploading}
+                    disabled={uploading || isUpdating}
                   >
-                    {uploading ? "Uploading..." : "Change picture"}
+                    {uploading
+                      ? "Uploading..."
+                      : isUpdating
+                      ? "Updating..."
+                      : "Change picture"}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleDeletePicture}
-                    disabled={uploading || !userData?.avatar}
+                    disabled={uploading || isUpdating || !userData?.avatar}
                   >
-                    Delete picture
+                    {isUpdating ? "Deleting..." : "Delete picture"}
                   </Button>
                 </div>
               </div>
               <div className="text-center">
                 <h2 className="text-xl font-bold mb-2">
-                  {getFullName(userData)}
+                  {getFullName(localUserData || userData)}
                 </h2>
-                <p className="text-gray-500 mb-2">@{userData?.username}</p>
-                <p className="text-gray-500 mb-2">{userData?.email}</p>
+                <p className="text-gray-500 mb-2">
+                  @{(localUserData || userData)?.username}
+                </p>
+                <p className="text-gray-500 mb-2">
+                  {(localUserData || userData)?.email}
+                </p>
                 <Link href="" className="text-gray-500 mb-2">
-                  {userData?.website}
+                  {(localUserData || userData)?.website}
                 </Link>
               </div>
             </Card>
