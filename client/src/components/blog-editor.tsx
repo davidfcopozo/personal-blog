@@ -59,8 +59,23 @@ const BlogEditor: FC<BlogEditorProps> = ({
   };
   const handlePreview = async () => {
     if (slug) {
-      // If post already exists, open preview directly
-      window.open(`/preview/${slug}`, "_blank");
+      if (hasUnsavedChanges()) {
+        try {
+          await handleSubmit(currentStatus);
+          setTimeout(() => {
+            window.open(`/preview/${slug}`, "_blank");
+          }, 500);
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Save Failed",
+            description:
+              "Failed to save changes. Please save your changes manually before previewing.",
+          });
+        }
+      } else {
+        window.open(`/preview/${slug}`, "_blank");
+      }
     } else if (hasPreviewableContent()) {
       // If no slug but has content, save as draft first then preview
       try {
