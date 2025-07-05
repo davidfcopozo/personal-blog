@@ -8,8 +8,8 @@ import Link from "next/link";
 const socialMediaConfig: Record<string, SocialMediaConfig> = {
   x: {
     icon: XIcon,
-    getUrl: (username: string) => `https://twitter.com/${username}`,
-    label: "Twitter Profile",
+    getUrl: (username: string) => `https://x.com/${username}`,
+    label: "X (Formerly Twitter) Profile",
   },
   github: {
     icon: Github,

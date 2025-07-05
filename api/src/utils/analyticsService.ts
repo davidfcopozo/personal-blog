@@ -1,6 +1,7 @@
 import PostView from "../models/postViewModel";
 import PostLike from "../models/postLikeModel";
 import PostBookmark from "../models/postBookmarkModel";
+import PostShare from "../models/postShareModel";
 import CommentLike from "../models/commentLikeModel";
 import UserActivity from "../models/userActivityModel";
 import Comment from "../models/commentModel";
@@ -258,6 +259,71 @@ export class AnalyticsService {
     }
   }
 
+  static async recordPostShare(data: {
+    postId: string;
+    userId?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    shareType:
+      | "native"
+      | "facebook"
+      | "x"
+      | "linkedin"
+      | "copy-link"
+      | "whatsapp"
+      | "email"
+      | "other";
+    referrer?: string;
+  }) {
+    try {
+      if (!data.postId || !Types.ObjectId.isValid(data.postId)) {
+        throw new Error("Invalid post ID provided");
+      }
+
+      if (data.userId && !Types.ObjectId.isValid(data.userId)) {
+        throw new Error("Invalid user ID provided");
+      }
+
+      const sanitizedIpAddress = data.ipAddress?.substring(0, 45);
+      const sanitizedUserAgent = data.userAgent?.substring(0, 500);
+      const sanitizedReferrer = data.referrer?.substring(0, 2000);
+
+      const shareRecord = await PostShare.create({
+        post: data.postId,
+        user: data.userId || undefined,
+        ipAddress: sanitizedIpAddress,
+        userAgent: sanitizedUserAgent,
+        shareType: data.shareType,
+        referrer: sanitizedReferrer,
+        isActive: true,
+      });
+
+      if (data.userId) {
+        await this.recordUserActivity({
+          userId: data.userId,
+          action: "share",
+          resourceType: "post",
+          resourceId: data.postId,
+          ipAddress: sanitizedIpAddress,
+          userAgent: sanitizedUserAgent,
+          metadata: {
+            shareType: data.shareType,
+            referrer: sanitizedReferrer,
+          },
+        });
+      }
+
+      return {
+        shareId: shareRecord._id,
+        shareType: data.shareType,
+        timestamp: shareRecord.createdAt,
+      };
+    } catch (error) {
+      console.error("Error recording post share:", error);
+      throw error;
+    }
+  }
+
   // Comment Likes
   static async toggleCommentLike(
     commentId: string,
@@ -345,6 +411,7 @@ export class AnalyticsService {
       | "unlike"
       | "bookmark"
       | "unbookmark"
+      | "share"
       | "comment"
       | "reply"
       | "edit"
@@ -402,7 +469,7 @@ export class AnalyticsService {
       if (startDate) dateFilter.$gte = startDate;
       if (endDate) dateFilter.$lte = endDate;
 
-      const [views, likes, bookmarks] = await Promise.all([
+      const [views, likes, bookmarks, shares] = await Promise.all([
         PostView.countDocuments({
           post: postId,
           ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
@@ -419,11 +486,76 @@ export class AnalyticsService {
           isActive: true,
           ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
         }),
+
+        PostShare.countDocuments({
+          post: postId,
+          isActive: true,
+          ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
+        }),
       ]);
 
-      return { views, likes, bookmarks };
+      return { views, likes, bookmarks, shares };
     } catch (error) {
       console.error("Error getting post analytics:", error);
+      throw error;
+    }
+  }
+
+  static async getPostShareAnalytics(
+    postId: string,
+    startDate?: Date,
+    endDate?: Date
+  ) {
+    try {
+      if (!postId || !Types.ObjectId.isValid(postId)) {
+        throw new Error("Invalid post ID provided");
+      }
+
+      if (startDate && endDate && startDate > endDate) {
+        throw new Error("Start date cannot be after end date");
+      }
+
+      const dateFilter: any = {};
+      if (startDate) dateFilter.$gte = startDate;
+      if (endDate) dateFilter.$lte = endDate;
+
+      const matchStage: any = {
+        post: new Types.ObjectId(postId),
+        isActive: true,
+      };
+
+      if (Object.keys(dateFilter).length > 0) {
+        matchStage.createdAt = dateFilter;
+      }
+
+      const shareStats = await PostShare.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: "$shareType",
+            count: { $sum: 1 },
+            uniqueUsers: { $addToSet: { $ifNull: ["$user", "$ipAddress"] } },
+          },
+        },
+        {
+          $project: {
+            shareType: "$_id",
+            count: 1,
+            uniqueCount: { $size: "$uniqueUsers" },
+            _id: 0,
+          },
+        },
+        { $sort: { count: -1 } },
+      ]);
+
+      const totalShares = await PostShare.countDocuments(matchStage);
+
+      return {
+        totalShares,
+        sharesByType: shareStats,
+      };
+    } catch (error) {
+      console.error("Error getting post share analytics:", error);
       throw error;
     }
   }

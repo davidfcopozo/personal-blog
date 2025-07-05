@@ -65,11 +65,21 @@ postSchema.virtual("viewsCount", {
   justOne: false,
 });
 
+postSchema.virtual("sharesCount", {
+  ref: "PostShare",
+  localField: "_id",
+  foreignField: "post",
+  count: true,
+  match: { isActive: true },
+  justOne: false,
+});
+
 postSchema.methods.populateAnalytics = async function () {
   await this.populate([
     { path: "likesCount" },
     { path: "bookmarksCount" },
     { path: "viewsCount" },
+    { path: "sharesCount" },
   ]);
   return this;
 };

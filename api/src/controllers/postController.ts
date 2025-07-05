@@ -79,6 +79,7 @@ export const getAllPosts = async (
     .populate("likesCount")
     .populate("bookmarksCount")
     .populate("viewsCount")
+    .populate("sharesCount")
     .sort("createdAt");
 
   try {
@@ -205,7 +206,8 @@ export const getPostBySlugOrId = async (
         .populate("postedBy")
         .populate("likesCount")
         .populate("bookmarksCount")
-        .populate("viewsCount");
+        .populate("viewsCount")
+        .populate("sharesCount");
     } else {
       post = await Post.findOne({
         slug: slugOrId,
@@ -214,7 +216,8 @@ export const getPostBySlugOrId = async (
         .populate("postedBy")
         .populate("likesCount")
         .populate("bookmarksCount")
-        .populate("viewsCount");
+        .populate("viewsCount")
+        .populate("sharesCount");
     }
 
     if (!post) {
@@ -752,5 +755,54 @@ export const getUserPosts = async (
     });
   } catch (err) {
     return next(err);
+  }
+};
+
+export const sharePost = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { postId, shareType = "other" } = req.body;
+  const { userId } = req.user || {};
+
+  if (!postId) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "PostId is required in request body",
+    });
+  }
+
+  try {
+    const post: PostType = await Post.findById(postId);
+
+    if (!post) {
+      throw new NotFound("This post doesn't exist or has been deleted");
+    }
+
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get("User-Agent");
+    const referrer = req.get("Referrer");
+
+    const result = await AnalyticsService.recordPostShare({
+      postId,
+      userId,
+      ipAddress,
+      userAgent,
+      shareType,
+      referrer,
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      msg: "Post shared successfully.",
+      data: {
+        ...result,
+        postId,
+        userId,
+      },
+    });
+  } catch (error) {
+    return next(error);
   }
 };

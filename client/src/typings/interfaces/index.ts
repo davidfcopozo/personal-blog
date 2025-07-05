@@ -42,6 +42,7 @@ export interface PostInterface extends BaseDocument {
   bookmarks?: string[];
   likesCount: number;
   bookmarksCount: number;
+  sharesCount: number;
   isLiked?: boolean;
   isBookmarked?: boolean;
   tags?: string[];

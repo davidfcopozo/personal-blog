@@ -185,6 +185,33 @@ export const getPostAnalytics = async (
   }
 };
 
+export const getPostShareAnalytics = async (
+  req: RequestWithUserInfo | any,
+  res: Response
+) => {
+  try {
+    const { postId } = req.params;
+    const { startDate, endDate } = req.query;
+
+    const analytics = await AnalyticsService.getPostShareAnalytics(
+      postId,
+      startDate ? new Date(startDate as string) : undefined,
+      endDate ? new Date(endDate as string) : undefined
+    );
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      data: analytics,
+    });
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Failed to get post share analytics",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 export const getCommentAnalytics = async (
   req: RequestWithUserInfo | any,
   res: Response
