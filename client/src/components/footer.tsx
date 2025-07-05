@@ -128,7 +128,7 @@ const Footer = () => {
             href="#"
             className="text-muted-foreground transition-all duration-300 hover:text-foreground"
           >
-            <span className="sr-only">X (former Twitter)</span>
+            <span className="sr-only">X (Formerly Twitter)</span>
             <svg
               className="w-6 h-6"
               aria-hidden="true"

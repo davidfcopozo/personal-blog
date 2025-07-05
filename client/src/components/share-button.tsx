@@ -102,7 +102,7 @@ export const ShareButton = memo(function ShareButton({
       },
     },
     {
-      name: "X (former Twitter)",
+      name: "X (Formerly Twitter)",
       icon: XIcon,
       action: () => {
         const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(

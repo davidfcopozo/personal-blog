@@ -9,7 +9,7 @@ const socialMediaConfig: Record<string, SocialMediaConfig> = {
   x: {
     icon: XIcon,
     getUrl: (username: string) => `https://x.com/${username}`,
-    label: "X (former Twitter) Profile",
+    label: "X (Formerly Twitter) Profile",
   },
   github: {
     icon: Github,
