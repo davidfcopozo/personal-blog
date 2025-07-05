@@ -64,6 +64,10 @@ const CoverImage = ({
         console.error("Error uploading Cover image:", error);
         setIsUploading(false);
         setPreviewUrl(null);
+      } finally {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     }
   };
