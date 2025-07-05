@@ -9,6 +9,7 @@ import {
   deletePostBySlugOrId,
   toggleLike,
   toggleBookmark,
+  sharePost,
   getPostBySlugOrId,
   getPostsByCategory,
   previewPost,
@@ -20,6 +21,7 @@ router.route("/").get(optionalAuth, getAllPosts).post(auth, createPost);
 router.route("/my-posts").get(auth, getUserPosts);
 router.route("/like").put(auth, toggleLike);
 router.route("/bookmark").put(auth, toggleBookmark);
+router.route("/share").post(optionalAuth, sharePost);
 router.route("/preview/:slugOrId").get(auth, previewPost);
 router
   .route("/:slugOrId")
