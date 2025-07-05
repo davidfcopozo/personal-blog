@@ -46,20 +46,9 @@ export const useAvatarUpdate = (userId?: string, onSuccess?: () => void) => {
         });
       });
 
-      setTimeout(() => {
-        if (userId) {
-          clearCache(`current-user-${userId}`);
-        }
-
-        queryClient.invalidateQueries({
-          predicate: (query) => {
-            return (
-              Array.isArray(query.queryKey) &&
-              query.queryKey[0] === "currentUser"
-            );
-          },
-        });
-      }, 100);
+      if (userId) {
+        clearCache(`current-user-${userId}`);
+      }
 
       if (onSuccess) {
         onSuccess();
@@ -73,8 +62,6 @@ export const useAvatarUpdate = (userId?: string, onSuccess?: () => void) => {
       });
     },
     onMutate: async (newData: { avatar: string | null }) => {
-      console.log("Optimistic update - setting avatar to:", newData.avatar);
-
       await queryClient.cancelQueries({
         predicate: (query) => {
           return (
