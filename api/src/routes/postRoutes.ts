@@ -23,11 +23,11 @@ router.route("/like").put(auth, toggleLike);
 router.route("/bookmark").put(auth, toggleBookmark);
 router.route("/share").post(optionalAuth, sharePost);
 router.route("/preview/:slugOrId").get(auth, previewPost);
+router.route("/category/:category").get(optionalAuth, getPostsByCategory);
 router
   .route("/:slugOrId")
   .get(optionalAuth, visitsCounter, getPostBySlugOrId)
   .patch(auth, updatePostBySlugOrId)
   .delete(auth, deletePostBySlugOrId);
-router.route("/category/:category").get(optionalAuth, getPostsByCategory);
 
 export default router;
