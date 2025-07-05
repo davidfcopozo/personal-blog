@@ -51,10 +51,7 @@ export const Settings = () => {
   } = useImageManager();
 
   const { changeAvatar, deleteAvatar, isUpdating } = useAvatarUpdate(
-    userData?._id,
-    () => {
-      refetchUser();
-    }
+    userData?._id
   );
 
   const handleImageSelect = (imageUrl: string) => {
