@@ -177,5 +177,6 @@ export const useUpdateSettings = () => {
     userData,
     status,
     isUserPending,
+    refetchUser,
   };
 };
