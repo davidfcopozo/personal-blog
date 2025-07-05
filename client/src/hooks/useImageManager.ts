@@ -65,6 +65,9 @@ export const useImageManager = () => {
         queryClient.invalidateQueries({
           queryKey: ["user-images", userId],
         });
+        queryClient.invalidateQueries({
+          queryKey: ["preview-post"],
+        });
       }
       toast({
         title: "Success",
@@ -94,6 +97,10 @@ export const useImageManager = () => {
           queryClient.invalidateQueries({
             queryKey: ["user-images", userId],
           });
+          // Also invalidate preview post caches since cover images might have been deleted
+          queryClient.invalidateQueries({
+            queryKey: ["preview-post"],
+          });
         }
         toast({
           title: "Success",
@@ -116,6 +123,10 @@ export const useImageManager = () => {
         // Clear the request cache first
         clearCache(`/api/users/${userId}/images`);
         queryClient.invalidateQueries({ queryKey: ["user-images", userId] });
+        // Also invalidate preview post caches since cover images might have been updated
+        queryClient.invalidateQueries({
+          queryKey: ["preview-post"],
+        });
       }
       toast({
         title: "Success",
@@ -143,6 +154,10 @@ export const useImageManager = () => {
           clearCache(`/api/users/${userId}/images`);
           queryClient.invalidateQueries({
             queryKey: ["user-images", userId],
+          });
+          // Also invalidate preview post caches since cover images might have been updated
+          queryClient.invalidateQueries({
+            queryKey: ["preview-post"],
           });
         }
       } catch (error) {
