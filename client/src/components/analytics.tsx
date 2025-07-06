@@ -11,16 +11,34 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ViewsLineChart from "@/components/charts/views-line-chart";
 import EngagementAreaChart from "@/components/charts/engagement-area-chart";
-import { blogPosts } from "@/lib/mock-blog-posts";
+import { PostType } from "@/typings/types";
 
-export function Analytics() {
-  // Calculate total metrics
-  const totalViews = blogPosts.reduce((sum, post) => sum + post.views, 0);
-  const totalLikes = blogPosts.reduce((sum, post) => sum + post.likes, 0);
-  const totalComments = blogPosts.reduce((sum, post) => sum + post.comments, 0);
-  const totalShares = blogPosts.reduce((sum, post) => sum + post.shares, 0);
+interface AnalyticsProps {
+  blogPosts: PostType[];
+}
 
-  const categories = [...new Set(blogPosts.map((post) => post.category))];
+export function Analytics({ blogPosts }: AnalyticsProps) {
+  const totalViews = blogPosts.reduce(
+    (sum, post) => sum + (post.visits || 0),
+    0
+  );
+  const totalLikes = blogPosts.reduce(
+    (sum, post) => sum + (post.likesCount || 0),
+    0
+  );
+  const totalComments = blogPosts.reduce(
+    (sum, post) => sum + (post.comments?.length || 0),
+    0
+  );
+  const totalShares = blogPosts.reduce(
+    (sum, post) => sum + (post.sharesCount || 0),
+    0
+  );
+
+  const allCategories = blogPosts
+    .flatMap((post) => post.categories || [])
+    .map((cat) => String(cat.name))
+    .filter((name, index, array) => array.indexOf(name) === index);
 
   return (
     <div className="space-y-6">
@@ -42,7 +60,7 @@ export function Analytics() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ViewsLineChart />
+                <ViewsLineChart blogPosts={blogPosts} />
               </CardContent>
             </Card>
 
@@ -54,7 +72,7 @@ export function Analytics() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <EngagementAreaChart />
+                <EngagementAreaChart blogPosts={blogPosts} />
               </CardContent>
             </Card>
           </div>
@@ -70,7 +88,7 @@ export function Analytics() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <EngagementAreaChart />
+                <EngagementAreaChart blogPosts={blogPosts} />
               </CardContent>
             </Card>
 
@@ -83,29 +101,40 @@ export function Analytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {categories.map((category) => {
-                    const categoryPosts = blogPosts.filter(
-                      (post) => post.category === category
+                  {allCategories.map((category: string) => {
+                    const categoryPosts = blogPosts.filter((post) =>
+                      post.categories?.some(
+                        (cat) => String(cat.name) === category
+                      )
                     );
                     const avgEngagement =
                       categoryPosts.reduce(
                         (sum, post) =>
-                          sum + post.likes + post.comments + post.shares,
+                          sum +
+                          (post.likesCount || 0) +
+                          (post.comments?.length || 0) +
+                          (post.sharesCount || 0),
                         0
-                      ) / categoryPosts.length;
+                      ) / (categoryPosts.length || 1);
                     const maxEngagement = Math.max(
-                      ...categories.map((cat) => {
-                        const posts = blogPosts.filter(
-                          (post) => post.category === cat
+                      ...allCategories.map((cat: string) => {
+                        const posts = blogPosts.filter((post) =>
+                          post.categories?.some(
+                            (category) => String(category.name) === cat
+                          )
                         );
                         return (
                           posts.reduce(
                             (sum, post) =>
-                              sum + post.likes + post.comments + post.shares,
+                              sum +
+                              (post.likesCount || 0) +
+                              (post.comments?.length || 0) +
+                              (post.sharesCount || 0),
                             0
-                          ) / posts.length
+                          ) / (posts.length || 1)
                         );
-                      })
+                      }),
+                      1
                     );
                     const percentage = (avgEngagement / maxEngagement) * 100;
 
@@ -161,21 +190,25 @@ export function Analytics() {
                 </div>
                 <div className="space-y-2">
                   <div className="text-2xl font-bold text-purple-600">
-                    {categories.find((cat) => {
-                      const posts = blogPosts.filter(
-                        (post) => post.category === cat
-                      );
-                      return (
-                        posts.reduce((sum, post) => sum + post.views, 0) ===
-                        Math.max(
-                          ...categories.map((c) =>
-                            blogPosts
-                              .filter((p) => p.category === c)
-                              .reduce((s, p) => s + p.views, 0)
-                          )
-                        )
-                      );
-                    })}
+                    {allCategories.length > 0
+                      ? allCategories.reduce((topCat, cat) => {
+                          const topViews = blogPosts
+                            .filter((p) =>
+                              p.categories?.some(
+                                (category) => String(category.name) === topCat
+                              )
+                            )
+                            .reduce((s, p) => s + (p.visits || 0), 0);
+                          const catViews = blogPosts
+                            .filter((p) =>
+                              p.categories?.some(
+                                (category) => String(category.name) === cat
+                              )
+                            )
+                            .reduce((s, p) => s + (p.visits || 0), 0);
+                          return catViews > topViews ? cat : topCat;
+                        })
+                      : "No categories"}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Top Performing Category
@@ -194,7 +227,7 @@ export function Analytics() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ViewsLineChart />
+              <ViewsLineChart blogPosts={blogPosts} />
             </CardContent>
           </Card>
         </TabsContent>
