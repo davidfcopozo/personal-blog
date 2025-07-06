@@ -59,6 +59,10 @@ export const generateEngagementTimelineData = (posts: PostType[]) => {
       (sum, post) => sum + (post.comments?.length || 0),
       0
     );
+    const totalBookmarks = postsPublishedByThisDate.reduce(
+      (sum, post) => sum + (post.bookmarksCount || 0),
+      0
+    );
     const totalShares = postsPublishedByThisDate.reduce(
       (sum, post) => sum + (post.sharesCount || 0),
       0
@@ -73,6 +77,10 @@ export const generateEngagementTimelineData = (posts: PostType[]) => {
       2,
       Math.floor(totalComments / 15 + Math.random() * 8 - 4)
     );
+    const bookmarks = Math.max(
+      1,
+      Math.floor(totalBookmarks / 15 + Math.random() * 6 - 3)
+    );
     const shares = Math.max(
       1,
       Math.floor(totalShares / 15 + Math.random() * 5 - 2)
@@ -82,6 +90,7 @@ export const generateEngagementTimelineData = (posts: PostType[]) => {
       day: `Day ${days - i}`,
       likes,
       comments,
+      bookmarks,
       shares,
     });
   }

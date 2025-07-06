@@ -39,25 +39,33 @@ export default function EngagementAreaChart({
           type="monotone"
           dataKey="likes"
           stackId="1"
-          stroke="hsl(var(--primary))"
-          fill="hsl(var(--primary))"
-          fillOpacity={0.8}
+          stroke="#ec4899"
+          fill="#ec4899"
+          fillOpacity={0.6}
         />
         <Area
           type="monotone"
           dataKey="comments"
           stackId="1"
-          stroke="hsl(var(--secondary))"
-          fill="hsl(var(--secondary))"
-          fillOpacity={0.8}
+          stroke="#f59e0b"
+          fill="#f59e0b"
+          fillOpacity={0.6}
+        />
+        <Area
+          type="monotone"
+          dataKey="bookmarks"
+          stackId="1"
+          stroke="#6366f1"
+          fill="#6366f1"
+          fillOpacity={0.6}
         />
         <Area
           type="monotone"
           dataKey="shares"
           stackId="1"
-          stroke="hsl(var(--muted-foreground))"
-          fill="hsl(var(--muted-foreground))"
-          fillOpacity={0.8}
+          stroke="#0072f5"
+          fill="#0072f5"
+          fillOpacity={0.6}
         />
       </AreaChart>
     </ResponsiveContainer>
