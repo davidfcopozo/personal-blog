@@ -18,6 +18,11 @@ interface ViewsLineChartProps {
 export default function ViewsLineChart({ blogPosts }: ViewsLineChartProps) {
   const data = generateViewsTimelineData(blogPosts);
 
+  const formatTooltipLabel = (label: string) => {
+    // Capitalize first letter of each word
+    return label.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart
@@ -32,6 +37,7 @@ export default function ViewsLineChart({ blogPosts }: ViewsLineChartProps) {
             border: "1px solid hsl(var(--border))",
             borderRadius: "6px",
           }}
+          formatter={(value, name) => [value, formatTooltipLabel(String(name))]}
         />
         <Line
           type="monotone"

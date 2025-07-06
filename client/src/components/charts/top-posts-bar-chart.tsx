@@ -26,6 +26,12 @@ export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
           : post.title,
       Views: post.visits || 0,
     }));
+
+  const formatTooltipLabel = (label: string) => {
+    // Capitalize first letter of each word
+    return label.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -45,6 +51,7 @@ export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
             border: "1px solid hsl(var(--border))",
             borderRadius: "6px",
           }}
+          formatter={(value, name) => [value, formatTooltipLabel(String(name))]}
         />
         <Bar
           dataKey="Views"

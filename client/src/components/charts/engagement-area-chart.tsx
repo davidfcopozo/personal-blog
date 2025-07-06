@@ -20,6 +20,11 @@ export default function EngagementAreaChart({
 }: EngagementAreaChartProps) {
   const data = generateEngagementTimelineData(blogPosts);
 
+  const formatTooltipLabel = (label: string) => {
+    // Capitalize first letter of each word
+    return label.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart
@@ -34,6 +39,7 @@ export default function EngagementAreaChart({
             border: "1px solid hsl(var(--border))",
             borderRadius: "6px",
           }}
+          formatter={(value, name) => [value, formatTooltipLabel(String(name))]}
         />
         <Area
           type="monotone"
