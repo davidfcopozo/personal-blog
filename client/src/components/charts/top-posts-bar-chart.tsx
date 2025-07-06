@@ -61,6 +61,8 @@ export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
           }}
           cursor={{ fill: "transparent" }}
           formatter={(value, name) => [value, formatTooltipLabel(String(name))]}
+          labelStyle={{ color: "var(--foreground)" }}
+          itemStyle={{ color: "var(--foreground)" }}
         />
         <Bar
           dataKey="Views"
