@@ -8,16 +8,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { PostType } from "@/typings/types";
 
-const data = [
-  { name: "React Hooks Guide", Views: 12500 },
-  { name: "TypeScript Patterns", Views: 8900 },
-  { name: "CSS Grid Layout", Views: 6700 },
-  { name: "Next.js Features", Views: 15200 },
-  { name: "Node.js Security", Views: 9800 },
-];
+interface TopPostsBarChartProps {
+  blogPosts: PostType[];
+}
 
-export default function TopPostsBarChart() {
+export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
+  // Transform real post data into chart data, taking top 5 posts by views
+  const data = blogPosts
+    .sort((a, b) => (b.visits || 0) - (a.visits || 0))
+    .slice(0, 5)
+    .map((post) => ({
+      name:
+        post.title.length > 20
+          ? post.title.substring(0, 20) + "..."
+          : post.title,
+      Views: post.visits || 0,
+    }));
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
