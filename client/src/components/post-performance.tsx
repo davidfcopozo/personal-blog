@@ -134,7 +134,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Likes</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
+            <Heart className="h-4 w-4 text-muted-foreground text-pink-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -149,7 +149,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Bookmarks</CardTitle>
-            <Bookmark className="h-4 w-4 text-muted-foreground" />
+            <Bookmark className="h-4 w-4 text-muted-foreground stroke-indigo-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -164,7 +164,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Comments</CardTitle>
-            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            <MessageCircle className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -179,7 +179,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Shares</CardTitle>
-            <Share2 className="h-4 w-4 text-muted-foreground" />
+            <Share2 className="h-4 w-4 text-[#0072f5]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
