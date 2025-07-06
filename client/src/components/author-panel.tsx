@@ -75,7 +75,7 @@ export const AuthorPanel = memo(function AuthorPanel({
         <Link href={`/${username}`} passHref>
           <h1
             id="author-name"
-            className="text-xl font-semibold text-foreground hover:text-[--thread-border] transition-all duration-300"
+            className="text-xl font-semibold text-foreground hover:text-[hsl(var(--thread-border))] transition-all duration-300"
           >
             {fullName}
           </h1>
