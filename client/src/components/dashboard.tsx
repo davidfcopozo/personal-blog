@@ -5,6 +5,8 @@ import {
   LayoutDashboard,
   PlusCircle,
   Settings,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,9 +33,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import PostsTabContent from "./posts-tab-component";
+import { PostPerformance } from "./post-performance";
+import { Analytics } from "./analytics";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<PostType | null>(null);
   const { data: user } = useSession();
@@ -77,15 +82,51 @@ export function Dashboard() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                <button
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
+                    activeTab === "dashboard"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   <LayoutDashboard strokeWidth={2.2} className="h-5 w-5" />
                   <span className="sr-only">Dashboard</span>
-                </Link>
+                </button>
               </TooltipTrigger>
               <TooltipContent side="right">Dashboard</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setActiveTab("performance")}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
+                    activeTab === "performance"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <BarChart3 strokeWidth={2.2} className="h-5 w-5" />
+                  <span className="sr-only">Post Performance</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Post Performance</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
+                    activeTab === "analytics"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <TrendingUp strokeWidth={2.2} className="h-5 w-5" />
+                  <span className="sr-only">Analytics</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Analytics</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -121,81 +162,91 @@ export function Dashboard() {
 
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Tabs defaultValue="all">
-            <div className="flex justify-center">
-              <TabsList>
-                <TabsTrigger value="all" onClick={() => setPostStatus("all")}>
-                  All
-                </TabsTrigger>
-                <TabsTrigger
-                  value="published"
-                  onClick={() => setPostStatus("published")}
-                >
-                  Published
-                </TabsTrigger>
-                <TabsTrigger
-                  value="unpublished"
-                  onClick={() => setPostStatus("unpublished")}
-                >
-                  Unpublished
-                </TabsTrigger>
-                <TabsTrigger
-                  value="draft"
-                  onClick={() => setPostStatus("draft")}
-                >
-                  Draft
-                </TabsTrigger>
-              </TabsList>
-              <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1" onClick={handleNewPost}>
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add New Post
-                  </span>
-                </Button>
+          {activeTab === "dashboard" && (
+            <Tabs defaultValue="all">
+              <div className="flex justify-center">
+                <TabsList>
+                  <TabsTrigger value="all" onClick={() => setPostStatus("all")}>
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="published"
+                    onClick={() => setPostStatus("published")}
+                  >
+                    Published
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="unpublished"
+                    onClick={() => setPostStatus("unpublished")}
+                  >
+                    Unpublished
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="draft"
+                    onClick={() => setPostStatus("draft")}
+                  >
+                    Draft
+                  </TabsTrigger>
+                </TabsList>
+                <div className="ml-auto flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="h-8 gap-1"
+                    onClick={handleNewPost}
+                  >
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Add New Post
+                    </span>
+                  </Button>
+                </div>
               </div>
-            </div>
-            <TabsContent value="all">
-              <PostsTabContent
-                filteredPosts={filteredPosts}
-                arePostsFetching={arePostsFetching}
-                arePostsLoading={arePostsLoading}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-                status={status}
-              />
-            </TabsContent>
-            <TabsContent value="published">
-              <PostsTabContent
-                filteredPosts={filteredPosts}
-                arePostsFetching={arePostsFetching}
-                arePostsLoading={arePostsLoading}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-                status={status}
-              />
-            </TabsContent>
-            <TabsContent value="unpublished">
-              <PostsTabContent
-                filteredPosts={filteredPosts}
-                arePostsFetching={arePostsFetching}
-                arePostsLoading={arePostsLoading}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-                status={status}
-              />
-            </TabsContent>
-            <TabsContent value="draft">
-              <PostsTabContent
-                filteredPosts={filteredPosts}
-                arePostsFetching={arePostsFetching}
-                arePostsLoading={arePostsLoading}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-                status={status}
-              />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="all">
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
+              </TabsContent>
+              <TabsContent value="published">
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
+              </TabsContent>
+              <TabsContent value="unpublished">
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
+              </TabsContent>
+              <TabsContent value="draft">
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {activeTab === "performance" && <PostPerformance />}
+
+          {activeTab === "analytics" && <Analytics />}
         </main>
       </div>
       <AlertDialog
