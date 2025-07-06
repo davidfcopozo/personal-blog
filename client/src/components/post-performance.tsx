@@ -43,56 +43,74 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import TopPostsBarChart from "@/components/charts/top-posts-bar-chart";
-import { blogPosts } from "@/lib/mock-blog-posts";
+import { PostType } from "@/typings/types";
 import { DateRange } from "react-day-picker";
 
-export function PostPerformance() {
+interface PostPerformanceProps {
+  blogPosts: PostType[];
+}
+
+export function PostPerformance({ blogPosts }: PostPerformanceProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("views");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  // Calculate total metrics
-  const totalViews = blogPosts.reduce((sum, post) => sum + post.views, 0);
-  const totalLikes = blogPosts.reduce((sum, post) => sum + post.likes, 0);
-  const totalBookmarks = blogPosts.reduce(
-    (sum, post) => sum + post.bookmarks,
+  const totalViews = blogPosts.reduce(
+    (sum, post) => sum + (post.visits || 0),
     0
   );
-  const totalComments = blogPosts.reduce((sum, post) => sum + post.comments, 0);
-  const totalShares = blogPosts.reduce((sum, post) => sum + post.shares, 0);
+  const totalLikes = blogPosts.reduce(
+    (sum, post) => sum + (post.likesCount || 0),
+    0
+  );
+  const totalBookmarks = blogPosts.reduce(
+    (sum, post) => sum + (post.bookmarksCount || 0),
+    0
+  );
+  const totalComments = blogPosts.reduce(
+    (sum, post) => sum + (post.comments?.length || 0),
+    0
+  );
+  const totalShares = blogPosts.reduce(
+    (sum, post) => sum + (post.sharesCount || 0),
+    0
+  );
 
-  // Filter and sort posts
   const filteredPosts = blogPosts
     .filter((post) => {
       const matchesSearch = post.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesCategory =
-        categoryFilter === "all" || post.category === categoryFilter;
+        categoryFilter === "all" ||
+        post.categories?.some((cat) => cat.name === categoryFilter);
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "views":
-          return b.views - a.views;
+          return (b.visits || 0) - (a.visits || 0);
         case "likes":
-          return b.likes - a.likes;
+          return (b.likesCount || 0) - (a.likesCount || 0);
         case "bookmarks":
-          return b.bookmarks - a.bookmarks;
+          return (b.bookmarksCount || 0) - (a.bookmarksCount || 0);
         case "comments":
-          return b.comments - a.comments;
+          return (b.comments?.length || 0) - (a.comments?.length || 0);
         case "date":
           return (
-            new Date(b.publishDate).getTime() -
-            new Date(a.publishDate).getTime()
+            new Date(b.createdAt || new Date()).getTime() -
+            new Date(a.createdAt || new Date()).getTime()
           );
         default:
           return 0;
       }
     });
 
-  const categories = [...new Set(blogPosts.map((post) => post.category))];
+  const allCategories = blogPosts
+    .flatMap((post) => post.categories || [])
+    .map((cat) => String(cat.name))
+    .filter((name, index, array) => array.indexOf(name) === index);
 
   return (
     <div className="space-y-6">
@@ -181,7 +199,7 @@ export function PostPerformance() {
           <CardDescription>Posts ranked by total views</CardDescription>
         </CardHeader>
         <CardContent>
-          <TopPostsBarChart />
+          <TopPostsBarChart blogPosts={blogPosts} />
         </CardContent>
       </Card>
 
@@ -210,7 +228,7 @@ export function PostPerformance() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
+                {allCategories.map((category: string) => (
                   <SelectItem key={category} value={category}>
                     {category}
                   </SelectItem>
@@ -282,39 +300,65 @@ export function PostPerformance() {
               <TableBody>
                 {filteredPosts.map((post) => {
                   const engagementRate =
-                    ((post.likes + post.comments + post.shares) / post.views) *
+                    (((post.likesCount || 0) +
+                      (post.comments?.length || 0) +
+                      (post.sharesCount || 0)) /
+                      Math.max(post.visits || 1, 1)) *
                     100;
                   return (
-                    <TableRow key={post.id}>
+                    <TableRow key={post._id}>
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-medium">{post.title}</div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            {post.readTime}
+                            {/* Estimate read time based on content length */}
+                            {Math.max(
+                              1,
+                              Math.ceil((post.content?.length || 0) / 1000)
+                            )}{" "}
+                            min read
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{post.category}</Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {post.categories?.slice(0, 2).map((cat, index) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {String(cat.name)}
+                            </Badge>
+                          ))}
+                          {(post.categories?.length || 0) > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{(post.categories?.length || 0) - 2}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {format(new Date(post.publishDate), "MMM dd, yyyy")}
+                        {format(
+                          new Date(post.createdAt || new Date()),
+                          "MMM dd, yyyy"
+                        )}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {post.views.toLocaleString()}
+                        {(post.visits || 0).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        {post.likes.toLocaleString()}
+                        {(post.likesCount || 0).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        {post.bookmarks.toLocaleString()}
+                        {(post.bookmarksCount || 0).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        {post.comments.toLocaleString()}
+                        {(post.comments?.length || 0).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        {post.shares.toLocaleString()}
+                        {(post.sharesCount || 0).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
                         <Badge
