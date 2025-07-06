@@ -3,18 +3,22 @@
 import {
   Bar,
   BarChart,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { PostType } from "@/typings/types";
+import { useState } from "react";
 
 interface TopPostsBarChartProps {
   blogPosts: PostType[];
 }
 
 export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   // Transform real post data into chart data, taking top 5 posts by views
   const data = blogPosts
     .sort((a, b) => (b.visits || 0) - (a.visits || 0))
@@ -51,13 +55,27 @@ export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
             border: "1px solid hsl(var(--border))",
             borderRadius: "6px",
           }}
+          wrapperStyle={{
+            backgroundColor: "transparent",
+            outline: "none",
+          }}
+          cursor={{ fill: "transparent" }}
           formatter={(value, name) => [value, formatTooltipLabel(String(name))]}
         />
         <Bar
           dataKey="Views"
-          fill="hsl(var(--thread-border))"
           radius={[4, 4, 0, 0]}
-        />
+          onMouseEnter={(_, index) => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(null)}
+        >
+          {data.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill="hsl(var(--thread-border))"
+              fillOpacity={hoveredIndex === index ? 0.7 : 1}
+            />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
