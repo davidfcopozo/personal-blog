@@ -242,11 +242,11 @@ export function Dashboard() {
                 />
               </TabsContent>
             </Tabs>
+          )}{" "}
+          {activeTab === "performance" && (
+            <PostPerformance blogPosts={blogPosts} />
           )}
-
-          {activeTab === "performance" && <PostPerformance />}
-
-          {activeTab === "analytics" && <Analytics />}
+          {activeTab === "analytics" && <Analytics blogPosts={blogPosts} />}
         </main>
       </div>
       <AlertDialog
