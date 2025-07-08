@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import userPosts from "@/hooks/useUserPosts";
 import { useSession } from "next-auth/react";
 import { PostType } from "@/typings/types";
@@ -44,6 +44,35 @@ export function Dashboard() {
   const { data: user } = useSession();
   const { deletePost, status } = useDeletePost();
   const router = useRouter();
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (
+        hash === "performance" ||
+        hash === "analytics" ||
+        hash === "dashboard"
+      ) {
+        setActiveTab(hash);
+      } else if (hash === "") {
+        setActiveTab("dashboard");
+      }
+    };
+
+    handleHashChange();
+
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const newHash = tab === "dashboard" ? "" : `#${tab}`;
+    window.history.replaceState(null, "", window.location.pathname + newHash);
+  };
 
   const { blogPosts, arePostsFetching, arePostsLoading } = userPosts(
     user?.user?.id || ""
@@ -83,7 +112,7 @@ export function Dashboard() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => setActiveTab("dashboard")}
+                  onClick={() => handleTabChange("dashboard")}
                   className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
                     activeTab === "dashboard"
                       ? "bg-accent text-accent-foreground"
@@ -99,7 +128,7 @@ export function Dashboard() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => setActiveTab("performance")}
+                  onClick={() => handleTabChange("performance")}
                   className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
                     activeTab === "performance"
                       ? "bg-accent text-accent-foreground"
@@ -115,7 +144,7 @@ export function Dashboard() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => setActiveTab("analytics")}
+                  onClick={() => handleTabChange("analytics")}
                   className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
                     activeTab === "analytics"
                       ? "bg-accent text-accent-foreground"
@@ -127,18 +156,6 @@ export function Dashboard() {
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">Analytics</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/profile"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                >
-                  <CircleUser strokeWidth={2.25} className="h-5 w-5" />
-                  <span className="sr-only">Profile</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Profile</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </nav>
