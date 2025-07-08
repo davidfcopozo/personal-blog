@@ -58,8 +58,39 @@ const PostsTabContent = memo(
       if (!sortConfig) return filteredPosts;
 
       return [...filteredPosts].sort((a, b) => {
-        const aValue = a[sortConfig.key as keyof PostType];
-        const bValue = b[sortConfig.key as keyof PostType];
+        let aValue: any;
+        let bValue: any;
+
+        // Handle special cases for sorting
+        switch (sortConfig.key) {
+          case "comments":
+            aValue = a.comments?.length || 0;
+            bValue = b.comments?.length || 0;
+            break;
+          case "likesCount":
+            aValue = a.likesCount || 0;
+            bValue = b.likesCount || 0;
+            break;
+          case "bookmarksCount":
+            aValue = a.bookmarksCount || 0;
+            bValue = b.bookmarksCount || 0;
+            break;
+          case "sharesCount":
+            aValue = a.sharesCount || 0;
+            bValue = b.sharesCount || 0;
+            break;
+          case "visits":
+            aValue = a.visits || 0;
+            bValue = b.visits || 0;
+            break;
+          case "createdAt":
+            aValue = new Date(a.createdAt || 0).getTime();
+            bValue = new Date(b.createdAt || 0).getTime();
+            break;
+          default:
+            aValue = a[sortConfig.key as keyof PostType];
+            bValue = b[sortConfig.key as keyof PostType];
+        }
 
         if (aValue === bValue) return 0;
 
@@ -120,31 +151,16 @@ const PostsTabContent = memo(
                   />
                 </TableHead>
                 <TableHead
-                  onClick={() => handleSort("likes")}
+                  onClick={() => handleSort("createdAt")}
                   className="hidden md:table-cell cursor-pointer"
                 >
                   <SortIndicator
-                    title="Likes"
+                    title="Date"
                     direction={sortConfig?.direction}
                     size={12}
                     strokeWidth={3}
-                    isActive={sortConfig?.key === "likes"}
+                    isActive={sortConfig?.key === "createdAt"}
                   />
-                </TableHead>
-                <TableHead
-                  onClick={() => handleSort("comments")}
-                  className="hidden md:table-cell cursor-pointer"
-                >
-                  <SortIndicator
-                    title="Comments"
-                    direction={sortConfig?.direction}
-                    size={12}
-                    strokeWidth={3}
-                    isActive={sortConfig?.key === "comments"}
-                  />
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Categories
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("visits")}
@@ -158,16 +174,55 @@ const PostsTabContent = memo(
                     isActive={sortConfig?.key === "visits"}
                   />
                 </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  Categories
+                </TableHead>
                 <TableHead
-                  onClick={() => handleSort("createdAt")}
-                  className="hidden md:table-cell cursor-pointer"
+                  onClick={() => handleSort("likesCount")}
+                  className="hidden lg:table-cell cursor-pointer"
                 >
                   <SortIndicator
-                    title="Date"
+                    title="Likes"
                     direction={sortConfig?.direction}
                     size={12}
                     strokeWidth={3}
-                    isActive={sortConfig?.key === "date"}
+                    isActive={sortConfig?.key === "likesCount"}
+                  />
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("comments")}
+                  className="hidden lg:table-cell cursor-pointer"
+                >
+                  <SortIndicator
+                    title="Comments"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "comments"}
+                  />
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("bookmarksCount")}
+                  className="hidden lg:table-cell cursor-pointer"
+                >
+                  <SortIndicator
+                    title="Bookmarks"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "bookmarksCount"}
+                  />
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("sharesCount")}
+                  className="hidden lg:table-cell cursor-pointer"
+                >
+                  <SortIndicator
+                    title="Shares"
+                    direction={sortConfig?.direction}
+                    size={12}
+                    strokeWidth={3}
+                    isActive={sortConfig?.key === "sharesCount"}
                   />
                 </TableHead>
                 <TableHead>
@@ -186,34 +241,47 @@ const PostsTabContent = memo(
                       >
                         {post?.title}
                       </Link>
-                    </TableCell>{" "}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
                         {post?.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {post?.likes?.length}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {post?.comments?.length}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {post?.categories?.map((category: CategoryType) => (
-                        <span key={category._id.toString()}>
-                          {category.name}
-                          {(post?.categories?.length ?? 0) - 1 !==
-                          post?.categories?.indexOf(category)
-                            ? ", "
-                            : ""}
-                        </span>
-                      ))}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {post?.visits}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
                       {showMonthDayYear(post?.createdAt?.toString() || "")}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {(post?.visits || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {post?.categories?.slice(0, 2).map((category: CategoryType) => (
+                          <Badge
+                            key={category._id.toString()}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {category.name}
+                          </Badge>
+                        ))}
+                        {(post?.categories?.length || 0) > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{(post?.categories?.length || 0) - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {(post?.likesCount || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {(post?.comments?.length || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {(post?.bookmarksCount || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {(post?.sharesCount || 0).toLocaleString()}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -259,7 +327,7 @@ const PostsTabContent = memo(
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={11}
                     className="pt-4 lg:text-md text-center"
                   >
                     No posts found
