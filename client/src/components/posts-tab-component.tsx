@@ -255,15 +255,17 @@ const PostsTabContent = memo(
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex flex-wrap gap-1">
-                        {post?.categories?.slice(0, 2).map((category: CategoryType) => (
-                          <Badge
-                            key={category._id.toString()}
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            {category.name}
-                          </Badge>
-                        ))}
+                        {post?.categories
+                          ?.slice(0, 2)
+                          .map((category: CategoryType) => (
+                            <Badge
+                              key={category._id.toString()}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {category.name}
+                            </Badge>
+                          ))}
                         {(post?.categories?.length || 0) > 2 && (
                           <Badge variant="outline" className="text-xs">
                             +{(post?.categories?.length || 0) - 2}
