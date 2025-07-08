@@ -77,6 +77,96 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
     0
   );
 
+  const calculatePercentageChange = (
+    currentTotal: number,
+    posts: PostType[],
+    metricType: "views" | "likes" | "bookmarks" | "comments" | "shares"
+  ) => {
+    const now = new Date();
+    const lastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+
+    const postsExistingLastMonth = posts.filter(
+      (post) => new Date(post.createdAt || new Date()) <= lastMonth
+    );
+
+    if (postsExistingLastMonth.length === 0) {
+      return currentTotal > 0 ? 100 : null;
+    }
+
+    let lastMonthTotal = 0;
+    switch (metricType) {
+      case "views":
+        lastMonthTotal = postsExistingLastMonth.reduce(
+          (sum, post) => sum + (post.visits || 0),
+          0
+        );
+        break;
+      case "likes":
+        lastMonthTotal = postsExistingLastMonth.reduce(
+          (sum, post) => sum + (post.likesCount || 0),
+          0
+        );
+        break;
+      case "bookmarks":
+        lastMonthTotal = postsExistingLastMonth.reduce(
+          (sum, post) => sum + (post.bookmarksCount || 0),
+          0
+        );
+        break;
+      case "comments":
+        lastMonthTotal = postsExistingLastMonth.reduce(
+          (sum, post) => sum + (post.comments?.length || 0),
+          0
+        );
+        break;
+      case "shares":
+        lastMonthTotal = postsExistingLastMonth.reduce(
+          (sum, post) => sum + (post.sharesCount || 0),
+          0
+        );
+        break;
+    }
+
+    if (lastMonthTotal === 0) {
+      return currentTotal > 0 ? 100 : 0;
+    }
+
+    const change = ((currentTotal - lastMonthTotal) / lastMonthTotal) * 100;
+    return Math.round(change * 10) / 10;
+  };
+
+  const viewsChange = calculatePercentageChange(totalViews, blogPosts, "views");
+  const likesChange = calculatePercentageChange(totalLikes, blogPosts, "likes");
+  const bookmarksChange = calculatePercentageChange(
+    totalBookmarks,
+    blogPosts,
+    "bookmarks"
+  );
+  const commentsChange = calculatePercentageChange(
+    totalComments,
+    blogPosts,
+    "comments"
+  );
+  const sharesChange = calculatePercentageChange(
+    totalShares,
+    blogPosts,
+    "shares"
+  );
+
+  const formatPercentageChange = (change: number | null) => {
+    if (change === null) {
+      return { sign: "", value: "N/A", colorClass: "text-muted-foreground" };
+    }
+
+    const sign = change >= 0 ? "+" : "";
+    const colorClass = change >= 0 ? "text-green-600" : "text-red-500";
+    return { sign, value: Math.abs(change), colorClass };
+  };
+
   const filteredPosts = blogPosts
     .filter((post) => {
       const matchesSearch = post.title
@@ -126,7 +216,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
               {totalViews.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12.5%</span> from last month
+              <span className={formatPercentageChange(viewsChange).colorClass}>
+                {formatPercentageChange(viewsChange).value === "N/A"
+                  ? "N/A"
+                  : `${formatPercentageChange(viewsChange).sign}${
+                      formatPercentageChange(viewsChange).value
+                    }%`}
+              </span>{" "}
+              {formatPercentageChange(viewsChange).value === "N/A"
+                ? "no historical data"
+                : "from last month"}
             </p>
           </CardContent>
         </Card>
@@ -141,7 +240,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
               {totalLikes.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+8.2%</span> from last month
+              <span className={formatPercentageChange(likesChange).colorClass}>
+                {formatPercentageChange(likesChange).value === "N/A"
+                  ? "N/A"
+                  : `${formatPercentageChange(likesChange).sign}${
+                      formatPercentageChange(likesChange).value
+                    }%`}
+              </span>{" "}
+              {formatPercentageChange(likesChange).value === "N/A"
+                ? "no historical data"
+                : "from last month"}
             </p>
           </CardContent>
         </Card>
@@ -156,7 +264,18 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
               {totalBookmarks.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+15.3%</span> from last month
+              <span
+                className={formatPercentageChange(bookmarksChange).colorClass}
+              >
+                {formatPercentageChange(bookmarksChange).value === "N/A"
+                  ? "N/A"
+                  : `${formatPercentageChange(bookmarksChange).sign}${
+                      formatPercentageChange(bookmarksChange).value
+                    }%`}
+              </span>{" "}
+              {formatPercentageChange(bookmarksChange).value === "N/A"
+                ? "no historical data"
+                : "from last month"}
             </p>
           </CardContent>
         </Card>
@@ -171,7 +290,18 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
               {totalComments.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+6.7%</span> from last month
+              <span
+                className={formatPercentageChange(commentsChange).colorClass}
+              >
+                {formatPercentageChange(commentsChange).value === "N/A"
+                  ? "N/A"
+                  : `${formatPercentageChange(commentsChange).sign}${
+                      formatPercentageChange(commentsChange).value
+                    }%`}
+              </span>{" "}
+              {formatPercentageChange(commentsChange).value === "N/A"
+                ? "no historical data"
+                : "from last month"}
             </p>
           </CardContent>
         </Card>
@@ -186,7 +316,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
               {totalShares.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+9.1%</span> from last month
+              <span className={formatPercentageChange(sharesChange).colorClass}>
+                {formatPercentageChange(sharesChange).value === "N/A"
+                  ? "N/A"
+                  : `${formatPercentageChange(sharesChange).sign}${
+                      formatPercentageChange(sharesChange).value
+                    }%`}
+              </span>{" "}
+              {formatPercentageChange(sharesChange).value === "N/A"
+                ? "no historical data"
+                : "from last month"}
             </p>
           </CardContent>
         </Card>
