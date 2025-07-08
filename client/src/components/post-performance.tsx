@@ -42,9 +42,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
+import Link from "next/link";
 import TopPostsBarChart from "@/components/charts/top-posts-bar-chart";
 import { PostType } from "@/typings/types";
 import { DateRange } from "react-day-picker";
+import { calculateReadingTime } from "@/utils/formats";
 
 interface PostPerformanceProps {
   blogPosts: PostType[];
@@ -448,15 +450,17 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                     <TableRow key={post._id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-medium">{post.title}</div>
+                          <Link
+                            href={`/${post.postedBy?.username || "user"}/${
+                              post.slug || post._id
+                            }`}
+                            className="font-medium hover:text-blue-600 transition-colors cursor-pointer"
+                          >
+                            {post.title}
+                          </Link>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            {/* Estimate read time based on content length */}
-                            {Math.max(
-                              1,
-                              Math.ceil((post.content?.length || 0) / 1000)
-                            )}{" "}
-                            min read
+                            {calculateReadingTime(post.content || "")}
                           </div>
                         </div>
                       </TableCell>
