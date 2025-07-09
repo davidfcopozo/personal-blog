@@ -92,7 +92,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
+    <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16 overflow-x-hidden">
       {/* Desktop Sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex z-30">
         <DashboardNav activeTab={activeTab} handleTabChange={handleTabChange} />
@@ -107,38 +107,45 @@ export function Dashboard() {
         />
       </nav>
 
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 pb-14 sm:pb-0">
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 pb-14 sm:pb-0 min-w-0">
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 min-w-0 overflow-x-hidden">
           {activeTab === "dashboard" && (
-            <Tabs defaultValue="all">
-              <div className="flex flex-wrap justify-center">
-                <TabsList className="flex flex-wrap">
-                  <TabsTrigger value="all" onClick={() => setPostStatus("all")}>
+            <Tabs defaultValue="all" className="w-full min-w-0">
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-0">
+                <TabsList className="grid w-full grid-cols-4 sm:w-auto sm:flex sm:flex-wrap">
+                  <TabsTrigger
+                    value="all"
+                    onClick={() => setPostStatus("all")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
                     All
                   </TabsTrigger>
                   <TabsTrigger
                     value="published"
                     onClick={() => setPostStatus("published")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
                     Published
                   </TabsTrigger>
                   <TabsTrigger
                     value="unpublished"
                     onClick={() => setPostStatus("unpublished")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
                     Unpublished
                   </TabsTrigger>
                   <TabsTrigger
                     value="draft"
                     onClick={() => setPostStatus("draft")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
                     Draft
                   </TabsTrigger>
                 </TabsList>
-                <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center justify-center sm:ml-auto gap-2">
                   <Button
                     size="sm"
-                    className="h-8 gap-1"
+                    className="h-8 gap-1 text-xs sm:text-sm px-2 sm:px-3"
                     onClick={handleNewPost}
                   >
                     <PlusCircle className="h-3.5 w-3.5" />
@@ -148,7 +155,7 @@ export function Dashboard() {
                   </Button>
                 </div>
               </div>
-              <TabsContent value="all">
+              <TabsContent value="all" className="w-full min-w-0">
                 <div className="w-full max-w-full overflow-x-auto">
                   <PostsTabContent
                     filteredPosts={filteredPosts}
@@ -160,7 +167,7 @@ export function Dashboard() {
                   />
                 </div>
               </TabsContent>
-              <TabsContent value="published">
+              <TabsContent value="published" className="w-full min-w-0">
                 <div className="w-full max-w-full overflow-x-auto">
                   <PostsTabContent
                     filteredPosts={filteredPosts}
@@ -172,7 +179,7 @@ export function Dashboard() {
                   />
                 </div>
               </TabsContent>
-              <TabsContent value="unpublished">
+              <TabsContent value="unpublished" className="w-full min-w-0">
                 <div className="w-full max-w-full overflow-x-auto">
                   <PostsTabContent
                     filteredPosts={filteredPosts}
@@ -184,7 +191,7 @@ export function Dashboard() {
                   />
                 </div>
               </TabsContent>
-              <TabsContent value="draft">
+              <TabsContent value="draft" className="w-full min-w-0">
                 <div className="w-full max-w-full overflow-x-auto">
                   <PostsTabContent
                     filteredPosts={filteredPosts}
@@ -199,12 +206,12 @@ export function Dashboard() {
             </Tabs>
           )}
           {activeTab === "performance" && (
-            <div className="w-full max-w-full overflow-x-auto">
+            <div className="w-full max-w-full overflow-x-auto min-w-0">
               <PostPerformance blogPosts={blogPosts} />
             </div>
           )}
           {activeTab === "analytics" && (
-            <div className="w-full max-w-full overflow-x-auto">
+            <div className="w-full max-w-full overflow-x-auto min-w-0">
               <Analytics blogPosts={blogPosts} />
             </div>
           )}
