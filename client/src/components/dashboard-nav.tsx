@@ -18,7 +18,7 @@ export function DashboardNav({
       <nav
         className={`flex ${
           isMobile
-            ? "flex-row w-full justify-around items-center h-full"
+            ? "flex-row w-full justify-around items-center h-full px-2"
             : "flex-col items-center mt-16 gap-4 px-2 sm:py-5"
         } `}
       >
