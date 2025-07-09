@@ -36,6 +36,8 @@ export const Settings = () => {
   const [pendingAvatarUpdate, setPendingAvatarUpdate] = useState<string | null>(
     null
   );
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isDeletingAvatar, setIsDeletingAvatar] = useState(false);
 
   useEffect(() => {
     setLocalUserData(userData);
@@ -54,6 +56,13 @@ export const Settings = () => {
     userData?._id
   );
 
+  useEffect(() => {
+    if (!isUpdating) {
+      setIsUploadingAvatar(false);
+      setIsDeletingAvatar(false);
+    }
+  }, [isUpdating]);
+
   const handleImageSelect = (imageUrl: string) => {
     console.log("handleImageSelect - setting avatar to:", imageUrl);
 
@@ -62,7 +71,8 @@ export const Settings = () => {
       return newData;
     });
 
-    // Update user avatar with selected image
+    setIsUploadingAvatar(true);
+
     changeAvatar(imageUrl);
     setIsImageModalOpen(false);
   };
@@ -88,6 +98,7 @@ export const Settings = () => {
       return newData;
     });
 
+    setIsDeletingAvatar(true);
     deleteAvatar();
   };
 
@@ -165,11 +176,13 @@ export const Settings = () => {
                   <Button
                     variant="default"
                     onClick={handleChangePicture}
-                    disabled={uploading || isUpdating}
+                    disabled={
+                      uploading || isUploadingAvatar || isDeletingAvatar
+                    }
                   >
                     {uploading
                       ? "Uploading..."
-                      : isUpdating
+                      : isUploadingAvatar
                       ? "Updating..."
                       : "Change picture"}
                   </Button>
@@ -177,9 +190,14 @@ export const Settings = () => {
                     type="button"
                     variant="outline"
                     onClick={handleDeletePicture}
-                    disabled={uploading || isUpdating || !userData?.avatar}
+                    disabled={
+                      uploading ||
+                      isUploadingAvatar ||
+                      isDeletingAvatar ||
+                      !userData?.avatar
+                    }
                   >
-                    {isUpdating ? "Deleting..." : "Delete picture"}
+                    {isDeletingAvatar ? "Deleting..." : "Delete picture"}
                   </Button>
                 </div>
               </div>
@@ -193,9 +211,20 @@ export const Settings = () => {
                 <p className="text-gray-500 mb-2">
                   {(localUserData || userData)?.email}
                 </p>
-                <Link href="" className="text-gray-500 mb-2">
-                  {(localUserData || userData)?.website}
-                </Link>
+                {(localUserData || userData)?.website && (
+                  <Link
+                    href={
+                      (localUserData || userData)?.website?.startsWith("http")
+                        ? (localUserData || userData)?.website || ""
+                        : `https://${(localUserData || userData)?.website}`
+                    }
+                    className="text-blue-500 hover:text-blue-700 underline mb-2 block"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {(localUserData || userData)?.website}
+                  </Link>
+                )}
               </div>
             </Card>
           </div>
