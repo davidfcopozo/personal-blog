@@ -193,9 +193,20 @@ export const Settings = () => {
                 <p className="text-gray-500 mb-2">
                   {(localUserData || userData)?.email}
                 </p>
-                <Link href="" className="text-gray-500 mb-2">
+                {(localUserData || userData)?.website && (
+                  <Link
+                    href={
+                      (localUserData || userData)?.website?.startsWith("http")
+                        ? (localUserData || userData)?.website || ""
+                        : `https://${(localUserData || userData)?.website}`
+                    }
+                    className="text-blue-500 hover:text-blue-700 underline mb-2 block"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                   {(localUserData || userData)?.website}
                 </Link>
+                )}
               </div>
             </Card>
           </div>
