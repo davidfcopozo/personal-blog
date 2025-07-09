@@ -441,3 +441,9 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface DashboardNavProps {
+  activeTab: string;
+  handleTabChange: (tab: string) => void;
+  isMobile?: boolean;
+}

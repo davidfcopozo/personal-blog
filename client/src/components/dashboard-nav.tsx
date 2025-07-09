@@ -6,12 +6,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-
-interface DashboardNavProps {
-  activeTab: string;
-  handleTabChange: (tab: string) => void;
-  isMobile?: boolean;
-}
+import { DashboardNavProps } from "@/typings/interfaces";
 
 export function DashboardNav({
   activeTab,
