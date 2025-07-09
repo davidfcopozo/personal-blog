@@ -11,7 +11,7 @@ const CustomBadge = ({
   return (
     <div
       key={uniQueKey}
-      className="border-transparent cursor-pointer bg-primary text-primary-foreground hover:bg-primary/80 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      className="border-transparent cursor-pointer bg-primary text-primary-foreground hover:bg-primary/80 inline-flex items-center rounded-full border px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 text-[10px] sm:text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
     >
       {value}
       <div onClick={onRemove} className="ml-1">

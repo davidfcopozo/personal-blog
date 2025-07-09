@@ -470,7 +470,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                             <Badge
                               key={index}
                               variant="secondary"
-                              className="text-xs"
+                              className="text-xs px-6 py-2 sm:px-3"
                             >
                               {String(cat.name)}
                             </Badge>

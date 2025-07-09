@@ -1,21 +1,7 @@
 "use client";
-import Link from "next/link";
-import {
-  CircleUser,
-  LayoutDashboard,
-  PlusCircle,
-  Settings,
-  BarChart3,
-  TrendingUp,
-} from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import { useCallback, useMemo, useState, useEffect } from "react";
 import userPosts from "@/hooks/useUserPosts";
 import { useSession } from "next-auth/react";
@@ -35,6 +21,7 @@ import {
 import PostsTabContent from "./posts-tab-component";
 import { PostPerformance } from "./post-performance";
 import { Analytics } from "./analytics";
+import { DashboardNav } from "./dashboard-nav";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
@@ -101,114 +88,64 @@ export function Dashboard() {
   );
 
   function handleNewPost() {
-    router.push("/new");
+    router.push("/new-post");
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16">
-      <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center mt-16 gap-4 px-2 sm:py-5">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => handleTabChange("dashboard")}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                    activeTab === "dashboard"
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <LayoutDashboard strokeWidth={2.2} className="h-5 w-5" />
-                  <span className="sr-only">Dashboard</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Dashboard</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => handleTabChange("performance")}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                    activeTab === "performance"
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <BarChart3 strokeWidth={2.2} className="h-5 w-5" />
-                  <span className="sr-only">Post Performance</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Post Performance</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => handleTabChange("analytics")}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                    activeTab === "analytics"
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <TrendingUp strokeWidth={2.2} className="h-5 w-5" />
-                  <span className="sr-only">Analytics</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Analytics</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </nav>
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/settings"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                >
-                  <Settings className="h-5 w-5" />
-                  <span className="sr-only">Settings</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Settings</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </nav>
+    <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16 overflow-x-hidden">
+      {/* Desktop Sidebar */}
+      <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex z-30">
+        <DashboardNav activeTab={activeTab} handleTabChange={handleTabChange} />
       </aside>
 
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      {/* Mobile Bottom Nav */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t flex justify-around items-center h-14">
+        <DashboardNav
+          activeTab={activeTab}
+          handleTabChange={handleTabChange}
+          isMobile
+        />
+      </nav>
+
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 pb-14 sm:pb-0 min-w-0">
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 min-w-0 overflow-x-hidden">
           {activeTab === "dashboard" && (
-            <Tabs defaultValue="all">
-              <div className="flex justify-center">
-                <TabsList>
-                  <TabsTrigger value="all" onClick={() => setPostStatus("all")}>
+            <Tabs defaultValue="all" className="w-full min-w-0">
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-0">
+                <TabsList className="grid w-full grid-cols-4 sm:w-auto sm:flex sm:flex-wrap">
+                  <TabsTrigger
+                    value="all"
+                    onClick={() => setPostStatus("all")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
                     All
                   </TabsTrigger>
                   <TabsTrigger
                     value="published"
                     onClick={() => setPostStatus("published")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
                     Published
                   </TabsTrigger>
                   <TabsTrigger
                     value="unpublished"
                     onClick={() => setPostStatus("unpublished")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
                     Unpublished
                   </TabsTrigger>
                   <TabsTrigger
                     value="draft"
                     onClick={() => setPostStatus("draft")}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
                     Draft
                   </TabsTrigger>
                 </TabsList>
-                <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center justify-center sm:ml-auto gap-2">
                   <Button
                     size="sm"
-                    className="h-8 gap-1"
+                    className="h-8 gap-1 text-xs sm:text-sm px-2 sm:px-3"
                     onClick={handleNewPost}
                   >
                     <PlusCircle className="h-3.5 w-3.5" />
@@ -218,52 +155,66 @@ export function Dashboard() {
                   </Button>
                 </div>
               </div>
-              <TabsContent value="all">
-                <PostsTabContent
-                  filteredPosts={filteredPosts}
-                  arePostsFetching={arePostsFetching}
-                  arePostsLoading={arePostsLoading}
-                  onEditPost={handleEditPost}
-                  onDeletePost={handleDeletePost}
-                  status={status}
-                />
+              <TabsContent value="all" className="w-full min-w-0">
+                <div className="w-full max-w-full overflow-x-auto">
+                  <PostsTabContent
+                    filteredPosts={filteredPosts}
+                    arePostsFetching={arePostsFetching}
+                    arePostsLoading={arePostsLoading}
+                    onEditPost={handleEditPost}
+                    onDeletePost={handleDeletePost}
+                    status={status}
+                  />
+                </div>
               </TabsContent>
-              <TabsContent value="published">
-                <PostsTabContent
-                  filteredPosts={filteredPosts}
-                  arePostsFetching={arePostsFetching}
-                  arePostsLoading={arePostsLoading}
-                  onEditPost={handleEditPost}
-                  onDeletePost={handleDeletePost}
-                  status={status}
-                />
+              <TabsContent value="published" className="w-full min-w-0">
+                <div className="w-full max-w-full overflow-x-auto">
+                  <PostsTabContent
+                    filteredPosts={filteredPosts}
+                    arePostsFetching={arePostsFetching}
+                    arePostsLoading={arePostsLoading}
+                    onEditPost={handleEditPost}
+                    onDeletePost={handleDeletePost}
+                    status={status}
+                  />
+                </div>
               </TabsContent>
-              <TabsContent value="unpublished">
-                <PostsTabContent
-                  filteredPosts={filteredPosts}
-                  arePostsFetching={arePostsFetching}
-                  arePostsLoading={arePostsLoading}
-                  onEditPost={handleEditPost}
-                  onDeletePost={handleDeletePost}
-                  status={status}
-                />
+              <TabsContent value="unpublished" className="w-full min-w-0">
+                <div className="w-full max-w-full overflow-x-auto">
+                  <PostsTabContent
+                    filteredPosts={filteredPosts}
+                    arePostsFetching={arePostsFetching}
+                    arePostsLoading={arePostsLoading}
+                    onEditPost={handleEditPost}
+                    onDeletePost={handleDeletePost}
+                    status={status}
+                  />
+                </div>
               </TabsContent>
-              <TabsContent value="draft">
-                <PostsTabContent
-                  filteredPosts={filteredPosts}
-                  arePostsFetching={arePostsFetching}
-                  arePostsLoading={arePostsLoading}
-                  onEditPost={handleEditPost}
-                  onDeletePost={handleDeletePost}
-                  status={status}
-                />
+              <TabsContent value="draft" className="w-full min-w-0">
+                <div className="w-full max-w-full overflow-x-auto">
+                  <PostsTabContent
+                    filteredPosts={filteredPosts}
+                    arePostsFetching={arePostsFetching}
+                    arePostsLoading={arePostsLoading}
+                    onEditPost={handleEditPost}
+                    onDeletePost={handleDeletePost}
+                    status={status}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
-          )}{" "}
-          {activeTab === "performance" && (
-            <PostPerformance blogPosts={blogPosts} />
           )}
-          {activeTab === "analytics" && <Analytics blogPosts={blogPosts} />}
+          {activeTab === "performance" && (
+            <div className="w-full max-w-full overflow-x-auto min-w-0">
+              <PostPerformance blogPosts={blogPosts} />
+            </div>
+          )}
+          {activeTab === "analytics" && (
+            <div className="w-full max-w-full overflow-x-auto min-w-0">
+              <Analytics blogPosts={blogPosts} />
+            </div>
+          )}
         </main>
       </div>
       <AlertDialog
