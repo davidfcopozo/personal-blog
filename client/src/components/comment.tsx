@@ -193,7 +193,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
               <div className="flex ml-2 items-center gap-2">
                 <Link
                   href={`/${postedBy?.data?.username}`}
-                  className="font-medium text-foreground hover:text-[--thread-border] transition-all duration-300"
+                  className="font-medium text-foreground hover:text-[hsl(var(--thread-border))] transition-all duration-300"
                 >
                   {getFullName(postedBy?.data)}
                 </Link>

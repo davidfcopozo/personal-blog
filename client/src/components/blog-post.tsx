@@ -153,7 +153,7 @@ const BlogPost = memo(function BlogPost({
                           <div className="lg:hidden">
                             <Link
                               href={`/${postedBy?.username}`}
-                              className="text-base font-semibold text-foreground hover:text-[--thread-border] transition-all duration-300"
+                              className="text-base font-semibold text-foreground hover:text-[hsl(var(--thread-border))] transition-all duration-300"
                             >
                               {getFullName(postedBy as UserType)}
                             </Link>
@@ -163,8 +163,8 @@ const BlogPost = memo(function BlogPost({
                                 <button
                                   className={`${
                                     isFollowed
-                                      ? "text-amber-500 hover:text-[--thread-border] following-button"
-                                      : "text-[--thread-border] hover:text-amber-500"
+                                      ? "text-amber-500 hover:text-[hsl(var(--thread-border))] following-button"
+                                      : "text-[hsl(var(--thread-border))] hover:text-amber-500"
                                   }`}
                                   disabled={isPending}
                                   onClick={handleFollowToggle}

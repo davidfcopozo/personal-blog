@@ -25,6 +25,9 @@ export function DashboardSkeleton() {
       <TableCell className="hidden md:table-cell">
         <Skeleton className="h-4 w-[80px]" />
       </TableCell>
+      <TableCell className="hidden md:table-cell">
+        <Skeleton className="h-4 w-[80px]" />
+      </TableCell>
       <TableCell>
         <Skeleton className="h-4 w-[20px]" />
       </TableCell>

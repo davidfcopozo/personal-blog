@@ -42,7 +42,7 @@ const NestedComment: FC<NestedCommentProps> = ({
       {fetchedReplies && fetchedReplies.length > 0 && (
         <>
           {level < 2 || !isExpanded ? (
-            <div className="space-y-4 pl-6 ml-1 border-l-2 border-muted-input group-hover:border-[--thread-border] transition-all duration-300 ease-in-out">
+            <div className="space-y-4 pl-6 ml-1 border-l-2 border-muted-input group-hover:border-[hsl(var(--thread-border))] transition-all duration-300 ease-in-out">
               {isLoading || isFetching ? (
                 <SingleCommentSkeleton />
               ) : (
@@ -67,7 +67,7 @@ const NestedComment: FC<NestedCommentProps> = ({
           ) : (
             <button
               onClick={toggleExpand}
-              className="text-[--thread-border] hover:underline mt-2"
+              className="text-[hsl(var(--thread-border))] hover:underline mt-2"
             >
               Show {fetchedReplies?.length} more replies
             </button>
