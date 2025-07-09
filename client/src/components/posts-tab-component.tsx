@@ -254,7 +254,7 @@ const PostsTabContent = memo(
                       {(post?.visits || 0).toLocaleString()}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
                         {post?.categories && post.categories.length > 0 ? (
                           <>
                             {post.categories
@@ -263,19 +263,26 @@ const PostsTabContent = memo(
                                 <Badge
                                   key={category._id.toString()}
                                   variant="secondary"
-                                  className="text-xs"
+                                  className="text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 truncate max-w-[80px] sm:max-w-[120px]"
+                                  title={category.name.toString()}
                                 >
                                   {category.name}
                                 </Badge>
                               ))}
                             {post.categories.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2.5 sm:py-0.5"
+                              >
                                 +{post.categories.length - 2}
                               </Badge>
                             )}
                           </>
                         ) : (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2.5 sm:py-0.5"
+                          >
                             No categories
                           </Badge>
                         )}
