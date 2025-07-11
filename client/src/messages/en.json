@@ -1,5 +1,6 @@
 {
   "common": {
+    "orContinueWith": "Or continue with",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -69,8 +70,8 @@
     "dontHaveAccount": "Don't have an account?",
     "resetPassword": "Reset Password",
     "signInWithEmail": "Sign in with Email",
-    "signInWithGoogle": "Sign in with Google",
-    "signInWithGitHub": "Sign in with GitHub",
+    "signInWithGoogle": "Google",
+    "signInWithGitHub": "GitHub",
     "emailRequired": "Email is required",
     "passwordRequired": "Password is required",
     "invalidEmail": "Invalid email address",
@@ -78,7 +79,15 @@
     "signInSuccess": "Successfully signed in",
     "signUpSuccess": "Account created successfully",
     "signInError": "Failed to sign in",
-    "signUpError": "Failed to create account"
+    "signUpError": "Failed to create account",
+    "invalidCredentials": "Invalid email or password. Please try again.",
+    "genericSignInError": "Something went wrong. Please try again.",
+    "resetPasswordError": "Could not process request",
+    "resetPasswordRetry": "Please try again later",
+    "forgotPasswordSent": "Reset link sent",
+    "forgotPasswordInstructions": "If your email exists in our system, you'll receive password reset instructions",
+    "loginFormDescription": "Enter your email below to login to your account",
+    "signingIn": "Signing in..."
   },
   "settings": {
     "title": "Settings",

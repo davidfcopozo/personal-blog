@@ -32,7 +32,8 @@
     "termsOfService": "Términos de Servicio",
     "privacyPolicy": "Política de Privacidad",
     "byContinuing": "Al continuar, aceptas nuestros",
-    "and": "y"
+    "and": "y",
+    "orContinueWith": "O continuar con"
   },
   "navigation": {
     "home": "Inicio",
@@ -68,9 +69,9 @@
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
     "dontHaveAccount": "¿No tienes una cuenta?",
     "resetPassword": "Restablecer Contraseña",
-    "signInWithEmail": "Iniciar sesión con email",
-    "signInWithGoogle": "Iniciar sesión con Google",
-    "signInWithGitHub": "Iniciar sesión con GitHub",
+    "signInWithEmail": "Iniciar sesión",
+    "signInWithGoogle": "Google",
+    "signInWithGitHub": "GitHub",
     "emailRequired": "El correo electrónico es obligatorio",
     "passwordRequired": "La contraseña es obligatoria",
     "invalidEmail": "Dirección de correo electrónico inválida",
@@ -78,7 +79,15 @@
     "signInSuccess": "Sesión iniciada exitosamente",
     "signUpSuccess": "Cuenta creada exitosamente",
     "signInError": "Error al iniciar sesión",
-    "signUpError": "Error al crear la cuenta"
+    "signUpError": "Error al crear la cuenta",
+    "forgotPasswordSent": "Enlace de restablecimiento enviado",
+    "forgotPasswordInstructions": "Si tu correo existe en nuestro sistema, recibirás instrucciones para restablecer tu contraseña",
+    "loginFormDescription": "Ingresa tu correo electrónico para iniciar sesión en tu cuenta",
+    "signingIn": "Iniciando sesión...",
+    "invalidCredentials": "Correo o contraseña inválidos. Por favor inténtalo de nuevo.",
+    "genericSignInError": "Algo salió mal. Por favor inténtalo de nuevo.",
+    "resetPasswordError": "No se pudo procesar la solicitud",
+    "resetPasswordRetry": "Por favor inténtalo de nuevo más tarde"
   },
   "settings": {
     "title": "Configuración",
