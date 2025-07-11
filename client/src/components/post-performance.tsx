@@ -423,19 +423,31 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
           </div>
 
           {/* Posts Table */}
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Post</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Published</TableHead>
-                  <TableHead className="text-right">Views</TableHead>
-                  <TableHead className="text-right">Likes</TableHead>
-                  <TableHead className="text-right">Bookmarks</TableHead>
-                  <TableHead className="text-right">Comments</TableHead>
-                  <TableHead className="text-right">Shares</TableHead>
-                  <TableHead className="text-right">Engagement</TableHead>
+                  <TableHead className="min-w-[250px]">Post</TableHead>
+                  <TableHead className="min-w-[120px]">Category</TableHead>
+                  <TableHead className="min-w-[120px]">Published</TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    Views
+                  </TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    Likes
+                  </TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    Bookmarks
+                  </TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    Comments
+                  </TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    Shares
+                  </TableHead>
+                  <TableHead className="text-right min-w-[120px]">
+                    Engagement
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
