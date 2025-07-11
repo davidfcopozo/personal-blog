@@ -10,8 +10,10 @@ import { CategoryType, PostType } from "@/typings/types";
 import CategoriesSkeleton from "@/components/categories-skeleton";
 import SearchResults from "@/components/search-results";
 import { BlogPostCard } from "@/components/blog-post-card";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
+  const t = useTranslations("blog");
   const { toast } = useToast();
   const {
     data: posts,
@@ -114,7 +116,7 @@ export default function Home() {
                     <Search className="absolute left-2.5 top-2.5 ml-2 h-5 w-4 text-muted-foreground" />
                     <Input
                       type="search"
-                      placeholder="Search posts..."
+                      placeholder={t("searchPlaceholder")}
                       className="rounded-full pl-10 w-full sm:w-[300px] md:w-[100%]"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -133,7 +135,7 @@ export default function Home() {
                 </form>
                 <div className="flex ml-2 flex-col">
                   <p className="text-sm text-foreground font-semibold mb-4">
-                    What do you want to read about?
+                    {t("categoriesTitle")}
                   </p>
                   <div className="flex flex-wrap gap-3 text-middle font-semibold text-background">
                     {isCategoriesFetching ? (
