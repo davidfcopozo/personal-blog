@@ -268,7 +268,7 @@ const BlogPost = memo(function BlogPost({
               <div className="py-6 bg-background">
                 <ContentRenderer
                   content={post.content || ""}
-                  className="md:w-[80%] w-[90%] pt-4"
+                  className="w-[95%] sm:w-[90%] md:w-[80%] pt-4 mx-auto"
                 />
               </div>
               <CommentSection comments={post.comments || []} post={post} />
