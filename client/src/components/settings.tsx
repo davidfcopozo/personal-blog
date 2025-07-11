@@ -106,16 +106,31 @@ export const Settings = () => {
 
   return (
     <div className="flex flex-col mt-16 md:mt-12 min-h-[100dvh]">
-      <div className="container mx-auto px-6 sm:py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-6">
+      <div className="container mx-auto px-4 sm:px-6 sm:py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {/* Tabs Section */}
-          <div className="col-span-2 md:col-span-2">
-            <Card className="bg-background shadow-md rounded-lg p-6">
+          <div className="order-2 md:order-1 md:col-span-2">
+            <Card className="bg-background shadow-md rounded-lg p-4 sm:p-6">
               <Tabs defaultValue="personal" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="personal">Personal Info</TabsTrigger>
-                  <TabsTrigger value="social">Social Media</TabsTrigger>
-                  <TabsTrigger value="custom">Custom Experience</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+                  <TabsTrigger
+                    value="personal"
+                    className="text-xs sm:text-sm py-2 sm:py-0"
+                  >
+                    Personal Info
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="social"
+                    className="text-xs sm:text-sm py-2 sm:py-0"
+                  >
+                    Social Media
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="custom"
+                    className="text-xs sm:text-sm py-2 sm:py-0"
+                  >
+                    Custom Experience
+                  </TabsTrigger>
                 </TabsList>
                 <form onSubmit={handleSubmit}>
                   {/* Personal Info Tab */}
@@ -163,7 +178,7 @@ export const Settings = () => {
             </Card>
           </div>
           {/* User Info Section */}
-          <div className="col-span-1 md:col-span-1">
+          <div className="order-1 md:order-2 my-4 md:my-0 md:col-span-1">
             <Card className="bg-background shadow-md rounded-lg p-4">
               <div className="flex flex-col items-center justify-center mb-4">
                 <UserAvatar
