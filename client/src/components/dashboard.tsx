@@ -157,52 +157,44 @@ export function Dashboard() {
                 </div>
               </div>
               <TabsContent value="all" className="w-full min-w-0">
-                <div className="w-full max-w-full overflow-x-auto">
-                  <PostsTabContent
-                    filteredPosts={filteredPosts}
-                    arePostsFetching={arePostsFetching}
-                    arePostsLoading={arePostsLoading}
-                    onEditPost={handleEditPost}
-                    onDeletePost={handleDeletePost}
-                    status={status}
-                  />
-                </div>
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
               </TabsContent>
               <TabsContent value="published" className="w-full min-w-0">
-                <div className="w-full max-w-full overflow-x-auto">
-                  <PostsTabContent
-                    filteredPosts={filteredPosts}
-                    arePostsFetching={arePostsFetching}
-                    arePostsLoading={arePostsLoading}
-                    onEditPost={handleEditPost}
-                    onDeletePost={handleDeletePost}
-                    status={status}
-                  />
-                </div>
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
               </TabsContent>
               <TabsContent value="unpublished" className="w-full min-w-0">
-                <div className="w-full max-w-full overflow-x-auto">
-                  <PostsTabContent
-                    filteredPosts={filteredPosts}
-                    arePostsFetching={arePostsFetching}
-                    arePostsLoading={arePostsLoading}
-                    onEditPost={handleEditPost}
-                    onDeletePost={handleDeletePost}
-                    status={status}
-                  />
-                </div>
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
               </TabsContent>
               <TabsContent value="draft" className="w-full min-w-0">
-                <div className="w-full max-w-full overflow-x-auto">
-                  <PostsTabContent
-                    filteredPosts={filteredPosts}
-                    arePostsFetching={arePostsFetching}
-                    arePostsLoading={arePostsLoading}
-                    onEditPost={handleEditPost}
-                    onDeletePost={handleDeletePost}
-                    status={status}
-                  />
-                </div>
+                <PostsTabContent
+                  filteredPosts={filteredPosts}
+                  arePostsFetching={arePostsFetching}
+                  arePostsLoading={arePostsLoading}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                  status={status}
+                />
               </TabsContent>
             </Tabs>
           )}
