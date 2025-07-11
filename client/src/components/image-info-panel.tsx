@@ -4,12 +4,14 @@ import { Separator } from "@/components/ui/separator";
 import type { ImageInfoPanelPropsInterface } from "@/typings/interfaces";
 import Image from "next/image";
 import { formatFileSize, showMonthDayYear } from "@/utils/formats";
+import { useLocale } from "next-intl";
 
 export function ImageInfoPanel({
   image,
   onDelete,
   onUpdate,
 }: ImageInfoPanelPropsInterface) {
+  const locale = useLocale();
   if (!image) {
     return (
       <div className="bg-muted rounded-lg p-4">
@@ -36,7 +38,8 @@ export function ImageInfoPanel({
         <h3 className="font-bold text-lg">Image Information</h3>
         <p className="text-sm text-muted-foreground">File name: {image.name}</p>
         <p className="text-sm text-muted-foreground">
-          Uploaded on: {showMonthDayYear(`${image.createdAt}`)}
+          Uploaded on:{" "}
+          {showMonthDayYear(`${image.createdAt}`, locale as "en" | "es")}
         </p>
         <p className="text-sm text-muted-foreground">
           Size: {formatFileSize(image.size)}

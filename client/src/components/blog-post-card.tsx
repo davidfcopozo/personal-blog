@@ -17,11 +17,13 @@ import { Card, CardFooter } from "./ui/card";
 import { AuthModal } from "./auth-modal";
 import { memo } from "react";
 import { UserAvatar } from "./ui/user-avatar";
+import { useLocale } from "next-intl";
 
 export const BlogPostCard = memo(function BlogPostCard({
   post,
   className,
 }: BlogPostCardProps) {
+  const locale = useLocale();
   const { title, content, createdAt, coverImage, postedBy, slug } = post;
   const { username } = postedBy;
   const {
@@ -53,7 +55,9 @@ export const BlogPostCard = memo(function BlogPostCard({
           />
           <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs text-white">
             <Clock className="h-3 w-3" />
-            <span>{calculateReadingTime(content as string)}</span>
+            <span>
+              {calculateReadingTime(content as string, locale as "en" | "es")}
+            </span>
           </div>
         </div>
         <div className="flex flex-1 flex-col p-5">
@@ -66,7 +70,7 @@ export const BlogPostCard = memo(function BlogPostCard({
                 <p className="font-medium">{getFullName(postedBy)}</p>
               </Link>
               <p className="text-muted-foreground">
-                {showMonthDay(createdAt!.toString())}
+                {showMonthDay(createdAt!.toString(), locale as "en" | "es")}
               </p>
             </div>
           </div>

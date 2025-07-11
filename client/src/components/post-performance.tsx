@@ -47,12 +47,14 @@ import TopPostsBarChart from "@/components/charts/top-posts-bar-chart";
 import { PostType } from "@/typings/types";
 import { DateRange } from "react-day-picker";
 import { calculateReadingTime } from "@/utils/formats";
+import { useLocale } from "next-intl";
 
 interface PostPerformanceProps {
   blogPosts: PostType[];
 }
 
 export function PostPerformance({ blogPosts }: PostPerformanceProps) {
+  const locale = useLocale();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("views");
@@ -472,7 +474,10 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                           </Link>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            {calculateReadingTime(post.content || "")}
+                            {calculateReadingTime(
+                              post.content || "",
+                              locale as "en" | "es"
+                            )}
                           </div>
                         </div>
                       </TableCell>

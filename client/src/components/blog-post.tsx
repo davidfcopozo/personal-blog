@@ -21,6 +21,7 @@ import { AuthModal } from "./auth-modal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
+import { useLocale } from "next-intl";
 
 const BlogPost = memo(function BlogPost({
   handleLikeClick,
@@ -31,6 +32,7 @@ const BlogPost = memo(function BlogPost({
   amountOfBookmarks,
   post,
 }: BlogPostProps) {
+  const locale = useLocale();
   const router = useRouter();
   const { currentUser } = useAuth();
 
@@ -183,12 +185,16 @@ const BlogPost = memo(function BlogPost({
                           <div className="flex items-center gap-1">
                             <span className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              {calculateReadingTime(post.content || "")}
+                              {calculateReadingTime(
+                                post.content || "",
+                                locale as "en" | "es"
+                              )}
                             </span>
                             <span className="mx-2">•</span>
                             <time dateTime={post.createdAt?.toString() || ""}>
                               {showMonthDayYear(
-                                post.createdAt?.toString() || ""
+                                post.createdAt?.toString() || "",
+                                locale as "en" | "es"
                               )}
                             </time>
                           </div>

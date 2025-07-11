@@ -32,6 +32,7 @@ import { showMonthDayYear } from "@/utils/formats";
 import React, { useState, useMemo } from "react";
 import SortIndicator from "./ui/sort-indicator";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 const PostsTabContent = memo(
   ({
@@ -49,6 +50,7 @@ const PostsTabContent = memo(
     onDeletePost: (post: PostType) => void;
     status: string;
   }) => {
+    const locale = useLocale();
     const [sortConfig, setSortConfig] = useState<{
       key: string;
       direction: "asc" | "desc";
@@ -247,7 +249,10 @@ const PostsTabContent = memo(
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {showMonthDayYear(post?.createdAt?.toString() || "")}
+                        {showMonthDayYear(
+                          post?.createdAt?.toString() || "",
+                          locale as "en" | "es"
+                        )}
                       </TableCell>
                       <TableCell>
                         {(post?.visits || 0).toLocaleString()}
