@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { GoogleIcon } from "./icons";
 import usePostRequest from "@/hooks/usePostRequest";
+import { useTranslations } from "next-intl";
 
 export function LoginForm() {
   const router = useRouter();
@@ -30,6 +31,10 @@ export function LoginForm() {
     email: "",
     password: "",
   });
+  const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tForms = useTranslations("forms");
+  const tAuthModal = useTranslations("authModal");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,18 +55,20 @@ export function LoginForm() {
       if (result?.error) {
         toast({
           variant: "destructive",
-          title: "Login failed",
-          description: "Invalid email or password",
+          title: tAuth("signInError"),
+          description: tAuth("invalidCredentials"),
         });
-      } else {
-        router.push("/dashboard");
-        router.refresh();
+
+        return;
       }
+
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Login failed",
-        description: "Something went wrong. Please try again.",
+        title: tAuth("signInError"),
+        description: tAuth("genericSignInError"),
       });
     } finally {
       setIsLoading(false);
@@ -79,8 +86,8 @@ export function LoginForm() {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Login failed",
-        description: `Could not sign in with ${provider}`,
+        title: tAuth("signInError"),
+        description: tAuthModal("socialSignInError", { provider }),
       });
       setOauthLoading(null);
     }
@@ -90,9 +97,8 @@ export function LoginForm() {
     url: "/api/auth/forgot-password",
     onSuccess: () => {
       toast({
-        title: "Reset link sent",
-        description:
-          "If your email exists in our system, you'll receive password reset instructions",
+        title: tAuth("forgotPasswordSent"),
+        description: tAuth("forgotPasswordInstructions"),
       });
     },
     onError: (error) => {
@@ -109,8 +115,8 @@ export function LoginForm() {
     if (!formData.email) {
       toast({
         variant: "destructive",
-        title: "Email required",
-        description: "Please enter your email address first",
+        title: tAuth("emailRequired"),
+        description: tAuth("invalidEmailFormat"),
       });
       return;
     }
@@ -122,6 +128,10 @@ export function LoginForm() {
         email: formData.email,
         frontendUrl,
       });
+      toast({
+        title: tAuth("forgotPasswordSent"),
+        description: tAuth("forgotPasswordInstructions"),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -130,10 +140,8 @@ export function LoginForm() {
   return (
     <Card className="mx-auto max-w-sm mt-8 mb-4">
       <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
+        <CardTitle className="text-2xl">{tAuth("signIn")}</CardTitle>
+        <CardDescription>{tAuth("loginFormDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* OAuth Providers */}
@@ -149,7 +157,7 @@ export function LoginForm() {
             ) : (
               <Github className="h-4 w-4" />
             )}
-            GitHub
+            {tAuth("signInWithGitHub")}
           </Button>
           <Button
             variant="outline"
@@ -162,7 +170,7 @@ export function LoginForm() {
             ) : (
               <GoogleIcon />
             )}
-            Google
+            {tAuth("signInWithGoogle")}
           </Button>
         </div>
 
@@ -172,19 +180,19 @@ export function LoginForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Or continue with
+              {tCommon("orContinueWith")}
             </span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{tAuth("email")}</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="m@example.com"
+              placeholder={tForms("emailPlaceholder")}
               required
               value={formData.email}
               onChange={handleChange}
@@ -192,14 +200,14 @@ export function LoginForm() {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{tAuth("password")}</Label>
               <Button
                 variant="link"
                 className="ml-auto text-sm p-0 h-auto"
                 onClick={handleForgotPassword}
                 type="button"
               >
-                Forgot your password?
+                {tAuth("forgotPassword")}
               </Button>
             </div>
             <Input
@@ -207,6 +215,7 @@ export function LoginForm() {
               name="password"
               type="password"
               required
+              placeholder={tForms("passwordPlaceholder")}
               value={formData.password}
               onChange={handleChange}
             />
@@ -220,19 +229,19 @@ export function LoginForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                {tAuth("signingIn")}
               </>
             ) : (
-              "Sign In with Email"
+              <>{tAuth("signInWithEmail")}</>
             )}
           </Button>
         </form>
       </CardContent>
       <CardFooter>
         <div className="text-center text-sm w-full">
-          Don&apos;t have an account?{" "}
+          {tAuth("dontHaveAccount")}{" "}
           <Link href="/register" className="underline hover:text-primary">
-            Create an account
+            {tAuth("createAccount")}{" "}
           </Link>
         </div>
       </CardFooter>
