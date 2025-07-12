@@ -33,7 +33,8 @@
     "privacyPolicy": "Política de Privacidad",
     "byContinuing": "Al continuar, aceptas nuestros",
     "and": "y",
-    "orContinueWith": "O continuar con"
+    "orContinueWith": "O continuar con",
+    "day": "día"
   },
   "navigation": {
     "home": "Inicio",
@@ -244,7 +245,37 @@
     "emailNotifications": "Notificaciones por Correo",
     "pushNotifications": "Notificaciones Push",
     "notificationsEnabled": "Notificaciones habilitadas",
-    "notificationsDisabled": "Notificaciones deshabilitadas"
+    "notificationsDisabled": "Notificaciones habilitadas"
+  },
+  "analytics": {
+    "tabs": {
+      "overview": "Resumen",
+      "engagement": "Participación",
+      "performance": "Rendimiento"
+    },
+    "viewsOverTime": "Vistas a lo largo del tiempo",
+    "viewsOverTimeDescription": "Vistas de página diarias en los últimos 30 días",
+    "engagementMetrics": "Métricas de Participación",
+    "engagementMetricsDescription": "Me gusta, comentarios y compartidos a lo largo del tiempo",
+    "engagementRateByCategory": "Tasa de Participación por Categoría",
+    "engagementRateByCategoryDescription": "Participación promedio por categoría de publicación",
+    "performanceInsights": "Perspectivas de Rendimiento",
+    "performanceInsightsDescription": "Métricas clave y recomendaciones",
+    "averageEngagementRate": "Tasa de Participación Promedio",
+    "averageViewsPerPost": "Vistas Promedio por Publicación",
+    "topPerformingCategory": "Categoría con Mejor Rendimiento",
+    "noCategories": "Sin categorías",
+    "viewsTrendAnalysis": "Análisis de Tendencia de Vistas",
+    "viewsTrendAnalysisDescription": "Supervisa el rendimiento de vistas de tu blog a lo largo del tiempo"
+  },
+  "charts": {
+    "day": "Día",
+    "dayWithNumber": "Día {number}",
+    "views": "Vistas",
+    "likes": "Me gusta",
+    "comments": "Comentarios",
+    "bookmarks": "Marcadores",
+    "shares": "Compartidas"
   },
   "errors": {
     "pageNotFound": "Página No Encontrada",

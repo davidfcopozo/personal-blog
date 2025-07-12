@@ -33,7 +33,8 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "byContinuing": "By continuing, you agree to our",
-    "and": "and"
+    "and": "and",
+    "day": "day"
   },
   "navigation": {
     "home": "Home",
@@ -245,6 +246,36 @@
     "pushNotifications": "Push Notifications",
     "notificationsEnabled": "Notifications enabled",
     "notificationsDisabled": "Notifications disabled"
+  },
+  "analytics": {
+    "tabs": {
+      "overview": "Overview",
+      "engagement": "Engagement",
+      "performance": "Performance"
+    },
+    "viewsOverTime": "Views Over Time",
+    "viewsOverTimeDescription": "Daily page views for the last 30 days",
+    "engagementMetrics": "Engagement Metrics",
+    "engagementMetricsDescription": "Likes, comments, and shares over time",
+    "engagementRateByCategory": "Engagement Rate by Category",
+    "engagementRateByCategoryDescription": "Average engagement per post category",
+    "performanceInsights": "Performance Insights",
+    "performanceInsightsDescription": "Key metrics and recommendations",
+    "averageEngagementRate": "Average Engagement Rate",
+    "averageViewsPerPost": "Average Views per Post",
+    "topPerformingCategory": "Top Performing Category",
+    "noCategories": "No categories",
+    "viewsTrendAnalysis": "Views Trend Analysis",
+    "viewsTrendAnalysisDescription": "Track your blog's view performance over time"
+  },
+  "charts": {
+    "day": "Day",
+    "dayWithNumber": "Day {number}",
+    "views": "Views",
+    "likes": "Likes",
+    "comments": "Comments",
+    "bookmarks": "Bookmarks",
+    "shares": "Shares"
   },
   "errors": {
     "pageNotFound": "Page Not Found",
