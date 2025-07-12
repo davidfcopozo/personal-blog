@@ -1,6 +1,5 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ViewsLineChart from "@/components/charts/views-line-chart";
 import EngagementAreaChart from "@/components/charts/engagement-area-chart";
 import { PostType } from "@/typings/types";
+import { useTranslations } from "next-intl";
 
 interface AnalyticsProps {
   blogPosts: PostType[];
 }
 
 export function Analytics({ blogPosts }: AnalyticsProps) {
+  const tAnalytics = useTranslations("analytics");
+
   const totalViews = blogPosts.reduce(
     (sum, post) => sum + (post.visits || 0),
     0
@@ -45,18 +47,24 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
       {/* Charts Section */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="overview">
+            {tAnalytics("tabs.overview")}
+          </TabsTrigger>
+          <TabsTrigger value="engagement">
+            {tAnalytics("tabs.engagement")}
+          </TabsTrigger>
+          <TabsTrigger value="performance">
+            {tAnalytics("tabs.performance")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Views Over Time</CardTitle>
+                <CardTitle>{tAnalytics("viewsOverTime")}</CardTitle>
                 <CardDescription>
-                  Daily page views for the last 30 days
+                  {tAnalytics("viewsOverTimeDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -66,9 +74,9 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Engagement Metrics</CardTitle>
+                <CardTitle>{tAnalytics("engagementMetrics")}</CardTitle>
                 <CardDescription>
-                  Likes, comments, and shares over time
+                  {tAnalytics("engagementMetricsDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -82,9 +90,9 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Engagement Metrics</CardTitle>
+                <CardTitle>{tAnalytics("engagementMetrics")}</CardTitle>
                 <CardDescription>
-                  Likes, comments, and shares over time
+                  {tAnalytics("engagementMetricsDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -94,9 +102,9 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Engagement Rate by Category</CardTitle>
+                <CardTitle>{tAnalytics("engagementRateByCategory")}</CardTitle>
                 <CardDescription>
-                  Average engagement per post category
+                  {tAnalytics("engagementRateByCategoryDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -162,8 +170,10 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
         <TabsContent value="performance" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Performance Insights</CardTitle>
-              <CardDescription>Key metrics and recommendations</CardDescription>
+              <CardTitle>{tAnalytics("performanceInsights")}</CardTitle>
+              <CardDescription>
+                {tAnalytics("performanceInsightsDescription")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -177,7 +187,7 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
                     %
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Average Engagement Rate
+                    {tAnalytics("averageEngagementRate")}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -185,7 +195,7 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
                     {Math.round(totalViews / blogPosts.length).toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Average Views per Post
+                    {tAnalytics("averageViewsPerPost")}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -211,7 +221,7 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
                       : "No categories"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Top Performing Category
+                    {tAnalytics("topPerformingCategory")}
                   </div>
                 </div>
               </div>
@@ -221,9 +231,9 @@ export function Analytics({ blogPosts }: AnalyticsProps) {
           {/* Views Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Views Trend Analysis</CardTitle>
+              <CardTitle>{tAnalytics("viewsTrendAnalysis")}</CardTitle>
               <CardDescription>
-                Track your blog&apos;s view performance over time
+                {tAnalytics("viewsTrendAnalysisDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
