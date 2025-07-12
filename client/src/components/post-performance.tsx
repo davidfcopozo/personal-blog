@@ -41,24 +41,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format } from "date-fns";
 import Link from "next/link";
 import TopPostsBarChart from "@/components/charts/top-posts-bar-chart";
 import { PostType } from "@/typings/types";
 import { DateRange } from "react-day-picker";
-import { calculateReadingTime } from "@/utils/formats";
-import { useLocale } from "next-intl";
+import { calculateReadingTime, showMonthDayYear } from "@/utils/formats";
+import { useLocale, useTranslations } from "next-intl";
+import { es } from "date-fns/locale";
 
 interface PostPerformanceProps {
   blogPosts: PostType[];
 }
-
 export function PostPerformance({ blogPosts }: PostPerformanceProps) {
   const locale = useLocale();
+  const tPostPerformance = useTranslations("postPerformance");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("views");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
+  const dateLocale = locale === "es" ? es : undefined;
 
   const totalViews = blogPosts.reduce(
     (sum, post) => sum + (post.visits || 0),
@@ -171,6 +173,13 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
     return { sign, value: Math.abs(change), colorClass };
   };
 
+  const getChangeText = (change: number | null) => {
+    if (change === null || formatPercentageChange(change).value === "N/A") {
+      return tPostPerformance("noHistoricalData");
+    }
+    return tPostPerformance("fromLastMonth");
+  };
+
   const filteredPosts = blogPosts
     .filter((post) => {
       const matchesSearch = post.title
@@ -212,7 +221,9 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {tPostPerformance("totalViews")}
+            </CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -227,16 +238,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                       formatPercentageChange(viewsChange).value
                     }%`}
               </span>{" "}
-              {formatPercentageChange(viewsChange).value === "N/A"
-                ? "no historical data"
-                : "from last month"}
+              {getChangeText(viewsChange)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Likes</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {tPostPerformance("totalLikes")}
+            </CardTitle>
             <Heart className="h-4 w-4 text-muted-foreground text-pink-500" />
           </CardHeader>
           <CardContent>
@@ -251,16 +262,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                       formatPercentageChange(likesChange).value
                     }%`}
               </span>{" "}
-              {formatPercentageChange(likesChange).value === "N/A"
-                ? "no historical data"
-                : "from last month"}
+              {getChangeText(likesChange)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bookmarks</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {tPostPerformance("bookmarks")}
+            </CardTitle>
             <Bookmark className="h-4 w-4 text-muted-foreground stroke-indigo-500" />
           </CardHeader>
           <CardContent>
@@ -277,16 +288,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                       formatPercentageChange(bookmarksChange).value
                     }%`}
               </span>{" "}
-              {formatPercentageChange(bookmarksChange).value === "N/A"
-                ? "no historical data"
-                : "from last month"}
+              {getChangeText(bookmarksChange)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Comments</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {tPostPerformance("comments")}
+            </CardTitle>
             <MessageCircle className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
@@ -303,16 +314,16 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                       formatPercentageChange(commentsChange).value
                     }%`}
               </span>{" "}
-              {formatPercentageChange(commentsChange).value === "N/A"
-                ? "no historical data"
-                : "from last month"}
+              {getChangeText(commentsChange)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Shares</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {tPostPerformance("shares")}
+            </CardTitle>
             <Share2 className="h-4 w-4 text-[#0072f5]" />
           </CardHeader>
           <CardContent>
@@ -327,9 +338,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                       formatPercentageChange(sharesChange).value
                     }%`}
               </span>{" "}
-              {formatPercentageChange(sharesChange).value === "N/A"
-                ? "no historical data"
-                : "from last month"}
+              {getChangeText(sharesChange)}
             </p>
           </CardContent>
         </Card>
@@ -338,8 +347,10 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
       {/* Top Posts Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Top Performing Posts</CardTitle>
-          <CardDescription>Posts ranked by total views</CardDescription>
+          <CardTitle>{tPostPerformance("topPerformingPosts")}</CardTitle>
+          <CardDescription>
+            {tPostPerformance("topPerformingPostsDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <TopPostsBarChart blogPosts={blogPosts} />
@@ -349,9 +360,9 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
       {/* Detailed Posts Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Post Performance Details</CardTitle>
+          <CardTitle>{tPostPerformance("postPerformanceDetails")}</CardTitle>
           <CardDescription>
-            Detailed metrics for all your blog posts
+            {tPostPerformance("postPerformanceDetailsDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -359,7 +370,7 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
               <Input
-                placeholder="Search posts..."
+                placeholder={tPostPerformance("searchPosts")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -367,10 +378,12 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={tPostPerformance("allCategories")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">
+                  {tPostPerformance("allCategories")}
+                </SelectItem>
                 {allCategories.map((category: string) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -380,14 +393,24 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={tPostPerformance("sortBy")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="views">Views</SelectItem>
-                <SelectItem value="likes">Likes</SelectItem>
-                <SelectItem value="bookmarks">Bookmarks</SelectItem>
-                <SelectItem value="comments">Comments</SelectItem>
-                <SelectItem value="date">Date</SelectItem>
+                <SelectItem value="views">
+                  {tPostPerformance("sortByViews")}
+                </SelectItem>
+                <SelectItem value="likes">
+                  {tPostPerformance("sortByLikes")}
+                </SelectItem>
+                <SelectItem value="bookmarks">
+                  {tPostPerformance("sortByBookmarks")}
+                </SelectItem>
+                <SelectItem value="comments">
+                  {tPostPerformance("sortByComments")}
+                </SelectItem>
+                <SelectItem value="date">
+                  {tPostPerformance("sortByDate")}
+                </SelectItem>
               </SelectContent>
             </Select>
             <Popover>
@@ -400,25 +423,36 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
-                        {format(dateRange.from, "LLL dd, y")} -{" "}
-                        {format(dateRange.to, "LLL dd, y")}
+                        {showMonthDayYear(
+                          dateRange.from.toISOString(),
+                          locale as "en" | "es"
+                        )}{" "}
+                        -{" "}
+                        {showMonthDayYear(
+                          dateRange.to.toISOString(),
+                          locale as "en" | "es"
+                        )}
                       </>
                     ) : (
-                      format(dateRange.from, "LLL dd, y")
+                      showMonthDayYear(
+                        dateRange.from.toISOString(),
+                        locale as "en" | "es"
+                      )
                     )
                   ) : (
-                    <span>Pick a date range</span>
+                    <span>{tPostPerformance("pickDateRange")}</span>
                   )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
-                  initialFocus
+                  autoFocus
                   mode="range"
                   defaultMonth={dateRange?.from}
                   selected={dateRange}
                   onSelect={setDateRange}
                   numberOfMonths={2}
+                  locale={dateLocale}
                 />
               </PopoverContent>
             </Popover>
@@ -429,26 +463,32 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[250px]">Post</TableHead>
-                  <TableHead className="min-w-[120px]">Category</TableHead>
-                  <TableHead className="min-w-[120px]">Published</TableHead>
-                  <TableHead className="text-right min-w-[100px]">
-                    Views
+                  <TableHead className="min-w-[250px]">
+                    {tPostPerformance("post")}
+                  </TableHead>
+                  <TableHead className="min-w-[120px]">
+                    {tPostPerformance("category")}
+                  </TableHead>
+                  <TableHead className="min-w-[120px]">
+                    {tPostPerformance("published")}
                   </TableHead>
                   <TableHead className="text-right min-w-[100px]">
-                    Likes
+                    {tPostPerformance("sortByViews")}
                   </TableHead>
                   <TableHead className="text-right min-w-[100px]">
-                    Bookmarks
+                    {tPostPerformance("sortByLikes")}
                   </TableHead>
                   <TableHead className="text-right min-w-[100px]">
-                    Comments
+                    {tPostPerformance("sortByBookmarks")}
                   </TableHead>
                   <TableHead className="text-right min-w-[100px]">
-                    Shares
+                    {tPostPerformance("sortByComments")}
+                  </TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    {tPostPerformance("shares")}
                   </TableHead>
                   <TableHead className="text-right min-w-[120px]">
-                    Engagement
+                    {tPostPerformance("engagement")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -500,9 +540,9 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {format(
-                          new Date(post.createdAt || new Date()),
-                          "MMM dd, yyyy"
+                        {showMonthDayYear(
+                          post.createdAt || new Date().toISOString(),
+                          locale as "en" | "es"
                         )}
                       </TableCell>
                       <TableCell className="text-right font-medium">
