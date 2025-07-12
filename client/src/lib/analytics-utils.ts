@@ -1,7 +1,10 @@
 import { PostType } from "@/typings/types";
 
 // Generate daily views data for the last 30 days based on real post data
-export const generateViewsTimelineData = (posts: PostType[]) => {
+export const generateViewsTimelineData = (
+  posts: PostType[],
+  translateDay?: (dayNumber: number) => string
+) => {
   const days = 30;
   const data = [];
   const now = new Date();
@@ -20,8 +23,9 @@ export const generateViewsTimelineData = (posts: PostType[]) => {
       0
     );
 
+    const dayNumber = days - i;
     data.push({
-      day: `Day ${days - i}`,
+      day: translateDay ? translateDay(dayNumber) : `Day ${dayNumber}`,
       views: totalViews,
     });
   }
@@ -30,7 +34,10 @@ export const generateViewsTimelineData = (posts: PostType[]) => {
 };
 
 // Generate engagement data for the last 15 days based on real post data
-export const generateEngagementTimelineData = (posts: PostType[]) => {
+export const generateEngagementTimelineData = (
+  posts: PostType[],
+  translateDay?: (dayNumber: number) => string
+) => {
   const days = 15;
   const data = [];
   const now = new Date();
@@ -61,8 +68,9 @@ export const generateEngagementTimelineData = (posts: PostType[]) => {
       0
     );
 
+    const dayNumber = days - i;
     data.push({
-      day: `Day ${days - i}`,
+      day: translateDay ? translateDay(dayNumber) : `Day ${dayNumber}`,
       likes: totalLikes,
       comments: totalComments,
       bookmarks: totalBookmarks,
