@@ -99,7 +99,10 @@
     "error": "Error",
     "fetchNotificationsError": "Failed to fetch notifications",
     "markAllAsReadError": "Failed to mark all notifications as read",
-    "deleteNotificationError": "Failed to delete notification"
+    "deleteNotificationError": "Failed to delete notification",
+    "fetchPostsError": "Failed to fetch posts",
+    "fetchCategoriesError": "Failed to fetch categories",
+    "genericError": "An error occurred"
   },
   "auth": {
     "signIn": "Sign In",
@@ -214,6 +217,12 @@
     "mostLiked": "Most Liked",
     "mostViewed": "Most Viewed",
     "relatedPosts": "Related Posts"
+  },
+  "footer": {
+    "home": "Home",
+    "terms": "Terms",
+    "about": "About",
+    "privacy": "Privacy"
   },
   "dashboard": {
     "title": "Dashboard",

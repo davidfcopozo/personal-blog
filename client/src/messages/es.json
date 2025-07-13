@@ -99,7 +99,10 @@
     "error": "Error",
     "fetchNotificationsError": "Error al cargar las notificaciones",
     "markAllAsReadError": "Error al marcar todas las notificaciones como leídas",
-    "deleteNotificationError": "Error al eliminar la notificación"
+    "deleteNotificationError": "Error al eliminar la notificación",
+    "fetchPostsError": "Error al cargar las publicaciones",
+    "fetchCategoriesError": "Error al cargar las categorías",
+    "genericError": "Ocurrió un error"
   },
   "auth": {
     "signIn": "Iniciar Sesión",
@@ -214,6 +217,12 @@
     "mostLiked": "Más gustados",
     "mostViewed": "Más vistos",
     "relatedPosts": "Publicaciones Relacionadas"
+  },
+  "footer": {
+    "home": "Inicio",
+    "terms": "Términos",
+    "about": "Nosotros",
+    "privacy": "Privacidad"
   },
   "dashboard": {
     "title": "Panel de Control",
