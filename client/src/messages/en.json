@@ -51,7 +51,21 @@
     "users": "Users",
     "categories": "Categories",
     "topics": "Topics",
-    "search": "Search posts..."
+    "search": "Search posts...",
+    "toggleTheme": "Toggle theme"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "notificationBell": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "markAsRead": "Mark as read",
+    "deleteNotification": "Delete notification",
+    "noNotifications": "No notifications yet",
+    "viewAll": "View all notifications"
   },
   "auth": {
     "signIn": "Sign In",

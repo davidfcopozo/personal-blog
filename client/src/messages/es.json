@@ -51,7 +51,21 @@
     "users": "Usuarios",
     "categories": "Categorías",
     "topics": "Temas",
-    "search": "Buscar publicaciones..."
+    "search": "Buscar publicaciones...",
+    "toggleTheme": "Cambiar tema"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "notificationBell": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "markAsRead": "Marcar como leído",
+    "deleteNotification": "Eliminar notificación",
+    "noNotifications": "Aún no hay notificaciones",
+    "viewAll": "Ver todas las notificaciones"
   },
   "auth": {
     "signIn": "Iniciar Sesión",
