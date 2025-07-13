@@ -22,6 +22,7 @@ import {
 } from "@/utils/blog-editor";
 import { useCommentNavigationGuard } from "@/hooks/useCommentNavigationGuard";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
+import { useTranslations } from "next-intl";
 
 // Create lowlight instance
 const lowlight = createConfiguredLowlight();
@@ -29,7 +30,7 @@ const lowlight = createConfiguredLowlight();
 export default function CommentEditor({
   onSubmit,
   onCancel,
-  placeholder = "Share your thoughts...",
+  placeholder,
   maxHeight = 300,
   showCancelButton,
   value: content,
@@ -38,6 +39,7 @@ export default function CommentEditor({
   isEditing = false,
   originalContent,
 }: CommentEditorProps & { isEditing?: boolean }) {
+  const t = useTranslations("editor");
   const {
     hasUnsavedChanges,
     isDialogOpen,
@@ -82,7 +84,7 @@ export default function CommentEditor({
       Color,
       Highlight.configure(extensionConfigs.highlight),
       Placeholder.configure({
-        placeholder: placeholder || extensionConfigs.placeholder.comment,
+        placeholder: placeholder || t("placeholderComment"),
       }),
     ],
     content: content || "",
