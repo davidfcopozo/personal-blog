@@ -32,7 +32,7 @@ import { showMonthDayYear } from "@/utils/formats";
 import React, { useState, useMemo } from "react";
 import SortIndicator from "./ui/sort-indicator";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const PostsTabContent = memo(
   ({
@@ -51,6 +51,7 @@ const PostsTabContent = memo(
     status: string;
   }) => {
     const locale = useLocale();
+    const tDashboard = useTranslations("dashboard");
     const [sortConfig, setSortConfig] = useState<{
       key: string;
       direction: "asc" | "desc";
@@ -116,12 +117,25 @@ const PostsTabContent = memo(
       });
     };
 
+    const getTranslatedStatus = (status: string) => {
+      switch (status) {
+        case "published":
+          return tDashboard("postsTable.status.published");
+        case "unpublished":
+          return tDashboard("postsTable.status.unpublished");
+        case "draft":
+          return tDashboard("postsTable.status.draft");
+        default:
+          return status;
+      }
+    };
+
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Posts</CardTitle>
+          <CardTitle>{tDashboard("postsTable.title")}</CardTitle>
           <CardDescription>
-            Manage your blog posts and view their interaction performance.
+            {tDashboard("postsTable.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,7 +148,7 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[200px]"
                   >
                     <SortIndicator
-                      title="Title"
+                      title={tDashboard("postsTable.columns.title")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -146,7 +160,7 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[100px]"
                   >
                     <SortIndicator
-                      title="Status"
+                      title={tDashboard("postsTable.columns.status")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -158,7 +172,7 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[120px]"
                   >
                     <SortIndicator
-                      title="Date"
+                      title={tDashboard("postsTable.columns.date")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -170,20 +184,22 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[100px]"
                   >
                     <SortIndicator
-                      title="Visits"
+                      title={tDashboard("postsTable.columns.visits")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
                       isActive={sortConfig?.key === "visits"}
                     />
                   </TableHead>
-                  <TableHead className="min-w-[150px]">Categories</TableHead>
+                  <TableHead className="min-w-[150px]">
+                    {tDashboard("postsTable.columns.categories")}
+                  </TableHead>
                   <TableHead
                     onClick={() => handleSort("likesCount")}
                     className="cursor-pointer min-w-[100px]"
                   >
                     <SortIndicator
-                      title="Likes"
+                      title={tDashboard("postsTable.columns.likes")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -195,7 +211,7 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[100px]"
                   >
                     <SortIndicator
-                      title="Comments"
+                      title={tDashboard("postsTable.columns.comments")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -207,7 +223,7 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[120px]"
                   >
                     <SortIndicator
-                      title="Bookmarks"
+                      title={tDashboard("postsTable.columns.bookmarks")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -219,7 +235,7 @@ const PostsTabContent = memo(
                     className="cursor-pointer min-w-[100px]"
                   >
                     <SortIndicator
-                      title="Shares"
+                      title={tDashboard("postsTable.columns.shares")}
                       direction={sortConfig?.direction}
                       size={12}
                       strokeWidth={3}
@@ -227,7 +243,9 @@ const PostsTabContent = memo(
                     />
                   </TableHead>
                   <TableHead className="min-w-[80px]">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">
+                      {tDashboard("postsTable.columns.actions")}
+                    </span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -245,7 +263,7 @@ const PostsTabContent = memo(
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="capitalize">
-                          {post?.status}
+                          {getTranslatedStatus(post?.status)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -287,7 +305,7 @@ const PostsTabContent = memo(
                               variant="outline"
                               className="text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2.5 sm:py-0.5"
                             >
-                              No categories
+                              {tDashboard("postsTable.noCategories")}
                             </Badge>
                           )}
                         </div>
@@ -314,25 +332,27 @@ const PostsTabContent = memo(
                               className="outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                             >
                               <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
+                              <span className="sr-only">
+                                {tDashboard("postsTable.toggleMenu")}
+                              </span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="border-b-[1px]">
-                              Actions
+                              {tDashboard("postsTable.dropdownActions")}
                             </DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={() => onEditPost(post.slug)}
                               className="cursor-pointer"
                             >
-                              Edit
+                              {tDashboard("postsTable.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={status === "pending"}
                               onClick={() => onDeletePost(post)}
                               className="cursor-pointer"
                             >
-                              Delete
+                              {tDashboard("postsTable.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -351,7 +371,7 @@ const PostsTabContent = memo(
                       colSpan={10}
                       className="pt-4 lg:text-md text-center"
                     >
-                      No posts found
+                      {tDashboard("postsTable.noPostsFound")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -361,8 +381,10 @@ const PostsTabContent = memo(
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of{" "}
-            <strong>{filteredPosts?.length}</strong> posts
+            {tDashboard("postsTable.footer.showing")} <strong>1-10</strong>{" "}
+            {tDashboard("postsTable.footer.of")}{" "}
+            <strong>{filteredPosts?.length}</strong>{" "}
+            {tDashboard("postsTable.footer.posts")}
           </div>
         </CardFooter>
       </Card>
