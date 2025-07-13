@@ -12,6 +12,7 @@ import {
   SingleSkillType,
   SkillsInterestsProps,
 } from "@/typings/types";
+import { useTranslations } from "next-intl";
 
 const SkillsInterestsManager = <
   T extends SingleSkillType | SingleInterestType
@@ -22,6 +23,7 @@ const SkillsInterestsManager = <
   placeholder,
   fetchUrl,
 }: SkillsInterestsProps<T>) => {
+  const t = useTranslations("settings");
   const { data: categoriesOrTopicsOrTopics } = useFetchRequest(
     [fetchUrl],
     `/api/${fetchUrl}`
@@ -213,7 +215,7 @@ const SkillsInterestsManager = <
               )}
           </div>
           <Button type="submit" variant="outline" onClick={handleAddItem}>
-            Add
+            {t("add")}
           </Button>
         </div>
       </div>
