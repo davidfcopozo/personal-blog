@@ -12,8 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useSocket } from "@/context/SocketContext";
 import { formatDistanceToNow } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import Link from "next/link";
 import { Notification } from "@/typings/interfaces";
+import { useTranslations, useLocale } from "next-intl";
 
 const NotificationBell: React.FC = () => {
   const { socket, isConnected } = useSocket();
@@ -28,6 +30,8 @@ const NotificationBell: React.FC = () => {
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const hasFetchedRef = useRef(false);
+  const tNotifications = useTranslations("notificationBell");
+  const locale = useLocale();
 
   useEffect(() => {
     if (!hasFetchedRef.current) {
@@ -114,7 +118,7 @@ const NotificationBell: React.FC = () => {
       </DropdownMenuTrigger>{" "}
       <DropdownMenuContent className="w-80 h-96 p-0 flex flex-col" align="end">
         <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
-          <h4 className="font-semibold">Notifications</h4>
+          <h4 className="font-semibold">{tNotifications("title")}</h4>
           <div className="flex gap-1">
             {unreadCount > 0 && (
               <Button
@@ -124,7 +128,7 @@ const NotificationBell: React.FC = () => {
                 className="text-xs"
               >
                 <Check className="h-3 w-3 mr-1" />
-                Mark all read
+                {tNotifications("markAllRead")}
               </Button>
             )}
             <Link href="/settings/notifications">
@@ -155,7 +159,7 @@ const NotificationBell: React.FC = () => {
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
-              No notifications yet
+              {tNotifications("noNotifications")}
             </div>
           ) : (
             <div className="py-1">
@@ -199,6 +203,7 @@ const NotificationBell: React.FC = () => {
                               new Date(notification.createdAt),
                               {
                                 addSuffix: true,
+                                locale: locale === "es" ? es : enUS,
                               }
                             )}
                           </p>
@@ -217,10 +222,12 @@ const NotificationBell: React.FC = () => {
                               })
                             }
                             className="h-6 w-6 p-0 text-blue-500 hover:text-blue-600"
-                            title="Mark as read"
+                            title={tNotifications("markAsRead")}
                           >
                             <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                            <span className="sr-only">Mark as read</span>
+                            <span className="sr-only">
+                              {tNotifications("markAsRead")}
+                            </span>
                           </Button>
                         )}
                         <Button
@@ -232,10 +239,12 @@ const NotificationBell: React.FC = () => {
                             deleteNotification(notificationId);
                           }}
                           className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Delete notification"
+                          title={tNotifications("deleteNotification")}
                         >
                           <Trash2 className="h-3 w-3" />
-                          <span className="sr-only">Delete notification</span>
+                          <span className="sr-only">
+                            {tNotifications("deleteNotification")}
+                          </span>
                         </Button>
                       </div>
                     </div>
@@ -253,7 +262,7 @@ const NotificationBell: React.FC = () => {
                 onClick={() => setIsOpen(false)}
                 className="block text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2 hover:bg-muted/50 rounded"
               >
-                View all notifications
+                {tNotifications("viewAll")}
               </Link>
             </div>
           </div>
