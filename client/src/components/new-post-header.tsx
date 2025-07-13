@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { NewPostHeaderProps } from "@/typings/interfaces";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function NewPostHeader({
   onSave,
@@ -25,6 +26,7 @@ export function NewPostHeader({
   onPreview,
   hasContent = false,
 }: NewPostHeaderProps) {
+  const t = useTranslations("editor");
   const { theme, systemTheme } = useTheme();
   const { data: session } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
@@ -79,7 +81,7 @@ export function NewPostHeader({
           {hasChanges && !isSaving && (
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
           )}
-          {isSaving ? "Saving..." : "Save Draft"}
+          {isSaving ? t("saving") : t("saveDraft")}
         </Button>{" "}
         {(slug || hasContent) && onPreview && (
           <Button
@@ -90,7 +92,7 @@ export function NewPostHeader({
             disabled={isSaving}
           >
             <Eye className="w-4 h-4 mr-1" />
-            {slug ? "Preview" : "Save & Preview"}
+            {slug ? t("preview") : t("saveAndPreview")}
           </Button>
         )}
         {isPublished ? (
@@ -101,21 +103,21 @@ export function NewPostHeader({
               onClick={handlePublish}
               disabled={isSaving}
             >
-              {isSaving ? "Updating..." : "Update"}
+              {isSaving ? t("updating") : t("update")}
             </Button>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="bg-foreground" size="sm" disabled={isSaving}>
                   <Eye className="w-4 h-4 mr-1" />
-                  Published
+                  {t("published")}
                   <ChevronDown className="w-4 h-4 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleUnpublish}>
                   <EyeOff className="w-4 h-4 mr-2" />
-                  Unpublish
+                  {t("unpublish")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -127,7 +129,7 @@ export function NewPostHeader({
             onClick={handlePublish}
             disabled={isSaving}
           >
-            {isSaving ? "Publishing..." : "Publish"}
+            {isSaving ? t("publishing") : t("publish")}
           </Button>
         )}
       </div>
