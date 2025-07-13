@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Save, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface UnsavedChangesDialogProps {
   isOpen: boolean;
@@ -37,6 +38,8 @@ export const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
   discardButtonText = "Discard Changes",
   isSaving = false,
 }) => {
+  const t = useTranslations("editor");
+  const tCommon = useTranslations("common");
   const handleSave = async () => {
     if (onSave) {
       try {
@@ -68,7 +71,7 @@ export const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
           <AlertDialogCancel onClick={onClose} className="order-3 sm:order-1">
-            Cancel
+            {tCommon("cancel")}
           </AlertDialogCancel>
           <Button
             variant="destructive"
@@ -85,7 +88,7 @@ export const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
               className="order-1 sm:order-3 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              {isSaving ? "Saving..." : saveButtonText}
+              {isSaving ? t("saving") : saveButtonText}
             </AlertDialogAction>
           )}
         </AlertDialogFooter>
