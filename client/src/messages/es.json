@@ -187,7 +187,55 @@
     "topCategories": "Categorías Principales",
     "weeklyActivity": "Actividad Semanal",
     "monthlyActivity": "Actividad Mensual",
-    "yearlyActivity": "Actividad Anual"
+    "yearlyActivity": "Actividad Anual",
+    "tabs": {
+      "all": "Todos",
+      "published": "Publicados",
+      "unpublished": "No Publicados",
+      "draft": "Borrador"
+    },
+    "actions": {
+      "addNewPost": "Agregar Publicación",
+      "newPost": "Nueva Publicación"
+    },
+    "deleteDialog": {
+      "title": "¿Estás seguro de que quieres eliminar esta publicación?",
+      "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu publicación y la removerá de nuestros servidores.",
+      "cancel": "Cancelar",
+      "delete": "Eliminar"
+    },
+    "postsTable": {
+      "title": "Publicaciones",
+      "description": "Gestiona tus publicaciones del blog y ve su rendimiento de interacción.",
+      "columns": {
+        "title": "Título",
+        "status": "Estado",
+        "date": "Fecha",
+        "visits": "Visitas",
+        "categories": "Categorías",
+        "likes": "Me gusta",
+        "comments": "Comentarios",
+        "bookmarks": "Marcadores",
+        "shares": "Compartidos",
+        "actions": "Acciones"
+      },
+      "noCategories": "Sin categorías",
+      "noPostsFound": "No se encontraron publicaciones",
+      "toggleMenu": "Alternar menú",
+      "dropdownActions": "Acciones",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "footer": {
+        "showing": "Mostrando",
+        "of": "de",
+        "posts": "publicaciones"
+      },
+      "status": {
+        "published": "Publicado",
+        "unpublished": "No Publicado",
+        "draft": "Borrador"
+      }
+    }
   },
   "comments": {
     "title": "Comentarios",
