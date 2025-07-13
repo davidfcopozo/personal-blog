@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import type { ImageInfoPanelPropsInterface } from "@/typings/interfaces";
 import Image from "next/image";
 import { formatFileSize, showMonthDayYear } from "@/utils/formats";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function ImageInfoPanel({
   image,
@@ -12,10 +12,12 @@ export function ImageInfoPanel({
   onUpdate,
 }: ImageInfoPanelPropsInterface) {
   const locale = useLocale();
+  const t = useTranslations("settings");
+
   if (!image) {
     return (
       <div className="bg-muted rounded-lg p-4">
-        <p className="text-muted-foreground">Select an image to view details</p>
+        <p className="text-muted-foreground">{t("selectImageToView")}</p>
       </div>
     );
   }
@@ -35,19 +37,21 @@ export function ImageInfoPanel({
       />
 
       <div className="space-y-2">
-        <h3 className="font-bold text-lg">Image Information</h3>
-        <p className="text-sm text-muted-foreground">File name: {image.name}</p>
+        <h3 className="font-bold text-lg">{t("imageInformation")}</h3>
+        <p className="text-sm text-muted-foreground">{t("fileName")} {image.name}</p>
         <p className="text-sm text-muted-foreground">
-          Uploaded on:{" "}
+          {t("uploadedOn")}{" "}
           {showMonthDayYear(`${image.createdAt}`, locale as "en" | "es")}
         </p>
         <p className="text-sm text-muted-foreground">
-          Size: {formatFileSize(image.size)}
+          {t("size")} {formatFileSize(image.size)}
         </p>
         <p className="text-sm text-muted-foreground">
-          Dimensions: {image.dimensions}
+          {t("dimensions")} {image.dimensions}
         </p>
-        <p className="text-sm text-muted-foreground">Type: {image.type}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("type")} {image.type}
+        </p>
       </div>
 
       <Separator />
@@ -57,9 +61,9 @@ export function ImageInfoPanel({
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Button onClick={handleCopyUrl}>Copy URL</Button>
+        <Button onClick={handleCopyUrl}>{t("copyUrl")}</Button>
         <Button variant="destructive" onClick={() => onDelete(image._id)}>
-          Delete Image
+          {t("deleteImage")}
         </Button>
       </div>
     </div>

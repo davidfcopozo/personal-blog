@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 
 interface UploadButtonProps {
   onUpload: (files: File[]) => void;
@@ -8,6 +9,7 @@ interface UploadButtonProps {
 
 export function UploadButton({ onUpload }: UploadButtonProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("settings");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -37,7 +39,7 @@ export function UploadButton({ onUpload }: UploadButtonProps) {
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="w-4 h-4 mr-2" />
-            Upload Images from your device
+            {t("uploadImages")}
           </Button>
         </span>
       </label>
