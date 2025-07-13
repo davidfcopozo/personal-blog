@@ -76,6 +76,24 @@
       "follow": "{name} comenzó a seguirte"
     }
   },
+  "notificationsPage": {
+    "title": "Notificaciones",
+    "unread": "sin leer",
+    "markAllRead": "Marcar todo como leído",
+    "markAsRead": "Marcar como leído",
+    "delete": "Eliminar",
+    "filters": {
+      "all": "Todas",
+      "unread": "Sin leer"
+    },
+    "empty": {
+      "noUnread": "No hay notificaciones sin leer",
+      "noNotifications": "Aún no hay notificaciones",
+      "caughtUp": "¡Estás al día!",
+      "description": "Cuando recibas notificaciones, aparecerán aquí."
+    },
+    "from": "De"
+  },
   "auth": {
     "signIn": "Iniciar Sesión",
     "signUp": "Registrarse",

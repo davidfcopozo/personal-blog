@@ -76,6 +76,24 @@
       "follow": "{name} started following you"
     }
   },
+  "notificationsPage": {
+    "title": "Notifications",
+    "unread": "unread",
+    "markAllRead": "Mark all read",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "filters": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "empty": {
+      "noUnread": "No unread notifications",
+      "noNotifications": "No notifications yet",
+      "caughtUp": "You're all caught up!",
+      "description": "When you receive notifications, they'll appear here."
+    },
+    "from": "From"
+  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
