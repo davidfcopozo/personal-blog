@@ -2,12 +2,14 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SocialsFormProps } from "@/typings/types";
+import { useTranslations } from "next-intl";
 
 const SocialsForm = ({
   formData,
   handleSocialMediaChange,
   handleFieldChange,
 }: SocialsFormProps) => {
+  const t = useTranslations("settings");
   const { website } = formData;
   const { socialMediaProfiles } = formData;
   const { x, instagram, github, linkedIn, dribble } = socialMediaProfiles || {};
@@ -16,7 +18,7 @@ const SocialsForm = ({
     <div className="space-y-4">
       <div>
         <Label htmlFor="website" className="font-bold">
-          Website
+          {t("website")}
         </Label>
         <Input
           id="website"
@@ -27,7 +29,7 @@ const SocialsForm = ({
       </div>
       <div>
         <Label htmlFor="x" className="font-bold">
-          X (Formerly Twitter) Handle
+          {t("xHandle")}
         </Label>
         <div className="flex">
           <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -43,7 +45,7 @@ const SocialsForm = ({
       </div>
       <div>
         <Label htmlFor="instagram" className="font-bold">
-          Instagram Handle
+          {t("instagramHandle")}
         </Label>
         <div className="flex">
           <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -61,7 +63,7 @@ const SocialsForm = ({
       </div>
       <div>
         <Label htmlFor="github" className="font-bold">
-          GitHub Handle
+          {t("githubHandle")}
         </Label>
         <Input
           id="github"
@@ -71,7 +73,7 @@ const SocialsForm = ({
       </div>
       <div>
         <Label htmlFor="linkedIn" className="font-bold">
-          LinkedIn Handle
+          {t("linkedinHandle")}
         </Label>
         <Input
           id="linkedIn"
@@ -81,7 +83,7 @@ const SocialsForm = ({
       </div>
       <div>
         <Label htmlFor="dribble" className="font-bold">
-          Dribble Handle
+          {t("dribbbleHandle")}
         </Label>
         <Input
           id="dribble"
