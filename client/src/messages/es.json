@@ -94,6 +94,13 @@
     },
     "from": "De"
   },
+  "toasts": {
+    "newNotification": "Nueva Notificación",
+    "error": "Error",
+    "fetchNotificationsError": "Error al cargar las notificaciones",
+    "markAllAsReadError": "Error al marcar todas las notificaciones como leídas",
+    "deleteNotificationError": "Error al eliminar la notificación"
+  },
   "auth": {
     "signIn": "Iniciar Sesión",
     "signUp": "Registrarse",

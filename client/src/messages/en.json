@@ -94,6 +94,13 @@
     },
     "from": "From"
   },
+  "toasts": {
+    "newNotification": "New Notification",
+    "error": "Error",
+    "fetchNotificationsError": "Failed to fetch notifications",
+    "markAllAsReadError": "Failed to mark all notifications as read",
+    "deleteNotificationError": "Failed to delete notification"
+  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
