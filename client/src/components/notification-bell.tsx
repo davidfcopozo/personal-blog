@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useSocket } from "@/context/SocketContext";
 import { formatDistanceToNow } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import Link from "next/link";
@@ -18,7 +17,6 @@ import { Notification } from "@/typings/interfaces";
 import { useTranslations, useLocale } from "next-intl";
 
 const NotificationBell: React.FC = () => {
-  const { socket, isConnected } = useSocket();
   const {
     notifications,
     unreadCount,
@@ -56,6 +54,55 @@ const NotificationBell: React.FC = () => {
 
   const handleNotificationNavigate = (notification: Notification) => {
     setIsOpen(false);
+  };
+
+  const translateNotificationMessage = (notification: Notification): string => {
+    const { type, message } = notification;
+
+    // Try to extract user information from the original message
+    let username = "";
+    let name = "";
+
+    // Extract information based on message patterns from backend
+    if (message.includes("@")) {
+      // Mention: "@username mentioned you in a comment"
+      const mentionMatch = message.match(/@(\w+)/);
+      username = mentionMatch ? mentionMatch[1] : "";
+      return tNotifications("messages.mention", { username });
+    } else if (message.includes("commented on your post")) {
+      // Comment: "FirstName LastName commented on your post"
+      const nameMatch = message.match(/^(.+?)\s+commented on your post/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.comment", { name });
+    } else if (message.includes("replied to your comment")) {
+      // Reply: "FirstName LastName replied to your comment"
+      const nameMatch = message.match(/^(.+?)\s+replied to your comment/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.reply", { name });
+    } else if (message.includes("bookmarked your post")) {
+      // Bookmark: "FirstName LastName bookmarked your post"
+      const nameMatch = message.match(/^(.+?)\s+bookmarked your post/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.bookmark", { name });
+    } else if (message.includes("liked your comment")) {
+      // Comment like: "FirstName LastName liked your comment"
+      const nameMatch = message.match(/^(.+?)\s+liked your comment/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.commentLike", { name });
+    } else if (message.includes("liked your post")) {
+      // Post like: "FirstName LastName liked your post"
+      const nameMatch = message.match(/^(.+?)\s+liked your post/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.like", { name });
+    } else if (message.includes("started following you")) {
+      // Follow: "FirstName LastName started following you"
+      const nameMatch = message.match(/^(.+?)\s+started following you/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.follow", { name });
+    }
+
+    // Fallback to original message if no pattern matches
+    return message;
   };
 
   const getNotificationIcon = (type: string) => {
@@ -196,7 +243,7 @@ const NotificationBell: React.FC = () => {
                           className="block"
                         >
                           <p className="text-sm font-medium text-foreground hover:text-primary">
-                            {notification.message}
+                            {translateNotificationMessage(notification)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(
