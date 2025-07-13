@@ -12,8 +12,11 @@ import { Button } from "./ui/button";
 import CustomBadge from "./custom-badge";
 import { TagsProps } from "@/typings/types";
 import { useToast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 export default function Tags({ setTags, tags }: TagsProps) {
+  const t = useTranslations("editor");
+  const tCommon = useTranslations("common");
   const { toast } = useToast();
   const [addedTags, setAddedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState<string>("");
@@ -31,8 +34,8 @@ export default function Tags({ setTags, tags }: TagsProps) {
     if (addedTags.includes(newTag.trim())) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "You have already added this tag",
+        title: tCommon("error"),
+        description: t("tagAlreadyAdded"),
       });
       return;
     }
@@ -57,19 +60,19 @@ export default function Tags({ setTags, tags }: TagsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tags</CardTitle>
-        <CardDescription>Add tags to your post</CardDescription>
+        <CardTitle>{t("tags")}</CardTitle>
+        <CardDescription>{t("addTagsToPost")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr_auto]">
           <Input
             type="text"
-            placeholder="Add a tag"
+            placeholder={t("addTag")}
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
             onKeyDown={handleKeyPress}
           />
-          <Button onClick={(e) => handleAddTag(e)}>Add</Button>
+          <Button onClick={(e) => handleAddTag(e)}>{t("add")}</Button>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {addedTags.map((tag, index) => (
