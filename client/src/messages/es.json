@@ -65,7 +65,16 @@
     "markAsRead": "Marcar como leído",
     "deleteNotification": "Eliminar notificación",
     "noNotifications": "Aún no hay notificaciones",
-    "viewAll": "Ver todas las notificaciones"
+    "viewAll": "Ver todas las notificaciones",
+    "messages": {
+      "mention": "{username} te mencionó en un comentario",
+      "comment": "{name} comentó en tu publicación",
+      "reply": "{name} respondió a tu comentario",
+      "bookmark": "{name} marcó tu publicación como favorita",
+      "like": "{name} le gustó tu publicación",
+      "commentLike": "{name} le gustó tu comentario",
+      "follow": "{name} comenzó a seguirte"
+    }
   },
   "auth": {
     "signIn": "Iniciar Sesión",

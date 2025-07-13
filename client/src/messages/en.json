@@ -65,7 +65,16 @@
     "markAsRead": "Mark as read",
     "deleteNotification": "Delete notification",
     "noNotifications": "No notifications yet",
-    "viewAll": "View all notifications"
+    "viewAll": "View all notifications",
+    "messages": {
+      "mention": "{username} mentioned you in a comment",
+      "comment": "{name} commented on your post",
+      "reply": "{name} replied to your comment",
+      "bookmark": "{name} bookmarked your post",
+      "like": "{name} liked your post",
+      "commentLike": "{name} liked your comment",
+      "follow": "{name} started following you"
+    }
   },
   "auth": {
     "signIn": "Sign In",
