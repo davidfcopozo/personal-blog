@@ -279,8 +279,8 @@ export const extensionConfigs = {
     height: 480,
   },
   placeholder: {
-    blog: "Start writing your blog post...",
-    comment: "Share your thoughts...",
+    blog: "Start writing your blog post...", // Default fallback
+    comment: "Share your thoughts...", // Default fallback
   },
 };
 
@@ -306,7 +306,39 @@ export const createPromptDialog = (
   return window.prompt(message, defaultValue);
 };
 
-export const validateImageFile = (file: File): boolean => {
+// Helper function to create link prompts with translations
+export const createLinkPrompts = (translations?: {
+  urlPrompt?: string;
+  textPrompt?: string;
+}) => {
+  const urlPrompt = translations?.urlPrompt || "Enter link URL";
+  const textPrompt = translations?.textPrompt || "Enter link text";
+
+  return {
+    url: () => createPromptDialog(urlPrompt, "https://"),
+    text: () => createPromptDialog(textPrompt, ""),
+  };
+};
+
+// Helper function to get translated placeholders
+export const getEditorPlaceholders = (translations?: {
+  blogPlaceholder?: string;
+  commentPlaceholder?: string;
+}) => {
+  return {
+    blog: translations?.blogPlaceholder || extensionConfigs.placeholder.blog,
+    comment:
+      translations?.commentPlaceholder || extensionConfigs.placeholder.comment,
+  };
+};
+
+export const validateImageFile = (
+  file: File,
+  errorMessages?: {
+    invalidType?: string;
+    sizeExceeded?: string;
+  }
+): boolean => {
   const allowedTypes = [
     "image/jpeg",
     "image/jpg",
@@ -317,12 +349,17 @@ export const validateImageFile = (file: File): boolean => {
   const maxSize = 10 * 1024 * 1024; // 10MB
 
   if (!allowedTypes.includes(file.type)) {
-    alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+    alert(
+      errorMessages?.invalidType ||
+        "Please select a valid image file (JPEG, PNG, GIF, or WebP)"
+    );
     return false;
   }
 
   if (file.size > maxSize) {
-    alert("Image file size should be less than 10MB");
+    alert(
+      errorMessages?.sizeExceeded || "Image file size should be less than 10MB"
+    );
     return false;
   }
 
