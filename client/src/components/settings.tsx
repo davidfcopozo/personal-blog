@@ -260,7 +260,7 @@ export const Settings = () => {
         onDeleteImage={deleteImage}
         onUpdate={updateImageMetadata}
         isLoadingImages={isLoadingImages}
-        buttonText="Set as Profile Picture"
+        buttonText={t("setAsProfilePicture")}
       />
     </div>
   );
