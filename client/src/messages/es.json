@@ -316,6 +316,7 @@
     "title": "Perfil",
     "about": "Acerca de",
     "posts": "Publicaciones",
+    "publishedPosts": "Publicaciones",
     "followers": "Seguidores",
     "following": "Siguiendo",
     "follow": "Seguir",
@@ -332,7 +333,13 @@
     "memberSince": "Miembro desde",
     "postsCount": "{count} publicaciones",
     "followersCount": "{count} seguidores",
-    "followingCount": "{count} siguiendo"
+    "followingCount": "{count} siguiendo",
+    "socialMedia": {
+      "x": "X",
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "dribbble": "Dribbble"
+    }
   },
   "notifications": {
     "title": "Notificaciones",
