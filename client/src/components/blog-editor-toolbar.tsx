@@ -25,6 +25,7 @@ import {
   Undo,
   Redo,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface BlogEditorToolbarProps {
   editor: Editor;
@@ -41,6 +42,7 @@ export default function BlogEditorToolbar({
   onSetLink,
   onInsertTable,
 }: BlogEditorToolbarProps) {
+  const t = useTranslations("editor");
   return (
     <div className="border-b border-muted-foreground/20 p-3">
       <div className="flex flex-wrap items-center gap-1">
@@ -52,7 +54,7 @@ export default function BlogEditorToolbar({
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
           className="h-8 w-8 p-0"
-          title="Undo"
+          title={t("undo")}
         >
           <Undo className="h-4 w-4" />
         </Button>
@@ -63,7 +65,7 @@ export default function BlogEditorToolbar({
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
           className="h-8 w-8 p-0"
-          title="Redo"
+          title={t("redo")}
         >
           <Redo className="h-4 w-4" />
         </Button>
@@ -79,7 +81,7 @@ export default function BlogEditorToolbar({
             editor.chain().focus().toggleHeading({ level: 1 }).run()
           }
           className="h-8 w-8 p-0"
-          title="Heading 1"
+          title={t("heading1")}
         >
           <Heading1 className="h-4 w-4" />
         </Button>
@@ -93,7 +95,7 @@ export default function BlogEditorToolbar({
             editor.chain().focus().toggleHeading({ level: 2 }).run()
           }
           className="h-8 w-8 p-0"
-          title="Heading 2"
+          title={t("heading2")}
         >
           <Heading2 className="h-4 w-4" />
         </Button>
@@ -107,7 +109,7 @@ export default function BlogEditorToolbar({
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
           className="h-8 w-8 p-0"
-          title="Heading 3"
+          title={t("heading3")}
         >
           <Heading3 className="h-4 w-4" />
         </Button>
@@ -119,7 +121,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className="h-8 w-8 p-0"
-          title="Bold"
+          title={t("bold")}
         >
           <Bold className="h-4 w-4" />
         </Button>
@@ -129,7 +131,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className="h-8 w-8 p-0"
-          title="Italic"
+          title={t("italic")}
         >
           <Italic className="h-4 w-4" />
         </Button>
@@ -139,7 +141,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className="h-8 w-8 p-0"
-          title="Underline"
+          title={t("underline")}
         >
           <UnderlineIcon className="h-4 w-4" />
         </Button>
@@ -149,7 +151,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className="h-8 w-8 p-0"
-          title="Strikethrough"
+          title={t("strikethrough")}
         >
           <Strikethrough className="h-4 w-4" />
         </Button>
@@ -161,7 +163,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           className="h-8 w-8 p-0"
-          title="Align Left"
+          title={t("alignLeft")}
         >
           <AlignLeft className="h-4 w-4" />
         </Button>
@@ -173,7 +175,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().setTextAlign("center").run()}
           className="h-8 w-8 p-0"
-          title="Align Center"
+          title={t("alignCenter")}
         >
           <AlignCenter className="h-4 w-4" />
         </Button>
@@ -185,7 +187,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().setTextAlign("right").run()}
           className="h-8 w-8 p-0"
-          title="Align Right"
+          title={t("alignRight")}
         >
           <AlignRight className="h-4 w-4" />
         </Button>
@@ -197,7 +199,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().setTextAlign("justify").run()}
           className="h-8 w-8 p-0"
-          title="Justify"
+          title={t("justify")}
         >
           <AlignJustify className="h-4 w-4" />
         </Button>
@@ -209,7 +211,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className="h-8 w-8 p-0"
-          title="Bullet List"
+          title={t("bulletList")}
         >
           <List className="h-4 w-4" />
         </Button>
@@ -219,7 +221,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className="h-8 w-8 p-0"
-          title="Numbered List"
+          title={t("numberedList")}
         >
           <ListOrdered className="h-4 w-4" />
         </Button>{" "}
@@ -229,7 +231,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           className="h-8 w-8 p-0"
-          title="Quote"
+          title={t("quote")}
         >
           <Quote className="h-4 w-4" />
         </Button>
@@ -242,7 +244,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={onSetLink}
           className="h-8 w-8 p-0"
-          title="Add Link"
+          title={t("addLink")}
         >
           <LinkIcon className="h-4 w-4" />
         </Button>
@@ -252,7 +254,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={onAddImage}
           className="h-8 w-8 p-0"
-          title="Add Image"
+          title={t("addImage")}
         >
           <ImageIcon className="h-4 w-4" />
         </Button>
@@ -262,7 +264,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={onAddVideo}
           className="h-8 w-8 p-0"
-          title="Add Video"
+          title={t("addVideo")}
         >
           <Video className="h-4 w-4" />
         </Button>
@@ -272,7 +274,7 @@ export default function BlogEditorToolbar({
           size="sm"
           onClick={onInsertTable}
           className="h-8 w-8 p-0"
-          title="Insert Table"
+          title={t("insertTable")}
         >
           <TableIcon className="h-4 w-4" />
         </Button>
