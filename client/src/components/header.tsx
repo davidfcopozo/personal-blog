@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { CircleUser, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 
