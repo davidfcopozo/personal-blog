@@ -139,7 +139,8 @@
     "forgotPasswordSent": "Reset link sent",
     "forgotPasswordInstructions": "If your email exists in our system, you'll receive password reset instructions",
     "loginFormDescription": "Enter your email below to login to your account",
-    "signingIn": "Signing in..."
+    "signingIn": "Signing in...",
+    "forgotPasswordEmailRequired": "Enter your email to receive password change instructions"
   },
   "settings": {
     "title": "Settings",

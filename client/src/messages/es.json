@@ -139,7 +139,8 @@
     "invalidCredentials": "Correo o contraseña inválidos. Por favor inténtalo de nuevo.",
     "genericSignInError": "Algo salió mal. Por favor inténtalo de nuevo.",
     "resetPasswordError": "No se pudo procesar la solicitud",
-    "resetPasswordRetry": "Por favor inténtalo de nuevo más tarde"
+    "resetPasswordRetry": "Por favor inténtalo de nuevo más tarde",
+    "forgotPasswordEmailRequired": "Ingresa tu correo electrónico para recibir instrucciones de cambio de contraseña"
   },
   "settings": {
     "title": "Configuración",
