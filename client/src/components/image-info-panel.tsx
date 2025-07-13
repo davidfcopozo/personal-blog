@@ -38,7 +38,9 @@ export function ImageInfoPanel({
 
       <div className="space-y-2">
         <h3 className="font-bold text-lg">{t("imageInformation")}</h3>
-        <p className="text-sm text-muted-foreground">{t("fileName")} {image.name}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("fileName")} {image.name}
+        </p>
         <p className="text-sm text-muted-foreground">
           {t("uploadedOn")}{" "}
           {showMonthDayYear(`${image.createdAt}`, locale as "en" | "es")}
