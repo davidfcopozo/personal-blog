@@ -116,7 +116,7 @@ export function LoginForm() {
       toast({
         variant: "destructive",
         title: tAuth("emailRequired"),
-        description: tAuth("invalidEmailFormat"),
+        description: tAuth("forgotPasswordEmailRequired"),
       });
       return;
     }
