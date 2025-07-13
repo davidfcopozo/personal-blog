@@ -14,6 +14,8 @@ import { useTranslations } from "next-intl";
 
 export default function Home() {
   const t = useTranslations("blog");
+  const tToasts = useTranslations("toasts");
+  const tFooter = useTranslations("footer");
   const { toast } = useToast();
   const {
     data: posts,
@@ -32,18 +34,18 @@ export default function Home() {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message || "An error occurred",
+        title: tToasts("error"),
+        description: error.message || tToasts("fetchPostsError"),
       });
     }
     if (categoriesError) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: categoriesError.message || "An error occurred",
+        title: tToasts("error"),
+        description: categoriesError.message || tToasts("fetchCategoriesError"),
       });
     }
-  }, [error, categoriesError, toast]);
+  }, [error, categoriesError, toast, tToasts]);
 
   const filteredPosts = useMemo(() => {
     if (!posts?.data || !Array.isArray(posts.data)) {
@@ -156,10 +158,10 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex gap-2 xl:gap-4 mt-7 ml-2 text-muted-foreground text-xs">
-                <Link href="/#">Home</Link>
-                <Link href="/#">Terms</Link>
-                <Link href="/#">About</Link>
-                <Link href="/#">Privacy</Link>
+                <Link href="/#">{tFooter("home")}</Link>
+                <Link href="/#">{tFooter("terms")}</Link>
+                <Link href="/#">{tFooter("about")}</Link>
+                <Link href="/#">{tFooter("privacy")}</Link>
               </div>
             </div>
           </div>
