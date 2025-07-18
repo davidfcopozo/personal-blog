@@ -34,12 +34,14 @@ import { AuthModal } from "./auth-modal";
 import { useAuth } from "@/context/AuthContext";
 import { UserAvatar } from "./ui/user-avatar";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const CommentEditor = dynamic(() => import("./comment-editor"), {
   ssr: false,
 });
 
 const Comment: React.FC<CommentProps> = ({ comment, post }) => {
+  const t = useTranslations("comments");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -168,7 +170,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
           onChange={handleEditContentChange}
           onCancel={handleCancelEdit}
           showCancelButton={true}
-          placeholder="Edit your comment..."
+          placeholder={t("editCommentPlaceholder")}
           commentMutationStatus={updateStatus}
           isEditing={true}
           originalContent={comment?.content || ""}
@@ -205,25 +207,25 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="ml-auto">
                         <MoreVertical className="h-4 w-4" />
-                        <span className="sr-only">More options</span>
+                        <span className="sr-only">{t("moreOptions")}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {isCommentOwner && (
                         <DropdownMenuItem onClick={handleEdit}>
-                          Edit
+                          {t("edit")}
                         </DropdownMenuItem>
                       )}
                       {!isCommentOwner && (
                         <DropdownMenuItem onClick={handleReportAbuse}>
-                          Report Abuse
+                          {t("reportAbuse")}
                         </DropdownMenuItem>
                       )}
                       {isCommentOwner && (
                         <DropdownMenuItem
                           onClick={() => setIsDeleteDialogOpen(true)}
                         >
-                          Delete
+                          {t("delete")}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -240,14 +242,14 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
                     icon={MessageSquare}
                     count={comment?.replies.length}
                     iconStyles="hover:stroke-amber-500 !h-5 !w-5"
-                    label="Reply"
+                    label={t("reply")}
                     onClick={() => setShowEditor((showEditor) => !showEditor)}
                     horizontalCount
                   />
                   <EngagementButton
                     icon={Heart}
                     count={commentLikesCount}
-                    label="Like comment"
+                    label={t("like")}
                     onClick={handleLikeClick}
                     iconStyles={`!h-5 !w-5 ${
                       commentLiked ? "text-pink-500" : "hover:stroke-pink-500"
@@ -269,7 +271,7 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
           onChange={handleReplyContentChange}
           onCancel={() => setShowEditor(false)}
           showCancelButton={true}
-          placeholder="Write a reply..."
+          placeholder={t("replyPlaceholder")}
           commentMutationStatus={replyMutationStatus}
           originalContent=""
         />
@@ -280,21 +282,18 @@ const Comment: React.FC<CommentProps> = ({ comment, post }) => {
       >
         <AlertDialogContent className="bg-background border-none">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Are you sure you want to delete this comment?
-            </AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmDeleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              comment and remove it from our servers.
+              {t("confirmDeleteDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-foreground hover:bg-destructive hover:opacity-90"
             >
-              Delete
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -5,12 +5,14 @@ import { CommentInterface } from "@/typings/interfaces";
 import NestedComment from "./nested-comments";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 export default function CommentSection({
   comments,
   post,
 }: CommentSectionPropsType) {
   const queryClient = useQueryClient();
+  const t = useTranslations("comments");
 
   const [cachedComments, setCachedComments] = useState<CommentInterface[]>(
     () => queryClient.getQueryData<CommentInterface[]>(["comments"]) || []
@@ -72,7 +74,7 @@ export default function CommentSection({
     <section className="comment-section w-full max-w-7xl px-4 space-y-6 mb-8 sm:px-0">
       <div className="space-y-4">
         <h2 id="comments-section" className="text-2xl font-bold">
-          Comments
+          {t("title")}
         </h2>
         <CommentBox post={post} />
         <div className="grid gap-6">
@@ -91,9 +93,9 @@ export default function CommentSection({
                 />
               ))
           ) : isLoading ? (
-            <p>Loading comments...</p>
+            <p>{t("loading")}</p>
           ) : (
-            <p>No comments yet, be the first!</p>
+            <p>{t("noComments")}</p>
           )}
         </div>
       </div>

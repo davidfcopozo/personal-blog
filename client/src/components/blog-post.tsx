@@ -21,7 +21,7 @@ import { AuthModal } from "./auth-modal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const BlogPost = memo(function BlogPost({
   handleLikeClick,
@@ -35,6 +35,7 @@ const BlogPost = memo(function BlogPost({
   const locale = useLocale();
   const router = useRouter();
   const { currentUser } = useAuth();
+  const t = useTranslations("blog");
 
   const {
     handleFollowToggle,
@@ -59,7 +60,7 @@ const BlogPost = memo(function BlogPost({
     return (
       <div className="w-full h-full bg-background">
         <div className="w-full mx-auto mt-20 bg-background">
-          <p className="text-center">Post not found or failed to load.</p>
+          <p className="text-center">{t("postNotFound")}</p>
         </div>
       </div>
     );
@@ -81,16 +82,18 @@ const BlogPost = memo(function BlogPost({
                   size="sm"
                   onClick={handleEditPost}
                   className="flex flex-col items-center gap-1 h-auto p-2 hover:bg-accent rounded-lg"
-                  title="Edit post"
+                  title={t("editPostTitle")}
                 >
                   <Edit className="h-5 w-5 text-muted-foreground hover:text-orange-500" />
-                  <span className="text-xs text-muted-foreground">Edit</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("editPostButton")}
+                  </span>
                 </Button>
               )}
               <EngagementButton
                 icon={Heart}
                 count={amountOfLikes}
-                label="Like post"
+                label={t("likePost")}
                 onClick={handleLikeClick}
                 iconStyles={liked ? "text-pink-500" : "hover:stroke-pink-500"}
                 activeColor="text-pink-500"
@@ -99,7 +102,7 @@ const BlogPost = memo(function BlogPost({
               <EngagementButton
                 icon={Bookmark}
                 count={amountOfBookmarks}
-                label="Save post"
+                label={t("savePost")}
                 onClick={handleBookmarkClick}
                 iconStyles={
                   bookmarked ? "stroke-indigo-500" : "hover:stroke-indigo-500"
@@ -110,7 +113,7 @@ const BlogPost = memo(function BlogPost({
               <EngagementButton
                 icon={MessageSquare}
                 count={post.comments?.length}
-                label="Comment"
+                label={t("commentPost")}
                 iconStyles="hover:stroke-amber-500"
                 onClick={() => scrollToElement("comments-section", "header")}
                 activeColor="text-amber-500"
@@ -126,7 +129,7 @@ const BlogPost = memo(function BlogPost({
                   <div className="w-full order-2 lg:order-1 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] relative">
                     <Image
                       src={post.coverImage as string}
-                      alt="Blog Cover"
+                      alt={t("blogCoverAlt")}
                       fill
                       style={{ objectFit: "cover" }}
                     />
@@ -172,11 +175,12 @@ const BlogPost = memo(function BlogPost({
                                   onClick={handleFollowToggle}
                                   data-following={isFollowed ? "true" : "false"}
                                 >
+                                  {" "}
                                   <span className="follow-text">
-                                    {isFollowed ? "Following" : "Follow"}
+                                    {isFollowed ? t("following") : t("follow")}
                                   </span>
                                   <span className="unfollow-text hidden">
-                                    Unfollow
+                                    {t("unfollow")}
                                   </span>
                                 </button>
                               </>
@@ -202,7 +206,7 @@ const BlogPost = memo(function BlogPost({
                       </div>
                       <span className="flex items-center gap-1">
                         <Eye className="w-4 h-4" />
-                        {post.visits} views
+                        {post.visits} {t("viewsCount")}
                       </span>
                     </div>{" "}
                     {/* Engagement buttons */}
@@ -214,11 +218,11 @@ const BlogPost = memo(function BlogPost({
                             size="sm"
                             onClick={handleEditPost}
                             className="flex items-center gap-1 p-0 h-auto px-3 py-2 hover:bg-accent rounded-lg"
-                            title="Edit post"
+                            title={t("editPostTitle")}
                           >
                             <Edit className="h-5 w-5 text-muted-foreground hover:text-orange-500" />
                             <span className="text-sm text-muted-foreground">
-                              Edit
+                              {t("editPostButton")}
                             </span>
                           </Button>
                         )}
@@ -226,7 +230,7 @@ const BlogPost = memo(function BlogPost({
                           icon={Heart}
                           extraClasses="p-0"
                           count={amountOfLikes}
-                          label="Like post"
+                          label={t("likePost")}
                           onClick={handleLikeClick}
                           iconStyles={`!h-5 !w-5 ${
                             liked ? "text-pink-500" : "hover:stroke-pink-500"
@@ -238,7 +242,7 @@ const BlogPost = memo(function BlogPost({
                         <EngagementButton
                           icon={Bookmark}
                           count={amountOfBookmarks}
-                          label="Save post"
+                          label={t("savePost")}
                           extraClasses="p-0"
                           onClick={handleBookmarkClick}
                           iconStyles={`!h-5 !w-5 ${
@@ -254,7 +258,7 @@ const BlogPost = memo(function BlogPost({
                           icon={MessageSquare}
                           extraClasses="p-0"
                           count={post.comments?.length}
-                          label="Comment"
+                          label={t("commentPost")}
                           iconStyles={`!h-5 !w-5 ${"hover:stroke-amber-500"}`}
                           onClick={() =>
                             scrollToElement("comments-section", "header")
