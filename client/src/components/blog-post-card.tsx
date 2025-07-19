@@ -17,13 +17,14 @@ import { Card, CardFooter } from "./ui/card";
 import { AuthModal } from "./auth-modal";
 import { memo } from "react";
 import { UserAvatar } from "./ui/user-avatar";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export const BlogPostCard = memo(function BlogPostCard({
   post,
   className,
 }: BlogPostCardProps) {
   const locale = useLocale();
+  const t = useTranslations("blog");
   const { title, content, createdAt, coverImage, postedBy, slug } = post;
   const { username } = postedBy;
   const {
@@ -89,7 +90,7 @@ export const BlogPostCard = memo(function BlogPostCard({
               <EngagementButton
                 icon={Heart}
                 count={amountOfLikes}
-                label="Like post"
+                label={t("likePost")}
                 onClick={handleLikeClick}
                 iconStyles={`${
                   liked
@@ -107,7 +108,7 @@ export const BlogPostCard = memo(function BlogPostCard({
                 <EngagementButton
                   icon={MessageSquare}
                   count={commentsCount}
-                  label="Comment"
+                  label={t("commentPost")}
                   iconStyles="hover:stroke-amber-500 !h-4 !w-4"
                   activeColor="text-amber-500"
                   horizontalCount
@@ -117,7 +118,7 @@ export const BlogPostCard = memo(function BlogPostCard({
             <EngagementButton
               icon={Bookmark}
               count={amountOfBookmarks}
-              label="Save post"
+              label={t("savePost")}
               onClick={handleBookmarkClick}
               iconStyles={`${
                 bookmarked

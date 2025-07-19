@@ -39,7 +39,7 @@ export default function CommentEditor({
   isEditing = false,
   originalContent,
 }: CommentEditorProps & { isEditing?: boolean }) {
-  const t = useTranslations("editor");
+  const t = useTranslations("comments");
   const {
     hasUnsavedChanges,
     isDialogOpen,
@@ -159,7 +159,7 @@ export default function CommentEditor({
           disabled={commentMutationStatus === "pending"}
         >
           <Send className="w-4 h-4" />
-          {isEditing ? "Update" : "Submit"}
+          {isEditing ? t("update") : t("submit")}
         </Button>
       </div>{" "}
       <UnsavedChangesDialog
@@ -167,14 +167,22 @@ export default function CommentEditor({
         onClose={handleDialogClose}
         onSave={handleNavigationSave}
         onDiscard={handleDiscard}
-        title={isEditing ? "Unsaved Comment Edits" : "Unsaved Comment"}
+        title={
+          isEditing
+            ? t("unsavedChanges.editTitle")
+            : t("unsavedChanges.newTitle")
+        }
         description={
           isEditing
-            ? "You have unsaved changes to your comment. Would you like to save them before canceling?"
-            : "You have started writing a comment. Would you like to save it before canceling?"
+            ? t("unsavedChanges.editDescription")
+            : t("unsavedChanges.newDescription")
         }
-        saveButtonText={isEditing ? "Save Changes" : "Submit Comment"}
-        discardButtonText="Discard Changes"
+        saveButtonText={
+          isEditing
+            ? t("unsavedChanges.saveChanges")
+            : t("unsavedChanges.submitComment")
+        }
+        discardButtonText={t("unsavedChanges.discardChanges")}
         isSaving={isNavigationSaving}
       />
     </>
