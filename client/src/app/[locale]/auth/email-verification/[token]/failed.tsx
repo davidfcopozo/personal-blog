@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 interface VerificationErrorProps {
   message: string;
@@ -24,6 +25,7 @@ export default function VerificationError({ message }: VerificationErrorProps) {
     success?: string;
   }>({});
   const { currentUser } = useAuth();
+  const t = useTranslations("auth.emailVerification");
 
   const isAlreadyVerified = currentUser?.data?.verified;
 
@@ -34,7 +36,7 @@ export default function VerificationError({ message }: VerificationErrorProps) {
 
       const email = new URLSearchParams(window.location.search).get("email");
       if (!email) {
-        throw new Error("Email not found in URL");
+        throw new Error(t("emailNotFoundInUrl"));
       }
 
       const response = await fetch("/api/auth/resend-verification", {
@@ -48,15 +50,15 @@ export default function VerificationError({ message }: VerificationErrorProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to resend verification email");
+        throw new Error(data.error || t("failedToResendEmail"));
       }
 
       setResendStatus({
-        success: "Verification email has been resent to your inbox",
+        success: t("emailResentSuccess"),
       });
     } catch (error: any) {
       setResendStatus({
-        error: error.message || "Failed to resend verification email",
+        error: error.message || t("failedToResendEmail"),
       });
     } finally {
       setIsResending(false);
@@ -76,16 +78,16 @@ export default function VerificationError({ message }: VerificationErrorProps) {
               )}
             </div>
             <CardTitle className="text-2xl font-bold">
-              {isAlreadyVerified ? "Already Verified!" : "Verification Failed"}
+              {isAlreadyVerified
+                ? t("alreadyVerifiedTitle")
+                : t("verificationFailedTitle")}
             </CardTitle>
             <CardDescription
               className={`text-base ${
                 !isAlreadyVerified ? "text-red-600" : "text-green-600"
               }`}
             >
-              {isAlreadyVerified
-                ? "Your email address is already verified."
-                : message}
+              {isAlreadyVerified ? t("alreadyVerifiedDescription") : message}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -96,15 +98,15 @@ export default function VerificationError({ message }: VerificationErrorProps) {
             ) : (
               <p className="text-muted-foreground">
                 {isAlreadyVerified
-                  ? "You already have full access to all features of our blog platform."
-                  : "Please try verifying your email again or request a new verification link."}
+                  ? t("alreadyVerifiedInfo")
+                  : t("verificationFailedInfo")}
               </p>
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pt-2">
             {!currentUser?.data && (
               <Button variant="default" asChild className="w-full">
-                <Link href="/login">Log in to your account</Link>
+                <Link href="/login">{t("loginToAccount")}</Link>
               </Button>
             )}
             {!isAlreadyVerified && (
@@ -113,22 +115,22 @@ export default function VerificationError({ message }: VerificationErrorProps) {
                 disabled={isResending || !!resendStatus.success}
                 className="w-full"
               >
-                {isResending ? "Sending..." : "Resend verification email"}
+                {isResending ? t("sendingEmail") : t("resendVerificationEmail")}
               </Button>
             )}
             <Button variant="outline" asChild className="w-full">
-              <Link href="/">Back to home</Link>
+              <Link href="/">{t("backToHome")}</Link>
             </Button>
           </CardFooter>
         </Card>
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>
-            Need help?{" "}
+            {t("needHelp")}{" "}
             <Link
               href="/support"
               className="font-medium text-primary hover:underline"
             >
-              Contact our support team
+              {t("contactSupport")}
             </Link>
           </p>
         </div>
