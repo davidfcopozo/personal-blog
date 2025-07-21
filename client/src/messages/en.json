@@ -611,6 +611,49 @@
     "notificationsEnabled": "Notifications enabled",
     "notificationsDisabled": "Notifications disabled"
   },
+  "notificationSettings": {
+    "title": "Notification Settings",
+    "description": "Manage how you receive notifications about activity on your posts and mentions.",
+    "cardTitle": "Notification Preferences",
+    "cardDescription": "Choose how you want to be notified about different activities",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "savePreferences": "Save Preferences",
+    "notificationType": "Notification Type",
+    "inApp": "In-App",
+    "email": "Email",
+    "types": {
+      "mentions": {
+        "title": "Mentions",
+        "description": "When someone mentions you in a comment or reply"
+      },
+      "comments": {
+        "title": "Comments",
+        "description": "When someone comments on your posts"
+      },
+      "replies": {
+        "title": "Replies",
+        "description": "When someone replies to your comments"
+      },
+      "bookmarks": {
+        "title": "Bookmarks",
+        "description": "When someone bookmarks your posts"
+      },
+      "likes": {
+        "title": "Likes",
+        "description": "When someone likes your posts"
+      },
+      "follows": {
+        "title": "Follows",
+        "description": "When someone follows you"
+      }
+    },
+    "toasts": {
+      "preferencesUpdated": "Notification preferences updated successfully",
+      "updateFailed": "Failed to update notification preferences",
+      "loadingFailed": "Failed to load notification preferences"
+    }
+  },
   "analytics": {
     "tabs": {
       "overview": "Overview",

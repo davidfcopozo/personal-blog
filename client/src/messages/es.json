@@ -609,7 +609,50 @@
     "emailNotifications": "Notificaciones por Correo",
     "pushNotifications": "Notificaciones Push",
     "notificationsEnabled": "Notificaciones habilitadas",
-    "notificationsDisabled": "Notificaciones habilitadas"
+    "notificationsDisabled": "Notificaciones deshabilitadas"
+  },
+  "notificationSettings": {
+    "title": "Configuración de Notificaciones",
+    "description": "Gestiona cómo recibes notificaciones sobre la actividad en tus publicaciones y menciones.",
+    "cardTitle": "Preferencias de Notificación",
+    "cardDescription": "Elige cómo quieres ser notificado sobre diferentes actividades",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "savePreferences": "Guardar Preferencias",
+    "notificationType": "Tipo de Notificación",
+    "inApp": "En la App",
+    "email": "Correo",
+    "types": {
+      "mentions": {
+        "title": "Menciones",
+        "description": "Cuando alguien te menciona en un comentario o respuesta"
+      },
+      "comments": {
+        "title": "Comentarios",
+        "description": "Cuando alguien comenta en tus publicaciones"
+      },
+      "replies": {
+        "title": "Respuestas",
+        "description": "Cuando alguien responde a tus comentarios"
+      },
+      "bookmarks": {
+        "title": "Marcadores",
+        "description": "Cuando alguien marca tus publicaciones como favoritas"
+      },
+      "likes": {
+        "title": "Me Gusta",
+        "description": "Cuando alguien le da me gusta a tus publicaciones"
+      },
+      "follows": {
+        "title": "Seguidores",
+        "description": "Cuando alguien te sigue"
+      }
+    },
+    "toasts": {
+      "preferencesUpdated": "Preferencias de notificación actualizadas exitosamente",
+      "updateFailed": "Error al actualizar las preferencias de notificación",
+      "loadingFailed": "Error al cargar las preferencias de notificación"
+    }
   },
   "analytics": {
     "tabs": {
