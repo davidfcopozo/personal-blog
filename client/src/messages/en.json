@@ -714,7 +714,8 @@
     "selectLanguage": "Select Language",
     "english": "English",
     "spanish": "Español",
-    "languageChanged": "Language changed successfully"
+    "languageChanged": "Language changed successfully",
+    "languageUpdated": "Language preference updated to"
   },
   "authModal": {
     "likeTitle": "Like this post",

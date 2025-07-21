@@ -714,7 +714,8 @@
     "selectLanguage": "Seleccionar Idioma",
     "english": "English",
     "spanish": "Español",
-    "languageChanged": "Idioma cambiado exitosamente"
+    "languageChanged": "Idioma cambiado exitosamente",
+    "languageUpdated": "Preferencia de idioma actualizada a"
   },
   "authModal": {
     "likeTitle": "Dale me gusta a esta publicación",
