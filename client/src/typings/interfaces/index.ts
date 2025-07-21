@@ -78,6 +78,7 @@ export interface UserInterface extends BaseDocument {
   likes?: string[];
   avatar?: String;
   provider: String;
+  locale: String;
   topicsOfInterest?: TopicInterface[];
   technologies?: CategoryInterface[];
   socialMediaProfiles?: SocialMediaProfilesInterface;
