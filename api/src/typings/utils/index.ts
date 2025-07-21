@@ -6,6 +6,7 @@ export interface SendPasswordResetEmailProps {
   email: String;
   token: String;
   baseUrl: String;
+  locale?: String;
   proxyOrVPN?: Boolean | undefined;
   geoLocation?: String | undefined;
   ip?: String | undefined;
@@ -15,6 +16,7 @@ export interface SendPasswordChangedEmailProps {
   firstName: String;
   email: String;
   baseUrl: String;
+  locale?: String;
   proxyOrVPN?: Boolean | undefined;
   geoLocation?: String | undefined;
   ip?: String | undefined;
@@ -25,6 +27,7 @@ export interface SendVerificationEmailProps {
   email: String;
   verificationToken: String;
   baseUrl: String;
+  locale?: String;
 }
 
 export interface AttachCookiesToResponseProps {
