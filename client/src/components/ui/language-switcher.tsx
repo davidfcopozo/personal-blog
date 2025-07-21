@@ -13,6 +13,8 @@ import {
 import { Globe, Check } from "lucide-react";
 import { locales, type Locale } from "@/i18n/config";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { useUpdateSettings } from "@/hooks/useUpdateSettings";
 
 export function LanguageSwitcher() {
   const t = useTranslations("language");
@@ -21,17 +23,27 @@ export function LanguageSwitcher() {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+  const { updateLocale } = useUpdateSettings();
 
   const switchLanguage = (newLocale: Locale) => {
     startTransition(() => {
       // Remove the current locale from the pathname
       const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, "") || "/";
 
-      // Show toast notification
-      toast({
-        title: t("languageChanged"),
-        description: getLanguageLabel(newLocale),
-      });
+      if (currentUser) {
+        updateLocale(newLocale);
+
+        toast({
+          title: t("languageChanged"),
+          description: `${t("languageUpdated")} ${getLanguageLabel(newLocale)}`,
+        });
+      } else {
+        toast({
+          title: t("languageChanged"),
+          description: getLanguageLabel(newLocale),
+        });
+      }
 
       // Navigate to the new locale
       router.push(`/${newLocale}${pathWithoutLocale}`);
