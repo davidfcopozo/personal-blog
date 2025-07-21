@@ -2,12 +2,14 @@ import { SendMailOptions } from "nodemailer";
 import { SendPasswordResetEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
 import passwordResetTemplate from "../templates/password-reset";
+import passwordResetTemplateEs from "../templates/password-reset-es";
 
 export const sendPasswordResetEmail = async ({
   firstName,
   email,
   token,
   baseUrl,
+  locale = "en",
   proxyOrVPN,
   geoLocation,
   ip,
@@ -17,8 +19,14 @@ export const sendPasswordResetEmail = async ({
   )}`;
   const currentTime = new Date().toLocaleString();
 
+  // Select template and subject based on locale
+  const template =
+    locale === "es" ? passwordResetTemplateEs : passwordResetTemplate;
+  const subject =
+    locale === "es" ? "Restablecer tu Contraseña" : "Reset Your Password";
+
   // Process the template to handle conditional sections
-  let processedTemplate = passwordResetTemplate;
+  let processedTemplate = template;
 
   // Handle the proxy/VPN warning section
   if (proxyOrVPN) {
@@ -53,8 +61,10 @@ export const sendPasswordResetEmail = async ({
     from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
     subject: proxyOrVPN
-      ? "🚨 SECURITY ALERT: Password Reset Request"
-      : "Password Reset Request",
+      ? locale === "es"
+        ? "🚨 ALERTA DE SEGURIDAD: Solicitud de Restablecimiento de Contraseña"
+        : "🚨 SECURITY ALERT: Password Reset Request"
+      : subject,
     html: processedTemplate,
   };
 
