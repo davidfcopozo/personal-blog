@@ -12,9 +12,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { Switch } from "./ui/switch";
 import { NotificationPreferencesInterface } from "@/typings/interfaces";
+import { useTranslations } from "next-intl";
 
 const NotificationPreferences: React.FC = () => {
   const { toast } = useToast();
+  const t = useTranslations("notificationSettings");
   const [preferences, setPreferences] =
     useState<NotificationPreferencesInterface>({
       mentions: { inApp: true, email: true },
@@ -27,9 +29,6 @@ const NotificationPreferences: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    fetchPreferences();
-  }, []);
   const fetchPreferences = useCallback(async () => {
     try {
       const response = await fetch("/api/notifications/preferences", {
@@ -46,13 +45,17 @@ const NotificationPreferences: React.FC = () => {
       console.error("Error fetching preferences:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to load notification preferences",
+        title: t("toasts.loadingFailed"),
+        description: t("toasts.loadingFailed"),
       });
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, t]);
+
+  useEffect(() => {
+    fetchPreferences();
+  }, [fetchPreferences]);
 
   const updatePreferences = async () => {
     setIsSaving(true);
@@ -71,15 +74,15 @@ const NotificationPreferences: React.FC = () => {
       }
 
       toast({
-        title: "Success",
-        description: "Notification preferences updated successfully",
+        title: t("toasts.preferencesUpdated"),
+        description: t("toasts.preferencesUpdated"),
       });
     } catch (error) {
       console.error("Error updating preferences:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to update notification preferences",
+        title: t("toasts.updateFailed"),
+        description: t("toasts.updateFailed"),
       });
     } finally {
       setIsSaving(false);
@@ -103,33 +106,33 @@ const NotificationPreferences: React.FC = () => {
   const notificationTypes = [
     {
       key: "mentions" as const,
-      title: "Mentions",
-      description: "When someone mentions you in a comment or reply",
+      title: t("types.mentions.title"),
+      description: t("types.mentions.description"),
     },
     {
       key: "comments" as const,
-      title: "Comments",
-      description: "When someone comments on your posts",
+      title: t("types.comments.title"),
+      description: t("types.comments.description"),
     },
     {
       key: "replies" as const,
-      title: "Replies",
-      description: "When someone replies to your comments",
+      title: t("types.replies.title"),
+      description: t("types.replies.description"),
     },
     {
       key: "bookmarks" as const,
-      title: "Bookmarks",
-      description: "When someone bookmarks your posts",
+      title: t("types.bookmarks.title"),
+      description: t("types.bookmarks.description"),
     },
     {
       key: "likes" as const,
-      title: "Likes",
-      description: "When someone likes your posts",
+      title: t("types.likes.title"),
+      description: t("types.likes.description"),
     },
     {
       key: "follows" as const,
-      title: "Follows",
-      description: "When someone follows you",
+      title: t("types.follows.title"),
+      description: t("types.follows.description"),
     },
   ];
 
@@ -137,10 +140,8 @@ const NotificationPreferences: React.FC = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Notification Preferences</CardTitle>
-          <CardDescription>
-            Manage how you receive notifications
-          </CardDescription>
+          <CardTitle>{t("cardTitle")}</CardTitle>
+          <CardDescription>{t("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -154,16 +155,14 @@ const NotificationPreferences: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notification Preferences</CardTitle>
-        <CardDescription>
-          Choose how you want to be notified about different activities
-        </CardDescription>
+        <CardTitle>{t("cardTitle")}</CardTitle>
+        <CardDescription>{t("cardDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-medium">
-          <div>Notification Type</div>
-          <div className="text-center">In-App</div>
-          <div className="text-center">Email</div>
+          <div>{t("notificationType")}</div>
+          <div className="text-center">{t("inApp")}</div>
+          <div className="text-center">{t("email")}</div>
         </div>
 
         {notificationTypes.map((type) => (
@@ -199,7 +198,7 @@ const NotificationPreferences: React.FC = () => {
         <div className="flex justify-end pt-4">
           <Button onClick={updatePreferences} disabled={isSaving}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Preferences
+            {isSaving ? t("saving") : t("savePreferences")}
           </Button>
         </div>
       </CardContent>
