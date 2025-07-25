@@ -164,22 +164,27 @@ const NotificationBell: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>{" "}
       <DropdownMenuContent className="w-80 h-96 p-0 flex flex-col" align="end">
-        <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
-          <h4 className="font-semibold">{tNotifications("title")}</h4>
-          <div className="flex gap-1">
+        <div className="flex items-center justify-between p-3 border-b flex-shrink-0 min-w-0">
+          <h4 className="font-semibold flex-shrink-0">
+            {tNotifications("title")}
+          </h4>
+          <div className="flex gap-1 min-w-0 flex-shrink">
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="text-xs"
+                className="text-xs whitespace-nowrap overflow-hidden"
+                title={tNotifications("markAllRead")}
               >
-                <Check className="h-3 w-3 mr-1" />
-                {tNotifications("markAllRead")}
+                <Check className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="truncate">
+                  {tNotifications("markAllRead")}
+                </span>
               </Button>
             )}
             <Link href="/settings/notifications">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="flex-shrink-0">
                 <Settings className="h-3 w-3" />
               </Button>
             </Link>
