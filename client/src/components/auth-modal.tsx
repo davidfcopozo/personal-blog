@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -401,13 +402,16 @@ export const AuthModal = memo(function AuthModal({
       <div className="pt-4 text-center">
         <p className="text-xs text-muted-foreground">
           {tCommon("byContinuing")}{" "}
-          <a href="/terms-of-service" className="text-primary hover:underline">
+          <Link
+            href="/terms-of-service"
+            className="text-primary hover:underline"
+          >
             {tCommon("termsOfService")}
-          </a>{" "}
+          </Link>{" "}
           {tCommon("and")}{" "}
-          <a href="/privacy-policy" className="text-primary hover:underline">
+          <Link href="/privacy-policy" className="text-primary hover:underline">
             {tCommon("privacyPolicy")}
-          </a>
+          </Link>
         </p>
       </div>
     </>
