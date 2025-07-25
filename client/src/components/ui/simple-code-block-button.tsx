@@ -12,6 +12,7 @@ import {
 import { Code, ChevronDown, Sparkles } from "lucide-react";
 import { SUPPORTED_LANGUAGES } from "./code-block-language-selector";
 import { detectLanguageFromCode } from "@/utils/blog-editor";
+import { useTranslations } from "next-intl";
 
 interface SimpleCodeBlockButtonProps {
   editor: Editor;
@@ -20,6 +21,8 @@ interface SimpleCodeBlockButtonProps {
 export const SimpleCodeBlockButton: React.FC<SimpleCodeBlockButtonProps> = ({
   editor,
 }) => {
+  const t = useTranslations("comments.toolbar");
+
   const insertCodeBlock = (language = "plaintext") => {
     editor.chain().focus().toggleCodeBlock({ language }).run();
   };
@@ -48,30 +51,30 @@ export const SimpleCodeBlockButton: React.FC<SimpleCodeBlockButtonProps> = ({
           variant={isActive ? "default" : "ghost"}
           size="sm"
           className="h-8 px-2"
-          title="Code Block"
+          title={t("codeBlock")}
         >
-          Code Block
+          {t("codeBlock")}
           <Code className="h-4 w-4 mr-1" />
           <ChevronDown className="h-3 w-3 ml-1" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
-        <DropdownMenuLabel>Insert Code Block</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("insertCodeBlock")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={insertCodeBlockWithDetection}>
           <Sparkles className="h-4 w-4 mr-2" />
-          Auto-detect Language
+          {t("autoDetectLanguage")}
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => insertCodeBlock("plaintext")}>
           <Code className="h-4 w-4 mr-2" />
-          Plain Text
+          {t("plainText")}
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Popular Languages
+          {t("popularLanguages")}
         </DropdownMenuLabel>
 
         {SUPPORTED_LANGUAGES.map((language) => (

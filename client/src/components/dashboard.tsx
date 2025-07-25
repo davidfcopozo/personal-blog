@@ -22,6 +22,7 @@ import PostsTabContent from "./posts-tab-component";
 import { PostPerformance } from "./post-performance";
 import { Analytics } from "./analytics";
 import { DashboardNav } from "./dashboard-nav";
+import { useTranslations } from "next-intl";
 
 export function Dashboard() {
   const [postStatus, setPostStatus] = useState("all");
@@ -31,6 +32,7 @@ export function Dashboard() {
   const { data: user } = useSession();
   const { deletePost, status } = useDeletePost();
   const router = useRouter();
+  const tDashboard = useTranslations("dashboard");
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -118,28 +120,28 @@ export function Dashboard() {
                     onClick={() => setPostStatus("all")}
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    All
+                    {tDashboard("tabs.all")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="published"
                     onClick={() => setPostStatus("published")}
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    Published
+                    {tDashboard("tabs.published")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="unpublished"
                     onClick={() => setPostStatus("unpublished")}
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    Unpublished
+                    {tDashboard("tabs.unpublished")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="draft"
                     onClick={() => setPostStatus("draft")}
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    Draft
+                    {tDashboard("tabs.draft")}
                   </TabsTrigger>
                 </TabsList>
                 <div className="flex items-center justify-center sm:ml-auto gap-2">
@@ -149,9 +151,11 @@ export function Dashboard() {
                     onClick={handleNewPost}
                   >
                     <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sm:hidden">New Post</span>
+                    <span className="sm:hidden">
+                      {tDashboard("actions.newPost")}
+                    </span>
                     <span className="hidden sm:inline sr-only sm:not-sr-only sm:whitespace-nowrap">
-                      Add New Post
+                      {tDashboard("actions.addNewPost")}
                     </span>
                   </Button>
                 </div>
@@ -217,20 +221,21 @@ export function Dashboard() {
         <AlertDialogContent className="bg-background border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Are you sure you want to delete this comment?
+              {tDashboard("deleteDialog.title")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              comment and remove it from our servers.
+              {tDashboard("deleteDialog.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {tDashboard("deleteDialog.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => postToDelete && deletePost(postToDelete)}
               className="bg-destructive text-foreground hover:bg-destructive hover:opacity-90"
             >
-              Delete
+              {tDashboard("deleteDialog.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

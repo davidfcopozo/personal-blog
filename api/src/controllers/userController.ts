@@ -165,6 +165,7 @@ export const updateUserById = async (
       socialMediaProfiles,
       skills,
       interests,
+      locale,
     },
   } = req;
 
@@ -234,6 +235,7 @@ export const updateUserById = async (
     if (title !== undefined) fieldsToUpdate.title = title;
     if (username !== undefined) fieldsToUpdate.username = username;
     if (website !== undefined) fieldsToUpdate.website = website;
+    if (locale !== undefined) fieldsToUpdate.locale = locale;
     if (socialMediaProfiles !== undefined)
       fieldsToUpdate.socialMediaProfiles = socialMediaProfiles;
     if (skillsIds !== undefined) fieldsToUpdate.technologies = skillsIds;
@@ -575,6 +577,49 @@ export const deleteUserById = async (
     res
       .status(StatusCodes.OK)
       .json({ msg: `User has been successfully deleted` });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const updateUserLocale = async (
+  req: RequestWithUserInfo | any,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    user: { userId },
+    body: { locale },
+  } = req;
+
+  try {
+    // Validate locale
+    if (!locale || !["en", "es"].includes(locale)) {
+      throw new BadRequest("Invalid locale. Supported locales: en, es");
+    }
+
+    const user: UserType = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    const updatedUser: UserType = await User.findOneAndUpdate(
+      { _id: userId },
+      { locale },
+      { new: true, runValidators: true }
+    )
+      .select("-password -verificationToken -passwordVerificationToken")
+      .lean();
+
+    if (!updatedUser) {
+      throw new NotFound("User not found");
+    }
+
+    res.status(StatusCodes.OK).json({
+      user: updatedUser,
+      msg: "Locale updated successfully",
+    });
   } catch (err) {
     return next(err);
   }

@@ -1,8 +1,12 @@
 import { getRelativeTime } from "@/utils/formats";
 import { useState, useEffect } from "react";
+import { useLocale } from "next-intl";
 
 const RelativeTime = ({ createdAt }: { createdAt: Date | number }) => {
-  const [relativeTime, setRelativeTime] = useState(getRelativeTime(createdAt));
+  const locale = useLocale();
+  const [relativeTime, setRelativeTime] = useState(
+    getRelativeTime(createdAt, locale as "en" | "es")
+  );
 
   useEffect(() => {
     // Calculate the time difference in seconds
@@ -26,19 +30,19 @@ const RelativeTime = ({ createdAt }: { createdAt: Date | number }) => {
     }
 
     const intervalId = setInterval(() => {
-      setRelativeTime(getRelativeTime(createdAt));
+      setRelativeTime(getRelativeTime(createdAt, locale as "en" | "es"));
     }, updateInterval);
 
     // Initial immediate update
     const timeoutId = setTimeout(() => {
-      setRelativeTime(getRelativeTime(createdAt));
+      setRelativeTime(getRelativeTime(createdAt, locale as "en" | "es"));
     }, 0);
 
     return () => {
       clearInterval(intervalId);
       clearTimeout(timeoutId);
     };
-  }, [createdAt]);
+  }, [createdAt, locale]);
 
   return <span>{relativeTime}</span>;
 };

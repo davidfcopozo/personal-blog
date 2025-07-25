@@ -3,16 +3,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PersonalInfoFormProps } from "@/typings/types";
+import { useTranslations } from "next-intl";
 
 const PersonalInfoForm = ({
   formData,
   handleFieldChange,
   isPending,
 }: PersonalInfoFormProps) => {
+  const t = useTranslations("settings");
+
   if (isPending) {
-    return (
-      <div className="space-y-4 text-center">Loading user information...</div>
-    );
+    return <div className="space-y-4 text-center">{t("loadingUserInfo")}</div>;
   }
   const { firstName, lastName, email, username, bio } = formData;
   return (
@@ -20,7 +21,7 @@ const PersonalInfoForm = ({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="firstName" className="font-bold">
-            First Name
+            {t("firstName")}
           </Label>
           <Input
             id="firstName"
@@ -31,7 +32,7 @@ const PersonalInfoForm = ({
         </div>
         <div>
           <Label htmlFor="lastName" className="font-bold">
-            Last Name
+            {t("lastName")}
           </Label>
           <Input
             id="lastName"
@@ -43,7 +44,7 @@ const PersonalInfoForm = ({
       </div>
       <div>
         <Label htmlFor="email" className="font-bold">
-          Email
+          {t("email")}
         </Label>
         <Input
           id="email"
@@ -54,7 +55,7 @@ const PersonalInfoForm = ({
       </div>
       <div>
         <Label htmlFor="username" className="font-bold">
-          Username
+          {t("username")}
         </Label>
         <Input
           id="username"
@@ -65,7 +66,7 @@ const PersonalInfoForm = ({
       </div>
       <div>
         <Label htmlFor="bio" className="font-bold">
-          Bio
+          {t("bio")}
         </Label>
         <Textarea
           id="bio"

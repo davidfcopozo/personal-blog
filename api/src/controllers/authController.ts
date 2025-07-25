@@ -92,6 +92,7 @@ export const register = async (
       email: user.email!,
       verificationToken: user.verificationToken!,
       baseUrl,
+      locale: user.locale as string,
     });
 
     res.status(StatusCodes.CREATED).json({
@@ -137,6 +138,7 @@ export const resendVerificationToken = async (
       email: user.email,
       verificationToken: user.verificationToken,
       baseUrl,
+      locale: user.locale as string,
     });
 
     res.status(StatusCodes.OK).json({
@@ -181,7 +183,11 @@ export const verifyEmail = async (
 
     await user.save();
 
-    await sendEmailVerifiedConfirmation({ email: user.email, baseUrl });
+    await sendEmailVerifiedConfirmation({
+      email: user.email,
+      baseUrl,
+      locale: user.locale as string,
+    });
 
     res
       .status(StatusCodes.OK)
@@ -303,6 +309,7 @@ export const forgotPassword = async (
       email: user.email,
       token: passwordResetToken,
       baseUrl: baseUrl || process.env.PRODUCTION_URL,
+      locale: user.locale as string,
       proxyOrVPN: ipData?.isProxyOrVPN || false,
       geoLocation: ipData?.geoLocation || "Unknown location",
       ip: ipData?.ip || "Unknown IP",
@@ -419,6 +426,7 @@ export const resetPassword = async (
         firstName: user.firstName,
         email: user.email,
         baseUrl: baseUrl || process.env.PRODUCTION_URL,
+        locale: user.locale as string,
         proxyOrVPN: ipData?.isProxyOrVPN || false,
         geoLocation: ipData?.geoLocation || "Unknown location",
         ip: ipData?.ip || "Unknown IP",

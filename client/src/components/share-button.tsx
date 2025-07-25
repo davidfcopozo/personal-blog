@@ -17,6 +17,7 @@ import {
 import { useToast } from "./ui/use-toast";
 import { PostType } from "@/typings/types";
 import useSharePost from "@/hooks/useSharePost";
+import { useTranslations } from "next-intl";
 
 export const ShareButton = memo(function ShareButton({
   post,
@@ -25,6 +26,7 @@ export const ShareButton = memo(function ShareButton({
 }) {
   const { toast } = useToast();
   const { sharePost } = useSharePost();
+  const t = useTranslations("blog.share");
 
   const [shareUrl, setShareUrl] = React.useState("");
 
@@ -84,14 +86,14 @@ export const ShareButton = memo(function ShareButton({
     ...(canUseNativeShare
       ? [
           {
-            name: "Native Share",
+            name: t("nativeShare"),
             icon: Share2,
             action: handleNativeShare,
           },
         ]
       : []),
     {
-      name: "Facebook",
+      name: t("facebook"),
       icon: Facebook,
       action: () => {
         const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
@@ -102,7 +104,7 @@ export const ShareButton = memo(function ShareButton({
       },
     },
     {
-      name: "X (Formerly Twitter)",
+      name: t("twitter"),
       icon: XIcon,
       action: () => {
         const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(
@@ -113,7 +115,7 @@ export const ShareButton = memo(function ShareButton({
       },
     },
     {
-      name: "LinkedIn",
+      name: t("linkedin"),
       icon: Linkedin,
       action: () => {
         const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
@@ -124,7 +126,7 @@ export const ShareButton = memo(function ShareButton({
       },
     },
     {
-      name: "WhatsApp",
+      name: t("whatsapp"),
       icon: MessageCircle,
       action: () => {
         const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
@@ -135,36 +137,36 @@ export const ShareButton = memo(function ShareButton({
       },
     },
     {
-      name: "Email",
+      name: t("email"),
       icon: Mail,
       action: () => {
         const subject = encodeURIComponent(
-          `Check out this post: ${post.title}`
+          t("emailSubject", { title: post.title })
         );
         const body = encodeURIComponent(
-          `I thought you might find this interesting:\n\n${post.title}\n\nRead more here: ${shareUrl}`
+          t("emailBody", { title: post.title, url: shareUrl })
         );
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
         handleShare("email");
       },
     },
     {
-      name: "Copy Link",
+      name: t("copyLink"),
       icon: Link,
       action: () => {
         navigator.clipboard
           .writeText(shareUrl)
           .then(() => {
             toast({
-              description: "Link copied to clipboard",
+              description: t("linkCopied"),
             });
             handleShare("copy-link");
           })
           .catch(() => {
             toast({
               variant: "destructive",
-              title: "Error",
-              description: "Failed to copy link to clipboard",
+              title: t("error"),
+              description: t("linkCopyFailed"),
             });
           });
       },
@@ -190,7 +192,9 @@ export const ShareButton = memo(function ShareButton({
             className="pointer-events-pointer hover:bg-[rgba(29,155,240,0.6)]"
           >
             <option.icon className="mr-2 h-4 w-4" />
-            <span>Share on {option.name}</span>
+            <span>
+              {t("share")} {option.name}
+            </span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

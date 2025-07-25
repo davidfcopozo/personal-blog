@@ -62,6 +62,7 @@ const userSchema = new Schema<UserInterface>(
       dribble: String,
     },
     isOnboarded: { type: Boolean, default: false },
+    locale: { type: String, default: "en" },
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },

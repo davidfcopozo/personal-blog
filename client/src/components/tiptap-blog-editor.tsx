@@ -42,6 +42,7 @@ import {
 import { useImageManager } from "@/hooks/useImageManager";
 import { ImageUploadModal } from "./image-upload-modal";
 import { VideoInsertModal } from "./video-insert-modal";
+import { useTranslations } from "next-intl";
 
 // Create lowlight instance
 const lowlight = createConfiguredLowlight();
@@ -66,6 +67,7 @@ export default function TiptapBlogEditor({
   onEditorReady,
   className = "",
 }: TiptapBlogEditorProps) {
+  const t = useTranslations("editor");
   // Image gallery integration
   const {
     uploadImage,
@@ -104,7 +106,7 @@ export default function TiptapBlogEditor({
       FontFamily,
       Youtube.configure(extensionConfigs.youtube),
       Placeholder.configure({
-        placeholder: extensionConfigs.placeholder.blog,
+        placeholder: t("placeholderBlogPost"),
       }),
     ],
     content: value || "",
@@ -151,7 +153,12 @@ export default function TiptapBlogEditor({
 
   // Handle direct image upload
   const handleDirectImageUpload = async (file: File) => {
-    if (validateImageFile(file)) {
+    if (
+      validateImageFile(file, {
+        invalidType: t("invalidImageFileType"),
+        sizeExceeded: t("imageSizeExceeded"),
+      })
+    ) {
       try {
         // Use the passed handleImageUpload function or fallback to uploadImage
         const url = handleImageUpload
@@ -167,7 +174,7 @@ export default function TiptapBlogEditor({
   };
 
   const setLink = () => {
-    const url = createPromptDialog("Enter URL:");
+    const url = createPromptDialog(t("enterLinkUrl"));
     if (url) {
       editor?.chain().focus().setLink({ href: url }).run();
     }
@@ -202,7 +209,7 @@ export default function TiptapBlogEditor({
       <Card className={`w-full ${className} border-muted-foreground/20`}>
         <div className="p-6">
           <div className="min-h-[400px] flex items-center justify-center text-muted-foreground">
-            Loading editor...
+            {t("loadingEditor")}
           </div>
         </div>
       </Card>
@@ -235,7 +242,7 @@ export default function TiptapBlogEditor({
         onDeleteImage={deleteImage}
         onUpdate={updateImageMetadata}
         isLoadingImages={isLoadingImages}
-        buttonText="Insert Image"
+        buttonText={t("insertImage")}
       />
       {/* Video Insert Modal */}
       <VideoInsertModal

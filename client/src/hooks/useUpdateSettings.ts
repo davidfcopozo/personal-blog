@@ -17,6 +17,7 @@ export const useUpdateSettings = () => {
     username: "",
     bio: "",
     website: "",
+    locale: "",
     socialMediaProfiles: {
       x: "",
       instagram: "",
@@ -37,6 +38,7 @@ export const useUpdateSettings = () => {
         username: userData.username || "",
         bio: userData.bio || "",
         website: userData.website || "",
+        locale: userData.locale || "en",
         socialMediaProfiles: {
           x: userData.socialMediaProfiles?.x || "",
           instagram: userData.socialMediaProfiles?.instagram || "",
@@ -118,6 +120,9 @@ export const useUpdateSettings = () => {
     if (formData.website !== (userData.website || "")) {
       fieldsToUpdate.website = formData.website;
     }
+    if (formData.locale !== (userData.locale || "en")) {
+      fieldsToUpdate.locale = formData.locale;
+    }
 
     const currentSocials = userData.socialMediaProfiles || {};
     const formSocials = formData.socialMediaProfiles || {};
@@ -169,11 +174,25 @@ export const useUpdateSettings = () => {
     }
   };
 
+  const updateLocale = (locale: string) => {
+    if (!userData) return;
+
+    // Update the locale immediately in form data
+    setFormData((prev) => ({
+      ...prev,
+      locale,
+    }));
+
+    // Send update to server
+    mutate({ locale });
+  };
+
   return {
     formData,
     handleFieldChange,
     handleSocialMediaChange,
     handleSubmit,
+    updateLocale,
     userData,
     status,
     isUserPending,

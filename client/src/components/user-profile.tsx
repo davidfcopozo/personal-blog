@@ -15,6 +15,7 @@ import ProfilePageSkeleton from "./profile-page-skeleton";
 import { useFollowUser } from "@/hooks/useFollowUser";
 import { AuthModal } from "./auth-modal";
 import { UserAvatar } from "./ui/user-avatar";
+import { useTranslations } from "next-intl";
 
 const UserProfile = ({
   user,
@@ -24,6 +25,7 @@ const UserProfile = ({
   isUserPending?: boolean;
 }) => {
   const [isOwner, setIsOwner] = useState(false);
+  const tProfile = useTranslations("profile");
   const { currentUser } = useAuth();
   const {
     handleFollowToggle,
@@ -69,7 +71,7 @@ const UserProfile = ({
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Published Posts</CardTitle>
+              <CardTitle>{tProfile("publishedPosts")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -100,7 +102,7 @@ const UserProfile = ({
                     <Link href="/settings" passHref>
                       <Button variant="outline" size="sm">
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit Profile
+                        {tProfile("editProfile")}
                       </Button>
                     </Link>
                   </div>
@@ -127,7 +129,7 @@ const UserProfile = ({
                       {user?.followers?.length}
                     </span>
                     <span className="text-muted-foreground text-xs">
-                      Followers
+                      {tProfile("followers")}
                     </span>
                   </div>
                   <div className="flex items-center justify-center">
@@ -151,9 +153,13 @@ const UserProfile = ({
                           data-following={isFollowed ? "true" : "false"}
                         >
                           <span className="follow-text">
-                            {isFollowed ? "Following" : "Follow"}
+                            {isFollowed
+                              ? tProfile("following")
+                              : tProfile("follow")}
                           </span>
-                          <span className="unfollow-text hidden">Unfollow</span>
+                          <span className="unfollow-text hidden">
+                            {tProfile("unfollow")}
+                          </span>
                         </Button>
                       </div>
                     )}
@@ -170,7 +176,9 @@ const UserProfile = ({
                       >
                         <Button variant="outline" size="icon">
                           <X className="h-4 w-4" />
-                          <span className="sr-only">X</span>
+                          <span className="sr-only">
+                            {tProfile("socialMedia.x")}
+                          </span>
                         </Button>
                       </Link>
                     )}
@@ -184,7 +192,9 @@ const UserProfile = ({
                       >
                         <Button variant="outline" size="icon">
                           <Github className="h-4 w-4" />
-                          <span className="sr-only">GitHub</span>
+                          <span className="sr-only">
+                            {tProfile("socialMedia.github")}
+                          </span>
                         </Button>
                       </Link>
                     )}
@@ -197,7 +207,9 @@ const UserProfile = ({
                       >
                         <Button variant="outline" size="icon">
                           <Linkedin className="h-4 w-4" />
-                          <span className="sr-only">LinkedIn</span>
+                          <span className="sr-only">
+                            {tProfile("socialMedia.linkedin")}
+                          </span>
                         </Button>
                       </Link>
                     )}
@@ -210,7 +222,9 @@ const UserProfile = ({
                       >
                         <Button variant="outline" size="icon">
                           <Dribbble className="h-4 w-4" />
-                          <span className="sr-only">Dribble</span>
+                          <span className="sr-only">
+                            {tProfile("socialMedia.dribbble")}
+                          </span>
                         </Button>
                       </Link>
                     )}

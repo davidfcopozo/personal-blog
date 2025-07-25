@@ -21,6 +21,7 @@ import go from "highlight.js/lib/languages/go";
 import rust from "highlight.js/lib/languages/rust";
 import csharp from "highlight.js/lib/languages/csharp";
 import c from "highlight.js/lib/languages/c";
+import { useTranslations } from "next-intl";
 
 const CommentEditor = dynamic(
   () => {
@@ -80,6 +81,7 @@ const CommentEditor = dynamic(
 );
 
 const CommentBox = ({ post }: { post: PostType }) => {
+  const t = useTranslations("comments");
   const {
     createCommentInteraction,
     setCommentContent,
@@ -102,7 +104,7 @@ const CommentBox = ({ post }: { post: PostType }) => {
           e.preventDefault();
         }}
       >
-        <h3 className="text-xl font-bold mb-4">Add a new comment</h3>{" "}
+        <h3 className="text-xl font-bold mb-4">{t("addComment")}</h3>{" "}
         <CommentEditor
           value={commentContent}
           onChange={handleChange}
@@ -110,7 +112,7 @@ const CommentBox = ({ post }: { post: PostType }) => {
           onCancel={() => {}}
           showCancelButton={false}
           commentMutationStatus={commentMutationStatus}
-          placeholder="Share your thoughts with the community..."
+          placeholder={t("writeComment")}
           originalContent=""
         />
       </form>

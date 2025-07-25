@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { useTranslations } from "next-intl";
 
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,10 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tForms = useTranslations("forms");
+  const tAuthModal = useTranslations("authModal");
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -43,18 +48,18 @@ export function SignupForm() {
   };
 
   const validateForm = () => {
-    if (!formData.firstName) return "First name is required";
-    if (!formData.lastName) return "Last name is required";
-    if (!formData.username) return "Username is required";
-    if (!formData.email) return "Email is required";
-    if (!formData.password) return "Password is required";
-    if (formData.password.length < 8)
-      return "Password must be at least 8 characters";
+    if (!formData.firstName) return tAuthModal("firstNameRequired");
+    if (!formData.lastName) return tAuthModal("lastNameRequired");
+    if (!formData.username) return tAuthModal("usernameRequired");
+    if (!formData.email) return tAuthModal("emailRequired");
+    if (!formData.password) return tAuthModal("passwordRequired");
+    if (formData.password.length < 8) return tAuthModal("passwordMinLength");
     if (formData.password !== formData.confirmPassword)
-      return "Passwords do not match";
+      return tAuthModal("passwordsMismatch");
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) return "Please enter a valid email";
+    if (!emailRegex.test(formData.email))
+      return tAuthModal("invalidEmailFormat");
 
     return null;
   };
@@ -93,8 +98,8 @@ export function SignupForm() {
       }
 
       toast({
-        title: "Registration successful",
-        description: "You have successfully created an account.",
+        title: tAuth("signUpSuccess"),
+        description: tAuthModal("accountCreated", { action: tAuth("signIn") }),
       });
 
       // Automatically sign in
@@ -107,19 +112,19 @@ export function SignupForm() {
       if (result?.error) {
         toast({
           variant: "destructive",
-          title: "Login failed",
-          description: "Please try logging in manually.",
+          title: tAuth("signInError"),
+          description: tAuth("invalidCredentials"),
         });
         router.push("/login");
       } else {
         router.push("/dashboard");
       }
     } catch (err: any) {
-      setError(err.message || "Something went wrong during registration");
+      setError(err.message || tAuthModal("registrationFailed"));
       toast({
         variant: "destructive",
-        title: "Registration failed",
-        description: err.message || "Something went wrong",
+        title: tAuth("signUpError"),
+        description: err.message || tAuth("genericSignInError"),
       });
     } finally {
       setIsLoading(false);
@@ -134,13 +139,12 @@ export function SignupForm() {
         callbackUrl: "/dashboard",
         redirect: true,
       });
-
     } catch (error) {
       console.error(`OAuth error with ${provider}:`, error);
       toast({
         variant: "destructive",
-        title: "Sign up failed",
-        description: `Could not sign up with ${provider}`,
+        title: tAuth("signUpError"),
+        description: tAuthModal("socialSignInError", { provider }),
       });
       setOauthLoading(null);
     }
@@ -149,9 +153,11 @@ export function SignupForm() {
   return (
     <Card className="mx-auto max-w-md mt-8 mb-4">
       <CardHeader>
-        <CardTitle className="text-xl text-center">Create an Account</CardTitle>
+        <CardTitle className="text-xl text-center">
+          {tAuthModal("registerTitle")}
+        </CardTitle>
         <CardDescription className="text-center">
-          Enter your information to create a new account
+          {tAuthModal("registerDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -168,7 +174,7 @@ export function SignupForm() {
             ) : (
               <Github className="h-4 w-4" />
             )}
-            GitHub
+            {tAuth("signInWithGitHub")}
           </Button>
           <Button
             variant="outline"
@@ -198,7 +204,7 @@ export function SignupForm() {
                 />
               </svg>
             )}
-            Google
+            {tAuth("signInWithGoogle")}
           </Button>
         </div>
 
@@ -208,7 +214,7 @@ export function SignupForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Or register with email
+              {tCommon("orContinueWith")} {tAuthModal("createAccount")}
             </span>
           </div>
         </div>
@@ -220,22 +226,22 @@ export function SignupForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{tAuth("firstName")}</Label>
               <Input
                 id="firstName"
                 name="firstName"
-                placeholder="John"
+                placeholder={tForms("firstNamePlaceholder")}
                 value={formData.firstName}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{tAuth("lastName")}</Label>
               <Input
                 id="lastName"
                 name="lastName"
-                placeholder="Doe"
+                placeholder={tForms("lastNamePlaceholder")}
                 value={formData.lastName}
                 onChange={handleChange}
                 required
@@ -244,11 +250,11 @@ export function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{tAuth("username")}</Label>
             <Input
               id="username"
               name="username"
-              placeholder="johndoe"
+              placeholder={tForms("usernamePlaceholder")}
               value={formData.username}
               onChange={handleChange}
               required
@@ -256,12 +262,12 @@ export function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{tAuth("email")}</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="john.doe@example.com"
+              placeholder={tForms("registerEmailPlaceholder")}
               value={formData.email}
               onChange={handleChange}
               required
@@ -269,11 +275,12 @@ export function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{tAuth("password")}</Label>
             <Input
               id="password"
               name="password"
               type="password"
+              placeholder={tForms("createPasswordPlaceholder")}
               value={formData.password}
               onChange={handleChange}
               required
@@ -282,11 +289,12 @@ export function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">{tAuth("confirmPassword")}</Label>
             <Input
               id="confirmPassword"
               name="confirmPassword"
               type="password"
+              placeholder={tForms("confirmPasswordPlaceholder")}
               value={formData.confirmPassword}
               onChange={handleChange}
               required
@@ -301,22 +309,23 @@ export function SignupForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                {tAuthModal("creatingAccount")}
               </>
             ) : (
-              "Sign Up with Email"
+              tAuthModal("createAccount")
             )}
           </Button>
         </form>
       </CardContent>
       <CardFooter>
         <p className="text-center text-sm text-muted-foreground w-full">
-          Already have an account?{" "}
+          {tAuth("alreadyHaveAccount")}
           <Link
             href="/login"
             className="underline underline-offset-4 hover:text-primary"
           >
-            Sign in
+            {" "}
+            {tAuth("signIn")}
           </Link>
         </p>
       </CardFooter>

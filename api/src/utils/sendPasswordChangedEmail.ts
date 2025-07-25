@@ -2,11 +2,13 @@ import { SendMailOptions } from "nodemailer";
 import { SendPasswordChangedEmailProps } from "../typings/utils";
 import { emailSender } from "./emailSender";
 import passwordChangedTemplate from "../templates/password-changed";
+import passwordChangedTemplateEs from "../templates/password-changed-es";
 
 export const sendPasswordChangedEmail = async ({
   firstName,
   email,
   baseUrl,
+  locale = "en",
   proxyOrVPN,
   geoLocation,
   ip,
@@ -15,8 +17,13 @@ export const sendPasswordChangedEmail = async ({
   const securitySettingsUrl = `${baseUrlWithoutApi}/settings`;
   const currentTime = new Date().toLocaleString();
 
+  // Select template and subject based on locale
+  const template =
+    locale === "es" ? passwordChangedTemplateEs : passwordChangedTemplate;
+  const subject = locale === "es" ? "Contraseña Cambiada" : "Password Changed";
+
   // Process the template to handle conditional sections
-  let processedTemplate = passwordChangedTemplate;
+  let processedTemplate = template;
 
   // Handle the proxy/VPN warning section
   if (proxyOrVPN) {
@@ -51,8 +58,10 @@ export const sendPasswordChangedEmail = async ({
     from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
     subject: proxyOrVPN
-      ? "🚨 SECURITY ALERT: Your Password Has Been Changed"
-      : "Your Password Has Been Changed",
+      ? locale === "es"
+        ? "🚨 ALERTA DE SEGURIDAD: Tu Contraseña Ha Sido Cambiada"
+        : "🚨 SECURITY ALERT: Your Password Has Been Changed"
+      : subject,
     html: processedTemplate,
   };
 

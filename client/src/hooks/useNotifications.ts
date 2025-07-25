@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSocket } from "@/context/SocketContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Notification } from "@/typings/interfaces";
+import { useTranslations } from "next-intl";
 
 export const useNotifications = () => {
   const { socket } = useSocket();
@@ -10,6 +11,8 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const tToasts = useTranslations("toasts");
+  const tNotificationBell = useTranslations("notificationBell");
 
   // Use refs to avoid dependency issues in useEffect
   const recentNotificationsRef = useRef(new Set<string>());
@@ -33,6 +36,58 @@ export const useNotifications = () => {
         return "🔔";
     }
   };
+
+  const translateNotificationMessage = useCallback(
+    (notification: Notification): string => {
+      const { type, message } = notification;
+
+      // Try to extract user information from the original message
+      let username = "";
+      let name = "";
+
+      // Extract information based on message patterns from backend
+      if (message.includes("@")) {
+        // Mention: "@username mentioned you in a comment"
+        const mentionMatch = message.match(/@(\w+)/);
+        username = mentionMatch ? mentionMatch[1] : "";
+        return tNotificationBell("messages.mention", { username });
+      } else if (message.includes("commented on your post")) {
+        // Comment: "FirstName LastName commented on your post"
+        const nameMatch = message.match(/^(.+?)\s+commented on your post/);
+        name = nameMatch ? nameMatch[1] : "";
+        return tNotificationBell("messages.comment", { name });
+      } else if (message.includes("replied to your comment")) {
+        // Reply: "FirstName LastName replied to your comment"
+        const nameMatch = message.match(/^(.+?)\s+replied to your comment/);
+        name = nameMatch ? nameMatch[1] : "";
+        return tNotificationBell("messages.reply", { name });
+      } else if (message.includes("bookmarked your post")) {
+        // Bookmark: "FirstName LastName bookmarked your post"
+        const nameMatch = message.match(/^(.+?)\s+bookmarked your post/);
+        name = nameMatch ? nameMatch[1] : "";
+        return tNotificationBell("messages.bookmark", { name });
+      } else if (message.includes("liked your comment")) {
+        // Comment like: "FirstName LastName liked your comment"
+        const nameMatch = message.match(/^(.+?)\s+liked your comment/);
+        name = nameMatch ? nameMatch[1] : "";
+        return tNotificationBell("messages.commentLike", { name });
+      } else if (message.includes("liked your post")) {
+        // Post like: "FirstName LastName liked your post"
+        const nameMatch = message.match(/^(.+?)\s+liked your post/);
+        name = nameMatch ? nameMatch[1] : "";
+        return tNotificationBell("messages.like", { name });
+      } else if (message.includes("started following you")) {
+        // Follow: "FirstName LastName started following you"
+        const nameMatch = message.match(/^(.+?)\s+started following you/);
+        name = nameMatch ? nameMatch[1] : "";
+        return tNotificationBell("messages.follow", { name });
+      }
+
+      // Fallback to original message if no pattern matches
+      return message;
+    },
+    [tNotificationBell]
+  );
   useEffect(() => {
     if (!socket) {
       return;
@@ -83,8 +138,10 @@ export const useNotifications = () => {
       }, 10000);
 
       toast({
-        title: `${getNotificationIcon(notification.type)} New Notification`,
-        description: notification.message,
+        title: `${getNotificationIcon(notification.type)} ${tToasts(
+          "newNotification"
+        )}`,
+        description: translateNotificationMessage(notification),
         duration: 5000,
       });
     };
@@ -136,7 +193,7 @@ export const useNotifications = () => {
       socket.off("notificationDeleted", handleNotificationDeleted);
       socket.off("allNotificationsRead", handleAllNotificationsRead);
     };
-  }, [socket, toast]);
+  }, [socket, toast, tToasts, translateNotificationMessage]);
   const fetchNotifications = useCallback(
     async (page = 1, limit = 20, unreadOnly = false) => {
       setIsLoading(true);
@@ -182,14 +239,14 @@ export const useNotifications = () => {
       } catch (error) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch notifications",
+          title: tToasts("error"),
+          description: tToasts("fetchNotificationsError"),
         });
       } finally {
         setIsLoading(false);
       }
     },
-    [toast]
+    [toast, tToasts]
   );
   const markAsRead = useCallback(
     async (notificationId: string) => {
@@ -266,11 +323,11 @@ export const useNotifications = () => {
       setUnreadCount(originalUnreadCount);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to mark all notifications as read",
+        title: tToasts("error"),
+        description: tToasts("markAllAsReadError"),
       });
     }
-  }, [socket, toast, notifications, unreadCount]);
+  }, [socket, toast, notifications, unreadCount, tToasts]);
 
   const deleteNotification = useCallback(
     async (notificationId: string) => {
@@ -316,12 +373,12 @@ export const useNotifications = () => {
         }
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Failed to delete notification",
+          title: tToasts("error"),
+          description: tToasts("deleteNotificationError"),
         });
       }
     },
-    [notifications, socket, toast]
+    [notifications, socket, toast, tToasts]
   );
 
   return {

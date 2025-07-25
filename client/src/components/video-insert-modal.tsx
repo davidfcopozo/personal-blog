@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { validateYouTubeUrl } from "@/utils/blog-editor";
+import { useTranslations } from "next-intl";
 
 interface VideoInsertModalProps {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export function VideoInsertModal({
   onClose,
   onInsertVideo,
 }: VideoInsertModalProps) {
+  const t = useTranslations("editor");
+  const tCommon = useTranslations("common");
   const [videoUrl, setVideoUrl] = useState("");
   const [error, setError] = useState("");
   const [previewId, setPreviewId] = useState("");
@@ -48,12 +51,12 @@ export function VideoInsertModal({
     e.stopPropagation(); // Prevent event bubbling to parent form
 
     if (!videoUrl.trim()) {
-      setError("Please enter a YouTube URL");
+      setError(t("pleaseEnterYouTubeURL"));
       return;
     }
 
     if (!validateYouTubeUrl(videoUrl)) {
-      setError("Please enter a valid YouTube URL");
+      setError(t("pleaseEnterValidYouTubeURL"));
       return;
     }
 
@@ -91,16 +94,16 @@ export function VideoInsertModal({
         onInteractOutside={(e) => e.stopPropagation()}
       >
         <DialogHeader>
-          <DialogTitle>Insert YouTube Video</DialogTitle>
+          <DialogTitle>{t("insertYouTubeVideo")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="videoUrl">YouTube URL</Label>
+              <Label htmlFor="videoUrl">{t("youTubeURL")}</Label>
               <Input
                 id="videoUrl"
                 type="url"
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder={t("enterYouTubeURL")}
                 value={videoUrl}
                 onChange={handleInputChange}
                 className={error ? "border-destructive" : ""}
@@ -113,7 +116,7 @@ export function VideoInsertModal({
               {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
             <div className="text-sm text-muted-foreground">
-              <p>Supported formats:</p>
+              <p>{t("supportedFormats")}</p>
               <ul className="list-disc list-inside mt-1 space-y-1">
                 <li>https://www.youtube.com/watch?v=VIDEO_ID</li>
                 <li>https://youtu.be/VIDEO_ID</li>
@@ -124,7 +127,7 @@ export function VideoInsertModal({
             {/* Video Preview */}
             {previewId && (
               <div className="space-y-2">
-                <Label>Preview</Label>
+                <Label>{t("videoPreview")}</Label>
                 <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-muted">
                   <iframe
                     src={`https://www.youtube.com/embed/${previewId}`}
@@ -139,9 +142,9 @@ export function VideoInsertModal({
           </div>
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" onClick={handleClose}>
-              Cancel
+              {tCommon("cancel")}
             </Button>
-            <Button type="submit">Insert Video</Button>
+            <Button type="submit">{t("insertVideo")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -5,6 +5,7 @@ import VerificationError from "./failed";
 import VerificationLoading from "./loader";
 import VerificationSuccess from "./success";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 const Page = () => {
   const [verificationState, setVerificationState] = useState<
@@ -14,6 +15,7 @@ const Page = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const { isLoading } = useAuth();
+  const t = useTranslations("auth.emailVerification");
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -22,7 +24,7 @@ const Page = () => {
         const email = searchParams.get("email");
 
         if (!token || !email) {
-          setErrorMessage("Invalid verification link");
+          setErrorMessage(t("invalidLink"));
           setVerificationState("error");
           return;
         }
@@ -38,18 +40,18 @@ const Page = () => {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Verification failed");
+          throw new Error(data.error || t("verificationFailed"));
         }
 
         setVerificationState("success");
       } catch (error: any) {
-        setErrorMessage(error.message || "Failed to verify email");
+        setErrorMessage(error.message || t("failedToVerifyEmail"));
         setVerificationState("error");
       }
     };
 
     verifyEmail();
-  }, [params.token, searchParams]);
+  }, [params.token, searchParams, t]);
 
   if (verificationState === "loading" || isLoading) {
     return <VerificationLoading />;

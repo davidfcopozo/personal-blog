@@ -38,6 +38,7 @@ export interface UserInterface extends Document, ModelMethods {
     dribble?: String;
   };
   isOnboarded: Boolean;
+  locale: String;
   following?: ObjectId[];
   followers?: ObjectId[];
 }

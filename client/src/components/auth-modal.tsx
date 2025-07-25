@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -30,44 +31,8 @@ import { GitHubIcon2, GoogleIcon2 } from "./icons";
 import { signIn } from "next-auth/react";
 import { ModalStep } from "@/typings/types";
 import { AuthModalProps } from "@/typings/interfaces";
-import { useSessionUserId, clearSessionCache } from "@/hooks/useSessionUserId";
-
-const actionConfig = {
-  like: {
-    icon: Heart,
-    title: "Like this post",
-    description:
-      "Join the community to like posts and engage with content you love.",
-    actionText: "liking",
-  },
-  bookmark: {
-    icon: Bookmark,
-    title: "Save this post",
-    description:
-      "Create an account to bookmark posts and build your personal reading list.",
-    actionText: "bookmarking",
-  },
-  comment: {
-    icon: MessageSquare,
-    title: "Join the conversation",
-    description:
-      "Sign in to comment and share your thoughts with the community.",
-    actionText: "commenting",
-  },
-  follow: {
-    icon: UserPlus,
-    title: "Follow this author",
-    description:
-      "Create an account to follow authors and stay updated with their latest posts.",
-    actionText: "following authors",
-  },
-  reply: {
-    icon: MessageSquare,
-    title: "Reply to comment",
-    description: "Sign in to reply to comments and join the discussion.",
-    actionText: "replying to comments",
-  },
-};
+import { useSessionUserId } from "@/hooks/useSessionUserId";
+import { useTranslations } from "next-intl";
 
 export const AuthModal = memo(function AuthModal({
   isOpen,
@@ -83,6 +48,10 @@ export const AuthModal = memo(function AuthModal({
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tAuthModal = useTranslations("authModal");
+  const tForms = useTranslations("forms");
 
   // Controlled fields for sign in
   const [signinEmail, setSigninEmail] = useState("");
@@ -111,6 +80,38 @@ export const AuthModal = memo(function AuthModal({
     checkAndRefreshSession();
   }, [isOpen, refetchUser, sessionUserId]);
 
+  const actionConfig = {
+    like: {
+      icon: Heart,
+      title: tAuthModal("likeTitle"),
+      description: tAuthModal("likeDescription"),
+      actionText: tAuthModal("liking"),
+    },
+    bookmark: {
+      icon: Bookmark,
+      title: tAuthModal("bookmarkTitle"),
+      description: tAuthModal("bookmarkDescription"),
+      actionText: tAuthModal("bookmarking"),
+    },
+    comment: {
+      icon: MessageSquare,
+      title: tAuthModal("commentTitle"),
+      description: tAuthModal("commentDescription"),
+      actionText: tAuthModal("commenting"),
+    },
+    follow: {
+      icon: UserPlus,
+      title: tAuthModal("followTitle"),
+      description: tAuthModal("followDescription"),
+      actionText: tAuthModal("followingAuthors"),
+    },
+    reply: {
+      icon: MessageSquare,
+      title: tAuthModal("replyTitle"),
+      description: tAuthModal("replyDescription"),
+      actionText: tAuthModal("replyingToComments"),
+    },
+  };
   const config = actionConfig[action];
   const IconComponent = config.icon;
 
@@ -144,8 +145,8 @@ export const AuthModal = memo(function AuthModal({
       if (result?.error) {
         toast({
           variant: "destructive",
-          title: "Sign in failed",
-          description: `Could not sign in with ${provider}. Please try again.`,
+          title: tAuthModal("signInFailed"),
+          description: tAuthModal("socialSignInError", { provider }),
         });
         return;
       }
@@ -184,11 +185,11 @@ export const AuthModal = memo(function AuthModal({
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please try again.");
+        setError(tAuthModal("invalidCredentials"));
         toast({
           variant: "destructive",
-          title: "Sign in failed",
-          description: "Invalid email or password",
+          title: tAuthModal("signInFailed"),
+          description: tAuthModal("invalidCredentials"),
         });
         return;
       }
@@ -203,11 +204,11 @@ export const AuthModal = memo(function AuthModal({
         description: `You&apos;ve successfully signed in. You can now ${config.actionText}.`,
       });
     } catch (error) {
-      setError("There was an error signing you in. Please try again.");
+      setError(tAuthModal("genericSignInError"));
       toast({
         variant: "destructive",
-        title: "Sign in failed",
-        description: "Something went wrong. Please try again.",
+        title: tAuthModal("signInFailed"),
+        description: tAuthModal("genericSignInError"),
       });
     } finally {
       setIsLoading(false);
@@ -215,22 +216,22 @@ export const AuthModal = memo(function AuthModal({
   };
 
   const validateRegisterForm = () => {
-    if (!registerFirstName.trim()) return "First name is required";
-    if (!registerLastName.trim()) return "Last name is required";
-    if (!registerUsername.trim()) return "Username is required";
-    if (!registerEmail.trim()) return "Email is required";
-    if (!registerPassword) return "Password is required";
-    if (registerPassword.length < 8)
-      return "Password must be at least 8 characters";
+    if (!registerFirstName.trim()) return tAuthModal("firstNameRequired");
+    if (!registerLastName.trim()) return tAuthModal("lastNameRequired");
+    if (!registerUsername.trim()) return tAuthModal("usernameRequired");
+    if (!registerEmail.trim()) return tAuthModal("emailRequired");
+    if (!registerPassword) return tAuthModal("passwordRequired");
+    if (registerPassword.length < 8) return tAuthModal("passwordMinLength");
     if (registerPassword !== registerConfirmPassword)
-      return "Passwords do not match";
+      return tAuthModal("passwordsMismatch");
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(registerEmail)) return "Please enter a valid email";
+    if (!emailRegex.test(registerEmail))
+      return tAuthModal("invalidEmailFormat");
 
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     if (!usernameRegex.test(registerUsername))
-      return "Username can only contain letters, numbers, underscores and dashes";
+      return tAuthModal("usernameFormat");
 
     return null;
   };
@@ -319,7 +320,7 @@ export const AuthModal = memo(function AuthModal({
       setError(errorMessage);
       toast({
         variant: "destructive",
-        title: "Registration failed",
+        title: tAuthModal("registrationFailed"),
         description: errorMessage,
       });
     } finally {
@@ -332,7 +333,7 @@ export const AuthModal = memo(function AuthModal({
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <IconComponent className="h-6 w-6 text-primary" />
         </div>
-        <DialogTitle className="text-xl font-semibold">
+        <DialogTitle className="text- text-center font-semibold">
           {config.title}
         </DialogTitle>
         <DialogDescription className="text-center text-muted-foreground">
@@ -374,7 +375,9 @@ export const AuthModal = memo(function AuthModal({
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">or</span>
+            <span className="bg-background px-2 text-muted-foreground">
+              {tCommon("or")}
+            </span>
           </div>
         </div>
         {/* Email/Password Login */}
@@ -384,7 +387,7 @@ export const AuthModal = memo(function AuthModal({
             className="w-full"
             disabled={isLoading || !!oauthLoading}
           >
-            <LogIn className="mr-2 h-4 w-4" /> Sign in with email
+            <LogIn className="mr-2 h-4 w-4" /> {tAuth("signInWithEmail")}
           </Button>
           <Button
             onClick={() => setCurrentStep("register")}
@@ -392,13 +395,23 @@ export const AuthModal = memo(function AuthModal({
             className="w-full"
             disabled={isLoading || !!oauthLoading}
           >
-            <UserCheck className="mr-2 h-4 w-4" /> Create new account
+            <UserCheck className="mr-2 h-4 w-4" /> {tAuth("createNewAccount")}
           </Button>
         </div>
       </div>
       <div className="pt-4 text-center">
         <p className="text-xs text-muted-foreground">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
+          {tCommon("byContinuing")}{" "}
+          <Link
+            href="/terms-of-service"
+            className="text-primary hover:underline"
+          >
+            {tCommon("termsOfService")}
+          </Link>{" "}
+          {tCommon("and")}{" "}
+          <Link href="/privacy-policy" className="text-primary hover:underline">
+            {tCommon("privacyPolicy")}
+          </Link>
         </p>
       </div>
     </>
@@ -422,21 +435,21 @@ export const AuthModal = memo(function AuthModal({
             <LogIn className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <DialogTitle className="text-xl font-semibold">
-          Sign in to your account
+        <DialogTitle className="text-xl text-center font-semibold">
+          {tAuthModal("signInTitle")}
         </DialogTitle>
         <DialogDescription className="text-center text-muted-foreground">
-          Enter your email and password to continue
+          {tAuthModal("signInDescription")}
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleEmailSignIn} className="space-y-4 pt-4">
         <div className="space-y-2">
-          <Label htmlFor="signin-email">Email</Label>
+          <Label htmlFor="signin-email">{tAuth("email")}</Label>
           <Input
             id="signin-email"
             name="email"
             type="email"
-            placeholder="m@example.com"
+            placeholder={tForms("emailPlaceholder")}
             required
             disabled={isLoading}
             value={signinEmail}
@@ -446,7 +459,7 @@ export const AuthModal = memo(function AuthModal({
         </div>
         <div className="space-y-2">
           <div className="flex items-center">
-            <Label htmlFor="signin-password">Password</Label>
+            <Label htmlFor="signin-password">{tAuth("password")}</Label>
             <Button
               variant="link"
               className="ml-auto text-sm p-0 h-auto"
@@ -454,7 +467,7 @@ export const AuthModal = memo(function AuthModal({
               type="button"
               disabled={isLoading}
             >
-              Forgot password?
+              {tAuth("forgotPassword")}
             </Button>
           </div>
           <div className="relative">
@@ -462,7 +475,7 @@ export const AuthModal = memo(function AuthModal({
               id="signin-password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder={tForms("passwordPlaceholder")}
               required
               disabled={isLoading}
               value={signinPassword}
@@ -496,23 +509,23 @@ export const AuthModal = memo(function AuthModal({
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
+              {tAuthModal("signingIn")}
             </>
           ) : (
-            "Sign In with Email"
+            <>{tAuth("signInWithEmail")}</>
           )}
         </Button>
       </form>
       <div className="pt-4 text-center">
         <p className="text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          {tAuthModal("dontHaveAccount")}{" "}
           <Button
             variant="link"
             className="p-0 h-auto font-normal"
             onClick={() => setCurrentStep("register")}
             disabled={isLoading}
           >
-            Create one here
+            {tAuthModal("createOneHere")}
           </Button>
         </p>
       </div>
@@ -537,21 +550,21 @@ export const AuthModal = memo(function AuthModal({
             <UserCheck className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <DialogTitle className="text-xl font-semibold">
-          Create your account
+        <DialogTitle className="text-xl text-center font-semibold">
+          {tAuthModal("registerTitle")}
         </DialogTitle>
         <DialogDescription className="text-center text-muted-foreground">
-          Fill in your details to get started
+          {tAuthModal("registerDescription")}
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleRegister} className="space-y-4 pt-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="register-firstName">First Name</Label>
+            <Label htmlFor="register-firstName">{tAuth("firstName")}</Label>
             <Input
               id="register-firstName"
               name="firstName"
-              placeholder="John"
+              placeholder={tForms("firstNamePlaceholder")}
               required
               disabled={isLoading}
               value={registerFirstName}
@@ -560,11 +573,11 @@ export const AuthModal = memo(function AuthModal({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="register-lastName">Last Name</Label>
+            <Label htmlFor="register-lastName">{tAuth("lastName")}</Label>
             <Input
               id="register-lastName"
               name="lastName"
-              placeholder="Doe"
+              placeholder={tForms("lastNamePlaceholder")}
               required
               disabled={isLoading}
               value={registerLastName}
@@ -574,11 +587,11 @@ export const AuthModal = memo(function AuthModal({
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="register-username">Username</Label>
+          <Label htmlFor="register-username">{tAuth("username")}</Label>
           <Input
             id="register-username"
             name="username"
-            placeholder="johndoe"
+            placeholder={tForms("usernamePlaceholder")}
             required
             disabled={isLoading}
             value={registerUsername}
@@ -587,12 +600,12 @@ export const AuthModal = memo(function AuthModal({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="register-email">Email</Label>
+          <Label htmlFor="register-email">{tAuth("email")}</Label>
           <Input
             id="register-email"
             name="email"
             type="email"
-            placeholder="john.doe@example.com"
+            placeholder={tForms("registerEmailPlaceholder")}
             required
             disabled={isLoading}
             value={registerEmail}
@@ -601,13 +614,13 @@ export const AuthModal = memo(function AuthModal({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="register-password">Password</Label>
+          <Label htmlFor="register-password">{tAuth("password")}</Label>
           <div className="relative">
             <Input
               id="register-password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Create a password"
+              placeholder={tForms("createPasswordPlaceholder")}
               required
               disabled={isLoading}
               value={registerPassword}
@@ -632,13 +645,15 @@ export const AuthModal = memo(function AuthModal({
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="register-confirmPassword">Confirm Password</Label>
+          <Label htmlFor="register-confirmPassword">
+            {tAuth("confirmPassword")}
+          </Label>
           <div className="relative">
             <Input
               id="register-confirmPassword"
               name="confirmPassword"
               type={showPassword ? "text" : "password"}
-              placeholder="Confirm your password"
+              placeholder={tForms("confirmPasswordPlaceholder")}
               required
               disabled={isLoading}
               value={registerConfirmPassword}
@@ -652,29 +667,29 @@ export const AuthModal = memo(function AuthModal({
         )}
         <Button
           type="submit"
-          className="w-full"
+          className="w-full text"
           disabled={isLoading || !!oauthLoading}
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating account...
+              {tAuthModal("creatingAccount")}
             </>
           ) : (
-            "Create Account"
+            tAuthModal("createAccount")
           )}
         </Button>
       </form>
       <div className="pt-4 text-center">
         <p className="text-sm text-muted-foreground">
-          Already have an account?{" "}
+          {tAuth("alreadyHaveAccount")}{" "}
           <Button
             variant="link"
             className="p-0 h-auto font-normal"
             onClick={() => setCurrentStep("signin")}
             disabled={isLoading}
           >
-            Sign in here
+            {tAuthModal("signInTitle")}
           </Button>
         </p>
       </div>

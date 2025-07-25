@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { CircleUser, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogoIcon } from "./ui/icons";
 import { ModeToggle } from "./ui/mode-toggle";
+import { LanguageSwitcher } from "./ui/language-switcher";
 import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -26,6 +28,10 @@ import NotificationBell from "./notification-bell";
 import { UserAvatar } from "./ui/user-avatar";
 
 export function Header() {
+  const t = useTranslations("navigation");
+  const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
+
   const { theme, systemTheme } = useTheme();
   const { data: session, status } = useSession();
   const [darkTheme, setDarkTheme] = useState("#000000");
@@ -87,7 +93,7 @@ export function Header() {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search posts..."
+            placeholder={t("search")}
             className="pl-8 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 outline-none shadow-none sm:w-[300px] md:w-[200px] lg:w-[300px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -118,6 +124,7 @@ export function Header() {
       <nav className="ml-auto flex-col items-center gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         {" "}
         <div className="flex text-sm gap-2 items-center md:gap-4 lg:gap-5">
+          <LanguageSwitcher />
           <ModeToggle />
           {status === "authenticated" && <NotificationBell />}
         </div>
@@ -155,7 +162,7 @@ export function Header() {
             href="/login"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Sign In
+            {tAuth("signIn")}
           </Link>
         )}
         <DropdownMenu>
@@ -164,8 +171,8 @@ export function Header() {
               href="/register"
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-3xl"
             >
-              <p className="text-xs md:text-sm font-bo  ">Sign Up</p>
-              <span className="sr-only">Sign up button</span>
+              <p className="text-xs md:text-sm font-bo  ">{tAuth("signUp")}</p>
+              <span className="sr-only">{tAuth("signUp")}</span>
             </Link>
           ) : (
             <DropdownMenuTrigger asChild>
@@ -180,26 +187,26 @@ export function Header() {
                   className="border-0"
                   isLoading={status === "loading"}
                 />
-                <span className="sr-only">Toggle user menu</span>
+                <span className="sr-only">{tCommon("toggleUserMenu")}</span>
               </Button>
             </DropdownMenuTrigger>
           )}
 
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{tCommon("myAccount")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/profile">Profile</Link>
+              <Link href="/profile">{t("profile")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/dashboard">{t("dashboard")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/settings">Settings</Link>
+              <Link href="/settings">{t("settings")}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={(e) => handleSignout(e)}>
-              Logout
+              {tAuth("signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

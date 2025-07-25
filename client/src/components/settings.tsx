@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFullName } from "@/utils/formats";
@@ -18,6 +19,9 @@ import { UserType } from "@/typings/types";
 import { useAvatarUpdate } from "@/hooks/useAvatarUpdate";
 
 export const Settings = () => {
+  const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
+
   const {
     formData,
     handleFieldChange,
@@ -85,8 +89,8 @@ export const Settings = () => {
     if (!userData?.avatar) {
       toast({
         variant: "destructive",
-        title: "No picture to delete",
-        description: "You don't have a profile picture set",
+        title: t("noPictureToDelete"),
+        description: t("noPictureSet"),
       });
       return;
     }
@@ -117,19 +121,19 @@ export const Settings = () => {
                     value="personal"
                     className="text-xs sm:text-sm py-2 sm:py-0"
                   >
-                    Personal Info
+                    {t("personalInfo")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="social"
                     className="text-xs sm:text-sm py-2 sm:py-0"
                   >
-                    Social Media
+                    {t("socialMedia")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="custom"
                     className="text-xs sm:text-sm py-2 sm:py-0"
                   >
-                    Custom Experience
+                    {t("customExperience")}
                   </TabsTrigger>
                 </TabsList>
                 <form onSubmit={handleSubmit}>
@@ -155,8 +159,8 @@ export const Settings = () => {
                       <SkillsInterestsManager
                         items={formData.skills}
                         setItems={(value) => handleFieldChange("skills", value)}
-                        label="Skills"
-                        placeholder="Search for skills..."
+                        label={t("skills")}
+                        placeholder={t("searchSkills")}
                         fetchUrl="categories"
                       />
                       <SkillsInterestsManager
@@ -164,14 +168,14 @@ export const Settings = () => {
                         setItems={(value) =>
                           handleFieldChange("interests", value)
                         }
-                        label="Interests"
-                        placeholder="Search for interests..."
+                        label={t("interests")}
+                        placeholder={t("searchInterests")}
                         fetchUrl="topics"
                       />
                     </div>
                   </TabsContent>
                   <div className="flex pt-4 justify-start">
-                    <Button type="submit">Save Changes</Button>
+                    <Button type="submit">{t("saveChanges")}</Button>
                   </div>
                 </form>
               </Tabs>
@@ -196,10 +200,10 @@ export const Settings = () => {
                     }
                   >
                     {uploading
-                      ? "Uploading..."
+                      ? t("uploading")
                       : isUploadingAvatar
-                      ? "Updating..."
-                      : "Change picture"}
+                      ? t("updating")
+                      : t("changePicture")}
                   </Button>
                   <Button
                     type="button"
@@ -212,7 +216,7 @@ export const Settings = () => {
                       !userData?.avatar
                     }
                   >
-                    {isDeletingAvatar ? "Deleting..." : "Delete picture"}
+                    {isDeletingAvatar ? t("deleting") : t("deletePicture")}
                   </Button>
                 </div>
               </div>
@@ -256,7 +260,7 @@ export const Settings = () => {
         onDeleteImage={deleteImage}
         onUpdate={updateImageMetadata}
         isLoadingImages={isLoadingImages}
-        buttonText="Set as Profile Picture"
+        buttonText={t("setAsProfilePicture")}
       />
     </div>
   );

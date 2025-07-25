@@ -11,12 +11,14 @@ import {
 } from "recharts";
 import { PostType } from "@/typings/types";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface TopPostsBarChartProps {
   blogPosts: PostType[];
 }
 
 export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
+  const tCharts = useTranslations("charts");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Transform real post data into chart data, taking top 5 posts by views
@@ -31,9 +33,13 @@ export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
       Views: post.visits || 0,
     }));
 
-  const formatTooltipLabel = (label: string) => {
-    // Capitalize first letter of each word
-    return label.replace(/\b\w/g, (char) => char.toUpperCase());
+  const getTranslatedLabel = (key: string) => {
+    switch (key) {
+      case "Views":
+        return tCharts("views");
+      default:
+        return key;
+    }
   };
 
   return (
@@ -60,8 +66,8 @@ export default function TopPostsBarChart({ blogPosts }: TopPostsBarChartProps) {
             outline: "none",
           }}
           cursor={{ fill: "transparent" }}
-          formatter={(value, name) => [value, formatTooltipLabel(String(name))]}
-          labelStyle={{ color: "var(--foreground)" }}
+          formatter={(value, name) => [value, getTranslatedLabel(String(name))]}
+          labelFormatter={(label) => label}
           itemStyle={{ color: "var(--foreground)" }}
         />
         <Bar

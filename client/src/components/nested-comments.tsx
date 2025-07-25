@@ -3,6 +3,7 @@ import { CommentInterface, NestedCommentProps } from "@/typings/interfaces";
 import Comment from "./comment";
 import SingleCommentSkeleton from "./single-comment-skeleton";
 import useFetchReplies from "@/hooks/useFetchReplies";
+import { useTranslations } from "next-intl";
 
 const NestedComment: FC<NestedCommentProps> = ({
   comment,
@@ -10,6 +11,7 @@ const NestedComment: FC<NestedCommentProps> = ({
   level = 0,
   onMaxNestingReached,
 }) => {
+  const t = useTranslations("comments");
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const { fetchedReplies, isLoading, isFetching } = useFetchReplies({
@@ -69,7 +71,7 @@ const NestedComment: FC<NestedCommentProps> = ({
               onClick={toggleExpand}
               className="text-[hsl(var(--thread-border))] hover:underline mt-2"
             >
-              Show {fetchedReplies?.length} more replies
+              {t("showReplies")} ({fetchedReplies?.length})
             </button>
           )}
         </>

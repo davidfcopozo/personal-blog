@@ -7,11 +7,13 @@ import useFetchRequest from "@/hooks/useFetchRequest";
 import { Skeleton } from "./ui/skeleton";
 import { XIcon } from "./icons";
 import { CategoriesProps } from "@/typings/types";
+import { useTranslations } from "next-intl";
 
 const Categories = ({
   setCategories,
   categories: passedCategories,
 }: CategoriesProps) => {
+  const t = useTranslations("editor");
   const {
     data: fetchedCategories,
     isLoading,
@@ -136,7 +138,7 @@ const Categories = ({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Categories</CardTitle>
+        <CardTitle>{t("categories")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
@@ -168,7 +170,7 @@ const Categories = ({
                 className="w-full justify-center"
                 onClick={showMoreCategories}
               >
-                See More
+                {t("seeMore")}
               </Button>
               {amountOfCategories > 5 && (
                 <Button
@@ -176,7 +178,7 @@ const Categories = ({
                   className="w-full justify-center"
                   onClick={showLessCategories}
                 >
-                  See Less
+                  {t("seeLess")}
                 </Button>
               )}
             </>
@@ -185,7 +187,7 @@ const Categories = ({
         <div className="mt-4 grid gap-2">
           <div className="relative grid grid-col gap-2 lg:items-center lg:gap-2 lg:grid lg:grid-cols-[1fr]">
             <Input
-              placeholder="Search categories"
+              placeholder={t("searchCategories")}
               value={categorySearchQuery}
               onChange={(e) => setCategorySearchQuery(e.target.value)}
             />

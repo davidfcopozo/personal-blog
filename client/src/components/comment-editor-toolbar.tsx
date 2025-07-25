@@ -13,6 +13,7 @@ import {
   ListOrdered,
   Link as LinkIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface CommentEditorToolbarProps {
   editor: Editor;
@@ -21,6 +22,8 @@ interface CommentEditorToolbarProps {
 export default function CommentEditorToolbar({
   editor,
 }: CommentEditorToolbarProps) {
+  const t = useTranslations("comments.toolbar");
+
   const toggleBold = () => editor?.chain().focus().toggleBold().run();
   const toggleItalic = () => editor?.chain().focus().toggleItalic().run();
   const toggleUnderline = () => editor?.chain().focus().toggleUnderline().run();
@@ -33,7 +36,7 @@ export default function CommentEditorToolbar({
     editor?.chain().focus().toggleOrderedList().run();
 
   const setLink = () => {
-    const url = window.prompt("Enter URL:");
+    const url = window.prompt(t("enterUrl"));
     if (url) {
       editor?.chain().focus().setLink({ href: url }).run();
     }
@@ -47,6 +50,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleBold}
           className="h-8 w-8 p-0"
+          title={t("bold")}
         >
           <Bold className="h-4 w-4" />
         </Button>
@@ -56,6 +60,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleItalic}
           className="h-8 w-8 p-0"
+          title={t("italic")}
         >
           <Italic className="h-4 w-4" />
         </Button>
@@ -65,6 +70,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleUnderline}
           className="h-8 w-8 p-0"
+          title={t("underline")}
         >
           <UnderlineIcon className="h-4 w-4" />
         </Button>
@@ -74,6 +80,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleStrike}
           className="h-8 w-8 p-0"
+          title={t("strikethrough")}
         >
           <Strikethrough className="h-4 w-4" />
         </Button>
@@ -84,6 +91,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleBlockquote}
           className="h-8 px-2"
+          title={t("quote")}
         >
           <Quote className="h-4 w-4" />{" "}
         </Button>{" "}
@@ -93,7 +101,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={() => editor?.chain().focus().toggleCode().run()}
           className="h-8 px-2"
-          title="Inline Code"
+          title={t("inlineCode")}
         >
           &lt;/&gt;
         </Button>
@@ -105,7 +113,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleBulletList}
           className="h-8 px-2"
-          title="Bullet List"
+          title={t("bulletList")}
         >
           <List className="h-4 w-4" />
         </Button>
@@ -115,7 +123,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={toggleOrderedList}
           className="h-8 px-2"
-          title="Numbered List"
+          title={t("orderedList")}
         >
           <ListOrdered className="h-4 w-4" />
         </Button>
@@ -126,6 +134,7 @@ export default function CommentEditorToolbar({
           size="sm"
           onClick={setLink}
           className="h-8 px-2"
+          title={t("insertLink")}
         >
           <LinkIcon className="h-4 w-4" />
         </Button>

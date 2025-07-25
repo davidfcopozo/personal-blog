@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { ImageInterface } from "@/typings/interfaces";
+import { useTranslations } from "next-intl";
 
 interface EditableImagePropertiesProps {
   image: ImageInterface;
@@ -15,6 +16,7 @@ export function EditableImageProperties({
   image,
   onUpdate,
 }: EditableImagePropertiesProps) {
+  const t = useTranslations("settings");
   const [title, setTitle] = useState(image.title || "");
   const [altText, setAltText] = useState(image.altText || "");
   const [tags, setTags] = useState<string[]>(image.tags || []);
@@ -51,62 +53,60 @@ export function EditableImageProperties({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h3 className="font-bold text-lg">Editable Properties</h3>
+      <h3 className="font-bold text-lg">{t("editableProperties")}</h3>
 
       <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
+        <Label htmlFor="title">{t("title")}</Label>
         <Input
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter a descriptive title"
+          placeholder={t("enterDescriptiveTitle")}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="altText">Alt Text</Label>
+        <Label htmlFor="altText">{t("altText")}</Label>
         <Input
           id="altText"
           value={altText}
           onChange={(e) => setAltText(e.target.value)}
-          placeholder="Describe the image for accessibility"
+          placeholder={t("describeImageAccessibility")}
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="tags">Tags</Label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {tags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {tag}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={() => removeTag(tag)}
-              />
-            </Badge>
-          ))}
+        <div className="space-y-2">
+          <Label htmlFor="tags">{t("tags")}</Label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="flex items-center gap-1"
+              >
+                {tag}
+                <X
+                  className="h-3 w-3 cursor-pointer hover:text-destructive"
+                  onClick={() => removeTag(tag)}
+                />
+              </Badge>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              id="tags"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={t("addTag")}
+              className="flex-grow"
+            />
+            <Button type="button" onClick={addTag} variant="outline" size="sm">
+              {t("add")}
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Input
-            id="tags"
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Add a tag"
-            className="flex-grow"
-          />
-          <Button type="button" onClick={addTag} variant="outline" size="sm">
-            Add
-          </Button>
-        </div>
       </div>
-
       <Button type="submit" className="w-full">
-        Save Changes
+        {t("saveChanges")}
       </Button>
     </form>
   );

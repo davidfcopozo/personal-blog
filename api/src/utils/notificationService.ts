@@ -7,6 +7,8 @@ import {
 } from "../typings/models/notification";
 import { ObjectId } from "mongoose";
 import { emailSender } from "./emailSender";
+import notificationEmailTemplateEn from "../templates/notification-email-en";
+import notificationEmailTemplateEs from "../templates/notification-email-es";
 
 export class NotificationService {
   private io: any;
@@ -120,7 +122,8 @@ export class NotificationService {
       const subject = this.getEmailSubject(
         data.type,
         sender.firstName?.toString(),
-        sender.lastName?.toString()
+        sender.lastName?.toString(),
+        recipient.locale?.toString() || "en"
       );
       const html = this.getEmailTemplate(data, sender, recipient);
 
@@ -138,24 +141,38 @@ export class NotificationService {
   private getEmailSubject(
     type: NotificationType,
     senderFirstName: string,
-    senderLastName: string
+    senderLastName: string,
+    locale: string = "en"
   ): string {
     const senderName = `${senderFirstName} ${senderLastName}`;
 
-    switch (type) {
-      case "mention":
-        return `${senderName} mentioned you in a comment`;
-      case "comment":
-        return `${senderName} commented on your post`;
-      case "reply":
-        return `${senderName} replied to your comment`;
-      case "bookmark":
-        return `${senderName} bookmarked your post`;
-      case "like":
-        return `${senderName} liked your post`;
-      default:
-        return "New notification";
-    }
+    const subjects = {
+      en: {
+        mention: `${senderName} mentioned you in a comment`,
+        comment: `${senderName} commented on your post`,
+        reply: `${senderName} replied to your comment`,
+        bookmark: `${senderName} bookmarked your post`,
+        like: `${senderName} liked your post`,
+        follow: `${senderName} started following you`,
+        default: "New notification",
+      },
+      es: {
+        mention: `${senderName} te mencionó en un comentario`,
+        comment: `${senderName} comentó en tu publicación`,
+        reply: `${senderName} respondió a tu comentario`,
+        bookmark: `${senderName} guardó tu publicación`,
+        like: `${senderName} le gustó tu publicación`,
+        follow: `${senderName} comenzó a seguirte`,
+        default: "Nueva notificación",
+      },
+    };
+
+    const localizedSubjects =
+      subjects[locale as keyof typeof subjects] || subjects.en;
+    return (
+      localizedSubjects[type as keyof typeof localizedSubjects] ||
+      localizedSubjects.default
+    );
   }
 
   private getEmailTemplate(
@@ -163,48 +180,70 @@ export class NotificationService {
     sender: any,
     recipient: any
   ): string {
-    const senderName = `${sender.firstName} ${sender.lastName}`;
+    const recipientLocale = recipient.locale || "en";
     const appUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const logoSrc = `${appUrl}/TechyComm-Logo.svg`;
+    const githubSrc = `${appUrl}/github.svg`;
+    const linkedinSrc = `${appUrl}/linkedin.svg`;
+    const xSrc = `${appUrl}/x.svg`;
 
-    return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>New Notification</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #f4f4f4; padding: 20px; text-align: center; }
-          .content { padding: 20px; background-color: #fff; }
-          .footer { background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px; }
-          .btn { display: inline-block; padding: 10px 20px; background-color: #007cba; color: white; text-decoration: none; border-radius: 5px; }
-          .notification-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 15px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>TechyComm</h1>
-          </div>
-          <div class="content">
-            <h2>Hi ${recipient.firstName},</h2>
-            <div class="notification-card">
-              <p><strong>${data.message}</strong></p>
-              <p>From: <strong>${senderName}</strong> (@${sender.username})</p>
-            </div>
-            <p>You can view this notification and manage your preferences by visiting your dashboard.</p>
-            <a href="${appUrl}/notifications" class="btn">View Notifications</a>
-          </div>
-          <div class="footer">
-            <p>You're receiving this email because you have email notifications enabled for this type of activity.</p>
-            <p><a href="${appUrl}/settings/notifications">Manage notification preferences</a></p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+    // Select template based on recipient's locale
+    const template =
+      recipientLocale === "es"
+        ? notificationEmailTemplateEs
+        : notificationEmailTemplateEn;
+
+    // Replace template variables
+    return template
+      .replace(/{{logo_src}}/g, logoSrc)
+      .replace(/{{github_src}}/g, githubSrc)
+      .replace(/{{linkedin_src}}/g, linkedinSrc)
+      .replace(/{{x_src}}/g, xSrc)
+      .replace(/{{recipientName}}/g, recipient.firstName || "User")
+      .replace(/{{message}}/g, data.message)
+      .replace(/{{senderName}}/g, `${sender.firstName} ${sender.lastName}`)
+      .replace(/{{senderUsername}}/g, sender.username)
+      .replace(/{{appUrl}}/g, appUrl)
+      .replace(/{{notificationsUrl}}/g, `${appUrl}/notifications`)
+      .replace(/{{settingsUrl}}/g, `${appUrl}/settings/notifications`);
+  }
+
+  private getLocalizedMessage(
+    type: NotificationType | "commentLike",
+    senderFirstName: string,
+    senderLastName: string,
+    senderUsername: string,
+    locale: string = "en"
+  ): string {
+    const senderName = `${senderFirstName} ${senderLastName}`;
+
+    const messages = {
+      en: {
+        mention: `@${senderUsername} mentioned you in a comment`,
+        comment: `${senderName} commented on your post`,
+        reply: `${senderName} replied to your comment`,
+        bookmark: `${senderName} bookmarked your post`,
+        like: `${senderName} liked your post`,
+        commentLike: `${senderName} liked your comment`,
+        follow: `${senderName} started following you`,
+      },
+      es: {
+        mention: `@${senderUsername} te mencionó en un comentario`,
+        comment: `${senderName} comentó en tu publicación`,
+        reply: `${senderName} respondió a tu comentario`,
+        bookmark: `${senderName} guardó tu publicación`,
+        like: `${senderName} le gustó tu publicación`,
+        commentLike: `${senderName} le gustó tu comentario`,
+        follow: `${senderName} comenzó a seguirte`,
+      },
+    };
+
+    const localizedMessages =
+      messages[locale as keyof typeof messages] || messages.en;
+    return (
+      localizedMessages[type as keyof typeof localizedMessages] ||
+      localizedMessages.comment
+    );
   }
 
   async createMentionNotification(
@@ -213,8 +252,22 @@ export class NotificationService {
     postId: ObjectId | string,
     commentId?: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `@${sender?.username} mentioned you in a comment`;
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
+      throw new Error("Sender or recipient not found");
+    }
+
+    const message = this.getLocalizedMessage(
+      "mention",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     return this.createNotification({
       recipientId,
@@ -231,8 +284,22 @@ export class NotificationService {
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `${sender?.firstName} ${sender?.lastName} commented on your post`;
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
+      throw new Error("Sender or recipient not found");
+    }
+
+    const message = this.getLocalizedMessage(
+      "comment",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     const notification = await this.createNotification({
       recipientId,
@@ -251,8 +318,22 @@ export class NotificationService {
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `${sender?.firstName} ${sender?.lastName} replied to your comment`;
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
+      throw new Error("Sender or recipient not found");
+    }
+
+    const message = this.getLocalizedMessage(
+      "reply",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     const notification = await this.createNotification({
       recipientId,
@@ -271,8 +352,22 @@ export class NotificationService {
     senderId: ObjectId | string,
     postId: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `${sender?.firstName} ${sender?.lastName} bookmarked your post`;
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
+      throw new Error("Sender or recipient not found");
+    }
+
+    const message = this.getLocalizedMessage(
+      "bookmark",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     return this.createNotification({
       recipientId,
@@ -288,8 +383,22 @@ export class NotificationService {
     senderId: ObjectId | string,
     postId: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `${sender?.firstName} ${sender?.lastName} liked your post`;
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
+      throw new Error("Sender or recipient not found");
+    }
+
+    const message = this.getLocalizedMessage(
+      "like",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     return this.createNotification({
       recipientId,
@@ -306,8 +415,22 @@ export class NotificationService {
     postId: ObjectId | string,
     commentId: ObjectId | string
   ) {
-    const sender = await User.findById(senderId);
-    const message = `${sender?.firstName} ${sender?.lastName} liked your comment`;
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
+      throw new Error("Sender or recipient not found");
+    }
+
+    const message = this.getLocalizedMessage(
+      "commentLike",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     return this.createNotification({
       recipientId,
@@ -334,12 +457,22 @@ export class NotificationService {
       return existingNotification;
     }
 
-    const sender = await User.findById(senderId);
-    if (!sender) {
+    const [sender, recipient] = await Promise.all([
+      User.findById(senderId),
+      User.findById(recipientId),
+    ]);
+
+    if (!sender || !recipient) {
       return null;
     }
 
-    const message = `${sender.firstName} ${sender.lastName} started following you`;
+    const message = this.getLocalizedMessage(
+      "follow",
+      sender.firstName?.toString() || "",
+      sender.lastName?.toString() || "",
+      sender.username?.toString() || "",
+      recipient.locale?.toString() || "en"
+    );
 
     const notification = await this.createNotification({
       recipientId,

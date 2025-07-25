@@ -10,13 +10,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useSocket } from "@/context/SocketContext";
 import { formatDistanceToNow } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import Link from "next/link";
 import { Notification } from "@/typings/interfaces";
+import { useTranslations, useLocale } from "next-intl";
 
 const NotificationBell: React.FC = () => {
-  const { socket, isConnected } = useSocket();
   const {
     notifications,
     unreadCount,
@@ -28,6 +28,8 @@ const NotificationBell: React.FC = () => {
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const hasFetchedRef = useRef(false);
+  const tNotifications = useTranslations("notificationBell");
+  const locale = useLocale();
 
   useEffect(() => {
     if (!hasFetchedRef.current) {
@@ -52,6 +54,55 @@ const NotificationBell: React.FC = () => {
 
   const handleNotificationNavigate = (notification: Notification) => {
     setIsOpen(false);
+  };
+
+  const translateNotificationMessage = (notification: Notification): string => {
+    const { type, message } = notification;
+
+    // Try to extract user information from the original message
+    let username = "";
+    let name = "";
+
+    // Extract information based on message patterns from backend
+    if (message.includes("@")) {
+      // Mention: "@username mentioned you in a comment"
+      const mentionMatch = message.match(/@(\w+)/);
+      username = mentionMatch ? mentionMatch[1] : "";
+      return tNotifications("messages.mention", { username });
+    } else if (message.includes("commented on your post")) {
+      // Comment: "FirstName LastName commented on your post"
+      const nameMatch = message.match(/^(.+?)\s+commented on your post/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.comment", { name });
+    } else if (message.includes("replied to your comment")) {
+      // Reply: "FirstName LastName replied to your comment"
+      const nameMatch = message.match(/^(.+?)\s+replied to your comment/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.reply", { name });
+    } else if (message.includes("bookmarked your post")) {
+      // Bookmark: "FirstName LastName bookmarked your post"
+      const nameMatch = message.match(/^(.+?)\s+bookmarked your post/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.bookmark", { name });
+    } else if (message.includes("liked your comment")) {
+      // Comment like: "FirstName LastName liked your comment"
+      const nameMatch = message.match(/^(.+?)\s+liked your comment/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.commentLike", { name });
+    } else if (message.includes("liked your post")) {
+      // Post like: "FirstName LastName liked your post"
+      const nameMatch = message.match(/^(.+?)\s+liked your post/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.like", { name });
+    } else if (message.includes("started following you")) {
+      // Follow: "FirstName LastName started following you"
+      const nameMatch = message.match(/^(.+?)\s+started following you/);
+      name = nameMatch ? nameMatch[1] : "";
+      return tNotifications("messages.follow", { name });
+    }
+
+    // Fallback to original message if no pattern matches
+    return message;
   };
 
   const getNotificationIcon = (type: string) => {
@@ -113,22 +164,27 @@ const NotificationBell: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>{" "}
       <DropdownMenuContent className="w-80 h-96 p-0 flex flex-col" align="end">
-        <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
-          <h4 className="font-semibold">Notifications</h4>
-          <div className="flex gap-1">
+        <div className="flex items-center justify-between p-3 border-b flex-shrink-0 min-w-0">
+          <h4 className="font-semibold flex-shrink-0">
+            {tNotifications("title")}
+          </h4>
+          <div className="flex gap-1 min-w-0 flex-shrink">
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="text-xs"
+                className="text-xs whitespace-nowrap overflow-hidden"
+                title={tNotifications("markAllRead")}
               >
-                <Check className="h-3 w-3 mr-1" />
-                Mark all read
+                <Check className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="truncate">
+                  {tNotifications("markAllRead")}
+                </span>
               </Button>
             )}
             <Link href="/settings/notifications">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="flex-shrink-0">
                 <Settings className="h-3 w-3" />
               </Button>
             </Link>
@@ -155,7 +211,7 @@ const NotificationBell: React.FC = () => {
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
-              No notifications yet
+              {tNotifications("noNotifications")}
             </div>
           ) : (
             <div className="py-1">
@@ -192,13 +248,14 @@ const NotificationBell: React.FC = () => {
                           className="block"
                         >
                           <p className="text-sm font-medium text-foreground hover:text-primary">
-                            {notification.message}
+                            {translateNotificationMessage(notification)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(
                               new Date(notification.createdAt),
                               {
                                 addSuffix: true,
+                                locale: locale === "es" ? es : enUS,
                               }
                             )}
                           </p>
@@ -217,10 +274,12 @@ const NotificationBell: React.FC = () => {
                               })
                             }
                             className="h-6 w-6 p-0 text-blue-500 hover:text-blue-600"
-                            title="Mark as read"
+                            title={tNotifications("markAsRead")}
                           >
                             <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                            <span className="sr-only">Mark as read</span>
+                            <span className="sr-only">
+                              {tNotifications("markAsRead")}
+                            </span>
                           </Button>
                         )}
                         <Button
@@ -232,10 +291,12 @@ const NotificationBell: React.FC = () => {
                             deleteNotification(notificationId);
                           }}
                           className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Delete notification"
+                          title={tNotifications("deleteNotification")}
                         >
                           <Trash2 className="h-3 w-3" />
-                          <span className="sr-only">Delete notification</span>
+                          <span className="sr-only">
+                            {tNotifications("deleteNotification")}
+                          </span>
                         </Button>
                       </div>
                     </div>
@@ -253,7 +314,7 @@ const NotificationBell: React.FC = () => {
                 onClick={() => setIsOpen(false)}
                 className="block text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2 hover:bg-muted/50 rounded"
               >
-                View all notifications
+                {tNotifications("viewAll")}
               </Link>
             </div>
           </div>

@@ -14,6 +14,7 @@ import { useTheme } from "next-themes";
 import { useToast } from "./ui/use-toast";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
+import { useTranslations } from "next-intl";
 
 const TiptapBlogEditor = dynamic(() => import("./tiptap-blog-editor"), {
   ssr: false,
@@ -41,6 +42,7 @@ const BlogEditor: FC<BlogEditorProps> = ({
   slug = null,
   isPostLoading = false,
 }) => {
+  const t = useTranslations("editor");
   const [isEditorLoaded, setIsEditorLoaded] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<
     "draft" | "published" | "unpublished"
@@ -68,9 +70,8 @@ const BlogEditor: FC<BlogEditorProps> = ({
         } catch (error) {
           toast({
             variant: "destructive",
-            title: "Save Failed",
-            description:
-              "Failed to save changes. Please save your changes manually before previewing.",
+            title: t("saveFailed"),
+            description: t("failedToSaveChanges"),
           });
         }
       } else {
@@ -82,25 +83,22 @@ const BlogEditor: FC<BlogEditorProps> = ({
         // Save as draft first
         await handleSubmit("draft");
         toast({
-          title: "Saving Draft",
-          description:
-            "Saving your post as draft. You'll be redirected to the edit page where you can preview it.",
+          title: t("savingDraft"),
+          description: t("savingDraftDescription"),
         });
       } catch (error) {
         console.error("Failed to save draft for preview:", error);
         toast({
           variant: "destructive",
-          title: "Save Failed",
-          description:
-            "Failed to save post. Please ensure you have both a title and content.",
+          title: t("saveFailed"),
+          description: t("failedToSaveChanges"),
         });
       }
     } else {
       toast({
         variant: "destructive",
-        title: "Content Required",
-        description:
-          "Please add both a title and content before previewing your post.",
+        title: t("contentRequired"),
+        description: t("contentRequiredDescription"),
       });
     }
   };
@@ -219,7 +217,7 @@ const BlogEditor: FC<BlogEditorProps> = ({
                     id="title"
                     value={title}
                     onChange={(e) => updatePostState("title", e.target.value)}
-                    placeholder="Enter blog title"
+                    placeholder={t("enterBlogTitle")}
                   />
                 </div>
               ) : (
@@ -270,14 +268,14 @@ const BlogEditor: FC<BlogEditorProps> = ({
         onClose={handleDialogClose}
         onSave={handleNavigationSave}
         onDiscard={handleDiscard}
-        title="Unsaved Blog Changes"
+        title={t("unsavedBlogChanges")}
         description={
           initialPost
-            ? "You have unsaved changes to your blog post. Would you like to save them before leaving?"
-            : "You have started writing a new blog post. Would you like to save it as a draft before leaving?"
+            ? t("unsavedChangesDescription")
+            : t("newPostDraftDescription")
         }
-        saveButtonText={initialPost ? "Save Changes" : "Save as Draft"}
-        discardButtonText="Discard Changes"
+        saveButtonText={initialPost ? t("saveChanges") : t("saveAseDraft")}
+        discardButtonText={t("discardChanges")}
         isSaving={isNavigationSaving}
       />
     </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, SortAsc } from "lucide-react";
 import { ImageInterface } from "@/typings/interfaces";
+import { useTranslations } from "next-intl";
 
 interface SearchAndFilterProps {
   images: ImageInterface[];
@@ -15,6 +16,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const t = useTranslations("settings");
 
   const availableTags = useMemo(() => {
     const tags = new Set<string>();
@@ -55,7 +57,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
           <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search by title..."
+            placeholder={t("searchByTitle")}
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full pl-10 pr-4"
@@ -68,7 +70,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex-1 min-w-[20%] ">
                 <Label htmlFor="tag-filter" className="pl-2">
-                  Filter by tag
+                  {t("filterByTag")}
                 </Label>
                 <select
                   id="tag-filter"
@@ -76,7 +78,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
                   onChange={(e) => setSelectedTags(e.target.value.split(","))}
                   className="w-full p-2 border border-input rounded-md bg-background"
                 >
-                  <option value="">All tags</option>
+                  <option value="">{t("allTags")}</option>
                   {availableTags.map((tag) => (
                     <option key={tag} value={tag}>
                       {tag}
@@ -109,7 +111,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
                   sortBy === "date" && sortOrder === "desc" ? "rotate-180" : ""
                 }`}
               />
-              Date
+              {t("date")}
             </Button>
             <Button
               onClick={() => toggleSort("name")}
@@ -122,7 +124,7 @@ export function SearchAndFilter({ images, onSearch }: SearchAndFilterProps) {
                   sortBy === "name" && sortOrder === "desc" ? "rotate-180" : ""
                 }`}
               />
-              Name
+              {t("name")}
             </Button>
           </div>
         </div>

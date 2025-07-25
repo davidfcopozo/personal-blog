@@ -16,6 +16,7 @@ import { ImageInterface } from "@/typings/interfaces";
 import { ImageGallery } from "./image-gallery";
 import { Loader2 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
+import { useTranslations } from "next-intl";
 
 export function ImageUploadModal({
   isImageUploadModalOpen,
@@ -44,6 +45,8 @@ export function ImageUploadModal({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const { toast } = useToast();
+  const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
 
   const filteredImages = searchQuery
     ? images.filter(
@@ -111,16 +114,16 @@ export function ImageUploadModal({
     try {
       await onUpdate(id, updates);
       toast({
-        title: "Success",
-        description: "Image information updated successfully",
+        title: t("success"),
+        description: t("imageUpdatedSuccess"),
       });
       setIsProcessing(false);
     } catch (error) {
       console.error("Error updating image:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to update image information",
+        title: t("error"),
+        description: t("imageUpdateError"),
       });
       setIsProcessing(false);
     }
@@ -134,13 +137,13 @@ export function ImageUploadModal({
           onInteractOutside={(e) => e.stopPropagation()}
         >
           <DialogHeader>
-            <DialogTitle>Image Gallery</DialogTitle>
+            <DialogTitle>{t("imageGallery")}</DialogTitle>
           </DialogHeader>
           {(isLoadingImages || isProcessing) && (
             <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-50">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <span className="ml-2 text-lg">
-                {isProcessing ? "Processing..." : "Loading images..."}
+                {isProcessing ? t("processing") : t("loadingImages")}
               </span>
             </div>
           )}
@@ -168,7 +171,7 @@ export function ImageUploadModal({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeModal}>
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button
               onClick={handleInsert}

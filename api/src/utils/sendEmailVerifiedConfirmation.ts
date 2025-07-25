@@ -2,19 +2,28 @@ import { SendMailOptions } from "nodemailer";
 
 import { emailSender } from "./emailSender";
 import emailVerified from "../templates/email-verified";
+import emailVerifiedEs from "../templates/email-verified-es";
 import { sendEmailVerifiedConfirmationProps } from "../typings/types";
 
 export const sendEmailVerifiedConfirmation = async ({
   baseUrl,
   email,
+  locale = "en",
 }: sendEmailVerifiedConfirmationProps) => {
   const profileUrl = `${baseUrl}/profile`;
+
+  // Select template and subject based on locale
+  const template = locale === "es" ? emailVerifiedEs : emailVerified;
+  const subject =
+    locale === "es"
+      ? "Confirmación de Correo Electrónico"
+      : "Email Confirmation";
 
   const emailOptions: SendMailOptions = {
     from: process.env.SENDER_MAIL_USERNAME,
     to: email as string,
-    subject: "Email Confirmation",
-    html: emailVerified
+    subject: subject,
+    html: template
       .replace(/\{\{app_url\}\}/g, profileUrl as string)
       .replace(
         /\{\{logo_src\}\}/g,
