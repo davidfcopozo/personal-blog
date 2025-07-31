@@ -4,6 +4,7 @@ import Image from "next/image";
 import { AuthorPanelProps, SocialMediaConfig } from "@/typings/interfaces";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const socialMediaConfig: Record<string, SocialMediaConfig> = {
   x: {
@@ -42,6 +43,7 @@ export const AuthorPanel = memo(function AuthorPanel({
   isPending,
   isPostOwner = false,
 }: AuthorPanelProps) {
+  const t = useTranslations("blog");
   const fullName = `${firstName} ${lastName}`;
 
   const availableSocialMedia = [
@@ -137,9 +139,9 @@ export const AuthorPanel = memo(function AuthorPanel({
             data-following={isFollowed ? "true" : "false"}
           >
             <span className="follow-text">
-              {isFollowed ? "Following" : "Follow"}
+              {isFollowed ? t("following") : t("follow")}
             </span>
-            <span className="unfollow-text hidden">Unfollow</span>
+            <span className="unfollow-text hidden">{t("unfollow")}</span>
           </Button>
         )}
       </footer>
