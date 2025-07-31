@@ -22,6 +22,8 @@ const intlMiddleware = createIntlMiddleware({
   locales,
   defaultLocale,
   localePrefix: "always",
+  localeDetection: true,
+  alternateLinks: false,
 });
 
 export async function middleware(request: NextRequest) {
@@ -45,13 +47,15 @@ export async function middleware(request: NextRequest) {
     ? "/" + segments.slice(2).join("/")
     : pathname;
 
+  // Get current locale - prioritize URL locale over default
+  const currentLocale = isLocaleInPath ? maybeLocale : defaultLocale;
+
   const token = await getToken({
     req: request,
     secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   });
 
   if (actualPathname === "/auth") {
-    const currentLocale = isLocaleInPath ? maybeLocale : defaultLocale;
     if (token) {
       const dashboardUrl = new URL(
         `/${currentLocale}/dashboard`,
@@ -68,7 +72,6 @@ export async function middleware(request: NextRequest) {
   }
 
   if (actualPathname === "/users" || actualPathname === "/user") {
-    const currentLocale = isLocaleInPath ? maybeLocale : defaultLocale;
     if (token) {
       const userProfileUrl = new URL(
         `/${currentLocale}/users/${token.sub}`,
@@ -90,7 +93,6 @@ export async function middleware(request: NextRequest) {
     actualPathname === "/api" ||
     actualPathname === "/category"
   ) {
-    const currentLocale = isLocaleInPath ? maybeLocale : defaultLocale;
     const homeUrl = new URL(`/${currentLocale}`, request.nextUrl.origin);
     return NextResponse.redirect(homeUrl.toString());
   }
@@ -102,7 +104,6 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => actualPathname === route);
 
   if (isProtectedRoute && !token) {
-    const currentLocale = isLocaleInPath ? maybeLocale : defaultLocale;
     const absoluteUrl = new URL(
       `/${currentLocale}/login`,
       request.nextUrl.origin
@@ -111,7 +112,6 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthRoute && token) {
-    const currentLocale = isLocaleInPath ? maybeLocale : defaultLocale;
     const absoluteUrl = new URL(
       `/${currentLocale}/dashboard`,
       request.nextUrl.origin
@@ -119,7 +119,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(absoluteUrl.toString());
   }
 
-  // Return the intl response if no auth redirects are needed
+  // Always return the intl response to maintain locale handling
   return intlResponse || NextResponse.next();
 }
 
