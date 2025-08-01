@@ -16,6 +16,7 @@ export const sendPasswordChangedEmail = async ({
   const baseUrlWithoutApi = baseUrl.replace("/api", "");
   const securitySettingsUrl = `${baseUrlWithoutApi}/settings`;
   const currentTime = new Date().toLocaleString();
+  const currentYear = new Date().getFullYear().toString();
 
   // Select template and subject based on locale
   const template =
@@ -44,7 +45,8 @@ export const sendPasswordChangedEmail = async ({
     .replace(/\{\{ip\}\}/g, ip as string)
     .replace(/\{\{time\}\}/g, currentTime)
     .replace(/\{\{email\}\}/g, email as string)
-    .replace(/\{\{securitySettingsUrl\}\}/g, securitySettingsUrl as string);
+    .replace(/\{\{securitySettingsUrl\}\}/g, securitySettingsUrl as string)
+    .replace(/\{\{year\}\}/g, currentYear);
 
   // Create request text that mentions location if available
   const requestText = `We received a request to reset the password for your account. If this was you, please use the button below to reset your password.`;

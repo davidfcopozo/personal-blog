@@ -194,6 +194,8 @@ export class NotificationService {
         : notificationEmailTemplateEn;
 
     // Replace template variables
+    const currentYear = new Date().getFullYear().toString();
+
     return template
       .replace(/{{logo_src}}/g, logoSrc)
       .replace(/{{github_src}}/g, githubSrc)
@@ -205,7 +207,8 @@ export class NotificationService {
       .replace(/{{senderUsername}}/g, sender.username)
       .replace(/{{appUrl}}/g, appUrl)
       .replace(/{{notificationsUrl}}/g, `${appUrl}/notifications`)
-      .replace(/{{settingsUrl}}/g, `${appUrl}/settings/notifications`);
+      .replace(/{{settingsUrl}}/g, `${appUrl}/settings/notifications`)
+      .replace(/{{year}}/g, currentYear);
   }
 
   private getLocalizedMessage(
