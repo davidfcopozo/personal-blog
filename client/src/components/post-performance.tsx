@@ -188,7 +188,23 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
       const matchesCategory =
         categoryFilter === "all" ||
         post.categories?.some((cat) => cat.name === categoryFilter);
-      return matchesSearch && matchesCategory;
+
+      // Date range filter
+      const matchesDateRange = (() => {
+        if (!dateRange?.from) return true;
+
+        const postDate = new Date(post.createdAt || new Date());
+        const fromDate = new Date(dateRange.from);
+        const toDate = dateRange.to ? new Date(dateRange.to) : new Date();
+
+        // Set time to start/end of day for accurate comparison
+        fromDate.setHours(0, 0, 0, 0);
+        toDate.setHours(23, 59, 59, 999);
+
+        return postDate >= fromDate && postDate <= toDate;
+      })();
+
+      return matchesSearch && matchesCategory && matchesDateRange;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -417,31 +433,33 @@ export function PostPerformance({ blogPosts }: PostPerformanceProps) {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-[240px] justify-start text-left font-normal bg-transparent"
+                  className="w-[240px] sm:w-[280px] justify-start text-left font-normal bg-transparent min-w-0"
                 >
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  {dateRange?.from ? (
-                    dateRange.to ? (
-                      <>
-                        {showMonthDayYear(
+                  <CalendarDays className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {showMonthDayYear(
+                            dateRange.from.toISOString(),
+                            locale as "en" | "es"
+                          )}{" "}
+                          -{" "}
+                          {showMonthDayYear(
+                            dateRange.to.toISOString(),
+                            locale as "en" | "es"
+                          )}
+                        </>
+                      ) : (
+                        showMonthDayYear(
                           dateRange.from.toISOString(),
                           locale as "en" | "es"
-                        )}{" "}
-                        -{" "}
-                        {showMonthDayYear(
-                          dateRange.to.toISOString(),
-                          locale as "en" | "es"
-                        )}
-                      </>
-                    ) : (
-                      showMonthDayYear(
-                        dateRange.from.toISOString(),
-                        locale as "en" | "es"
+                        )
                       )
-                    )
-                  ) : (
-                    <span>{tPostPerformance("pickDateRange")}</span>
-                  )}
+                    ) : (
+                      <span>{tPostPerformance("pickDateRange")}</span>
+                    )}
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
