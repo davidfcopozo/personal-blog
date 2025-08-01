@@ -60,9 +60,9 @@ const notificationEmailTemplateEs = `<!DOCTYPE html>
                 "
               >
                 <img
-                  src="{{logo_src}}"
+                  src="https://lh3.googleusercontent.com/pw/AP1GczP42usITm10yc2j45bzIWFZnuLDmIrVLOr_aGpSqMnQqZiXxGEdAKbOv103csKm-18I8edfCNHjwzv4lXiCDllEns4BD6fJxG-08v1D2NOqGsqZ8L1W3gFqSTE95lxzKeL3RJqK6jlgvYDITEbrjsM=w605-h605-s-no-gm?authuser=0"
                   alt="Logo de TechyComm"
-                  style="width: 100px; height: 100px"
+                  style="width: 100px; height: 100px; display: block; margin: 0 auto;border-radius: 50%; overflow:hidden;"
                   width="100"
                   height="100"
                 />
@@ -72,28 +72,25 @@ const notificationEmailTemplateEs = `<!DOCTYPE html>
             <!-- Notification Icon -->
             <tr>
               <td style="padding: 48px 48px 32px; text-align: center">
-                <div
-                  style="
-                    background-color: #3b82f6;
-                    border-radius: 50%;
-                    width: 64px;
-                    height: 64px;
-                    margin: 0 auto;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                  "
-                >
-                  <span
-                    style="
-                      color: white;
-                      font-size: 24px;
-                      font-weight: bold;
-                    "
-                  >
-                    🔔
-                  </span>
-                </div>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                  <tr>
+                    <td
+                      style="
+                        background-color: #3b82f6;
+                        border-radius: 50%;
+                        width: 64px;
+                        height: 64px;
+                        text-align: center;
+                        vertical-align: middle;
+                        line-height: 64px;
+                        font-size: 24px;
+                        color: white;
+                      "
+                    >
+                      🔔
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
 
@@ -213,6 +210,7 @@ const notificationEmailTemplateEs = `<!DOCTYPE html>
                   "
                 >
                   Recibes este correo porque tienes las notificaciones por email habilitadas para este tipo de actividad.
+                  Para soporte, contáctanos en techycommblog@gmail.com
                 </p>
                 <p
                   style="
@@ -241,7 +239,7 @@ const notificationEmailTemplateEs = `<!DOCTYPE html>
                   <tr>
                     <td align="center">
                       <a
-                        href="{{githubUrl}}"
+                        href="https://github.com/davidfcopozo/techy-comm-blog"
                         style="
                           display: inline-block;
                           margin: 0 8px;
