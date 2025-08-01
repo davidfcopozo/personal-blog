@@ -149,7 +149,7 @@ const passwordResetTemplateEs = `
                   text-align: left;
                 "
               >
-                Hola {{name}},
+                Hola {{name}}
               </p>
 
               <p
