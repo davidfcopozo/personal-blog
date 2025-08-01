@@ -101,7 +101,7 @@ const verificationEmailTemplateEs = `
                   text-align: left;
                 "
               >
-                Hola {{firstName}},
+                Hola {{firstName}}
               </p>
 
               <p

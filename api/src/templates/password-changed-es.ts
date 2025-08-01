@@ -252,7 +252,7 @@ const passwordChangedTemplateEs = `
                   color: #374151;
                 "
               >
-                Hola {{name}},
+                Hola {{name}}
               </p>
 
               <p

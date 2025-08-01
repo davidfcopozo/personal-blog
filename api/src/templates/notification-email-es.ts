@@ -106,7 +106,7 @@ const notificationEmailTemplateEs = `<!DOCTYPE html>
                     text-align: center;
                   "
                 >
-                  Hola {{recipientName}},
+                  Hola {{recipientName}}
                 </h1>
                 
                 <!-- Notification Card -->
