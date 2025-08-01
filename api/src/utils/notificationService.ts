@@ -182,7 +182,8 @@ export class NotificationService {
   ): string {
     const recipientLocale = recipient.locale || "en";
     const appUrl = process.env.CLIENT_URL || "http://localhost:3000";
-    const logoSrc = `${appUrl}/TechyComm-Logo.svg`;
+    const logoSrc =
+      "https://lh3.googleusercontent.com/pw/AP1GczP42usITm10yc2j45bzIWFZnuLDmIrVLOr_aGpSqMnQqZiXxGEdAKbOv103csKm-18I8edfCNHjwzv4lXiCDllEns4BD6fJxG-08v1D2NOqGsqZ8L1W3gFqSTE95lxzKeL3RJqK6jlgvYDITEbrjsM=w605-h605-s-no-gm?authuser=0";
     const githubSrc = `${appUrl}/github.svg`;
     const linkedinSrc = `${appUrl}/linkedin.svg`;
     const xSrc = `${appUrl}/x.svg`;
@@ -194,6 +195,8 @@ export class NotificationService {
         : notificationEmailTemplateEn;
 
     // Replace template variables
+    const currentYear = new Date().getFullYear().toString();
+
     return template
       .replace(/{{logo_src}}/g, logoSrc)
       .replace(/{{github_src}}/g, githubSrc)
@@ -205,7 +208,8 @@ export class NotificationService {
       .replace(/{{senderUsername}}/g, sender.username)
       .replace(/{{appUrl}}/g, appUrl)
       .replace(/{{notificationsUrl}}/g, `${appUrl}/notifications`)
-      .replace(/{{settingsUrl}}/g, `${appUrl}/settings/notifications`);
+      .replace(/{{settingsUrl}}/g, `${appUrl}/settings/notifications`)
+      .replace(/{{year}}/g, currentYear);
   }
 
   private getLocalizedMessage(

@@ -4,7 +4,9 @@ const verificationEmailTemplate = `
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="x-apple-disable-message-reformatting" />
   <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
   <title>Verify Your Email Address</title>
   <!--[if mso]>
     <noscript>
@@ -54,9 +56,9 @@ const verificationEmailTemplate = `
           <tr>
             <td style="padding: 40px 40px 20px 40px; text-align: center">
               <img
-                src="{{logo_src}}"
+                src="https://lh3.googleusercontent.com/pw/AP1GczMpGnJWrwihWm_UlZLZK7GJceYT0qrTg2y2l2s34hi29vIy9as-X-ZxbYYBa_LaDB98NMNHg7u-pBBwsX4qtjxJMEoKzHFMtTHk5NuEojcHk0n5vNkY74ySjO-QCILknogsCNpFEU-5A6Cx2csP5Ug=w512-h512-s-no-gm?authuser=0"
                 alt="TechyComm Logo"
-                style="width: 100px; height: 100px; margin-bottom: 20px"
+                style="width: 40px; height: 40px; margin-bottom: 20px; display: block; margin: 0 auto 20px auto;"
                 width="40"
                 height="40"
               />
@@ -169,7 +171,7 @@ const verificationEmailTemplate = `
                 "
               >
                 If you didn't create an account, you can safely ignore this
-                email.
+                email. For support, contact us at techycommblog@gmail.com
               </p>
             </td>
           </tr>

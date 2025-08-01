@@ -168,9 +168,9 @@ const passwordChangedTemplateEs = `
               "
             >
               <img
-                src="https://lh3.googleusercontent.com/pw/AP1GczP42usITm10yc2j45bzIWFZnuLDmIrVLOr_aGpSqMnQqZiXxGEdAKbOv103csKm-18I8edfCNHjwzv4lXiCDllEns4BD6fJxG-08v1D2NOqGsqZ8L1W3gFqSTE95lxzKeL3RJqK6jlgvYDITEbrjsM=w605-h605-s-no-gm?authuser=0"
-                width="80"
-                height="80"
+                src="https://lh3.googleusercontent.com/pw/AP1GczMpGnJWrwihWm_UlZLZK7GJceYT0qrTg2y2l2s34hi29vIy9as-X-ZxbYYBa_LaDB98NMNHg7u-pBBwsX4qtjxJMEoKzHFMtTHk5NuEojcHk0n5vNkY74ySjO-QCILknogsCNpFEU-5A6Cx2csP5Ug=w512-h512-s-no-gm?authuser=0"
+                width="40"
+                height="40"
                 alt="TechyComm"
                 border="0"
                 style="
@@ -252,7 +252,7 @@ const passwordChangedTemplateEs = `
                   color: #374151;
                 "
               >
-                Hola {{name}},
+                Hola {{name}}
               </p>
 
               <p
@@ -498,10 +498,10 @@ const passwordChangedTemplateEs = `
               >
                 ¿Necesitas ayuda? Contáctanos en
                 <a
-                  href="mailto:support@techycomm.com"
+                  href="mailto:techycommblog@gmail.com"
                   style="color: #3b82f6; text-decoration: none"
                 >
-                  support@techycomm.com
+                  techycommblog@gmail.com
                 </a>
               </p>
 
@@ -514,7 +514,7 @@ const passwordChangedTemplateEs = `
                   color: #9ca3af;
                 "
               >
-                © 2025 TechyComm. Todos los derechos reservados.
+                © {{year}} TechyComm. Todos los derechos reservados.
               </p>
             </td>
           </tr>

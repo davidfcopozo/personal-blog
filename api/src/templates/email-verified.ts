@@ -60,11 +60,11 @@ const emailVerified = `<!DOCTYPE html>
                 "
               >
                 <img
-                  src="{{logo_src}}"
+                  src="https://lh3.googleusercontent.com/pw/AP1GczP42usITm10yc2j45bzIWFZnuLDmIrVLOr_aGpSqMnQqZiXxGEdAKbOv103csKm-18I8edfCNHjwzv4lXiCDllEns4BD6fJxG-08v1D2NOqGsqZ8L1W3gFqSTE95lxzKeL3RJqK6jlgvYDITEbrjsM=w605-h605-s-no-gm?authuser=0"
                   alt="TechyComm Logo"
-                  style="width: 100px; height: 100px"
-                  width="40"
-                  height="40"
+                  style="width: 100px; height: 100px; display: block; margin: 0 auto;border-radius: 50%; overflow:hidden;"
+                  width="100"
+                  height="100"
                 />
               </td>
             </tr>
@@ -72,26 +72,29 @@ const emailVerified = `<!DOCTYPE html>
             <!-- Success Icon -->
             <tr>
                 <td style="padding: 48px 48px 32px; text-align: center">
-                <div
-                  style="
-                    background-color: #009933;
-                    border-radius: 50%;
-                    width: 64px;
-                    height: 64px;
-                    margin: 0 auto;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                  "
-                >
-                  <img
-                    src="{{success_check_src}}"
-                    alt="Success Check"
-                    style="width: 32px; height: 32px;"
-                    width="32"
-                    height="32"
-                  />
-                </div>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                  <tr>
+                    <td
+                      style="
+                        background-color: #009933;
+                        border-radius: 50%;
+                        width: 64px;
+                        height: 64px;
+                        text-align: center;
+                        vertical-align: middle;
+                        line-height: 64px;
+                      "
+                    >
+                      <img
+                        src="{{success_check_src}}"
+                        alt="Success Check"
+                        style="width: 32px; height: 32px; vertical-align: middle;"
+                        width="32"
+                        height="32"
+                      />
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
 
@@ -232,7 +235,7 @@ const emailVerified = `<!DOCTYPE html>
                   <tr>
                     <td align="center">
                       <a
-                        href="#"
+                        href="https://github.com/davidfcopozo/techy-comm-blog"
                         style="
                           display: inline-block;
                           margin: 0 8px;
@@ -257,7 +260,7 @@ const emailVerified = `<!DOCTYPE html>
                     line-height: 20px;
                   "
                 >
-                  © 2025 TechyComm. All rights reserved.
+                  © {{year}} TechyComm. All rights reserved. For support, contact us at techycommblog@gmail.com
                 </p>
               </td>
             </tr>
