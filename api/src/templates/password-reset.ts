@@ -42,6 +42,7 @@ const passwordResetTemplate = `
       img {
         border: 0;
         -ms-interpolation-mode: bicubic;
+        display: block;
       }
       /* Base styles */
       .wrapper {
@@ -215,7 +216,7 @@ const passwordResetTemplate = `
 
                   <p style="color: #334155">
                     If you didn't request a password reset, please ignore this
-                    email or contact our support team if you have concerns.
+                    email or contact our support team at techycommblog@gmail.com if you have concerns.
                   </p>
 
                   <p style="color: #334155; margin-bottom: 0">
@@ -230,6 +231,7 @@ const passwordResetTemplate = `
                 <td class="footer">
                   <p>This email was sent to {{email}}.</p>
                   <p style="margin-top: 12px">TechyComm</p>
+                  <p style="margin-top: 8px; font-size: 12px;">For support: techycommblog@gmail.com</p>
                 </td>
               </tr>
             </table>

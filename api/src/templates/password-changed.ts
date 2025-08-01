@@ -174,10 +174,10 @@ const passwordChangedTemplate = `
       <!-- Logo -->
       <div class="logo">
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczP42usITm10yc2j45bzIWFZnuLDmIrVLOr_aGpSqMnQqZiXxGEdAKbOv103csKm-18I8edfCNHjwzv4lXiCDllEns4BD6fJxG-08v1D2NOqGsqZ8L1W3gFqSTE95lxzKeL3RJqK6jlgvYDITEbrjsM=w605-h605-s-no-gm?authuser=0"
+          src="https://lh3.googleusercontent.com/pw/AP1GczMpGnJWrwihWm_UlZLZK7GJceYT0qrTg2y2l2s34hi29vIy9as-X-ZxbYYBa_LaDB98NMNHg7u-pBBwsX4qtjxJMEoKzHFMtTHk5NuEojcHk0n5vNkY74ySjO-QCILknogsCNpFEU-5A6Cx2csP5Ug=w512-h512-s-no-gm?authuser=0"
           alt="Company Logo"
-          width="100"
-          height="100"
+          width="40"
+          height="40"
           style="border: 0; display: block; margin: 0 auto"
         />
       </div>
@@ -231,6 +231,7 @@ const passwordChangedTemplate = `
       <!-- Footer -->
       <div class="footer">
         <p>This is an automated message, please do not reply to this email.</p>
+        <p>For support, contact us at techycommblog@gmail.com</p>
         <p>TechyComm</p>
         <p>
           <a href="{preferencesUrl}" style="color: #6b7280"
