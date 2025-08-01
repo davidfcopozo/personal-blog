@@ -96,7 +96,7 @@ export function Dashboard() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 pt-16 overflow-x-hidden">
       {/* Desktop Sidebar */}
-      <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex z-30">
+      <aside className="fixed top-16 bottom-0 left-0 hidden w-14 flex-col border-r bg-background sm:flex z-30">
         <DashboardNav activeTab={activeTab} handleTabChange={handleTabChange} />
       </aside>
 
