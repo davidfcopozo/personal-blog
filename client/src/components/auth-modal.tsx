@@ -709,7 +709,7 @@ export const AuthModal = memo(function AuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         {renderCurrentStep()}
       </DialogContent>
     </Dialog>
