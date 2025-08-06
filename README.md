@@ -89,7 +89,7 @@ npm run dev
 
 - **Frontend:** Next.js, React, Tailwind CSS, NextAuth.js, TypeScript
 - **Backend:** Express.js, MongoDB, Mongoose, Socket.IO, TypeScript
-- **Other:** Jest, ESLint, Prettier, Docker (optional), Firebase Storage
+- **Other:** Jest, ESLint, Prettier, Firebase Storage
 
 ---
 
